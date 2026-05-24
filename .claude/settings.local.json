@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node --version)",
+      "PowerShell(pnpm --version 2>$null)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); node --version; npm --version)",
+      "Bash(mkdir -p \"/c/Users/AVIDEMO/Desktop/Proyecto web 1/.claude\")",
+      "mcp__Claude_Preview__preview_start",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); \\(Get-Command pnpm\\).Source)",
+      "Bash(curl -s http://localhost:3000)",
+      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\AVIDEMO\\\\AppData\\\\Roaming\\\\npm;\" + $env:Path; Set-Location \"C:\\\\Users\\\\AVIDEMO\\\\Desktop\\\\Proyecto web 1\"; pnpm dev 2>&1 | Select-Object -First 30)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /tmp/resp.html -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /tmp/admin.html -w \"%{http_code}\" http://localhost:3000/admin)",
+      "Bash(curl -s -o /tmp/home.html -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /tmp/c.html -w \"%{http_code}\" http://localhost:3000/contacto)",
+      "Bash(curl -s -o /tmp/h.html -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /tmp/c.html -w \"%{http_code}\" http://localhost:3000/carrito)",
+      "Bash(curl -s -o /tmp/n.html -w \"%{http_code}\" http://localhost:3000/nosotros)",
+      "Bash(curl -s http://localhost:3000/nosotros)",
+      "Bash(curl -s \"http://localhost:3000\")"
+    ]
+  }
+}

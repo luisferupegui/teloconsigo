@@ -1,0 +1,222 @@
+[
+  {
+    "id": "1",
+    "slug": "amd-ryzen-7-7800x3d",
+    "nombre": "AMD Ryzen 7 7800X3D",
+    "marca": "AMD",
+    "categoria": "procesadores",
+    "precio": 1899000,
+    "precioAnterior": 2099000,
+    "stock": 8,
+    "rating": 4.9,
+    "reviews": 142,
+    "imagen": "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=800&q=80",
+    "destacado": true,
+    "specs": {
+      "socket": "AM5",
+      "nucleos": 8,
+      "hilos": 16,
+      "frecuencia": "4.2 GHz",
+      "boost": "5.0 GHz",
+      "tdp": "120W",
+      "cache": "96 MB L3"
+    },
+    "descripcion": "El rey indiscutible del gaming. Tecnología 3D V-Cache que multiplica el rendimiento en juegos."
+  },
+  {
+    "id": "2",
+    "slug": "nvidia-rtx-4070-super",
+    "nombre": "NVIDIA GeForce RTX 4070 SUPER",
+    "marca": "NVIDIA",
+    "categoria": "tarjetas-graficas",
+    "precio": 2799000,
+    "stock": 5,
+    "rating": 4.8,
+    "reviews": 89,
+    "imagen": "https://images.unsplash.com/photo-1591405351990-4726e331f141?auto=format&fit=crop&w=800&q=80",
+    "destacado": true,
+    "specs": {
+      "vram": "12 GB GDDR6X",
+      "cudaCores": 7168,
+      "boost": "2.48 GHz",
+      "consumo": "220W",
+      "conectores": "1x 16-pin",
+      "dlss": "DLSS 3.5"
+    },
+    "descripcion": "Gaming en 1440p y 4K con Ray Tracing y DLSS 3.5. La opción equilibrada de NVIDIA."
+  },
+  {
+    "id": "3",
+    "slug": "asus-rog-strix-b650e-f",
+    "nombre": "ASUS ROG STRIX B650E-F Gaming WiFi",
+    "marca": "ASUS",
+    "categoria": "placas-madre",
+    "precio": 1299000,
+    "stock": 12,
+    "rating": 4.7,
+    "reviews": 56,
+    "imagen": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+    "destacado": true,
+    "specs": {
+      "socket": "AM5",
+      "chipset": "B650E",
+      "tipoRam": "DDR5",
+      "slotsRam": 4,
+      "ramMax": "192 GB",
+      "factor": "ATX",
+      "wifi": "WiFi 6E"
+    },
+    "descripcion": "Placa ATX premium para Ryzen 7000 con PCIe 5.0, WiFi 6E y disipación robusta."
+  },
+  {
+    "id": "4",
+    "slug": "corsair-vengeance-32gb-ddr5",
+    "nombre": "Corsair Vengeance 32GB DDR5 6000MHz",
+    "marca": "Corsair",
+    "categoria": "memoria-ram",
+    "precio": 589000,
+    "precioAnterior": 699000,
+    "stock": 20,
+    "rating": 4.8,
+    "reviews": 203,
+    "imagen": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=800&q=80",
+    "destacado": true,
+    "specs": {
+      "tipo": "DDR5",
+      "capacidad": "32 GB (2x16GB)",
+      "velocidad": "6000 MHz",
+      "latencia": "CL30",
+      "voltaje": "1.35V",
+      "perfil": "EXPO / XMP"
+    },
+    "descripcion": "Kit dual-channel optimizado para Ryzen 7000 con perfil EXPO. Ideal para gaming y trabajo."
+  },
+  {
+    "id": "5",
+    "slug": "samsung-990-pro-2tb",
+    "nombre": "Samsung 990 PRO 2TB NVMe Gen4",
+    "marca": "Samsung",
+    "categoria": "almacenamiento",
+    "precio": 799000,
+    "stock": 15,
+    "rating": 4.9,
+    "reviews": 312,
+    "imagen": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=800&q=80",
+    "specs": {
+      "capacidad": "2 TB",
+      "interfaz": "PCIe 4.0 x4 NVMe",
+      "lectura": "7,450 MB/s",
+      "escritura": "6,900 MB/s",
+      "formato": "M.2 2280",
+      "tbw": "1,200 TBW"
+    },
+    "descripcion": "SSD NVMe insignia de Samsung. Velocidades brutales, ideal para juegos y edición de video."
+  },
+  {
+    "id": "6",
+    "slug": "corsair-rm850x",
+    "nombre": "Corsair RM850x 850W 80+ Gold",
+    "marca": "Corsair",
+    "categoria": "fuentes-de-poder",
+    "precio": 649000,
+    "stock": 10,
+    "rating": 4.9,
+    "reviews": 178,
+    "imagen": "https://images.unsplash.com/photo-1601737487795-dab272f52420?auto=format&fit=crop&w=800&q=80",
+    "specs": {
+      "vatios": "850W",
+      "certificacion": "80+ Gold",
+      "modular": "Totalmente modular",
+      "ventilador": "135mm ZRB",
+      "garantia": "10 años",
+      "atx": "ATX 3.1 / PCIe 5.1"
+    },
+    "descripcion": "PSU totalmente modular lista para GPUs de última generación con conector 12V-2x6."
+  },
+  {
+    "id": "7",
+    "slug": "lian-li-o11-dynamic-evo",
+    "nombre": "Lian Li O11 Dynamic EVO",
+    "marca": "Lian Li",
+    "categoria": "gabinetes",
+    "precio": 729000,
+    "stock": 6,
+    "rating": 4.8,
+    "reviews": 94,
+    "imagen": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?auto=format&fit=crop&w=800&q=80",
+    "specs": {
+      "factor": "Mid Tower",
+      "compatibilidad": "E-ATX, ATX, mATX, ITX",
+      "ventiladores": "Hasta 10",
+      "radiadores": "360mm top + 360mm side",
+      "cristal": "Doble cristal templado",
+      "color": "Negro"
+    },
+    "descripcion": "Gabinete icónico para builds vistosos. Soporte excepcional para refrigeración líquida."
+  },
+  {
+    "id": "8",
+    "slug": "lg-ultragear-27gp850",
+    "nombre": "LG UltraGear 27GP850 27\" QHD 180Hz",
+    "marca": "LG",
+    "categoria": "monitores",
+    "precio": 1499000,
+    "precioAnterior": 1799000,
+    "stock": 4,
+    "rating": 4.7,
+    "reviews": 167,
+    "imagen": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80",
+    "destacado": true,
+    "specs": {
+      "tamano": "27 pulgadas",
+      "resolucion": "2560 x 1440 (QHD)",
+      "refresco": "180 Hz (OC)",
+      "panel": "Nano IPS",
+      "tiempo": "1 ms GtG",
+      "hdr": "HDR10"
+    },
+    "descripcion": "Monitor gaming Nano IPS con colores vibrantes, ideal para gaming competitivo y trabajo creativo."
+  },
+  {
+    "id": "9",
+    "slug": "logitech-g-pro-x-superlight-2",
+    "nombre": "Logitech G PRO X SUPERLIGHT 2",
+    "marca": "Logitech",
+    "categoria": "perifericos",
+    "precio": 699000,
+    "stock": 18,
+    "rating": 4.8,
+    "reviews": 245,
+    "imagen": "https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=800&q=80",
+    "specs": {
+      "sensor": "HERO 2 / 32K DPI",
+      "peso": "60 g",
+      "bateria": "95 horas",
+      "conexion": "LIGHTSPEED inalámbrico",
+      "switches": "Ópticos LIGHTFORCE",
+      "cable": "USB-C"
+    },
+    "descripcion": "Mouse inalámbrico ultraligero usado por profesionales del eSports."
+  },
+  {
+    "id": "10",
+    "slug": "noctua-nh-d15",
+    "nombre": "Noctua NH-D15 chromax.black",
+    "marca": "Noctua",
+    "categoria": "refrigeracion",
+    "precio": 499000,
+    "stock": 9,
+    "rating": 4.9,
+    "reviews": 187,
+    "imagen": "https://images.unsplash.com/photo-1587202372616-b43abea06c2a?auto=format&fit=crop&w=800&q=80",
+    "specs": {
+      "tipo": "Aire (doble torre)",
+      "ventiladores": "2x NF-A15 PWM",
+      "altura": "165 mm",
+      "sockets": "AM5, AM4, LGA1700, LGA1200",
+      "tdp": "Hasta 250W",
+      "garantia": "6 años"
+    },
+    "descripcion": "El disipador por aire de referencia mundial. Silencio y rendimiento térmico de gama alta."
+  }
+]
