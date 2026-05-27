@@ -24,8 +24,11 @@ await mkdir(DST, { recursive: true });
 // Recortes específicos del source ANTES del procesamiento.
 // Valores en fracción [0..1] del ancho/alto original.
 const PRE_CROPS = {
-  // APC: descartar el banner "by Schneider Electric" del ~40% inferior.
-  "43_APC_logo.png": { bottom: 0.42 },
+  // APC: quedarse solo con la insignia roja.
+  // Se recorta el 10% superior (margen blanco) y el 50% inferior
+  // (espacio vacío + "by Schneider Electric") para que el badge
+  // quede centrado sin padding asimétrico.
+  "43_APC_logo.png": { top: 0.10, bottom: 0.50 },
 };
 
 // Trim ultra-conservador: cualquier fila/columna con al menos 1 píxel opaco cuenta.

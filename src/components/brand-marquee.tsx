@@ -7,14 +7,14 @@ import { useEffect, useRef } from "react";
 // Sistema de 4 tiers de altura según aspect ratio para equilibrar peso visual:
 // los wordmarks horizontales ocupan más ancho, así que necesitan menos altura
 // que los logos compactos (icon + texto stacked) para verse del mismo "tamaño".
-//   - Compacto       (r ≤ 2.0):   H = 36 px  ← UGREEN, Kingston, ROG, SanDisk…
-//   - Medio          (r 2.0-3.5): H = 30 px  ← MSI, Crucial, ADATA, Lenovo…
-//   - Wordmark       (r 3.5-5.0): H = 26 px  ← ASUS, DEEPCOOL, AMD, Canon…
+//   - Compacto       (r ≤ 2.0):   H = 44 px  ← UGREEN, Kingston, ROG, SanDisk…
+//   - Medio          (r 2.0-3.5): H = 32 px  ← MSI, Crucial, ADATA, Lenovo…
+//   - Wordmark       (r 3.5-5.0): H = 24 px  ← ASUS, DEEPCOOL, AMD, Canon…
 //   - Wordmark XL    (r > 5.0):   H = 22 px  ← ZOTAC, NETGEAR, Sennheiser…
-const H_SLOT       = 36;                // altura del slot (= máximo H)
-const H_COMPACT    = 36;
-const H_MEDIUM     = 30;
-const H_WORDMARK   = 26;
+const H_SLOT       = 44;                // altura del slot (= máximo H)
+const H_COMPACT    = 44;
+const H_MEDIUM     = 32;
+const H_WORDMARK   = 24;
 const H_WORDMARK_XL = 22;
 // Tope de ancho para que los wordmarks ultra-anchos (NETGEAR, Sennheiser…)
 // no dominen el rotador.
@@ -68,7 +68,7 @@ const LOGOS: Logo[] = [
   { src: "/brands/v2-clean/40_Seagate_logo.png",      alt: "SEAGATE",       r: 4.00 },
   { src: "/brands/v2-clean/41_ADATA_logo.png",        alt: "ADATA",         r: 2.08 },
   { src: "/brands/v2-clean/42_SanDisk_logo.png",      alt: "SanDisk",       r: 1.41 },
-  { src: "/brands/v2-clean/43_APC_logo.png",          alt: "APC",           r: 2.31 },
+  { src: "/brands/v2-clean/43_APC_logo.png",          alt: "APC",           r: 3.62 },
   { src: "/brands/v2-clean/44_Belkin_logo.png",       alt: "BELKIN",        r: 2.73 },
   { src: "/brands/v2-clean/45_CyberPower_logo.png",   alt: "CyberPower",    r: 5.42 },
   { src: "/brands/v2-clean/46_UGREEN_logo.png",       alt: "UGREEN",        r: 1.34 },
