@@ -5,6 +5,7 @@ import { Reveal } from "@/components/reveal";
 import { CategoryCarousel } from "@/components/category-carousel";
 import { HeroSlider } from "@/components/hero-slider";
 import { BrandMarquee } from "@/components/brand-marquee";
+import { StatsSection } from "@/components/counter";
 import { categories } from "@/lib/categories";
 import { getFeaturedProducts, getAllProducts } from "@/lib/products";
 import {
@@ -51,17 +52,22 @@ export default function Home() {
       <HeroSlider />
 
       {/* ══════════════════════════════════════════
-          4. MARCAS — Marquee de logos en movimiento
-      ══════════════════════════════════════════ */}
-      <BrandMarquee />
-
-      {/* ══════════════════════════════════════════
-          5. EXPLORA NUESTROS PRODUCTOS — Carrusel
+          4. EXPLORA NUESTROS PRODUCTOS — Carrusel
       ══════════════════════════════════════════ */}
       <CategoryCarousel />
 
       {/* ══════════════════════════════════════════
-          5. FEATURED PRODUCTS — Dark, ROG-style
+          5. MARCAS — Marquee de logos en movimiento
+      ══════════════════════════════════════════ */}
+      <BrandMarquee />
+
+      {/* ══════════════════════════════════════════
+          6. ESTADÍSTICAS — Contadores animados
+      ══════════════════════════════════════════ */}
+      <StatsSection />
+
+      {/* ══════════════════════════════════════════
+          7. FEATURED PRODUCTS — Dark, ROG-style
       ══════════════════════════════════════════ */}
       <section className="bg-[#0a0f1a] py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
