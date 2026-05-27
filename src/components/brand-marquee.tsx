@@ -11,14 +11,14 @@ import { useEffect, useRef } from "react";
 //   - Medio          (r 2.0-3.5): H = 32 px  ← MSI, Crucial, ADATA, Lenovo…
 //   - Wordmark       (r 3.5-5.0): H = 24 px  ← ASUS, DEEPCOOL, AMD, Canon…
 //   - Wordmark XL    (r > 5.0):   H = 22 px  ← ZOTAC, NETGEAR, Sennheiser…
-const H_SLOT       = 48;                // altura del slot (= máximo H)
-const H_COMPACT    = 48;
-const H_MEDIUM     = 32;
-const H_WORDMARK   = 24;
-const H_WORDMARK_XL = 22;
+const H_SLOT       = 39;                // altura del slot (= máximo H)
+const H_COMPACT    = 39;
+const H_MEDIUM     = 26;
+const H_WORDMARK   = 19;
+const H_WORDMARK_XL = 18;
 // Tope de ancho para que los wordmarks ultra-anchos (NETGEAR, Sennheiser…)
 // no dominen el rotador.
-const MAX_LOGO_W   = 140;
+const MAX_LOGO_W   = 113;
 
 // ─── 53 logos HD con fondo transparente real ──────────────────────────────────
 // Carpeta: public/brands/v2-clean/  (procesados con scripts/process-brand-logos.mjs)
@@ -104,7 +104,7 @@ function LogoRow({ aria }: { aria?: boolean }) {
             // Usamos PADDING (px-5) y no margin para que el loop sea matemáticamente
             // exacto: --copy-w calculado con offsetWidth cae justo al inicio de la
             // copia 2 sin saltos.
-            className="group shrink-0 px-5 flex items-center cursor-default"
+            className="group shrink-0 px-4 flex items-center cursor-default"
             style={{ height: `${H_SLOT}px` }}
           >
             <Image
@@ -169,7 +169,7 @@ export function BrandMarquee() {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-white to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-white to-transparent" />
 
-      <div className="py-5 overflow-hidden">
+      <div className="py-4 overflow-hidden">
         <div
           ref={trackRef}
           className="flex items-center animate-marquee-exact will-change-transform"

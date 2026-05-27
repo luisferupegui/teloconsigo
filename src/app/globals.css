@@ -155,7 +155,7 @@ html {
   to   { transform: translate3d(calc(var(--copy-w, 50%) * -1), 0, 0); }
 }
 .animate-marquee-exact {
-  animation: marquee-exact 70s linear infinite;
+  animation: marquee-exact 95s linear infinite;
 }
 .animate-marquee-exact:hover {
   animation-play-state: paused;

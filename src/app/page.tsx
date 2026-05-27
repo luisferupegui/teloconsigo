@@ -1,15 +1,14 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { CategoryCarousel } from "@/components/category-carousel";
 import { HeroSlider } from "@/components/hero-slider";
 import { BrandMarquee } from "@/components/brand-marquee";
 import { StatsSection } from "@/components/counter";
-import { categories } from "@/lib/categories";
 import { getFeaturedProducts, getAllProducts } from "@/lib/products";
 import {
   ChevronRight,
+  ChevronDown,
   Cpu,
   Zap,
   Shield,
@@ -20,22 +19,19 @@ import {
   ArrowRight,
   TrendingUp,
   Monitor,
+  Battery,
+  Sparkles,
+  Thermometer,
+  HardDrive,
+  XCircle,
+  CheckCircle2,
+  Laptop,
+  Smartphone,
+  Watch,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-/* ─── Constantes de imagen ─── */
-const HERO_BG = "/hero-banner.png";
-const PROMO_A =
-  "https://images.unsplash.com/photo-1591405351990-4726e331f141?auto=format&fit=crop&w=1200&q=85";
-const PROMO_B =
-  "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=1200&q=85";
-const CULTURE_A =
-  "https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=800&q=80";
-const CULTURE_B =
-  "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80";
-const CULTURE_C =
-  "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=800&q=80";
 
 export default function Home() {
   const featured = getFeaturedProducts();
@@ -131,308 +127,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════
-          5. GAMING CATEGORIES — Large cards, ROG-style
-      ══════════════════════════════════════════ */}
-      <section className="bg-[#080d14] py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-widest text-[#1e6cff] mb-1">
-                — Explora por tipo
-              </p>
-              <h2 className="font-display text-3xl font-black text-white sm:text-4xl">
-                CATEGORÍAS
-              </h2>
-            </div>
-          </div>
-
-          {/* Grid asimétrico estilo ROG */}
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 lg:grid-rows-2">
-            {/* Card grande — Tarjetas gráficas */}
-            <Link
-              href="/categoria/tarjetas-graficas"
-              className="group relative col-span-2 row-span-2 overflow-hidden rounded-sm lg:col-span-2"
-            >
-              <div className="relative h-64 lg:h-full min-h-[320px]">
-                <Image
-                  src="https://images.unsplash.com/photo-1591405351990-4726e331f141?auto=format&fit=crop&w=800&q=85"
-                  alt="Tarjetas gráficas"
-                  fill
-                  sizes="(max-width:1024px) 50vw, 40vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                <div className="absolute inset-0 bg-[#1e6cff]/0 group-hover:bg-[#1e6cff]/10 transition-colors duration-300" />
-                <div className="absolute bottom-0 left-0 p-5">
-                  <span className="text-2xl">🎮</span>
-                  <h3 className="mt-1 font-display text-2xl font-black text-white">
-                    TARJETAS GRÁFICAS
-                  </h3>
-                  <p className="text-sm text-zinc-300 mt-0.5">RTX 4090 · RX 7900 XTX</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#4d8dff] uppercase tracking-wider group-hover:gap-2 transition-all">
-                    Ver GPUs <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Procesadores */}
-            <Link
-              href="/categoria/procesadores"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-40">
-                <Image
-                  src="https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=600&q=80"
-                  alt="Procesadores"
-                  fill
-                  sizes="20vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-3">
-                  <span className="text-lg">🧠</span>
-                  <h3 className="font-display text-sm font-black text-white leading-tight">
-                    PROCESADORES
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">AM5 · LGA1700</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* Placas madre */}
-            <Link
-              href="/categoria/placas-madre"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-40">
-                <Image
-                  src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"
-                  alt="Placas madre"
-                  fill
-                  sizes="20vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-3">
-                  <span className="text-lg">🔌</span>
-                  <h3 className="font-display text-sm font-black text-white leading-tight">
-                    PLACAS MADRE
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">Z790 · B650 · X670E</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* Monitores */}
-            <Link
-              href="/categoria/monitores"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-40">
-                <Image
-                  src="https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80"
-                  alt="Monitores"
-                  fill
-                  sizes="20vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-3">
-                  <span className="text-lg">🖥️</span>
-                  <h3 className="font-display text-sm font-black text-white leading-tight">
-                    MONITORES
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">OLED · 240Hz · QD-OLED</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* Memoria RAM */}
-            <Link
-              href="/categoria/memoria-ram"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-40">
-                <Image
-                  src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=600&q=80"
-                  alt="Memoria RAM"
-                  fill
-                  sizes="20vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-3">
-                  <span className="text-lg">💾</span>
-                  <h3 className="font-display text-sm font-black text-white leading-tight">
-                    MEMORIA RAM
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">DDR5 · DDR4</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* Periféricos */}
-            <Link
-              href="/categoria/perifericos"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-40">
-                <Image
-                  src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80"
-                  alt="Periféricos"
-                  fill
-                  sizes="20vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-3">
-                  <span className="text-lg">⌨️</span>
-                  <h3 className="font-display text-sm font-black text-white leading-tight">
-                    PERIFÉRICOS
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">Mouse · Teclados · Headsets</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Fila inferior: todas las demás categorías como pills */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {categories
-              .filter(
-                (c) =>
-                  !["tarjetas-graficas", "procesadores", "placas-madre", "monitores", "memoria-ram", "perifericos"].includes(c.slug),
-              )
-              .map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/categoria/${cat.slug}`}
-                  className="flex items-center gap-2 rounded-none border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-[#1e6cff] hover:text-white hover:bg-[#1e6cff]/10"
-                >
-                  <span>{cat.emoji}</span>
-                  {cat.nombre}
-                </Link>
-              ))}
-            <Link
-              href="/catalogo"
-              className="flex items-center gap-2 rounded-none border border-[#1e6cff]/50 bg-[#1e6cff]/10 px-4 py-2.5 text-sm font-semibold text-[#4d8dff] transition hover:bg-[#1e6cff]/20"
-            >
-              Ver todo el catálogo <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════
-          6. PROMOTIONAL BANNERS — Colecciones ROG-style
-      ══════════════════════════════════════════ */}
-      <section className="bg-[#080d14] pb-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-4 sm:grid-cols-2">
-
-            {/* Banner A — GPU */}
-            <Link
-              href="/categoria/tarjetas-graficas"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-64 sm:h-80">
-                <Image
-                  src={PROMO_A}
-                  alt="GPUs Gaming"
-                  fill
-                  sizes="(max-width:640px) 100vw, 50vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
-                <div className="absolute inset-0 bg-[#1e6cff]/0 group-hover:bg-[#1e6cff]/10 transition-colors duration-500" />
-                <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-end p-6">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#4d8dff]">
-                    Nueva colección
-                  </span>
-                  <h3 className="mt-1 font-display text-2xl font-black text-white leading-tight">
-                    GPUs RTX 40 SUPER
-                  </h3>
-                  <p className="mt-1 text-sm text-zinc-300">
-                    DLSS 3.5 · Frame Generation · Ray Tracing
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-white uppercase tracking-wider border-b border-white/40 pb-0.5 w-fit group-hover:border-[#1e6cff] group-hover:text-[#4d8dff] transition-colors">
-                    Explorar GPUs <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Banner B — CPUs */}
-            <Link
-              href="/categoria/procesadores"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-64 sm:h-80">
-                <Image
-                  src={PROMO_B}
-                  alt="Procesadores AMD Intel"
-                  fill
-                  sizes="(max-width:640px) 100vw, 50vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
-                <div className="absolute inset-0 bg-[#7e4dff]/0 group-hover:bg-[#7e4dff]/10 transition-colors duration-500" />
-                <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-end p-6">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-purple-400">
-                    AMD · Intel
-                  </span>
-                  <h3 className="mt-1 font-display text-2xl font-black text-white leading-tight">
-                    PROCESADORES 2024
-                  </h3>
-                  <p className="mt-1 text-sm text-zinc-300">
-                    Ryzen 9 7950X3D · Core i9-14900K · 3D V-Cache
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-white uppercase tracking-wider border-b border-white/40 pb-0.5 w-fit group-hover:border-purple-400 group-hover:text-purple-300 transition-colors">
-                    Ver procesadores <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Banner C — Monitores (ancho completo) */}
-            <Link
-              href="/categoria/monitores"
-              className="group relative overflow-hidden rounded-sm sm:col-span-2"
-            >
-              <div className="relative h-48 sm:h-56">
-                <Image
-                  src="https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=2000&q=85"
-                  alt="Monitores Gaming"
-                  fill
-                  sizes="100vw"
-                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/30" />
-                <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/5 transition-colors duration-500" />
-                <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-center p-8">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-400">
-                    OLED · QD-OLED · 240Hz+
-                  </span>
-                  <h3 className="mt-1 font-display text-3xl font-black text-white">
-                    MONITORES GAMING
-                  </h3>
-                  <p className="mt-1 text-sm text-zinc-300 max-w-md">
-                    Desde 280Hz FHD hasta OLED 4K. El panel correcto para tu
-                    estilo de juego.
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-2 rounded-none bg-white px-5 py-2 text-xs font-black text-black uppercase tracking-wider w-fit hover:bg-zinc-200 transition group-hover:gap-3">
-                    SHOP NOW <ArrowRight className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════
-          7. TELOCONSIGO ECOSYSTEM
+          6. TELOCONSIGO ECOSYSTEM
       ══════════════════════════════════════════ */}
       <section className="relative bg-[#0a0f1a] py-20 overflow-hidden">
         <div className="absolute inset-0 bg-tech-grid-dark opacity-20 pointer-events-none" />
@@ -560,140 +255,241 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════
-          8. NEWS / ARTICLES / COMMUNITY
+          8. CONSEJOS TECNOLÓGICOS
       ══════════════════════════════════════════ */}
-      <section className="bg-[#080d14] py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-widest text-[#1e6cff] mb-1">
-                — Tech Tips & Guías
-              </p>
-              <h2 className="font-display text-3xl font-black text-white">
-                CONOCIMIENTO TECH
-              </h2>
+      <section className="overflow-hidden">
+
+        {/* ── Hero ─────────────────────────────────── */}
+        <div className="relative bg-gradient-to-br from-[#04091a] via-[#070f1e] to-[#04091a] py-16 overflow-hidden">
+          <div className="absolute inset-0 bg-tech-grid-dark opacity-20 pointer-events-none" />
+          <div className="absolute -top-32 right-0 w-[500px] h-[500px] bg-[#1e6cff]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-[#4d8dff]/8 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+            <p className="font-mono text-xs uppercase tracking-widest text-[#4d8dff] mb-4">
+              — Consejos Tecnológicos
+            </p>
+            <h2 className="font-display text-4xl sm:text-6xl font-black text-white leading-tight mb-5">
+              Cuida tu tecnología,{" "}
+              <span className="text-[#4d8dff]">disfrútala más tiempo</span>
+            </h2>
+            <p className="text-zinc-400 text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
+              Descubre recomendaciones prácticas para proteger y conservar
+              tus dispositivos en óptimas condiciones.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 mb-10">
+              <a href="#cuidado-tips"
+                 className="inline-flex items-center gap-2 rounded-full bg-[#1e6cff] px-6 py-3
+                            text-sm font-semibold text-white hover:bg-[#1e6cff]/85 transition">
+                Ver recomendaciones <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link href="/catalogo"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/20
+                               px-6 py-3 text-sm font-semibold text-white
+                               hover:border-white/40 hover:bg-white/5 transition">
+                Explorar productos
+              </Link>
             </div>
-            <Link
-              href="/catalogo"
-              className="flex items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-white transition"
-            >
-              Comunidad <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            {/* Artículo 1 */}
-            <Link
-              href="/categoria/tarjetas-graficas"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-48">
-                <Image
-                  src={CULTURE_A}
-                  alt="Guía de monitores gaming"
-                  fill
-                  sizes="33vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <span className="rounded-none bg-[#1e6cff] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
-                    Guía
-                  </span>
+            <div className="flex justify-center gap-12 pt-8 border-t border-white/8">
+              {[
+                { stat: "+5 años", label: "de vida útil cuidando bien" },
+                { stat: "6 tips",  label: "esenciales de cuidado" },
+                { stat: "4 tipos", label: "de dispositivos cubiertos" },
+              ].map(({ stat, label }) => (
+                <div key={stat} className="text-center">
+                  <p className="text-2xl font-black text-white">{stat}</p>
+                  <p className="text-[11px] text-zinc-500 mt-1">{label}</p>
                 </div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 border-t-0 p-5 group-hover:border-zinc-700 transition">
-                <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider mb-1">
-                  Monitores · 5 min lectura
-                </p>
-                <h3 className="font-display text-base font-black text-white leading-snug group-hover:text-[#4d8dff] transition">
-                  ¿OLED vs IPS vs VA? Cuál monitor elegir en 2024
-                </h3>
-                <p className="mt-2 text-xs text-zinc-400 line-clamp-2">
-                  Explicamos las diferencias reales en colores, contraste,
-                  tiempos de respuesta y precio para que elijas bien.
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#4d8dff] group-hover:gap-2 transition-all">
-                  Leer guía <ChevronRight className="h-3 w-3" />
-                </span>
-              </div>
-            </Link>
-
-            {/* Artículo 2 */}
-            <Link
-              href="/categoria/procesadores"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-48">
-                <Image
-                  src={CULTURE_B}
-                  alt="Teclados mecánicos"
-                  fill
-                  sizes="33vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <span className="rounded-none bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
-                    Comparativa
-                  </span>
-                </div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 border-t-0 p-5 group-hover:border-zinc-700 transition">
-                <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider mb-1">
-                  CPUs · 8 min lectura
-                </p>
-                <h3 className="font-display text-base font-black text-white leading-snug group-hover:text-[#4d8dff] transition">
-                  Ryzen 7 7800X3D vs i9-14900K: ¿cuál comprar?
-                </h3>
-                <p className="mt-2 text-xs text-zinc-400 line-clamp-2">
-                  Benchmarks reales en 20 juegos y cargas de trabajo
-                  creativas. El ganador te va a sorprender.
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#4d8dff] group-hover:gap-2 transition-all">
-                  Ver comparativa <ChevronRight className="h-3 w-3" />
-                </span>
-              </div>
-            </Link>
-
-            {/* Artículo 3 */}
-            <Link
-              href="/categoria/memoria-ram"
-              className="group relative overflow-hidden rounded-sm"
-            >
-              <div className="relative h-48">
-                <Image
-                  src={CULTURE_C}
-                  alt="Gaming mouse"
-                  fill
-                  sizes="33vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <span className="rounded-none bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
-                    Tips
-                  </span>
-                </div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 border-t-0 p-5 group-hover:border-zinc-700 transition">
-                <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider mb-1">
-                  Periféricos · 4 min lectura
-                </p>
-                <h3 className="font-display text-base font-black text-white leading-snug group-hover:text-[#4d8dff] transition">
-                  Mouse gaming: DPI, sensor y peso — lo que realmente importa
-                </h3>
-                <p className="mt-2 text-xs text-zinc-400 line-clamp-2">
-                  Olvida el marketing. Los 3 únicos factores que marcan
-                  la diferencia en un mouse de competencia.
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#4d8dff] group-hover:gap-2 transition-all">
-                  Leer tips <ChevronRight className="h-3 w-3" />
-                </span>
-              </div>
-            </Link>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* ── 6 Cards recomendaciones ──────────────── */}
+        <div id="cuidado-tips" className="bg-[#060d1a] py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-10">
+              <p className="font-mono text-xs uppercase tracking-widest text-[#4d8dff] mb-2">— Tips esenciales</p>
+              <h3 className="font-display text-2xl font-black text-white">Recomendaciones esenciales</h3>
+              <p className="text-zinc-400 text-sm mt-1.5">Hábitos simples que marcan una gran diferencia</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[
+                { Icon: Battery,     title: "Cuida la batería",
+                  desc: "Evita el sobrecalentamiento y usa cargadores certificados para prolongar su vida útil.",
+                  color: "#4d8dff", bg: "from-[#1e6cff]/10" },
+                { Icon: Sparkles,    title: "Mantén tus equipos limpios",
+                  desc: "El polvo y la humedad reducen el rendimiento y la vida útil de tus dispositivos.",
+                  color: "#22d3ee", bg: "from-cyan-500/10" },
+                { Icon: Shield,      title: "Protege tu información",
+                  desc: "Usa contraseñas seguras y mantén tus dispositivos siempre actualizados.",
+                  color: "#a78bfa", bg: "from-purple-500/10" },
+                { Icon: Thermometer, title: "Evita temperaturas extremas",
+                  desc: "El calor excesivo puede dañar la batería y los componentes internos.",
+                  color: "#f97316", bg: "from-orange-500/10" },
+                { Icon: HardDrive,   title: "Mantén espacio disponible",
+                  desc: "Un almacenamiento saturado vuelve lento tu dispositivo y afecta su rendimiento.",
+                  color: "#34d399", bg: "from-emerald-500/10" },
+                { Icon: Zap,         title: "Usa accesorios de calidad",
+                  desc: "Cables y cargadores certificados protegen tus equipos de daños eléctricos.",
+                  color: "#fbbf24", bg: "from-yellow-500/10" },
+              ].map(({ Icon, title, desc, color, bg }) => (
+                <div key={title}
+                     className={`bg-gradient-to-br ${bg} to-transparent border border-white/8
+                                 rounded-2xl p-6 hover:border-white/15 transition-colors`}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                       style={{ backgroundColor: `${color}1a` }}>
+                    <Icon style={{ color }} className="h-6 w-6" />
+                  </div>
+                  <h4 className="font-display font-bold text-white text-base mb-2">{title}</h4>
+                  <p className="text-zinc-400 text-sm leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Errores + Dispositivos (lado a lado) ─── */}
+        <div className="bg-[#0a0f1c] py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12">
+
+              {/* Errores comunes */}
+              <div>
+                <p className="font-mono text-xs uppercase tracking-widest text-red-400 mb-2">— Malos hábitos</p>
+                <h3 className="font-display text-2xl font-black text-white mb-1">
+                  Errores que debes <span className="text-red-400">evitar</span>
+                </h3>
+                <p className="text-zinc-400 text-sm mb-6">Pequeños descuidos que acortan la vida de tus equipos</p>
+                <div className="space-y-3">
+                  {[
+                    "Usar cargadores genéricos no certificados",
+                    "Bloquear las ventilaciones del portátil",
+                    "Exponer dispositivos al sol directo",
+                    "Instalar apps de fuentes desconocidas",
+                    "Nunca reiniciar ni actualizar el equipo",
+                    "Usar el celular mientras carga y se sobrecalienta",
+                  ].map((error) => (
+                    <div key={error}
+                         className="flex items-center gap-3 bg-red-500/5 border border-red-500/15
+                                    rounded-xl px-4 py-3">
+                      <XCircle className="h-4 w-4 text-red-400 shrink-0" />
+                      <p className="text-sm text-zinc-300">{error}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Por tipo de dispositivo */}
+              <div>
+                <p className="font-mono text-xs uppercase tracking-widest text-[#4d8dff] mb-2">— Por dispositivo</p>
+                <h3 className="font-display text-2xl font-black text-white mb-1">
+                  Cuida cada tipo de dispositivo
+                </h3>
+                <p className="text-zinc-400 text-sm mb-6">Consejos específicos para cada equipo que tienes</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { Icon: Laptop,     label: "Laptops",      color: "#4d8dff",
+                      tips: ["No usar sobre superficies blandas", "Transportar siempre en funda", "Mantener ventilación libre"] },
+                    { Icon: Smartphone, label: "Smartphones",  color: "#22d3ee",
+                      tips: ["Evitar carga al 100% constante", "Proteger pantalla y cámara", "Actualizar el sistema operativo"] },
+                    { Icon: Headphones, label: "Accesorios",   color: "#a78bfa",
+                      tips: ["Guardar los cables correctamente", "Evitar enrollarlos excesivamente", "Limpiar audífonos periódicamente"] },
+                    { Icon: Watch,      label: "Smartwatches", color: "#34d399",
+                      tips: ["Evitar humedad si no son resistentes", "Mantener los sensores limpios", "Cargar antes de llegar a 0%"] },
+                  ].map(({ Icon, label, color, tips }) => (
+                    <div key={label}
+                         className="bg-[#0d1a2e] border border-white/8 rounded-2xl p-4
+                                    hover:border-white/15 transition-colors">
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                             style={{ backgroundColor: `${color}1a` }}>
+                          <Icon style={{ color }} className="h-4 w-4" />
+                        </div>
+                        <span className="font-display font-bold text-white text-sm">{label}</span>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {tips.map((tip) => (
+                          <li key={tip} className="flex items-start gap-2 text-xs text-zinc-400">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0 mt-0.5" />
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Checklist + FAQ ──────────────────────── */}
+        <div className="bg-[#060d1a] py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12">
+
+              {/* Checklist */}
+              <div>
+                <p className="font-mono text-xs uppercase tracking-widest text-emerald-400 mb-2">— Mantenimiento</p>
+                <h3 className="font-display text-2xl font-black text-white mb-1">Checklist de cuidado</h3>
+                <p className="text-zinc-400 text-sm mb-6">Revisiones periódicas que alargan la vida de tus equipos</p>
+                <div className="space-y-2.5">
+                  {[
+                    "Actualizar el sistema operativo",
+                    "Limpiar pantalla y teclado",
+                    "Revisar espacio de almacenamiento",
+                    "Reiniciar el equipo periódicamente",
+                    "Hacer copia de seguridad",
+                    "Verificar el estado del cargador",
+                  ].map((item) => (
+                    <div key={item}
+                         className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/15
+                                    rounded-xl px-4 py-3">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <p className="text-sm text-zinc-300">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* FAQ */}
+              <div>
+                <p className="font-mono text-xs uppercase tracking-widest text-[#4d8dff] mb-2">— Dudas frecuentes</p>
+                <h3 className="font-display text-2xl font-black text-white mb-1">Preguntas frecuentes</h3>
+                <p className="text-zinc-400 text-sm mb-6">Respuestas claras a las consultas más comunes</p>
+                <div className="space-y-2">
+                  {[
+                    { q: "¿Es malo dejar cargando el celular toda la noche?",
+                      a: "Los dispositivos modernos detienen la carga al llegar al 100%, pero mantenerlo constantemente al máximo puede degradar la batería a largo plazo." },
+                    { q: "¿Cómo cuidar la batería de mi laptop?",
+                      a: "Evita descargas completas frecuentes. Mantener entre 20% y 80% es lo ideal para prolongar su vida útil." },
+                    { q: "¿Cada cuánto debo limpiar mis dispositivos?",
+                      a: "Una limpieza superficial semanal y una más profunda mensual es suficiente para la mayoría de dispositivos." },
+                    { q: "¿Por qué se calienta mi portátil?",
+                      a: "El polvo acumulado en las ventilaciones es la causa más común. Usar el equipo sobre superficies blandas también bloquea la ventilación." },
+                    { q: "¿Cómo proteger mis datos personales?",
+                      a: "Usa contraseñas únicas, activa la autenticación en dos pasos y mantén siempre actualizado tu sistema operativo." },
+                  ].map(({ q, a }) => (
+                    <details key={q} className="group border border-white/8 rounded-xl overflow-hidden">
+                      <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer
+                                          text-sm font-medium text-zinc-200 hover:text-white
+                                          hover:bg-white/4 transition-colors list-none select-none">
+                        {q}
+                        <ChevronDown className="h-4 w-4 text-zinc-500 shrink-0 ml-3
+                                                transition-transform duration-200 group-open:rotate-180" />
+                      </summary>
+                      <div className="px-4 pt-3 pb-4 text-sm text-zinc-400 leading-relaxed border-t border-white/6">
+                        {a}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       {/* ══════════════════════════════════════════
