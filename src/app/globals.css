@@ -143,9 +143,21 @@ html {
   animation-play-state: paused;
 }
 .animate-marquee-slow {
-  animation: marquee 55s linear infinite;
+  animation: marquee 40s linear infinite;
 }
 .animate-marquee-slow:hover {
+  animation-play-state: paused;
+}
+
+/* Marquee con distancia EXACTA en píxeles (--copy-w se inyecta vía JS) */
+@keyframes marquee-exact {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(var(--copy-w, 50%) * -1), 0, 0); }
+}
+.animate-marquee-exact {
+  animation: marquee-exact 60s linear infinite;
+}
+.animate-marquee-exact:hover {
   animation-play-state: paused;
 }
 .animate-marquee-reverse {
