@@ -7,12 +7,12 @@ import { useEffect, useRef } from "react";
 // Sistema de 4 tiers de altura según aspect ratio para equilibrar peso visual:
 // los wordmarks horizontales ocupan más ancho, así que necesitan menos altura
 // que los logos compactos (icon + texto stacked) para verse del mismo "tamaño".
-//   - Compacto       (r ≤ 2.0):   H = 44 px  ← UGREEN, Kingston, ROG, SanDisk…
+//   - Compacto       (r ≤ 2.0):   H = 48 px  ← UGREEN, Kingston, ROG, SanDisk…
 //   - Medio          (r 2.0-3.5): H = 32 px  ← MSI, Crucial, ADATA, Lenovo…
 //   - Wordmark       (r 3.5-5.0): H = 24 px  ← ASUS, DEEPCOOL, AMD, Canon…
 //   - Wordmark XL    (r > 5.0):   H = 22 px  ← ZOTAC, NETGEAR, Sennheiser…
-const H_SLOT       = 44;                // altura del slot (= máximo H)
-const H_COMPACT    = 44;
+const H_SLOT       = 48;                // altura del slot (= máximo H)
+const H_COMPACT    = 48;
 const H_MEDIUM     = 32;
 const H_WORDMARK   = 24;
 const H_WORDMARK_XL = 22;
@@ -33,19 +33,19 @@ const LOGOS: Logo[] = [
   { src: "/brands/v2-clean/05_NZXT_logo.png",         alt: "NZXT",          r: 3.85 },
   { src: "/brands/v2-clean/06_Corsair_logo.png",      alt: "CORSAIR",       r: 1.26 },
   { src: "/brands/v2-clean/07_GSKILL_logo.png",       alt: "G.SKILL",       r: 2.04 },
-  { src: "/brands/v2-clean/08_Kingston_logo.png",     alt: "Kingston",      r: 1.52 },
+  { src: "/brands/v2-clean/08_Kingston_logo.png",     alt: "Kingston",      r: 3.68 },
   { src: "/brands/v2-clean/09_Crucial_logo.png",      alt: "Crucial",       r: 2.80 },
   { src: "/brands/v2-clean/10_TeamGroup_logo.png",    alt: "TeamGroup",     r: 0.80 },
   { src: "/brands/v2-clean/11_ZOTAC_logo.png",        alt: "ZOTAC",         r: 5.10 },
   { src: "/brands/v2-clean/12_Sapphire_logo.png",     alt: "SAPPHIRE",      r: 5.28 },
   { src: "/brands/v2-clean/13_CoolerMaster_logo.png", alt: "Cooler Master", r: 0.77 },
   { src: "/brands/v2-clean/14_EVGA_logo.png",         alt: "EVGA",          r: 4.62 },
-  { src: "/brands/v2-clean/15_Seasonic_logo.png",     alt: "Seasonic",      r: 1.89 },
+  { src: "/brands/v2-clean/15_Seasonic_logo.png",     alt: "Seasonic",      r: 4.72 },
   { src: "/brands/v2-clean/16_Thermaltake_logo.png",  alt: "Thermaltake",   r: 1.43 },
-  { src: "/brands/v2-clean/17_AOC_logo.png",          alt: "AOC",           r: 1.33 },
+  { src: "/brands/v2-clean/17_AOC_logo.png",          alt: "AOC",           r: 3.00 },
   { src: "/brands/v2-clean/18_LG_logo.png",           alt: "LG",            r: 2.08 },
   { src: "/brands/v2-clean/19_Samsung_logo.png",      alt: "SAMSUNG",       r: 2.86 },
-  { src: "/brands/v2-clean/20_ROG_logo.png",          alt: "ROG",           r: 1.35 },
+  { src: "/brands/v2-clean/20_ROG_logo.png",          alt: "ROG",           r: 4.57 },
   { src: "/brands/v2-clean/21_Lenovo_logo.png",       alt: "Lenovo",        r: 3.08 },
   { src: "/brands/v2-clean/22_HP_logo.png",           alt: "HP",            r: 1.00 },
   { src: "/brands/v2-clean/23_Dell_logo.png",         alt: "DELL",          r: 0.99 },
@@ -68,10 +68,10 @@ const LOGOS: Logo[] = [
   { src: "/brands/v2-clean/40_Seagate_logo.png",      alt: "SEAGATE",       r: 4.00 },
   { src: "/brands/v2-clean/41_ADATA_logo.png",        alt: "ADATA",         r: 2.08 },
   { src: "/brands/v2-clean/42_SanDisk_logo.png",      alt: "SanDisk",       r: 1.41 },
-  { src: "/brands/v2-clean/43_APC_logo.png",          alt: "APC",           r: 3.62 },
+  { src: "/brands/v2-clean/43_APC_logo.png",          alt: "APC",           r: 3.16 },
   { src: "/brands/v2-clean/44_Belkin_logo.png",       alt: "BELKIN",        r: 2.73 },
   { src: "/brands/v2-clean/45_CyberPower_logo.png",   alt: "CyberPower",    r: 5.42 },
-  { src: "/brands/v2-clean/46_UGREEN_logo.png",       alt: "UGREEN",        r: 1.34 },
+  { src: "/brands/v2-clean/46_UGREEN_logo.png",       alt: "UGREEN",        r: 4.72 },
   { src: "/brands/v2-clean/47_ANKER_logo.png",        alt: "ANKER",         r: 4.94 },
   { src: "/brands/v2-clean/48_Intel_logo.png",        alt: "Intel",         r: 1.47 },
   { src: "/brands/v2-clean/49_AMD_logo.png",          alt: "AMD",           r: 4.04 },

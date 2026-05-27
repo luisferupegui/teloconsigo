@@ -24,11 +24,30 @@ await mkdir(DST, { recursive: true });
 // Recortes específicos del source ANTES del procesamiento.
 // Valores en fracción [0..1] del ancho/alto original.
 const PRE_CROPS = {
-  // APC: quedarse solo con la insignia roja.
-  // Se recorta el 10% superior (margen blanco) y el 50% inferior
-  // (espacio vacío + "by Schneider Electric") para que el badge
-  // quede centrado sin padding asimétrico.
-  "43_APC_logo.png": { top: 0.10, bottom: 0.50 },
+  // APC: solo la insignia roja. bottom 0.46 para NO cortar bordes redondeados.
+  "43_APC_logo.png": { top: 0.10, bottom: 0.46 },
+
+  // Seasonic: watermark/sombra en parte inferior del source.
+  "15_Seasonic_logo.png": { bottom: 0.38 },
+
+  // ── Logos 1200×896 RGB con watermarks/reflejos que engañan el trim ──────────
+  // Bounding-boxes calculados con análisis de densidad de píxeles (threshold=120).
+  // Márgenes extra (±0.02) evitan que el logo toque las esquinas, lo que haría
+  // que el keying lo tome como fondo y lo elimine.
+
+  // ROG: bbox Y 313-551 (35%-61%), X 47-1151 en 1200×896
+  "20_ROG_logo.png": { top: 0.33, bottom: 0.36 },
+
+  // Kingston: bbox Y 299-582 (33%-65%), X 43-1159 en 1200×896
+  "08_Kingston_logo.png": { top: 0.31, bottom: 0.33 },
+
+  // AOC: bbox Y 262-606 (29%-68%), X 74-1127 en 1200×896
+  "17_AOC_logo.png": { top: 0.27, bottom: 0.30 },
+
+  // UGREEN: bbox Y 355-540 (40%-60%), X 66-1133 en 1200×896.
+  // left/right 0.04 preserva 18px de fondo en los bordes para que las
+  // esquinas sean fondo (no verde) y el keying no elimine el logo.
+  "46_UGREEN_logo.png": { top: 0.37, bottom: 0.37, left: 0.04, right: 0.04 },
 };
 
 // Trim ultra-conservador: cualquier fila/columna con al menos 1 píxel opaco cuenta.
@@ -121,6 +140,17 @@ for (const file of files) {
     if (max > 180 && sat < 0.08) {
       if (max > 230) raw[i + 3] = 0;
       else raw[i + 3] = Math.round(raw[i + 3] * (1 - (max - 180) / 50));
+    }
+  }
+
+  // 2.5) Snap near-transparent → completamente transparente.
+  // Los PNG con fondos ya transparentes suelen tener píxeles de artefacto/ruido
+  // con alpha 1–39 dispersos en áreas vacías; esos píxeles engañan al trim y
+  // preservan padding que no debería estar ahí. Al zerear todo alpha < 40
+  // se eliminan los artefactos sin tocar bordes reales del logo (alpha ≥ 40).
+  for (let i = 0; i < raw.length; i += 4) {
+    if (raw[i + 3] < 40) {
+      raw[i] = raw[i + 1] = raw[i + 2] = raw[i + 3] = 0;
     }
   }
 
