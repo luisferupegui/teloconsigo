@@ -4,15 +4,20 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 // ─── Dimensiones ──────────────────────────────────────────────────────────────
-// Sistema de 3 alturas según aspect ratio (mejor balance visual):
-//   - Compacto  (ratio ≤ 2.5):       H = 30 px  ← base (+20 %)
-//   - Wordmark  (ratio 2.5 – 4.0):   H = 27 px  ← −10 %
-//   - Wordmark XL (ratio > 4.0):     H = 24 px  ← −20 %   (los MÁS grandes)
-const H            = 30;
-const H_WORDMARK   = Math.round(H * 0.9); // 27
-const H_WORDMARK_XL = Math.round(H * 0.8); // 24
-// Tope de ancho para que los wordmarks ultra-anchos (NETGEAR, LINKSYS,
-// Sennheiser, Deepcool) no dominen el rotador.
+// Sistema de 4 tiers de altura según aspect ratio para equilibrar peso visual:
+// los wordmarks horizontales ocupan más ancho, así que necesitan menos altura
+// que los logos compactos (icon + texto stacked) para verse del mismo "tamaño".
+//   - Compacto       (r ≤ 2.0):   H = 36 px  ← UGREEN, Kingston, ROG, SanDisk…
+//   - Medio          (r 2.0-3.5): H = 30 px  ← MSI, Crucial, ADATA, Lenovo…
+//   - Wordmark       (r 3.5-5.0): H = 26 px  ← ASUS, DEEPCOOL, AMD, Canon…
+//   - Wordmark XL    (r > 5.0):   H = 22 px  ← ZOTAC, NETGEAR, Sennheiser…
+const H_SLOT       = 36;                // altura del slot (= máximo H)
+const H_COMPACT    = 36;
+const H_MEDIUM     = 30;
+const H_WORDMARK   = 26;
+const H_WORDMARK_XL = 22;
+// Tope de ancho para que los wordmarks ultra-anchos (NETGEAR, Sennheiser…)
+// no dominen el rotador.
 const MAX_LOGO_W   = 140;
 
 // ─── 53 logos HD con fondo transparente real ──────────────────────────────────
@@ -81,11 +86,12 @@ function LogoRow({ aria }: { aria?: boolean }) {
   return (
     <>
       {LOGOS.map((logo, i) => {
-        // Altura base por tier de aspect ratio
+        // Altura base por tier de aspect ratio (4 tiers, ver constantes arriba)
         const baseH =
-          logo.r > 4.0 ? H_WORDMARK_XL :   // 24 px
-          logo.r > 2.5 ? H_WORDMARK    :   // 27 px
-                         H;                // 30 px
+          logo.r > 5.0 ? H_WORDMARK_XL :   // 22 px
+          logo.r > 3.5 ? H_WORDMARK    :   // 26 px
+          logo.r > 2.0 ? H_MEDIUM      :   // 30 px
+                         H_COMPACT;        // 36 px
         // Para logos ultra-anchos (r > MAX_LOGO_W/baseH), la altura se reduce
         // proporcionalmente para que la imagen renderice a su aspect ratio natural
         // sin letterboxing dentro del bounding box.
@@ -99,13 +105,13 @@ function LogoRow({ aria }: { aria?: boolean }) {
             // exacto: --copy-w calculado con offsetWidth cae justo al inicio de la
             // copia 2 sin saltos.
             className="group shrink-0 px-5 flex items-center cursor-default"
-            style={{ height: `${H}px` }}
+            style={{ height: `${H_SLOT}px` }}
           >
             <Image
               src={logo.src}
               alt={aria ? "" : logo.alt}
               width={MAX_LOGO_W * 4}
-              height={H * 4}
+              height={H_SLOT * 4}
               unoptimized
               loading="eager"
               style={{
