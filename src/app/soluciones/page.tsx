@@ -50,6 +50,10 @@ const SPEC_LABEL: Record<string, string | null> = {
 
 // ─── Secciones por caso de uso ────────────────────────────────────────────────
 
+// Paleta oscura para los pills del filtro rápido:
+// fondo = tono oscuro de la categoría, texto blanco, ícono con color vivo del acento.
+// Hover: ligero brillo con ring más visible.
+
 const SECCIONES = [
   {
     usoCaso:      "portatil-ejecutivo" as const,
@@ -58,7 +62,9 @@ const SECCIONES = [
     descripcion:  "Para profesionales que exigen lo mejor. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
     icon:         Laptop,
     iconGradient: "from-[#0f3d91] to-[#1e6cff]",
-    badge:        "bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-200",
+    // pill oscuro: fondo dark-blue, texto blanco, ícono azul eléctrico
+    badge:        "bg-blue-950 text-white ring-1 ring-inset ring-blue-500/40 hover:ring-blue-400/70 hover:bg-blue-900",
+    badgeIcon:    "text-blue-400",
     tagText:      "text-blue-700",
   },
   {
@@ -68,7 +74,8 @@ const SECCIONES = [
     descripcion:  "El balance perfecto entre precio y rendimiento para el trabajo diario. Ideales para contadores, abogados y startups.",
     icon:         Laptop,
     iconGradient: "from-sky-600 to-sky-400",
-    badge:        "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200",
+    badge:        "bg-sky-950 text-white ring-1 ring-inset ring-sky-500/40 hover:ring-sky-400/70 hover:bg-sky-900",
+    badgeIcon:    "text-sky-400",
     tagText:      "text-sky-700",
   },
   {
@@ -78,7 +85,8 @@ const SECCIONES = [
     descripcion:  "Equipos de escritorio completos con monitor incluido. Listos para instalar y trabajar desde el primer día.",
     icon:         Cpu,
     iconGradient: "from-slate-700 to-slate-500",
-    badge:        "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-300",
+    badge:        "bg-slate-800 text-white ring-1 ring-inset ring-slate-500/40 hover:ring-slate-400/70 hover:bg-slate-700",
+    badgeIcon:    "text-slate-300",
     tagText:      "text-slate-600",
   },
   {
@@ -88,7 +96,8 @@ const SECCIONES = [
     descripcion:  "Samsung, LG, AOC, Dahua. Desde 22\" hasta 32\". Para escritorios de una o doble pantalla.",
     icon:         Monitor,
     iconGradient: "from-teal-700 to-teal-500",
-    badge:        "bg-teal-50 text-teal-800 ring-1 ring-inset ring-teal-200",
+    badge:        "bg-teal-950 text-white ring-1 ring-inset ring-teal-500/40 hover:ring-teal-400/70 hover:bg-teal-900",
+    badgeIcon:    "text-teal-400",
     tagText:      "text-teal-700",
   },
   {
@@ -98,7 +107,8 @@ const SECCIONES = [
     descripcion:  "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo y Samsung con soporte garantizado.",
     icon:         Tablet,
     iconGradient: "from-indigo-700 to-indigo-500",
-    badge:        "bg-indigo-50 text-indigo-800 ring-1 ring-inset ring-indigo-200",
+    badge:        "bg-indigo-950 text-white ring-1 ring-inset ring-indigo-500/40 hover:ring-indigo-400/70 hover:bg-indigo-900",
+    badgeIcon:    "text-indigo-400",
     tagText:      "text-indigo-700",
   },
   {
@@ -108,7 +118,8 @@ const SECCIONES = [
     descripcion:  "Combos inalámbricos Logitech, memorias USB y microSD Kingston, discos externos ADATA. Todo lo que necesita tu equipo.",
     icon:         Package,
     iconGradient: "from-amber-700 to-amber-500",
-    badge:        "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-200",
+    badge:        "bg-amber-950 text-white ring-1 ring-inset ring-amber-500/40 hover:ring-amber-400/70 hover:bg-amber-900",
+    badgeIcon:    "text-amber-400",
     tagText:      "text-amber-700",
   },
   {
@@ -118,7 +129,8 @@ const SECCIONES = [
     descripcion:  "Licencias originales Microsoft y antivirus empresarial ESET y Kaspersky. Activación inmediata, sin complicaciones.",
     icon:         Key,
     iconGradient: "from-emerald-700 to-emerald-500",
-    badge:        "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200",
+    badge:        "bg-emerald-950 text-white ring-1 ring-inset ring-emerald-500/40 hover:ring-emerald-400/70 hover:bg-emerald-900",
+    badgeIcon:    "text-emerald-400",
     tagText:      "text-emerald-700",
   },
 ] as const;
@@ -300,7 +312,7 @@ export default function SolucionesPage() {
           </div>
         </div>
 
-        {/* Filtros rápidos */}
+        {/* Filtros rápidos — pills oscuros con acento de color por categoría */}
         <div className="mt-8 flex flex-wrap gap-2">
           {SECCIONES.map((s) => {
             const count = byUso(s.usoCaso).length;
@@ -308,11 +320,14 @@ export default function SolucionesPage() {
               <a
                 key={s.usoCaso}
                 href={`#${s.usoCaso}`}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition hover:opacity-80 ${s.badge}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${s.badge}`}
               >
-                <s.icon className="h-3.5 w-3.5" />
+                {/* Ícono con color vivo del acento de la categoría */}
+                <s.icon className={`h-3.5 w-3.5 shrink-0 ${s.badgeIcon}`} />
                 {s.titulo}
-                {count > 0 && <span className="ml-0.5 tabular-nums opacity-60">({count})</span>}
+                {count > 0 && (
+                  <span className="ml-0.5 tabular-nums text-white/50">({count})</span>
+                )}
               </a>
             );
           })}
