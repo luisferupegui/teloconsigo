@@ -7,14 +7,14 @@
     "categoria": "portatil",
     "referencia": "83GU0043LM",
     "precio": 2449000,
-    "precioDesde": 2449000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core 5 210H (4P+4E / 12T, hasta 4.8GHz)",
-      "ram": "8GB DDR5",
-      "almacenamiento": "512GB SSD NVMe",
+      "procesador": "Intel Core 5 210H (hasta 4.8 GHz, 8 núcleos)",
+      "ram": "8 GB DDR5",
+      "almacenamiento": "512 GB SSD NVMe",
       "pantalla": "14\" FHD (1920×1080)",
-      "so": "Windows 11 Pro 64",
+      "so": "Windows 11 Pro",
       "garantia": "1 año Onsite"
     },
     "usoCaso": "portatil-oficina",
@@ -28,13 +28,12 @@
     "categoria": "portatil",
     "referencia": "21L40012LM",
     "precio": 4119000,
-    "precioDesde": 4119000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core Ultra 5 125U (hasta 4.3GHz, 12 núcleos)",
-      "ram": "16GB DDR5-5600",
-      "almacenamiento": "512GB SSD M.2 PCIe 4.0 NVMe",
+      "procesador": "Intel Core Ultra 5 125U (hasta 4.3 GHz, 12 núcleos)",
+      "ram": "16 GB DDR5-5600",
+      "almacenamiento": "512 GB SSD M.2 PCIe 4.0 NVMe",
       "pantalla": "16\" WUXGA (1920×1200) IPS",
       "so": "Windows 11 Pro",
       "puertos": "Thunderbolt 4, USB-C, HDMI 2.1, Ethernet RJ-45"
@@ -50,16 +49,15 @@
     "categoria": "portatil",
     "referencia": "CA0M3LT#ABM",
     "precio": 2589000,
-    "precioDesde": 2589000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core 5 120U (10 núcleos, hasta 5GHz)",
-      "ram": "16GB DDR4-3200",
-      "almacenamiento": "512GB SSD NVMe",
-      "pantalla": "14\" FHD (1920×1080) 300nits",
+      "procesador": "Intel Core 5 120U (hasta 5.0 GHz, 10 núcleos)",
+      "ram": "16 GB DDR4-3200",
+      "almacenamiento": "512 GB SSD NVMe",
+      "pantalla": "14\" FHD (1920×1080) 300 nits",
       "so": "Windows 11 Pro",
-      "puertos": "USB-C 3.2 Gen2 (DP 1.4), HDMI 1.4b"
+      "puertos": "USB-C 3.2 Gen2, HDMI 1.4b"
     },
     "usoCaso": "portatil-oficina",
     "descripcionUso": "Portátil HP corporativo — rendimiento diario con Windows 11 Pro"
@@ -72,12 +70,12 @@
     "categoria": "portatil",
     "referencia": "PP70R",
     "precio": 2259000,
-    "precioDesde": 2259000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core i5-1334U (10 núcleos, hasta 4.6GHz)",
-      "ram": "8GB DDR5",
-      "almacenamiento": "512GB SSD",
+      "procesador": "Intel Core i5-1334U (hasta 4.6 GHz, 10 núcleos)",
+      "ram": "8 GB DDR5",
+      "almacenamiento": "512 GB SSD",
       "pantalla": "15.6\" FHD",
       "so": "Windows 11 Pro"
     },
@@ -92,12 +90,12 @@
     "categoria": "portatil",
     "referencia": "6F1NR",
     "precio": 2618700,
-    "precioDesde": 2618700,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "AMD Ryzen 5 PRO 230 (3.5GHz, NPU 16TOPS)",
-      "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD",
+      "procesador": "AMD Ryzen 5 PRO 230 (3.5 GHz, NPU 16 TOPS)",
+      "ram": "16 GB DDR5",
+      "almacenamiento": "512 GB SSD",
       "pantalla": "14\" FHD+ (1920×1200)",
       "so": "Windows 11 Pro",
       "garantia": "1 año básica"
@@ -113,12 +111,12 @@
     "categoria": "portatil",
     "referencia": "7XNFP",
     "precio": 2849900,
-    "precioDesde": 2849900,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core Ultra 5 225U (12 núcleos, hasta 4.8GHz)",
-      "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD",
+      "procesador": "Intel Core Ultra 5 225U (hasta 4.8 GHz, 12 núcleos)",
+      "ram": "16 GB DDR5",
+      "almacenamiento": "512 GB SSD",
       "pantalla": "14\" FHD",
       "so": "Windows 11 Pro"
     },
@@ -128,17 +126,17 @@
   {
     "id": "LED-B3405CVALY",
     "slug": "asus-expertbook-i5-16gb-512gb-wuxga",
-    "nombre": "Asus ExpertBook B3405CVA",
+    "nombre": "Asus ExpertBook B3405",
     "marca": "Asus",
     "categoria": "portatil",
     "referencia": "B3405CVALY0226X",
     "precio": 2579000,
-    "precioDesde": 2579000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core i5-13420H (8 núcleos, hasta 4.75GHz)",
-      "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD",
+      "procesador": "Intel Core i5-13420H (hasta 4.75 GHz, 8 núcleos)",
+      "ram": "16 GB DDR5",
+      "almacenamiento": "512 GB SSD",
       "pantalla": "14\" WUXGA (1920×1200)",
       "so": "Windows 11 Pro"
     },
@@ -153,54 +151,53 @@
     "categoria": "portatil",
     "referencia": "B1403CVAS65014X",
     "precio": 2139000,
-    "precioDesde": 2139000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core i5-13420H (8 núcleos, hasta 4.75GHz)",
-      "ram": "8GB",
-      "almacenamiento": "512GB SSD",
+      "procesador": "Intel Core i5-13420H (hasta 4.75 GHz, 8 núcleos)",
+      "ram": "8 GB DDR5",
+      "almacenamiento": "512 GB SSD",
       "pantalla": "14\" FHD",
       "so": "Windows 11 Pro",
-      "extra": "Puerto RJ45 incluido"
+      "extra": "Puerto RJ-45 incluido"
     },
     "usoCaso": "portatil-oficina",
-    "descripcionUso": "ExpertBook compacto — para oficina con conectividad completa"
+    "descripcionUso": "ExpertBook compacto — conectividad completa para la oficina"
   },
   {
     "id": "LED-P3406CKANZ",
     "slug": "asus-expertbook-ryzen7ai-16gb-1tb",
-    "nombre": "Asus ExpertBook AMD Ryzen AI",
+    "nombre": "Asus ExpertBook AMD Ryzen AI 7",
     "marca": "Asus",
     "categoria": "portatil",
     "referencia": "P3406CKANZ0441X",
     "precio": 4629000,
-    "precioDesde": 4629000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "AMD Ryzen AI 7-350 (hasta 5.0GHz, 50TOPS NPU)",
-      "ram": "16GB DDR5",
-      "almacenamiento": "1TB SSD",
+      "procesador": "AMD Ryzen AI 7-350 (hasta 5.0 GHz, NPU 50 TOPS)",
+      "ram": "16 GB DDR5",
+      "almacenamiento": "1 TB SSD",
       "pantalla": "14\" WQXGA (2560×1600)",
       "so": "Windows 11 Pro"
     },
     "usoCaso": "portatil-ejecutivo",
-    "descripcionUso": "ExpertBook con IA — el portátil más avanzado para ejecutivos"
+    "descripcionUso": "ExpertBook con IA avanzada — el portátil más capaz para ejecutivos"
   },
   {
     "id": "LED-NX.B0YAL",
-    "slug": "acer-travelmate-i5-16gb-512gb",
+    "slug": "acer-travelmate-p214-i5-16gb-512gb",
     "nombre": "Acer TravelMate P214",
     "marca": "Acer",
     "categoria": "portatil",
     "referencia": "NX.B0YAL.007",
     "precio": 2330000,
-    "precioDesde": 2330000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core i5-1335U (10 núcleos, hasta 4.6GHz)",
-      "ram": "16GB",
-      "almacenamiento": "512GB SSD",
+      "procesador": "Intel Core i5-1335U (hasta 4.6 GHz, 10 núcleos)",
+      "ram": "16 GB",
+      "almacenamiento": "512 GB SSD",
       "pantalla": "14\" FHD (1920×1080)",
       "so": "Windows 11 Pro"
     },
@@ -215,13 +212,13 @@
     "categoria": "pc",
     "referencia": "T0WMP",
     "precio": 2790000,
-    "precioDesde": 2790000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core i5 14500 (14 núcleos, hasta 4.8GHz)",
-      "ram": "16GB DDR5 4800MHz",
-      "almacenamiento": "512GB SSD NVMe",
-      "monitor": "Dell Pro 22\" E2225HSM con soporte regulable",
+      "procesador": "Intel Core i5 14500 (hasta 4.8 GHz, 14 núcleos)",
+      "ram": "16 GB DDR5",
+      "almacenamiento": "512 GB SSD NVMe",
+      "monitor": "Dell Pro 22\" con soporte regulable",
       "so": "Windows 11 Pro",
       "garantia": "3 años"
     },
@@ -236,74 +233,72 @@
     "categoria": "pc",
     "referencia": "YJ9PX_E",
     "precio": 2779000,
-    "precioDesde": 2779000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core i5 14500 vPro (14 núcleos, hasta 5.0GHz)",
-      "ram": "8GB DDR5",
-      "almacenamiento": "512GB SSD NVMe",
-      "monitor": "Dell Pro 22\" E2225HSM con soporte regulable",
+      "procesador": "Intel Core i5 14500 vPro (hasta 5.0 GHz, 14 núcleos)",
+      "ram": "8 GB DDR5",
+      "almacenamiento": "512 GB SSD NVMe",
+      "monitor": "Dell Pro 22\" con soporte regulable",
       "so": "Windows 11 Pro",
       "garantia": "3 años"
     },
     "usoCaso": "pc-empresarial",
-    "descripcionUso": "PC empresarial Dell con vPro — gestión remota y seguridad avanzada"
+    "descripcionUso": "PC Dell vPro — gestión remota y seguridad avanzada para empresas"
   },
   {
     "id": "LED-13C50026LD",
     "slug": "lenovo-thinkcentre-neo50q-core5-monitor238",
-    "nombre": "PC ThinkCentre Neo 50q Gen 5 + Monitor 23.8\"",
+    "nombre": "PC ThinkCentre Neo 50q + Monitor 23.8\"",
     "marca": "Lenovo",
     "categoria": "pc",
     "referencia": "13C50026LD",
     "precio": 2050000,
-    "precioDesde": 2050000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Intel Core 5 210H (8 núcleos, hasta 4.8GHz)",
-      "ram": "8GB DDR5-5600",
-      "almacenamiento": "512GB SSD NVMe",
-      "monitor": "23.8\" FHD (1920×1080) S24-4e",
-      "so": "Sin SO (requiere licencia)"
+      "procesador": "Intel Core 5 210H (hasta 4.8 GHz, 8 núcleos)",
+      "ram": "8 GB DDR5-5600",
+      "almacenamiento": "512 GB SSD NVMe",
+      "monitor": "23.8\" FHD (1920×1080)",
+      "so": "Sin SO incluido"
     },
     "usoCaso": "pc-empresarial",
-    "descripcionUso": "PC compacta Lenovo — formato pequeño, gran rendimiento para oficina"
+    "descripcionUso": "PC Lenovo compacta — formato pequeño, gran rendimiento para oficina"
   },
   {
     "id": "LED-8N5DF",
     "slug": "dell-pro-qc24250-ultra7-aio-238",
-    "nombre": "Dell Pro QC24250 AIO 23.8\"",
+    "nombre": "Dell Pro QC24250 All-in-One 23.8\"",
     "marca": "Dell",
     "categoria": "pc",
     "referencia": "8N5DF",
     "precio": 5450000,
-    "precioDesde": 5450000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
       "procesador": "Intel Core Ultra 7 265",
-      "ram": "16GB",
-      "almacenamiento": "512GB SSD",
-      "pantalla": "23.8\" FHD (1920×1080)",
+      "ram": "16 GB",
+      "almacenamiento": "512 GB SSD",
+      "pantalla": "23.8\" FHD integrada",
       "so": "Windows 11 Pro"
     },
     "usoCaso": "pc-empresarial",
-    "descripcionUso": "All-in-One premium Dell — todo en uno para escritorio ejecutivo"
+    "descripcionUso": "All-in-One premium Dell — escritorio ejecutivo sin cables"
   },
   {
     "id": "LED-LS24F320",
     "slug": "monitor-samsung-24-120hz-s32gf",
-    "nombre": "Monitor Samsung 24\" Essential S3 120Hz",
+    "nombre": "Monitor Samsung 24\" Essential 120Hz",
     "marca": "Samsung",
     "categoria": "monitor",
     "referencia": "LS24F320GANXZA",
     "precio": 339000,
-    "precioDesde": 339000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
       "pantalla": "24\" FHD (1920×1080) IPS",
-      "frecuencia": "120Hz",
+      "frecuencia": "120 Hz",
       "interfaz": "HDMI 1.4 × 2",
       "extra": "Modo protección visual"
     },
@@ -313,36 +308,34 @@
   {
     "id": "LED-LS22F310",
     "slug": "monitor-samsung-22-120hz-s31gf",
-    "nombre": "Monitor Samsung 22\" Essential S3 120Hz",
+    "nombre": "Monitor Samsung 22\" Essential 120Hz",
     "marca": "Samsung",
     "categoria": "monitor",
     "referencia": "LS22F310EANXZA",
     "precio": 235000,
-    "precioDesde": 235000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
       "pantalla": "22\" VA",
-      "frecuencia": "120Hz",
+      "frecuencia": "120 Hz",
       "extra": "Modo Eye Saver"
     },
     "usoCaso": "monitor",
-    "descripcionUso": "Monitor compacto para escritorio — ideal para clínicas y oficinas"
+    "descripcionUso": "Monitor compacto — ideal para clínicas, contadores y escritorios pequeños"
   },
   {
     "id": "LED-27B35H3",
     "slug": "monitor-aoc-27-ips-120hz",
-    "nombre": "Monitor AOC 27\" IPS 120Hz Profesional",
+    "nombre": "Monitor AOC 27\" IPS 120Hz",
     "marca": "AOC",
     "categoria": "monitor",
     "referencia": "27B35H3",
     "precio": 379000,
-    "precioDesde": 379000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
       "pantalla": "27\" FHD IPS",
-      "frecuencia": "120Hz",
+      "frecuencia": "120 Hz",
       "brillo": "300 cd/m²",
       "interfaz": "HDMI 1.4, VGA",
       "garantia": "3 años en pantalla"
@@ -358,193 +351,408 @@
     "categoria": "monitor",
     "referencia": "DHI-LM24-A200Y",
     "precio": 280000,
-    "precioDesde": 280000,
     "precioIvaIncluido": true,
     "proveedor": "ledacom",
     "specs": {
       "pantalla": "24\" FHD",
-      "frecuencia": "100Hz",
+      "frecuencia": "100 Hz",
       "angulo": "178° H/V",
       "interfaz": "HDMI, VGA",
       "extra": "Anti luz azul"
     },
     "usoCaso": "monitor",
-    "descripcionUso": "Monitor para punto de trabajo — precio accesible con buena cobertura"
+    "descripcionUso": "Monitor accesible para punto de trabajo — precio justo, buena cobertura"
   },
   {
     "id": "LED-ZAF00124CO",
     "slug": "lenovo-tab-one-4gb-128gb-estuche",
-    "nombre": "Tablet Lenovo Tab One 4G/128GB + Estuche",
+    "nombre": "Tablet Lenovo Tab One 8.7\" 4G/128GB",
     "marca": "Lenovo",
     "categoria": "tablet",
     "referencia": "ZAF00124CO",
     "precio": 479000,
-    "precioDesde": 479000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
       "procesador": "MediaTek Helio G85 (8 núcleos)",
-      "ram": "4GB LPDDR4x",
-      "almacenamiento": "128GB eMMC",
-      "pantalla": "8.7\" HD (1340×800) 60Hz",
-      "conectividad": "Wi-Fi 5 + BT5.3",
-      "bateria": "5100mAh",
-      "so": "Android"
+      "ram": "4 GB LPDDR4x",
+      "almacenamiento": "128 GB",
+      "pantalla": "8.7\" HD (1340×800)",
+      "conectividad": "Wi-Fi 5 + Bluetooth 5.3",
+      "bateria": "5100 mAh",
+      "incluye": "Estuche + cargador"
     },
     "usoCaso": "tablet-empresarial",
     "descripcionUso": "Tablet empresarial compacta — para consultas, inventario y movilidad"
   },
   {
     "id": "LED-ZAEJ0134CO",
-    "slug": "lenovo-tab-lte-4gb-128gb-estuche",
-    "nombre": "Tablet Lenovo Tab LTE 10\" 4G/128GB + Estuche",
+    "slug": "lenovo-tab-lte-10-4gb-128gb-estuche",
+    "nombre": "Tablet Lenovo Tab LTE 10\" 4G/128GB",
     "marca": "Lenovo",
     "categoria": "tablet",
     "referencia": "ZAEJ0134CO",
     "precio": 629000,
-    "precioDesde": 629000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
       "procesador": "MediaTek Helio G85 (8 núcleos)",
-      "ram": "4GB LPDDR4x",
-      "almacenamiento": "128GB eMMC",
+      "ram": "4 GB LPDDR4x",
+      "almacenamiento": "128 GB",
       "pantalla": "10.1\" WUXGA (1920×1200) IPS",
-      "conectividad": "LTE + Wi-Fi 5 + BT5.3",
-      "bateria": "5100mAh",
-      "so": "Android"
+      "conectividad": "4G LTE + Wi-Fi 5 + Bluetooth 5.3",
+      "bateria": "5100 mAh",
+      "incluye": "Estuche tipo libro + cargador"
     },
     "usoCaso": "tablet-empresarial",
-    "descripcionUso": "Tablet con LTE — conectividad celular para equipos en campo"
+    "descripcionUso": "Tablet con 4G LTE — conectividad celular para equipos en campo"
   },
   {
     "id": "LED-ZAFR0130CO",
-    "slug": "lenovo-ideatab-8gb-128gb-lapiz",
-    "nombre": "Tablet Lenovo IdeaPad Tab 11\" 8GB/128GB + Lápiz",
+    "slug": "lenovo-ideatab-11-8gb-128gb-lapiz",
+    "nombre": "Tablet Lenovo IdeaPad Tab 11\" 8GB/128GB",
     "marca": "Lenovo",
     "categoria": "tablet",
     "referencia": "ZAFR0130CO",
     "precio": 821000,
-    "precioDesde": 821000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "MediaTek Dimensity 6300 (8 núcleos, hasta 2.4GHz)",
-      "ram": "8GB LPDDR4x",
-      "almacenamiento": "128GB UFS 2.2",
-      "pantalla": "11\" 2.5K (2560×1600) IPS 90Hz",
-      "conectividad": "Wi-Fi 5 + BT5.2",
-      "bateria": "7040mAh",
-      "so": "Android",
-      "incluye": "Lápiz y funda"
+      "procesador": "MediaTek Dimensity 6300 (hasta 2.4 GHz, 8 núcleos)",
+      "ram": "8 GB LPDDR4x",
+      "almacenamiento": "128 GB UFS 2.2",
+      "pantalla": "11\" 2.5K (2560×1600) IPS 90 Hz",
+      "conectividad": "Wi-Fi 5 + Bluetooth 5.2",
+      "bateria": "7040 mAh",
+      "incluye": "Lápiz + funda"
     },
     "usoCaso": "tablet-empresarial",
-    "descripcionUso": "Tablet con lápiz — ideal para firmas, presentaciones y trabajo remoto"
+    "descripcionUso": "Tablet con lápiz — para firmas digitales, presentaciones y trabajo remoto"
   },
   {
     "id": "LED-SM-X230NZAA",
-    "slug": "samsung-galaxy-tab-a11-6gb-128gb",
+    "slug": "samsung-galaxy-tab-a11plus-6gb-128gb",
     "nombre": "Samsung Galaxy Tab A11+ 6GB/128GB",
     "marca": "Samsung",
     "categoria": "tablet",
     "referencia": "SM-X230NZAACOO",
     "precio": 712000,
-    "precioDesde": 712000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "procesador": "Octa-Core 2.5GHz",
-      "ram": "6GB",
-      "almacenamiento": "128GB",
+      "procesador": "Octa-Core 2.5 GHz",
+      "ram": "6 GB",
+      "almacenamiento": "128 GB",
       "pantalla": "11\" WUXGA (1920×1200)",
-      "bateria": "7040mAh",
+      "bateria": "7040 mAh",
       "so": "Android"
     },
     "usoCaso": "tablet-empresarial",
-    "descripcionUso": "Samsung Galaxy Tab — ecosistema familiar y soporte garantizado"
+    "descripcionUso": "Samsung Galaxy Tab — ecosistema conocido con soporte garantizado"
   },
   {
     "id": "LED-FQC-10553",
-    "slug": "licencia-windows-11-pro-oem",
-    "nombre": "Licencia Windows 11 Pro OEM 64-bit",
+    "slug": "licencia-windows-11-pro-oem-64bit",
+    "nombre": "Windows 11 Pro OEM 64-bit",
     "marca": "Microsoft",
     "categoria": "licencia",
     "referencia": "FQC-10553",
     "precio": 564000,
-    "precioDesde": 564000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "tipo": "OEM (máquina nueva)",
-      "version": "Windows 11 Pro 64-bit"
+      "tipo": "OEM — para máquina nueva",
+      "version": "Windows 11 Pro 64-bit",
+      "entrega": "Caja física"
     },
     "usoCaso": "licencia",
-    "descripcionUso": "Windows 11 Pro OEM — para PCs sin sistema operativo"
+    "descripcionUso": "Windows 11 Pro OEM — para equipos sin sistema operativo"
   },
   {
     "id": "LED-EP2-06608",
-    "slug": "licencia-office-hogar-empresas-2024",
-    "nombre": "Office Hogar y Empresas 2024 ESD",
+    "slug": "office-hogar-empresas-2024-esd",
+    "nombre": "Office Hogar y Empresas 2024",
     "marca": "Microsoft",
     "categoria": "licencia",
     "referencia": "EP2-06608",
     "precio": 765000,
-    "precioDesde": 765000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "tipo": "ESD (descarga digital)",
+      "tipo": "Licencia perpetua ESD",
       "incluye": "Word, Excel, PowerPoint, Outlook",
-      "version": "Office 2024 perpetuo"
+      "entrega": "Descarga digital inmediata"
     },
     "usoCaso": "licencia",
-    "descripcionUso": "Office permanente para empresas — sin suscripción mensual"
+    "descripcionUso": "Office permanente para empresas — pago único, sin suscripción"
   },
   {
     "id": "LED-KLQ-00219",
     "slug": "microsoft-365-standard-empresarial-anual",
-    "nombre": "Microsoft 365 Standard Empresarial (Anual)",
+    "nombre": "Microsoft 365 Standard Empresarial",
     "marca": "Microsoft",
     "categoria": "licencia",
     "referencia": "KLQ-00219",
     "precio": 390000,
-    "precioDesde": 390000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
       "tipo": "Suscripción anual por usuario",
-      "incluye": "Office + Teams + OneDrive 1TB + Exchange"
+      "incluye": "Office + Teams + OneDrive 1 TB + Exchange",
+      "entrega": "Activación en línea"
     },
     "usoCaso": "licencia",
     "descripcionUso": "Microsoft 365 empresarial — colaboración completa en la nube"
   },
   {
     "id": "LED-KL4541DDEFS",
-    "slug": "kaspersky-small-office-5-usuarios",
-    "nombre": "Kaspersky Small Office Security 5 usuarios 1 año",
+    "slug": "kaspersky-small-office-5-usuarios-1ano",
+    "nombre": "Kaspersky Small Office Security · 5 equipos",
     "marca": "Kaspersky",
     "categoria": "licencia",
     "referencia": "KL4541DDEFS",
     "precio": 275000,
-    "precioDesde": 275000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "usuarios": "5",
+      "cobertura": "5 dispositivos",
       "duracion": "1 año",
-      "tipo": "Electrónica - entrega inmediata"
+      "entrega": "Electrónica — activación inmediata"
     },
     "usoCaso": "licencia",
-    "descripcionUso": "Protección para toda la oficina — 5 dispositivos cubiertos"
+    "descripcionUso": "Antivirus empresarial — protege 5 equipos de la oficina"
   },
   {
     "id": "LED-ESET-H-5-1-ESD",
-    "slug": "eset-small-business-5-eq-1-ano",
-    "nombre": "ESET Small Business Security 5 EQ 1 año",
+    "slug": "eset-small-business-security-5eq-1ano",
+    "nombre": "ESET Small Business Security · 5 equipos",
     "marca": "ESET",
     "categoria": "licencia",
     "referencia": "ESET-H-5-1-ESD",
     "precio": 369000,
-    "precioDesde": 369000,
+    "precioIvaIncluido": false,
     "proveedor": "ledacom",
     "specs": {
-      "usuarios": "5",
+      "cobertura": "5 dispositivos",
       "duracion": "1 año",
-      "tipo": "ESD (digital)"
+      "entrega": "ESD — descarga digital"
     },
     "usoCaso": "licencia",
-    "descripcionUso": "Antivirus empresarial ESET — reconocido por su bajo consumo"
+    "descripcionUso": "ESET — antivirus ligero y eficaz, reconocido por bajo consumo"
+  },
+  {
+    "id": "LED-910-002225",
+    "slug": "mouse-logitech-m185-inalambrico",
+    "nombre": "Mouse Logitech M185 Inalámbrico",
+    "marca": "Logitech",
+    "categoria": "accesorio",
+    "referencia": "910-002225",
+    "precio": 40000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "conectividad": "Receptor USB nano 2.4 GHz",
+      "resolucion": "1000 dpi",
+      "bateria": "Hasta 12 meses"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Mouse inalámbrico para escritorio — confiable y sin cables"
+  },
+  {
+    "id": "LED-910-004284",
+    "slug": "mouse-logitech-m280-inalambrico",
+    "nombre": "Mouse Logitech M280 Inalámbrico",
+    "marca": "Logitech",
+    "categoria": "accesorio",
+    "referencia": "910-004284",
+    "precio": 61000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "conectividad": "Receptor USB nano 2.4 GHz",
+      "resolucion": "1000 dpi",
+      "bateria": "Hasta 18 meses",
+      "extra": "Diseño para ambas manos"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Mouse inalámbrico premium — comodidad todo el día en la oficina"
+  },
+  {
+    "id": "LED-920-007901",
+    "slug": "combo-logitech-mk235-inalambrico",
+    "nombre": "Combo Logitech MK235 Teclado + Mouse",
+    "marca": "Logitech",
+    "categoria": "accesorio",
+    "referencia": "920-007901",
+    "precio": 87000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "conectividad": "Receptor USB nano unificador",
+      "bateria": "Teclado 24 meses · Mouse 12 meses",
+      "extra": "Resistente a derrames"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Kit inalámbrico de escritorio — teclado y mouse sin enredos de cables"
+  },
+  {
+    "id": "LED-920-004432",
+    "slug": "combo-logitech-mk270-inalambrico",
+    "nombre": "Combo Logitech MK270 Teclado + Mouse",
+    "marca": "Logitech",
+    "categoria": "accesorio",
+    "referencia": "920-004432",
+    "precio": 100000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "conectividad": "Receptor USB nano unificador",
+      "bateria": "Teclado 24 meses · Mouse 18 meses",
+      "extra": "8 teclas de acceso rápido"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Combo inalámbrico con más autonomía — ideal para trabajo intensivo"
+  },
+  {
+    "id": "LED-920-004422",
+    "slug": "teclado-logitech-k120-usb",
+    "nombre": "Teclado Logitech K120 USB",
+    "marca": "Logitech",
+    "categoria": "accesorio",
+    "referencia": "920-004422",
+    "precio": 45000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "conectividad": "USB cableado",
+      "extra": "Teclas de perfil bajo, resistente a derrames"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Teclado de oficina — silencioso, duradero y fácil de limpiar"
+  },
+  {
+    "id": "LED-DTX-64GB",
+    "slug": "usb-kingston-64gb-exodia",
+    "nombre": "Memoria USB Kingston 64 GB",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "referencia": "DTX/64GB",
+    "precio": 26000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "capacidad": "64 GB",
+      "interfaz": "USB 3.2 Gen 1 (compatible USB 2.0)",
+      "velocidad": "Hasta 100 MB/s lectura"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "USB para transferencia de archivos y respaldos rápidos"
+  },
+  {
+    "id": "LED-DTX-128GB",
+    "slug": "usb-kingston-128gb-exodia",
+    "nombre": "Memoria USB Kingston 128 GB",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "referencia": "DTX/128GB",
+    "precio": 41000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "capacidad": "128 GB",
+      "interfaz": "USB 3.2 Gen 1",
+      "velocidad": "Hasta 100 MB/s lectura"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "USB 128 GB — para llevar documentos y presentaciones siempre contigo"
+  },
+  {
+    "id": "LED-SDCS3-64GB",
+    "slug": "microsd-kingston-64gb-canvas-select",
+    "nombre": "MicroSD Kingston 64 GB Canvas",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "referencia": "SDCS3/64GB",
+    "precio": 55000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "capacidad": "64 GB",
+      "clase": "UHS-I U1 V10 A1",
+      "velocidad": "100 MB/s lectura"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "MicroSD para tablets, cámaras y dispositivos de inventario"
+  },
+  {
+    "id": "LED-SDCS3-128GB",
+    "slug": "microsd-kingston-128gb-canvas-select",
+    "nombre": "MicroSD Kingston 128 GB Canvas",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "referencia": "SDCS3/128GB",
+    "precio": 97000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "capacidad": "128 GB",
+      "clase": "UHS-I U1 V10 A1",
+      "velocidad": "150 MB/s lectura"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "MicroSD 128 GB — amplía el almacenamiento de tu tablet empresarial"
+  },
+  {
+    "id": "LED-HD330-1TB",
+    "slug": "disco-externo-adata-hd330-1tb",
+    "nombre": "Disco Externo ADATA HD330 1 TB",
+    "marca": "ADATA",
+    "categoria": "accesorio",
+    "referencia": "HD330-1TU31-NG",
+    "precio": 329000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "capacidad": "1 TB",
+      "interfaz": "USB 3.1 Gen 1",
+      "extra": "Carcasa antigolpes, compatible PC y Mac"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Disco externo 1 TB — respaldo y transporte seguro de información"
+  },
+  {
+    "id": "LED-SD620-1TB",
+    "slug": "ssd-externo-adata-sd620-1tb",
+    "nombre": "SSD Externo ADATA SD620 1 TB",
+    "marca": "ADATA",
+    "categoria": "accesorio",
+    "referencia": "SD620-1TCBK",
+    "precio": 569000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "capacidad": "1 TB",
+      "interfaz": "USB 3.2 Gen 2 (hasta 1050 MB/s)",
+      "extra": "Ultra rápido, diseño compacto resistente"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "SSD externo de alta velocidad — para profesionales que mueven grandes archivos"
+  },
+  {
+    "id": "LED-TSB967DI",
+    "slug": "morral-targus-156-negrogris",
+    "nombre": "Morral Targus 15.6\" Negro/Gris",
+    "marca": "Targus",
+    "categoria": "accesorio",
+    "referencia": "TSB967DI-70",
+    "precio": 60000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "compatibilidad": "Portátiles hasta 15.6\"",
+      "extra": "Compartimiento acolchado, asa y correa"
+    },
+    "usoCaso": "accesorio",
+    "descripcionUso": "Morral ejecutivo — protege tu portátil con estilo"
   }
 ]

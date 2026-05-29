@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  loadBusinessProducts,
-  getPrecioMinimo,
-  formatCOP,
-} from "@/lib/products";
+import { loadBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
 import {
   Laptop,
@@ -12,7 +8,7 @@ import {
   Building2,
   Cpu,
   Key,
-  ChevronRight,
+  Package,
   MessageCircle,
   Zap,
 } from "lucide-react";
@@ -20,7 +16,7 @@ import {
 export const metadata = {
   title: "Productos | teloconsigo.co",
   description:
-    "Equipos tecnológicos corporativos: portátiles ejecutivos, PCs empresariales, monitores, tablets y licencias. Cotización rápida con IA.",
+    "Equipos tecnológicos corporativos: portátiles ejecutivos, PCs empresariales, monitores, tablets, accesorios y licencias. Cotización rápida.",
 };
 
 // ─── Secciones por caso de uso ────────────────────────────────────────────────
@@ -31,66 +27,70 @@ const SECCIONES = [
     titulo: "Portátiles Ejecutivos",
     subtitulo: "Livianos · Elegantes · Batería larga",
     descripcion:
-      "Para profesionales que exigen lo mejor. Marcas como ThinkPad, Dell Pro, Asus ExpertBook.",
+      "Para profesionales que exigen lo mejor. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
     icon: Laptop,
     color: "from-blue-600 to-blue-800",
     badgeColor: "bg-blue-100 text-blue-800",
-    href: "/productos/portatiles-ejecutivos",
   },
   {
     usoCaso: "portatil-oficina" as const,
     titulo: "Equipos para Oficina",
     subtitulo: "Rápidos · Confiables · Multitarea",
     descripcion:
-      "El balance perfecto entre precio y rendimiento para el trabajo diario.",
+      "El balance perfecto entre precio y rendimiento para el trabajo diario. Ideales para contadores, abogados y startups.",
     icon: Laptop,
     color: "from-indigo-500 to-indigo-700",
     badgeColor: "bg-indigo-100 text-indigo-800",
-    href: "/productos/equipos-oficina",
   },
   {
     usoCaso: "pc-empresarial" as const,
     titulo: "PCs Empresariales",
     subtitulo: "Oficinas · Puntos de venta · Empresas",
     descripcion:
-      "Equipos de escritorio completos con monitor. Dell, Lenovo, ensamblados — listos para trabajar.",
+      "Equipos de escritorio completos con monitor. Listos para instalar y trabajar desde el primer día.",
     icon: Cpu,
     color: "from-slate-600 to-slate-800",
     badgeColor: "bg-slate-100 text-slate-800",
-    href: "/productos/pcs-empresariales",
   },
   {
     usoCaso: "monitor" as const,
     titulo: "Monitores",
     subtitulo: "Productividad · Setups · Ergonomía",
     descripcion:
-      "Samsung, LG, AOC. Para un solo monitor o para configurar doble pantalla.",
+      "Samsung, LG, AOC. Para un solo monitor o para montar doble pantalla y multiplicar tu productividad.",
     icon: Monitor,
     color: "from-cyan-500 to-cyan-700",
     badgeColor: "bg-cyan-100 text-cyan-800",
-    href: "/productos/monitores",
   },
   {
     usoCaso: "tablet-empresarial" as const,
     titulo: "Tablets Empresariales",
     subtitulo: "Ventas · Inventario · Movilidad",
     descripcion:
-      "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo, Samsung.",
+      "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo y Samsung con soporte garantizado.",
     icon: Tablet,
     color: "from-violet-500 to-violet-700",
     badgeColor: "bg-violet-100 text-violet-800",
-    href: "/productos/tablets",
+  },
+  {
+    usoCaso: "accesorio" as const,
+    titulo: "Accesorios",
+    subtitulo: "Mouse · Teclados · USB · Discos",
+    descripcion:
+      "Todo lo que necesita tu equipo de trabajo: combos inalámbricos Logitech, memorias USB, microSD y discos externos Kingston y ADATA.",
+    icon: Package,
+    color: "from-orange-500 to-orange-700",
+    badgeColor: "bg-orange-100 text-orange-800",
   },
   {
     usoCaso: "licencia" as const,
     titulo: "Licencias y Software",
     subtitulo: "Windows · Office · Antivirus",
     descripcion:
-      "Licencias originales Microsoft, ESET y Kaspersky para tu equipo.",
+      "Licencias originales Microsoft y antivirus empresarial. Activación inmediata, sin complicaciones.",
     icon: Key,
     color: "from-emerald-500 to-emerald-700",
     badgeColor: "bg-emerald-100 text-emerald-800",
-    href: "/productos/licencias",
   },
 ] as const;
 
@@ -99,36 +99,32 @@ const SECCIONES = [
 function BusinessProductCard({ product }: { product: BusinessProduct }) {
   const price = product.precioDesde ?? product.precio;
 
-  return (
-    <div className="group relative flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
-      {/* Badge proveedor */}
-      <span className="mb-3 inline-flex w-fit items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-        {product.proveedor === "ledacom" ? "Ledacom" : "Infoshop"}
-      </span>
+  // Muestra solo las 3 primeras specs relevantes
+  const specEntries = Object.entries(product.specs).slice(0, 3);
 
+  return (
+    <div className="group flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
       <h3 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2">
         {product.nombre}
       </h3>
 
-      <p className="mt-1 text-xs text-zinc-500 line-clamp-2">
+      <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2">
         {product.descripcionUso}
       </p>
 
-      {/* Specs key */}
+      {/* Specs principales */}
       <div className="mt-3 space-y-1 flex-1">
-        {Object.entries(product.specs)
-          .slice(0, 3)
-          .map(([k, v]) => (
-            <div key={k} className="flex gap-1.5 text-xs text-zinc-600">
-              <span className="font-medium capitalize text-zinc-400 w-20 shrink-0">
-                {k}
-              </span>
-              <span className="line-clamp-1">{String(v)}</span>
-            </div>
-          ))}
+        {specEntries.map(([k, v]) => (
+          <div key={k} className="flex gap-1.5 text-xs text-zinc-600">
+            <span className="font-medium capitalize text-zinc-400 w-20 shrink-0">
+              {k}
+            </span>
+            <span className="line-clamp-1">{String(v)}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Precio */}
+      {/* Precio y CTA */}
       <div className="mt-4 flex items-end justify-between gap-2">
         <div>
           {price ? (
@@ -136,15 +132,14 @@ function BusinessProductCard({ product }: { product: BusinessProduct }) {
               <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wide">
                 Desde
               </span>
-              <p className="text-lg font-bold text-zinc-900">
+              <p className="text-lg font-bold text-zinc-900 leading-tight">
                 {formatCOP(price)}
               </p>
-              {product.precioIvaIncluido && (
-                <span className="text-[10px] text-zinc-400">IVA incluido</span>
-              )}
             </>
           ) : (
-            <p className="text-sm font-semibold text-zinc-500">Consultar precio</p>
+            <p className="text-sm font-semibold text-zinc-500">
+              Consultar precio
+            </p>
           )}
         </div>
         <Link
@@ -167,17 +162,14 @@ function SeccionUso({
   sec: (typeof SECCIONES)[number];
   products: BusinessProduct[];
 }) {
-  const minPrecio = products
+  const precios = products
     .map((p) => p.precioDesde ?? p.precio)
-    .filter((v): v is number => v !== null)
-    .reduce((a, b) => Math.min(a, b), Infinity);
-
-  const hasPrice = isFinite(minPrecio);
+    .filter((v): v is number => v !== null);
+  const minPrecio = precios.length ? Math.min(...precios) : null;
 
   return (
     <section className="mb-16">
-      {/* Header de sección */}
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
           <div
             className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${sec.color} shrink-0`}
@@ -189,25 +181,25 @@ function SeccionUso({
             <p className="text-sm text-zinc-500">{sec.subtitulo}</p>
           </div>
         </div>
-        <div className="text-right">
-          {hasPrice && (
-            <p className="text-xs text-zinc-400 uppercase tracking-wide">
+
+        {minPrecio && (
+          <div className="text-right">
+            <p className="text-[10px] text-zinc-400 uppercase tracking-wide">
               Desde
             </p>
-          )}
-          {hasPrice && (
             <p className="text-xl font-bold text-zinc-900">
               {formatCOP(minPrecio)}
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <p className="text-sm text-zinc-600 mb-6 max-w-2xl">{sec.descripcion}</p>
 
       {products.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm text-zinc-400">
-          Próximamente — estamos cargando el catálogo de {sec.titulo.toLowerCase()}.
+          Próximamente — estamos cargando el catálogo de{" "}
+          {sec.titulo.toLowerCase()}.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -224,7 +216,6 @@ function SeccionUso({
 
 export default function ProductosPage() {
   const allProducts = loadBusinessProducts();
-
   const byUso = (uso: BusinessProduct["usoCaso"]) =>
     allProducts.filter((p) => p.usoCaso === uso);
 
@@ -232,7 +223,9 @@ export default function ProductosPage() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       {/* Breadcrumb */}
       <nav className="text-xs text-zinc-500 mb-6">
-        <Link href="/" className="hover:underline">Inicio</Link>
+        <Link href="/" className="hover:underline">
+          Inicio
+        </Link>
         <span className="mx-2">/</span>
         <span>Productos</span>
       </nav>
@@ -269,7 +262,7 @@ export default function ProductosPage() {
           </div>
         </div>
 
-        {/* Categorías rápidas */}
+        {/* Filtros rápidos */}
         <div className="mt-8 flex flex-wrap gap-2">
           {SECCIONES.map((s) => {
             const count = byUso(s.usoCaso).length;
@@ -305,7 +298,7 @@ export default function ProductosPage() {
         </h2>
         <p className="text-blue-100 text-sm mb-5 max-w-md mx-auto">
           Tenemos acceso a cientos de referencias más a través de nuestros
-          mayoristas. Cuéntanos qué necesitas.
+          mayoristas. Cuéntanos qué necesitas y te cotizamos en minutos.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link

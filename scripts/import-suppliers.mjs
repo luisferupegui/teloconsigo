@@ -171,28 +171,54 @@ function parseInfoshop(text) {
   return parseLedacom(text); // El parser genérico funciona para ambos
 }
 
+// ─── Márgenes por caso de uso ─────────────────────────────────────────────────
+// B = punto medio del rango para equipos generales
+// C = extremo alto del rango para accesorios, licencias y componentes económicos
+
+const MARGINS = {
+  "portatil-ejecutivo":  0.16,  // B: (12+20)/2
+  "portatil-oficina":    0.16,  // B: (12+20)/2
+  "pc-empresarial":      0.20,  // B: (15+25)/2
+  "monitor":             0.14,  // B: (10+18)/2
+  "tablet-empresarial":  0.14,  // B: (10+18)/2
+  "licencia":            0.50,  // C: máximo 25-50%
+  "accesorio":           0.60,  // C: máximo 25-60%
+};
+
+const IVA = 0.19;
+
+// precio base → precio final al cliente (con IVA + margen)
+// Redondea hacia abajo al millar más cercano
+function calcPrecioFinal(p) {
+  const base = p.precio;
+  if (!base) return null;
+  const conIva = p.precioIvaIncluido === true ? base : Math.round(base * (1 + IVA));
+  const margin = MARGINS[p.usoCaso] ?? 0.15;
+  return Math.floor(conIva * (1 + margin) / 1000) * 1000;
+}
+
 // ─── Mapeo a categorías de negocio ────────────────────────────────────────────
 
 const USE_CASE_MAP = {
-  // portátiles → subcategorías por uso
   portatil: (p) => {
     const n = (p.nombre + " " + (p.specs?.procesador || "")).toLowerCase();
     if (/thinkpad|expertbook|pro|inspiron.*pro|elitebook/i.test(n)) return "portatil-ejecutivo";
     if (/gaming|tuf|rtx|gtx|legion|victus/i.test(n)) return "portatil-gaming";
     return "portatil-oficina";
   },
-  pc: () => "pc-empresarial",
-  monitor: () => "monitor",
-  tablet: () => "tablet-empresarial",
+  pc:       () => "pc-empresarial",
+  monitor:  () => "monitor",
+  tablet:   () => "tablet-empresarial",
   licencia: () => "licencia",
-  otros: () => null,
+  accesorio:() => "accesorio",
+  otros:    () => null,
 };
 
 function mapToBusinessCatalog(products) {
   return products
     .map((p) => {
-      const mapper = USE_CASE_MAP[p.categoria] || (() => null);
-      const usoCaso = mapper(p);
+      // Si el producto ya tiene usoCaso asignado manualmente, respetarlo
+      const usoCaso = p.usoCaso ?? (USE_CASE_MAP[p.categoria] || (() => null))(p);
       if (!usoCaso) return null;
       return { ...p, usoCaso };
     })
@@ -226,10 +252,17 @@ function mergeAllSuppliers() {
     return true;
   });
 
+  // Calcular precios finales (IVA + margen)
+  const withPrices = deduped.map((p) => ({
+    ...p,
+    precioDesde: calcPrecioFinal(p),
+  }));
+
   const outPath = path.join(DATA_DIR, "products-business.json");
-  writeFileSync(outPath, JSON.stringify(deduped, null, 2), "utf-8");
-  console.log(`✓ Merged ${deduped.length} business products → ${outPath}`);
-  return deduped;
+  writeFileSync(outPath, JSON.stringify(withPrices, null, 2), "utf-8");
+  console.log(`✓ Merged ${withPrices.length} productos → ${outPath}`);
+  console.log(`  Márgenes aplicados: equipos 14-20% | licencias 50% | accesorios 60%`);
+  return withPrices;
 }
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────

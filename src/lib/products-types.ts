@@ -21,7 +21,7 @@ export type BusinessProduct = {
   slug: string;
   nombre: string;
   marca: string;
-  categoria: "portatil" | "pc" | "monitor" | "tablet" | "licencia";
+  categoria: "portatil" | "pc" | "monitor" | "tablet" | "licencia" | "accesorio";
   usoCaso:
     | "portatil-ejecutivo"
     | "portatil-oficina"
@@ -29,7 +29,8 @@ export type BusinessProduct = {
     | "pc-empresarial"
     | "monitor"
     | "tablet-empresarial"
-    | "licencia";
+    | "licencia"
+    | "accesorio";
   referencia?: string;
   precio: number | null;
   precioDesde: number | null;
