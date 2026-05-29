@@ -34,10 +34,31 @@ export const dynamic = "force-dynamic";
 
 
 export default function Home() {
-  const featured = getFeaturedProducts();
+  // Curado: mezclamos categorías para variedad visual en lugar de mostrar
+  // varios items del mismo tipo seguidos.
+  const allFeatured = getFeaturedProducts();
+  const seenCats = new Set<string>();
+  const featured: typeof allFeatured = [];
+  for (const p of allFeatured) {
+    if (!seenCats.has(p.categoria)) {
+      featured.push(p);
+      seenCats.add(p.categoria);
+      if (featured.length === 8) break;
+    }
+  }
+  // Si no llegamos a 8 con la regla anti-duplicados, completamos con el resto.
+  if (featured.length < 8) {
+    for (const p of allFeatured) {
+      if (!featured.includes(p)) {
+        featured.push(p);
+        if (featured.length === 8) break;
+      }
+    }
+  }
+
   const ofertas = getAllProducts()
     .filter((p) => p.precioAnterior)
-    .slice(0, 4);
+    .slice(0, 8);
 
   return (
     <div className="flex flex-col bg-[#080d14]">
@@ -85,9 +106,9 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {featured.slice(0, 6).map((p, i) => (
+          {/* Grid — 8 productos curados (1 por categoría para variedad) */}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {featured.map((p, i) => (
               <Reveal key={p.id} delay={i * 60}>
                 <ProductCard product={p} />
               </Reveal>
@@ -114,7 +135,7 @@ export default function Home() {
                   Ver todas <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {ofertas.map((p, i) => (
                   <Reveal key={p.id} delay={i * 60}>
                     <ProductCard product={p} />
