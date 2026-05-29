@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
             width={1774}
             height={887}
             quality={100}
-            className="h-28 w-auto mix-blend-screen"
+            className="h-28 w-auto mix-blend-lighten"
             unoptimized
             priority
           />
