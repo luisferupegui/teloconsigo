@@ -53,11 +53,12 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <Image
-            src="/logo-oscuro.png"
+            src="/Logo Oscuro Con Slogan.png"
             alt="Te lo Consigo"
             width={1774}
             height={887}
-            className="h-16 w-auto"
+            quality={100}
+            className="h-28 w-auto mix-blend-screen"
             unoptimized
             priority
           />

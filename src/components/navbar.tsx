@@ -114,12 +114,12 @@ export function Navbar() {
         <div className="row-span-2 self-center py-3">
           <Link href="/" className="group shrink-0 block" style={{ transform: "translateY(-5%)", display: "block" }}>
             <Image
-              src="/logo-oscuro.png"
+              src="/Logo Oscuro Con Slogan.png"
               alt="Te lo Consigo"
               width={1774}
               height={887}
               quality={100}
-              className="h-[115px] w-auto mix-blend-lighten transition-opacity duration-200 group-hover:opacity-80"
+              className="h-[115px] w-auto mix-blend-screen transition-opacity duration-200 group-hover:opacity-80"
               priority
               unoptimized
             />
@@ -344,12 +344,12 @@ export function Navbar() {
       <div className="lg:hidden flex h-16 items-center gap-3 max-w-7xl mx-auto px-4">
         <Link href="/" className="shrink-0 group">
           <Image
-            src="/logo-oscuro.png"
+            src="/Logo Oscuro Con Slogan.png"
             alt="Te lo Consigo"
             width={1774}
             height={887}
             quality={100}
-            className="h-12 w-auto transition-opacity group-hover:opacity-80"
+            className="h-12 w-auto mix-blend-screen transition-opacity group-hover:opacity-80"
             priority
             unoptimized
           />
