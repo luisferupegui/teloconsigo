@@ -2625,5 +2625,350 @@
       "garantia": "2 años"
     },
     "descripcion": "Cargador inalámbrico 3-en-1 MagSafe. Carga iPhone, Apple Watch y AirPods simultáneo."
+  },
+
+  {
+    "id": "122",
+    "slug": "logitech-g-pro-x-tkl-lightspeed",
+    "nombre": "Logitech G PRO X TKL LIGHTSPEED",
+    "marca": "Logitech",
+    "categoria": "teclados",
+    "precio": 1278000,
+    "stock": 14,
+    "rating": 4.8,
+    "reviews": 234,
+    "imagen": "/api/product-image?brand=Logitech&model=G%20PRO%20X%20TKL%20LIGHTSPEED&cat=teclados",
+    "destacado": true,
+    "specs": {
+      "tipo": "Tenkeyless mecánico wireless",
+      "switches": "GX Tactile / Linear / Clicky (intercambiables)",
+      "conexion": "LIGHTSPEED 2.4 GHz / Bluetooth / USB-C",
+      "iluminacion": "LIGHTSYNC RGB per-key",
+      "bateria": "50 horas RGB encendido",
+      "polling": "1000 Hz / 2000 Hz Pro"
+    },
+    "descripcion": "Teclado mecánico TKL pro esports. Switches hot-swap y batería de 50 horas."
+  },
+  {
+    "id": "123",
+    "slug": "logitech-g915-x-lightspeed",
+    "nombre": "Logitech G915 X LIGHTSPEED",
+    "marca": "Logitech",
+    "categoria": "teclados",
+    "precio": 1791000,
+    "precioAnterior": 1983000,
+    "stock": 9,
+    "rating": 4.8,
+    "reviews": 178,
+    "imagen": "/api/product-image?brand=Logitech&model=G915%20X%20LIGHTSPEED&cat=teclados",
+    "specs": {
+      "tipo": "Mecánico ultradelgado full-size",
+      "switches": "GL Tactile / Linear / Clicky",
+      "conexion": "LIGHTSPEED / Bluetooth / USB-C",
+      "perfil": "Low-profile (22 mm grosor)",
+      "iluminacion": "LIGHTSYNC RGB",
+      "bateria": "40 horas RGB"
+    },
+    "descripcion": "Mecánico premium low-profile. Construcción aluminio aeronáutico y teclas G programables."
+  },
+  {
+    "id": "124",
+    "slug": "logitech-mx-keys-s",
+    "nombre": "Logitech MX Keys S",
+    "marca": "Logitech",
+    "categoria": "teclados",
+    "precio": 700000,
+    "stock": 26,
+    "rating": 4.8,
+    "reviews": 678,
+    "imagen": "/api/product-image?brand=Logitech&model=MX%20Keys%20S&cat=teclados",
+    "destacado": true,
+    "specs": {
+      "tipo": "Productividad inalámbrico full-size",
+      "perfil": "Bajo perfil membrana premium",
+      "retroiluminacion": "Smart Backlight (sensor proximidad)",
+      "conexion": "Bluetooth / Logi Bolt (USB-C)",
+      "multi_device": "3 dispositivos (Easy-Switch)",
+      "bateria": "10 días con luz / 5 meses sin"
+    },
+    "descripcion": "El teclado productividad #1. Smart Backlight y Smart Actions integradas vía Logi Options+."
+  },
+  {
+    "id": "125",
+    "slug": "logitech-g915-tkl-wireless",
+    "nombre": "Logitech G915 TKL Wireless",
+    "marca": "Logitech",
+    "categoria": "teclados",
+    "precio": 1470000,
+    "stock": 11,
+    "rating": 4.7,
+    "reviews": 198,
+    "imagen": "/api/product-image?brand=Logitech&model=G915%20TKL%20Wireless&cat=teclados",
+    "specs": {
+      "tipo": "Tenkeyless mecánico low-profile",
+      "switches": "GL Tactile / Linear / Clicky",
+      "conexion": "LIGHTSPEED 2.4 GHz / Bluetooth",
+      "iluminacion": "LIGHTSYNC RGB per-key",
+      "bateria": "40 horas / 1100 h sin RGB",
+      "construccion": "Aluminio brushed"
+    },
+    "descripcion": "TKL premium para gaming y oficina. Construcción aluminio y experiencia low-profile premium."
+  },
+  {
+    "id": "126",
+    "slug": "logitech-k380-multi-device",
+    "nombre": "Logitech K380 Multi-Device Bluetooth",
+    "marca": "Logitech",
+    "categoria": "teclados",
+    "precio": 250000,
+    "stock": 48,
+    "rating": 4.7,
+    "reviews": 1245,
+    "imagen": "/api/product-image?brand=Logitech&model=K380%20Multi-Device&cat=teclados",
+    "specs": {
+      "tipo": "Compacto Bluetooth membrana",
+      "conexion": "Bluetooth (3 dispositivos)",
+      "easy_switch": "Sí, 3 teclas dedicadas",
+      "compatibilidad": "Win/Mac/iOS/Android/ChromeOS",
+      "bateria": "2 años (2x AAA incluidas)",
+      "peso": "423 g"
+    },
+    "descripcion": "Compacto multi-device para portátil + tablet + teléfono. Cambia con un toque."
+  },
+  {
+    "id": "127",
+    "slug": "logitech-g413-se-tkl",
+    "nombre": "Logitech G413 SE TKL Mechanical",
+    "marca": "Logitech",
+    "categoria": "teclados",
+    "precio": 443000,
+    "stock": 22,
+    "rating": 4.6,
+    "reviews": 312,
+    "imagen": "/api/product-image?brand=Logitech&model=G413%20SE%20TKL&cat=teclados",
+    "specs": {
+      "tipo": "Mecánico TKL cableado",
+      "switches": "Tactile (similar a MX Brown)",
+      "iluminacion": "Backlit blanco",
+      "construccion": "Top plate aluminio brushed",
+      "conexion": "USB-A cable trenzado",
+      "garantia": "2 años"
+    },
+    "descripcion": "Entry-level mecánico de Logitech G. TKL para liberar espacio del mouse en setups gaming."
+  },
+  {
+    "id": "128",
+    "slug": "genius-slimstar-230-usb",
+    "nombre": "Genius SlimStar 230 USB",
+    "marca": "Genius",
+    "categoria": "teclados",
+    "precio": 122000,
+    "stock": 62,
+    "rating": 4.4,
+    "reviews": 234,
+    "imagen": "/api/product-image?brand=Genius&model=SlimStar%20230%20USB&cat=teclados",
+    "specs": {
+      "tipo": "Membrana slim USB",
+      "perfil": "Ultra-bajo tipo chiclet",
+      "teclas_funcion": "12 multimedia",
+      "longitud_cable": "1.5 m",
+      "compatibilidad": "Windows / Linux / macOS",
+      "resistencia_agua": "Spill-resistant"
+    },
+    "descripcion": "Slim económico USB. Perfecto para oficina y home-office sin gastar mucho."
+  },
+  {
+    "id": "129",
+    "slug": "genius-luxemate-100",
+    "nombre": "Genius LuxeMate 100 Slim",
+    "marca": "Genius",
+    "categoria": "teclados",
+    "precio": 154000,
+    "stock": 41,
+    "rating": 4.4,
+    "reviews": 178,
+    "imagen": "/api/product-image?brand=Genius&model=LuxeMate%20100%20Slim&cat=teclados",
+    "specs": {
+      "tipo": "Slim membrana USB",
+      "perfil": "Bajo perfil tipo isla",
+      "teclas_funcion": "11 multimedia + atajos web",
+      "construccion": "Plástico mate (look aluminio)",
+      "diseño": "Ultra-delgado 22 mm",
+      "garantia": "2 años"
+    },
+    "descripcion": "Diseño slim aluminio-like. Equilibrio entre estética y precio para oficina."
+  },
+
+  {
+    "id": "130",
+    "slug": "epson-ecotank-l3250",
+    "nombre": "Epson EcoTank L3250 Multifuncional",
+    "marca": "Epson",
+    "categoria": "impresoras",
+    "precio": 1470000,
+    "stock": 18,
+    "rating": 4.7,
+    "reviews": 567,
+    "imagen": "/api/product-image?brand=Epson&model=EcoTank%20L3250&cat=impresoras",
+    "destacado": true,
+    "specs": {
+      "tipo": "Inyección tinta continua (CISS)",
+      "funciones": "Imprime / Copia / Escanea",
+      "velocidad": "33 ppm B/N - 15 ppm color",
+      "resolucion": "5760x1440 dpi",
+      "conexion": "USB + Wi-Fi + Wi-Fi Direct",
+      "rendimiento": "4500 págs color / 7500 B/N"
+    },
+    "descripcion": "La multifuncional EcoTank más vendida. Hasta 7500 páginas con tinta incluida."
+  },
+  {
+    "id": "131",
+    "slug": "epson-ecotank-l6290",
+    "nombre": "Epson EcoTank L6290 Oficina",
+    "marca": "Epson",
+    "categoria": "impresoras",
+    "precio": 2754000,
+    "precioAnterior": 3076000,
+    "stock": 7,
+    "rating": 4.7,
+    "reviews": 234,
+    "imagen": "/api/product-image?brand=Epson&model=EcoTank%20L6290&cat=impresoras",
+    "specs": {
+      "tipo": "Multifuncional tinta continua oficina",
+      "funciones": "Imprime / Copia / Escanea / FAX",
+      "velocidad": "15.5 ppm B/N - 8.5 ppm color",
+      "duplex": "Automático (ambas caras)",
+      "adf": "Sí, 30 hojas",
+      "conexion": "USB + Ethernet + Wi-Fi"
+    },
+    "descripcion": "EcoTank con duplex automático y ADF. Ideal para oficinas pequeñas-medianas."
+  },
+  {
+    "id": "132",
+    "slug": "canon-pixma-g3260",
+    "nombre": "Canon PIXMA G3260 MegaTank",
+    "marca": "Canon",
+    "categoria": "impresoras",
+    "precio": 1791000,
+    "stock": 12,
+    "rating": 4.6,
+    "reviews": 198,
+    "imagen": "/api/product-image?brand=Canon&model=PIXMA%20G3260%20MegaTank&cat=impresoras",
+    "specs": {
+      "tipo": "Inyección MegaTank (CISS)",
+      "funciones": "Imprime / Copia / Escanea",
+      "velocidad": "11 ppm B/N - 6 ppm color",
+      "resolucion": "4800x1200 dpi",
+      "conexion": "USB + Wi-Fi + AirPrint",
+      "rendimiento": "6000 págs color / 7700 B/N"
+    },
+    "descripcion": "MegaTank Canon con tanques rellenables. Excelente para fotos y documentos."
+  },
+  {
+    "id": "133",
+    "slug": "canon-imageclass-mf275dw",
+    "nombre": "Canon imageCLASS MF275dw Láser",
+    "marca": "Canon",
+    "categoria": "impresoras",
+    "precio": 2241000,
+    "stock": 9,
+    "rating": 4.7,
+    "reviews": 145,
+    "imagen": "/api/product-image?brand=Canon&model=imageCLASS%20MF275dw&cat=impresoras",
+    "destacado": true,
+    "specs": {
+      "tipo": "Láser monocromática multifuncional",
+      "funciones": "Imprime / Copia / Escanea / FAX",
+      "velocidad": "37 ppm B/N",
+      "resolucion": "1200x1200 dpi",
+      "duplex": "Automático",
+      "adf": "50 hojas + Wi-Fi + Ethernet"
+    },
+    "descripcion": "Láser B/N todoterreno para oficina. 37 ppm y manejo robusto de volumen."
+  },
+  {
+    "id": "134",
+    "slug": "brother-hl-l2390dw",
+    "nombre": "Brother HL-L2390DW Láser B/N",
+    "marca": "Brother",
+    "categoria": "impresoras",
+    "precio": 1213000,
+    "stock": 21,
+    "rating": 4.7,
+    "reviews": 412,
+    "imagen": "/api/product-image?brand=Brother&model=HL-L2390DW&cat=impresoras",
+    "specs": {
+      "tipo": "Láser monocromática multifuncional",
+      "funciones": "Imprime / Copia / Escanea",
+      "velocidad": "32 ppm B/N",
+      "resolucion": "2400x600 dpi",
+      "conexion": "USB + Wi-Fi + Wi-Fi Direct",
+      "duplex": "Manual"
+    },
+    "descripcion": "Láser confiable para home-office. Marca Brother famosa por durabilidad y consumibles baratos."
+  },
+  {
+    "id": "135",
+    "slug": "brother-mfc-l3750cdw",
+    "nombre": "Brother MFC-L3750CDW Color Láser",
+    "marca": "Brother",
+    "categoria": "impresoras",
+    "precio": 3204000,
+    "precioAnterior": 3525000,
+    "stock": 5,
+    "rating": 4.7,
+    "reviews": 134,
+    "imagen": "/api/product-image?brand=Brother&model=MFC-L3750CDW&cat=impresoras",
+    "specs": {
+      "tipo": "Láser color multifuncional",
+      "funciones": "Imprime / Copia / Escanea / FAX",
+      "velocidad": "25 ppm color y B/N",
+      "duplex": "Automático",
+      "adf": "50 hojas",
+      "conexion": "USB + Ethernet + Wi-Fi"
+    },
+    "descripcion": "Láser color compacto con duplex y ADF. Para oficinas pequeñas con necesidad de color."
+  },
+  {
+    "id": "136",
+    "slug": "kyocera-ecosys-ma2100cwfx",
+    "nombre": "Kyocera ECOSYS MA2100cwfx Color Láser",
+    "marca": "Kyocera",
+    "categoria": "impresoras",
+    "precio": 2754000,
+    "stock": 6,
+    "rating": 4.7,
+    "reviews": 89,
+    "imagen": "/api/product-image?brand=Kyocera&model=ECOSYS%20MA2100cwfx&cat=impresoras",
+    "specs": {
+      "tipo": "Láser color multifuncional",
+      "funciones": "Imprime / Copia / Escanea / FAX",
+      "velocidad": "21 ppm color y B/N",
+      "ciclo_mensual": "30.000 págs",
+      "duplex": "Automático",
+      "conexion": "USB + Ethernet + Wi-Fi"
+    },
+    "descripcion": "ECOSYS Kyocera: tóner de larga duración y bajo costo por página. Para oficinas activas."
+  },
+  {
+    "id": "137",
+    "slug": "kyocera-ecosys-pa2100cwx",
+    "nombre": "Kyocera ECOSYS PA2100cwx Color Láser",
+    "marca": "Kyocera",
+    "categoria": "impresoras",
+    "precio": 2112000,
+    "stock": 11,
+    "rating": 4.6,
+    "reviews": 67,
+    "imagen": "/api/product-image?brand=Kyocera&model=ECOSYS%20PA2100cwx&cat=impresoras",
+    "specs": {
+      "tipo": "Láser color (solo imprime)",
+      "velocidad": "21 ppm color y B/N",
+      "resolucion": "9600x600 dpi",
+      "ciclo_mensual": "30.000 págs",
+      "conexion": "USB + Ethernet + Wi-Fi",
+      "compacta": "Sí (footprint mínimo)"
+    },
+    "descripcion": "Láser color compacta solo impresión. Perfecta para puestos individuales en oficinas."
   }
 ]
