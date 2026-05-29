@@ -1,0 +1,173 @@
+[
+  {
+    "id": "IS-MON-SAM24-320",
+    "slug": "monitor-samsung-24-fhd-100hz-infoshop",
+    "nombre": "Monitor Samsung 24\" FHD 100Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "24F320GAN",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "24\" FHD (1920×1080)",
+      "frecuencia": "100Hz",
+      "extra": "5ms"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor Samsung para oficina — calidad y respaldo de marca"
+  },
+  {
+    "id": "IS-MON-SAM27-320",
+    "slug": "monitor-samsung-27-ips-120hz-infoshop",
+    "nombre": "Monitor Samsung 27\" IPS 120Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "LS27F320GANX",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "27\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor grande Samsung para trabajo productivo"
+  },
+  {
+    "id": "IS-MON-LG24",
+    "slug": "monitor-lg-24-ips-120hz-infoshop",
+    "nombre": "Monitor LG 24\" IPS 120Hz",
+    "marca": "LG",
+    "categoria": "monitor",
+    "referencia": "24U411A-B",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "24\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz",
+      "extra": "5ms GTG, diseño sin bordes"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor LG elegante para escritorios ejecutivos"
+  },
+  {
+    "id": "IS-MON-LG22",
+    "slug": "monitor-lg-22-va-100hz-infoshop",
+    "nombre": "Monitor LG 22\" VA 100Hz",
+    "marca": "LG",
+    "categoria": "monitor",
+    "referencia": "22U401A-B",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "22\" FHD (1920×1080) VA",
+      "frecuencia": "100Hz",
+      "extra": "1ms GTG"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor compacto LG para puntos de trabajo pequeños"
+  },
+  {
+    "id": "IS-MON-LG27",
+    "slug": "monitor-lg-27-ips-120hz-infoshop",
+    "nombre": "Monitor LG 27\" IPS 120Hz",
+    "marca": "LG",
+    "categoria": "monitor",
+    "referencia": "27U411A-B",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "27\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz",
+      "extra": "5ms GTG, sin bordes"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor grande LG para máxima productividad"
+  },
+  {
+    "id": "IS-LAP-DELL3530",
+    "slug": "dell-inspiron-15-3530-i5-8gb-512gb",
+    "nombre": "Dell Inspiron 15 3530",
+    "marca": "Dell",
+    "categoria": "portatil",
+    "referencia": "G6P3X",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "Intel Core i5-1334U",
+      "ram": "8GB DDR4",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "15.6\" FHD",
+      "so": "Ubuntu (requiere Windows)"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "Dell Inspiron — portátil confiable para trabajo de oficina"
+  },
+  {
+    "id": "IS-LAP-ASUSVIVO",
+    "slug": "asus-vivobook-x1502za-i5-8gb-512gb",
+    "nombre": "Asus VivoBook 15 X1502ZA",
+    "marca": "Asus",
+    "categoria": "portatil",
+    "referencia": "X1502ZA-EJ2539W",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "Intel Core i5-12500H",
+      "ram": "8GB DDR4",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "15.6\" FHD",
+      "so": "Windows 11"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "VivoBook con Windows 11 — listo para trabajar desde el primer día"
+  },
+  {
+    "id": "IS-PC-RYZEN5-JANUS22",
+    "slug": "pc-ryzen5-5600gt-16gb-512gb-monitor22",
+    "nombre": "PC Ryzen 5 5600GT + Monitor 22\" FHD",
+    "marca": "AMD",
+    "categoria": "pc",
+    "referencia": "PC-R5-5600GT-22",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "AMD Ryzen 5 5600GT (6 núcleos, hasta 4.9GHz)",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "22\" FHD con parlantes",
+      "so": "FreeDOS (requiere Windows)",
+      "incluye": "Teclado + Mouse"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC ensamblada con monitor — opción económica para oficina"
+  },
+  {
+    "id": "IS-PC-RYZEN7-ACER24",
+    "slug": "pc-ryzen7-5700g-16gb-512gb-monitor24",
+    "nombre": "PC Ryzen 7 5700G + Monitor Acer 24\"",
+    "marca": "AMD",
+    "categoria": "pc",
+    "referencia": "PC-R7-5700G-24",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "AMD Ryzen 7 5700G (8 núcleos, hasta 4.6GHz)",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "Acer 24\" 144Hz",
+      "so": "FreeDOS (requiere Windows)",
+      "incluye": "Teclado + Mouse"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC Ryzen 7 con pantalla grande — excelente para multitarea"
+  }
+]

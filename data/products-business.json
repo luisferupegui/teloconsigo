@@ -1,0 +1,721 @@
+[
+  {
+    "id": "LED-83GU0043LM",
+    "slug": "lenovo-v14-g5-irl-core5-8gb-512gb",
+    "nombre": "Lenovo V14 G5 IRL",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "referencia": "83GU0043LM",
+    "precio": 2449000,
+    "precioDesde": 2449000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core 5 210H (4P+4E / 12T, hasta 4.8GHz)",
+      "ram": "8GB DDR5",
+      "almacenamiento": "512GB SSD NVMe",
+      "pantalla": "14\" FHD (1920×1080)",
+      "so": "Windows 11 Pro 64",
+      "garantia": "1 año Onsite"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "Portátil confiable para oficina y multitarea empresarial"
+  },
+  {
+    "id": "LED-21L40012LM",
+    "slug": "lenovo-thinkpad-l16-gen1-ultra5-16gb",
+    "nombre": "Lenovo ThinkPad L16 Gen 1",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "referencia": "21L40012LM",
+    "precio": 4119000,
+    "precioDesde": 4119000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core Ultra 5 125U (hasta 4.3GHz, 12 núcleos)",
+      "ram": "16GB DDR5-5600",
+      "almacenamiento": "512GB SSD M.2 PCIe 4.0 NVMe",
+      "pantalla": "16\" WUXGA (1920×1200) IPS",
+      "so": "Windows 11 Pro",
+      "puertos": "Thunderbolt 4, USB-C, HDMI 2.1, Ethernet RJ-45"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "ThinkPad empresarial premium — robusto, seguro, batería excepcional"
+  },
+  {
+    "id": "LED-CA0M3LT",
+    "slug": "hp-240r-g10-core5-16gb-512gb",
+    "nombre": "HP 240R G10 Notebook",
+    "marca": "HP",
+    "categoria": "portatil",
+    "referencia": "CA0M3LT#ABM",
+    "precio": 2589000,
+    "precioDesde": 2589000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core 5 120U (10 núcleos, hasta 5GHz)",
+      "ram": "16GB DDR4-3200",
+      "almacenamiento": "512GB SSD NVMe",
+      "pantalla": "14\" FHD (1920×1080) 300nits",
+      "so": "Windows 11 Pro",
+      "puertos": "USB-C 3.2 Gen2 (DP 1.4), HDMI 1.4b"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "Portátil HP corporativo — rendimiento diario con Windows 11 Pro"
+  },
+  {
+    "id": "LED-PP70R",
+    "slug": "dell-pro-15-essential-i5-8gb-512gb",
+    "nombre": "Dell Pro 15 Essential",
+    "marca": "Dell",
+    "categoria": "portatil",
+    "referencia": "PP70R",
+    "precio": 2259000,
+    "precioDesde": 2259000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5-1334U (10 núcleos, hasta 4.6GHz)",
+      "ram": "8GB DDR5",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "15.6\" FHD",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "Dell empresarial accesible — ideal para trabajo de oficina"
+  },
+  {
+    "id": "LED-6F1NR",
+    "slug": "dell-pro-14-pc14255-ryzen5pro-16gb",
+    "nombre": "Dell Pro 14 PC14255",
+    "marca": "Dell",
+    "categoria": "portatil",
+    "referencia": "6F1NR",
+    "precio": 2618700,
+    "precioDesde": 2618700,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "AMD Ryzen 5 PRO 230 (3.5GHz, NPU 16TOPS)",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "14\" FHD+ (1920×1200)",
+      "so": "Windows 11 Pro",
+      "garantia": "1 año básica"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "Dell Pro con chip AI — perfecto para ejecutivos y profesionales"
+  },
+  {
+    "id": "LED-7XNFP",
+    "slug": "dell-pro-14-pc14250-ultra5-16gb",
+    "nombre": "Dell Pro 14 PC14250",
+    "marca": "Dell",
+    "categoria": "portatil",
+    "referencia": "7XNFP",
+    "precio": 2849900,
+    "precioDesde": 2849900,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core Ultra 5 225U (12 núcleos, hasta 4.8GHz)",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "14\" FHD",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "Dell con Intel Core Ultra — IA integrada para máxima productividad"
+  },
+  {
+    "id": "LED-B3405CVALY",
+    "slug": "asus-expertbook-i5-16gb-512gb-wuxga",
+    "nombre": "Asus ExpertBook B3405CVA",
+    "marca": "Asus",
+    "categoria": "portatil",
+    "referencia": "B3405CVALY0226X",
+    "precio": 2579000,
+    "precioDesde": 2579000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5-13420H (8 núcleos, hasta 4.75GHz)",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "14\" WUXGA (1920×1200)",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "ExpertBook — diseñado para profesionales de alto desempeño"
+  },
+  {
+    "id": "LED-B1403CVAS6",
+    "slug": "asus-expertbook-s65014x-i5-8gb-512gb",
+    "nombre": "Asus ExpertBook S65014X",
+    "marca": "Asus",
+    "categoria": "portatil",
+    "referencia": "B1403CVAS65014X",
+    "precio": 2139000,
+    "precioDesde": 2139000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5-13420H (8 núcleos, hasta 4.75GHz)",
+      "ram": "8GB",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "14\" FHD",
+      "so": "Windows 11 Pro",
+      "extra": "Puerto RJ45 incluido"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "ExpertBook compacto — para oficina con conectividad completa"
+  },
+  {
+    "id": "LED-P3406CKANZ",
+    "slug": "asus-expertbook-ryzen7ai-16gb-1tb",
+    "nombre": "Asus ExpertBook AMD Ryzen AI",
+    "marca": "Asus",
+    "categoria": "portatil",
+    "referencia": "P3406CKANZ0441X",
+    "precio": 4629000,
+    "precioDesde": 4629000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "AMD Ryzen AI 7-350 (hasta 5.0GHz, 50TOPS NPU)",
+      "ram": "16GB DDR5",
+      "almacenamiento": "1TB SSD",
+      "pantalla": "14\" WQXGA (2560×1600)",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "ExpertBook con IA — el portátil más avanzado para ejecutivos"
+  },
+  {
+    "id": "LED-NX.B0YAL",
+    "slug": "acer-travelmate-i5-16gb-512gb",
+    "nombre": "Acer TravelMate P214",
+    "marca": "Acer",
+    "categoria": "portatil",
+    "referencia": "NX.B0YAL.007",
+    "precio": 2330000,
+    "precioDesde": 2330000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5-1335U (10 núcleos, hasta 4.6GHz)",
+      "ram": "16GB",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "14\" FHD (1920×1080)",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "TravelMate — portátil empresarial confiable para trabajo diario"
+  },
+  {
+    "id": "LED-T0WMP",
+    "slug": "dell-pc-qcs1250-i5-16gb-monitor22",
+    "nombre": "PC Dell Pro QCS1250 + Monitor 22\"",
+    "marca": "Dell",
+    "categoria": "pc",
+    "referencia": "T0WMP",
+    "precio": 2790000,
+    "precioDesde": 2790000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5 14500 (14 núcleos, hasta 4.8GHz)",
+      "ram": "16GB DDR5 4800MHz",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "Dell Pro 22\" E2225HSM con soporte regulable",
+      "so": "Windows 11 Pro",
+      "garantia": "3 años"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC completa para oficina — incluye monitor, lista para trabajar"
+  },
+  {
+    "id": "LED-YJ9PX-E",
+    "slug": "dell-optiplex-7020-sff-i5-8gb-monitor22",
+    "nombre": "Dell Optiplex 7020 SFF + Monitor 22\"",
+    "marca": "Dell",
+    "categoria": "pc",
+    "referencia": "YJ9PX_E",
+    "precio": 2779000,
+    "precioDesde": 2779000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5 14500 vPro (14 núcleos, hasta 5.0GHz)",
+      "ram": "8GB DDR5",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "Dell Pro 22\" E2225HSM con soporte regulable",
+      "so": "Windows 11 Pro",
+      "garantia": "3 años"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC empresarial Dell con vPro — gestión remota y seguridad avanzada"
+  },
+  {
+    "id": "LED-13C50026LD",
+    "slug": "lenovo-thinkcentre-neo50q-core5-monitor238",
+    "nombre": "PC ThinkCentre Neo 50q Gen 5 + Monitor 23.8\"",
+    "marca": "Lenovo",
+    "categoria": "pc",
+    "referencia": "13C50026LD",
+    "precio": 2050000,
+    "precioDesde": 2050000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core 5 210H (8 núcleos, hasta 4.8GHz)",
+      "ram": "8GB DDR5-5600",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "23.8\" FHD (1920×1080) S24-4e",
+      "so": "Sin SO (requiere licencia)"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC compacta Lenovo — formato pequeño, gran rendimiento para oficina"
+  },
+  {
+    "id": "LED-8N5DF",
+    "slug": "dell-pro-qc24250-ultra7-aio-238",
+    "nombre": "Dell Pro QC24250 AIO 23.8\"",
+    "marca": "Dell",
+    "categoria": "pc",
+    "referencia": "8N5DF",
+    "precio": 5450000,
+    "precioDesde": 5450000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core Ultra 7 265",
+      "ram": "16GB",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "23.8\" FHD (1920×1080)",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "All-in-One premium Dell — todo en uno para escritorio ejecutivo"
+  },
+  {
+    "id": "LED-LS24F320",
+    "slug": "monitor-samsung-24-120hz-s32gf",
+    "nombre": "Monitor Samsung 24\" Essential S3 120Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "LS24F320GANXZA",
+    "precio": 339000,
+    "precioDesde": 339000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "pantalla": "24\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz",
+      "interfaz": "HDMI 1.4 × 2",
+      "extra": "Modo protección visual"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor para productividad — claro, rápido, sin fatiga visual"
+  },
+  {
+    "id": "LED-LS22F310",
+    "slug": "monitor-samsung-22-120hz-s31gf",
+    "nombre": "Monitor Samsung 22\" Essential S3 120Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "LS22F310EANXZA",
+    "precio": 235000,
+    "precioDesde": 235000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "pantalla": "22\" VA",
+      "frecuencia": "120Hz",
+      "extra": "Modo Eye Saver"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor compacto para escritorio — ideal para clínicas y oficinas"
+  },
+  {
+    "id": "LED-27B35H3",
+    "slug": "monitor-aoc-27-ips-120hz",
+    "nombre": "Monitor AOC 27\" IPS 120Hz Profesional",
+    "marca": "AOC",
+    "categoria": "monitor",
+    "referencia": "27B35H3",
+    "precio": 379000,
+    "precioDesde": 379000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "pantalla": "27\" FHD IPS",
+      "frecuencia": "120Hz",
+      "brillo": "300 cd/m²",
+      "interfaz": "HDMI 1.4, VGA",
+      "garantia": "3 años en pantalla"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor grande profesional — ideal para doble pantalla o trabajo intensivo"
+  },
+  {
+    "id": "LED-DHI-LM24-A200Y",
+    "slug": "monitor-dahua-24-fhd-100hz",
+    "nombre": "Monitor Dahua 24\" FHD 100Hz",
+    "marca": "Dahua",
+    "categoria": "monitor",
+    "referencia": "DHI-LM24-A200Y",
+    "precio": 280000,
+    "precioDesde": 280000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "pantalla": "24\" FHD",
+      "frecuencia": "100Hz",
+      "angulo": "178° H/V",
+      "interfaz": "HDMI, VGA",
+      "extra": "Anti luz azul"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor para punto de trabajo — precio accesible con buena cobertura"
+  },
+  {
+    "id": "LED-ZAF00124CO",
+    "slug": "lenovo-tab-one-4gb-128gb-estuche",
+    "nombre": "Tablet Lenovo Tab One 4G/128GB + Estuche",
+    "marca": "Lenovo",
+    "categoria": "tablet",
+    "referencia": "ZAF00124CO",
+    "precio": 479000,
+    "precioDesde": 479000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "MediaTek Helio G85 (8 núcleos)",
+      "ram": "4GB LPDDR4x",
+      "almacenamiento": "128GB eMMC",
+      "pantalla": "8.7\" HD (1340×800) 60Hz",
+      "conectividad": "Wi-Fi 5 + BT5.3",
+      "bateria": "5100mAh",
+      "so": "Android"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Tablet empresarial compacta — para consultas, inventario y movilidad"
+  },
+  {
+    "id": "LED-ZAEJ0134CO",
+    "slug": "lenovo-tab-lte-4gb-128gb-estuche",
+    "nombre": "Tablet Lenovo Tab LTE 10\" 4G/128GB + Estuche",
+    "marca": "Lenovo",
+    "categoria": "tablet",
+    "referencia": "ZAEJ0134CO",
+    "precio": 629000,
+    "precioDesde": 629000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "MediaTek Helio G85 (8 núcleos)",
+      "ram": "4GB LPDDR4x",
+      "almacenamiento": "128GB eMMC",
+      "pantalla": "10.1\" WUXGA (1920×1200) IPS",
+      "conectividad": "LTE + Wi-Fi 5 + BT5.3",
+      "bateria": "5100mAh",
+      "so": "Android"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Tablet con LTE — conectividad celular para equipos en campo"
+  },
+  {
+    "id": "LED-ZAFR0130CO",
+    "slug": "lenovo-ideatab-8gb-128gb-lapiz",
+    "nombre": "Tablet Lenovo IdeaPad Tab 11\" 8GB/128GB + Lápiz",
+    "marca": "Lenovo",
+    "categoria": "tablet",
+    "referencia": "ZAFR0130CO",
+    "precio": 821000,
+    "precioDesde": 821000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "MediaTek Dimensity 6300 (8 núcleos, hasta 2.4GHz)",
+      "ram": "8GB LPDDR4x",
+      "almacenamiento": "128GB UFS 2.2",
+      "pantalla": "11\" 2.5K (2560×1600) IPS 90Hz",
+      "conectividad": "Wi-Fi 5 + BT5.2",
+      "bateria": "7040mAh",
+      "so": "Android",
+      "incluye": "Lápiz y funda"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Tablet con lápiz — ideal para firmas, presentaciones y trabajo remoto"
+  },
+  {
+    "id": "LED-SM-X230NZAA",
+    "slug": "samsung-galaxy-tab-a11-6gb-128gb",
+    "nombre": "Samsung Galaxy Tab A11+ 6GB/128GB",
+    "marca": "Samsung",
+    "categoria": "tablet",
+    "referencia": "SM-X230NZAACOO",
+    "precio": 712000,
+    "precioDesde": 712000,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Octa-Core 2.5GHz",
+      "ram": "6GB",
+      "almacenamiento": "128GB",
+      "pantalla": "11\" WUXGA (1920×1200)",
+      "bateria": "7040mAh",
+      "so": "Android"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Samsung Galaxy Tab — ecosistema familiar y soporte garantizado"
+  },
+  {
+    "id": "LED-FQC-10553",
+    "slug": "licencia-windows-11-pro-oem",
+    "nombre": "Licencia Windows 11 Pro OEM 64-bit",
+    "marca": "Microsoft",
+    "categoria": "licencia",
+    "referencia": "FQC-10553",
+    "precio": 564000,
+    "precioDesde": 564000,
+    "proveedor": "ledacom",
+    "specs": {
+      "tipo": "OEM (máquina nueva)",
+      "version": "Windows 11 Pro 64-bit"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Windows 11 Pro OEM — para PCs sin sistema operativo"
+  },
+  {
+    "id": "LED-EP2-06608",
+    "slug": "licencia-office-hogar-empresas-2024",
+    "nombre": "Office Hogar y Empresas 2024 ESD",
+    "marca": "Microsoft",
+    "categoria": "licencia",
+    "referencia": "EP2-06608",
+    "precio": 765000,
+    "precioDesde": 765000,
+    "proveedor": "ledacom",
+    "specs": {
+      "tipo": "ESD (descarga digital)",
+      "incluye": "Word, Excel, PowerPoint, Outlook",
+      "version": "Office 2024 perpetuo"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Office permanente para empresas — sin suscripción mensual"
+  },
+  {
+    "id": "LED-KLQ-00219",
+    "slug": "microsoft-365-standard-empresarial-anual",
+    "nombre": "Microsoft 365 Standard Empresarial (Anual)",
+    "marca": "Microsoft",
+    "categoria": "licencia",
+    "referencia": "KLQ-00219",
+    "precio": 390000,
+    "precioDesde": 390000,
+    "proveedor": "ledacom",
+    "specs": {
+      "tipo": "Suscripción anual por usuario",
+      "incluye": "Office + Teams + OneDrive 1TB + Exchange"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Microsoft 365 empresarial — colaboración completa en la nube"
+  },
+  {
+    "id": "LED-KL4541DDEFS",
+    "slug": "kaspersky-small-office-5-usuarios",
+    "nombre": "Kaspersky Small Office Security 5 usuarios 1 año",
+    "marca": "Kaspersky",
+    "categoria": "licencia",
+    "referencia": "KL4541DDEFS",
+    "precio": 275000,
+    "precioDesde": 275000,
+    "proveedor": "ledacom",
+    "specs": {
+      "usuarios": "5",
+      "duracion": "1 año",
+      "tipo": "Electrónica - entrega inmediata"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Protección para toda la oficina — 5 dispositivos cubiertos"
+  },
+  {
+    "id": "LED-ESET-H-5-1-ESD",
+    "slug": "eset-small-business-5-eq-1-ano",
+    "nombre": "ESET Small Business Security 5 EQ 1 año",
+    "marca": "ESET",
+    "categoria": "licencia",
+    "referencia": "ESET-H-5-1-ESD",
+    "precio": 369000,
+    "precioDesde": 369000,
+    "proveedor": "ledacom",
+    "specs": {
+      "usuarios": "5",
+      "duracion": "1 año",
+      "tipo": "ESD (digital)"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Antivirus empresarial ESET — reconocido por su bajo consumo"
+  },
+  {
+    "id": "IS-MON-SAM24-320",
+    "slug": "monitor-samsung-24-fhd-100hz-infoshop",
+    "nombre": "Monitor Samsung 24\" FHD 100Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "24F320GAN",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "24\" FHD (1920×1080)",
+      "frecuencia": "100Hz",
+      "extra": "5ms"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor Samsung para oficina — calidad y respaldo de marca"
+  },
+  {
+    "id": "IS-MON-SAM27-320",
+    "slug": "monitor-samsung-27-ips-120hz-infoshop",
+    "nombre": "Monitor Samsung 27\" IPS 120Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "LS27F320GANX",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "27\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor grande Samsung para trabajo productivo"
+  },
+  {
+    "id": "IS-MON-LG24",
+    "slug": "monitor-lg-24-ips-120hz-infoshop",
+    "nombre": "Monitor LG 24\" IPS 120Hz",
+    "marca": "LG",
+    "categoria": "monitor",
+    "referencia": "24U411A-B",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "24\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz",
+      "extra": "5ms GTG, diseño sin bordes"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor LG elegante para escritorios ejecutivos"
+  },
+  {
+    "id": "IS-MON-LG22",
+    "slug": "monitor-lg-22-va-100hz-infoshop",
+    "nombre": "Monitor LG 22\" VA 100Hz",
+    "marca": "LG",
+    "categoria": "monitor",
+    "referencia": "22U401A-B",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "22\" FHD (1920×1080) VA",
+      "frecuencia": "100Hz",
+      "extra": "1ms GTG"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor compacto LG para puntos de trabajo pequeños"
+  },
+  {
+    "id": "IS-MON-LG27",
+    "slug": "monitor-lg-27-ips-120hz-infoshop",
+    "nombre": "Monitor LG 27\" IPS 120Hz",
+    "marca": "LG",
+    "categoria": "monitor",
+    "referencia": "27U411A-B",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "pantalla": "27\" FHD (1920×1080) IPS",
+      "frecuencia": "120Hz",
+      "extra": "5ms GTG, sin bordes"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor grande LG para máxima productividad"
+  },
+  {
+    "id": "IS-LAP-DELL3530",
+    "slug": "dell-inspiron-15-3530-i5-8gb-512gb",
+    "nombre": "Dell Inspiron 15 3530",
+    "marca": "Dell",
+    "categoria": "portatil",
+    "referencia": "G6P3X",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "Intel Core i5-1334U",
+      "ram": "8GB DDR4",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "15.6\" FHD",
+      "so": "Ubuntu (requiere Windows)"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "Dell Inspiron — portátil confiable para trabajo de oficina"
+  },
+  {
+    "id": "IS-LAP-ASUSVIVO",
+    "slug": "asus-vivobook-x1502za-i5-8gb-512gb",
+    "nombre": "Asus VivoBook 15 X1502ZA",
+    "marca": "Asus",
+    "categoria": "portatil",
+    "referencia": "X1502ZA-EJ2539W",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "Intel Core i5-12500H",
+      "ram": "8GB DDR4",
+      "almacenamiento": "512GB SSD",
+      "pantalla": "15.6\" FHD",
+      "so": "Windows 11"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "VivoBook con Windows 11 — listo para trabajar desde el primer día"
+  },
+  {
+    "id": "IS-PC-RYZEN5-JANUS22",
+    "slug": "pc-ryzen5-5600gt-16gb-512gb-monitor22",
+    "nombre": "PC Ryzen 5 5600GT + Monitor 22\" FHD",
+    "marca": "AMD",
+    "categoria": "pc",
+    "referencia": "PC-R5-5600GT-22",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "AMD Ryzen 5 5600GT (6 núcleos, hasta 4.9GHz)",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "22\" FHD con parlantes",
+      "so": "FreeDOS (requiere Windows)",
+      "incluye": "Teclado + Mouse"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC ensamblada con monitor — opción económica para oficina"
+  },
+  {
+    "id": "IS-PC-RYZEN7-ACER24",
+    "slug": "pc-ryzen7-5700g-16gb-512gb-monitor24",
+    "nombre": "PC Ryzen 7 5700G + Monitor Acer 24\"",
+    "marca": "AMD",
+    "categoria": "pc",
+    "referencia": "PC-R7-5700G-24",
+    "precio": null,
+    "precioDesde": null,
+    "proveedor": "infoshop",
+    "specs": {
+      "procesador": "AMD Ryzen 7 5700G (8 núcleos, hasta 4.6GHz)",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD NVMe",
+      "monitor": "Acer 24\" 144Hz",
+      "so": "FreeDOS (requiere Windows)",
+      "incluye": "Teclado + Mouse"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC Ryzen 7 con pantalla grande — excelente para multitarea"
+  }
+]

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:ledacom": "node scripts/import-suppliers.mjs ledacom",
+    "import:infoshop": "node scripts/import-suppliers.mjs infoshop",
+    "import:merge": "node scripts/import-suppliers.mjs merge"
   },
   "dependencies": {
     "lucide-react": "0.469.0",
@@ -22,6 +25,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "pdf-parse": "^1.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

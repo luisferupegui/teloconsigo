@@ -1,9 +1,9 @@
 import "server-only";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import path from "path";
-import type { Product } from "./products-types";
+import type { Product, BusinessProduct } from "./products-types";
 
-export type { Product } from "./products-types";
+export type { Product, BusinessProduct } from "./products-types";
 export { formatCOP, slugify } from "./products-types";
 
 const DATA_FILE = path.join(process.cwd(), "data", "products.json");
@@ -35,6 +35,33 @@ export const getFeaturedProducts = () =>
 export const getProductById = (id: string) =>
   loadProducts().find((p) => p.id === id);
 
+// ─── Business / Corporate catalog ────────────────────────────────────────────
+const BUSINESS_FILE = path.join(process.cwd(), "data", "products-business.json");
+
+export function loadBusinessProducts(): BusinessProduct[] {
+  try {
+    if (!existsSync(BUSINESS_FILE)) return [];
+    const raw = readFileSync(BUSINESS_FILE, "utf-8");
+    return JSON.parse(raw) as BusinessProduct[];
+  } catch {
+    return [];
+  }
+}
+
+export function getBusinessByUseCase(usoCaso: BusinessProduct["usoCaso"]) {
+  return loadBusinessProducts().filter((p) => p.usoCaso === usoCaso);
+}
+
+export function getBusinessByCategoria(cat: BusinessProduct["categoria"]) {
+  return loadBusinessProducts().filter((p) => p.categoria === cat);
+}
+
+export function getPrecioMinimo(usoCaso: BusinessProduct["usoCaso"]): number | null {
+  const items = getBusinessByUseCase(usoCaso).map((p) => p.precioDesde).filter((v): v is number => v !== null);
+  return items.length ? Math.min(...items) : null;
+}
+
+// ─── Legacy helpers ───────────────────────────────────────────────────────────
 export function nextId(): string {
   const list = loadProducts();
   const max = list.reduce(

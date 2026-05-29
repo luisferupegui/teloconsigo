@@ -16,6 +16,30 @@ export type Product = {
   descripcion: string;
 };
 
+export type BusinessProduct = {
+  id: string;
+  slug: string;
+  nombre: string;
+  marca: string;
+  categoria: "portatil" | "pc" | "monitor" | "tablet" | "licencia";
+  usoCaso:
+    | "portatil-ejecutivo"
+    | "portatil-oficina"
+    | "portatil-gaming"
+    | "pc-empresarial"
+    | "monitor"
+    | "tablet-empresarial"
+    | "licencia";
+  referencia?: string;
+  precio: number | null;
+  precioDesde: number | null;
+  precioIvaIncluido?: boolean;
+  proveedor: "ledacom" | "infoshop" | "manual";
+  specs: Record<string, string>;
+  descripcionUso: string;
+  destacado?: boolean;
+};
+
 export const formatCOP = (value: number) =>
   new Intl.NumberFormat("es-CO", {
     style: "currency",
