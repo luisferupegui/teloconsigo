@@ -795,6 +795,335 @@
     "precioDesde": 114000
   },
   {
+    "id": "LED-UX3407QA-QD232",
+    "slug": "asus-zenbook-a14-copilot-snapdragon-16gb-1tb",
+    "nombre": "Asus Zenbook A14 Copilot+",
+    "marca": "Asus",
+    "categoria": "portatil",
+    "referencia": "UX3407QA-QD232",
+    "precio": 4500000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Snapdragon X (hasta 2.97 GHz, NPU 45 TOPS)",
+      "ram": "16 GB LPDDR5X",
+      "almacenamiento": "1 TB SSD NVMe PCIe 4.0",
+      "pantalla": "14\" WUXGA (1920×1200) OLED",
+      "so": "Windows 11 Home"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "Zenbook ultradelgado con IA Copilot+ — autonomía todo el día",
+    "precioDesde": 5220000
+  },
+  {
+    "id": "LED-21SJ00BBLD",
+    "slug": "lenovo-thinkbook-14-g8-ultra5-16gb-512gb",
+    "nombre": "Lenovo ThinkBook 14 G8 IAL",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "referencia": "21SJ00BBLD",
+    "precio": 2349000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core Ultra 5 225U (hasta 4.8 GHz, 12 núcleos)",
+      "ram": "16 GB DDR5-5600",
+      "almacenamiento": "512 GB SSD NVMe",
+      "pantalla": "14\" WUXGA (1920×1200) IPS",
+      "so": "Linux"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "ThinkBook ejecutivo con Intel Core Ultra — precio y rendimiento equilibrados",
+    "precioDesde": 3242000
+  },
+  {
+    "id": "LED-NX.B64AL.002",
+    "slug": "acer-travelmate-p214-g2-core5-16gb-1tb",
+    "nombre": "Acer TravelMate P214 G2 / 1 TB",
+    "marca": "Acer",
+    "categoria": "portatil",
+    "referencia": "NX.B64AL.002",
+    "precio": 2839000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core 5 120U (hasta 5.0 GHz, 10 núcleos)",
+      "ram": "16 GB DDR5",
+      "almacenamiento": "1 TB SSD",
+      "pantalla": "14\" WUXGA (1920×1200)",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "portatil-ejecutivo",
+    "descripcionUso": "TravelMate con 1 TB de almacenamiento — ideal para quien maneja muchos archivos",
+    "precioDesde": 3918000
+  },
+  {
+    "id": "LED-83A000CRLM",
+    "slug": "lenovo-v14-gen4-i5-8gb-512gb",
+    "nombre": "Lenovo V14 Gen 4 IRU",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "referencia": "83A000CRLM",
+    "precio": 1659000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5-13420H (hasta 4.6 GHz, 8 núcleos)",
+      "ram": "8 GB DDR4",
+      "almacenamiento": "512 GB SSD NVMe",
+      "pantalla": "14\" FHD (1920×1080)",
+      "so": "Sin SO"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "Lenovo V14 — portátil sólido y asequible para el día a día en oficina",
+    "precioDesde": 2290000
+  },
+  {
+    "id": "LED-C27L7AT",
+    "slug": "hp-240-g10-i5-8gb-512gb-freedos",
+    "nombre": "HP 240 G10 Notebook",
+    "marca": "HP",
+    "categoria": "portatil",
+    "referencia": "C27L7AT#ABM",
+    "precio": 1519000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i5-1334U (hasta 4.6 GHz, 10 núcleos)",
+      "ram": "8 GB DDR4",
+      "almacenamiento": "512 GB SSD",
+      "pantalla": "14\" FHD",
+      "so": "FreeDOS"
+    },
+    "usoCaso": "portatil-oficina",
+    "descripcionUso": "HP 240 G10 — portátil corporativo HP al mejor precio de entrada",
+    "precioDesde": 2096000
+  },
+  {
+    "id": "LED-13DG000TLD",
+    "slug": "lenovo-thinkcentre-neo30s-i7-monitor238",
+    "nombre": "PC ThinkCentre Neo 30s + Monitor 23.8\"",
+    "marca": "Lenovo",
+    "categoria": "pc",
+    "referencia": "13DG000TLD",
+    "precio": 2539000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core i7-13620H (hasta 4.9 GHz, 10 núcleos)",
+      "ram": "8 GB DDR5-5200",
+      "almacenamiento": "512 GB SSD NVMe",
+      "monitor": "23.8\" ThinkVision E24-40",
+      "so": "Sin SO incluido"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "PC Lenovo con i7 — para tareas exigentes en la oficina",
+    "precioDesde": 3625000
+  },
+  {
+    "id": "LED-CQ1V4LT",
+    "slug": "hp-proone-240-g10-aio-24-ultra5",
+    "nombre": "HP ProOne 240 G10 All-in-One 24\"",
+    "marca": "HP",
+    "categoria": "pc",
+    "referencia": "CQ1V4LT#ABM_E",
+    "precio": 2929000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Intel Core Ultra 5-125U (hasta 4.3 GHz, 12 núcleos)",
+      "ram": "8 GB",
+      "almacenamiento": "512 GB SSD",
+      "pantalla": "24\" FHD integrada",
+      "so": "Windows 11 Pro"
+    },
+    "usoCaso": "pc-empresarial",
+    "descripcionUso": "All-in-One HP ProOne — escritorio sin cables con pantalla 24\" incorporada",
+    "precioDesde": 4182000
+  },
+  {
+    "id": "LED-LS32D390GA",
+    "slug": "monitor-samsung-32-curvo-100hz-s39gd",
+    "nombre": "Monitor Samsung 32\" Curvo 100Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "referencia": "LS32D390GANXZA",
+    "precio": 799000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "pantalla": "32\" FHD (1920×1080) Curvo 1500R",
+      "frecuencia": "100 Hz",
+      "extra": "Modo Juegos + Modo protección visual"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor curvo 32\" — para setups dobles o trabajo con múltiples ventanas",
+    "precioDesde": 910000
+  },
+  {
+    "id": "LED-DHI-LM22-A200Y",
+    "slug": "monitor-dahua-22-fhd-100hz",
+    "nombre": "Monitor Dahua 22\" FHD 100Hz",
+    "marca": "Dahua",
+    "categoria": "monitor",
+    "referencia": "DHI-LM22-A200Y",
+    "precio": 219000,
+    "precioIvaIncluido": true,
+    "proveedor": "ledacom",
+    "specs": {
+      "pantalla": "22\" FHD",
+      "frecuencia": "100 Hz",
+      "interfaz": "HDMI, VGA",
+      "extra": "Anti luz azul, bisel ultradelgado"
+    },
+    "usoCaso": "monitor",
+    "descripcionUso": "Monitor 22\" compacto — para secretaría, caja o punto adicional de trabajo",
+    "precioDesde": 249000
+  },
+  {
+    "id": "LED-ZAEH0127CO",
+    "slug": "lenovo-tab-10-tb311fu-4gb-128gb-case",
+    "nombre": "Tablet Lenovo Tab 10\" 4GB/128GB + Case",
+    "marca": "Lenovo",
+    "categoria": "tablet",
+    "referencia": "ZAEH0127CO",
+    "precio": 579000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "MediaTek Helio G85 (8 núcleos)",
+      "ram": "4 GB",
+      "almacenamiento": "128 GB",
+      "pantalla": "10.1\" WUXGA (1920×1200) IPS",
+      "incluye": "Combo case + audífonos"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Tablet 10\" para trabajo — incluye funda protectora y audífonos",
+    "precioDesde": 785000
+  },
+  {
+    "id": "LED-ZADB0122CO",
+    "slug": "lenovo-tab-m11-lte-8gb-128gb-folio-lapiz",
+    "nombre": "Tablet Lenovo Tab M11 LTE 8GB/128GB",
+    "marca": "Lenovo",
+    "categoria": "tablet",
+    "referencia": "ZADB0122CO",
+    "precio": 899000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "MediaTek Helio G88 (8 núcleos)",
+      "ram": "8 GB LPDDR4x",
+      "almacenamiento": "128 GB eMMC",
+      "pantalla": "11\" WUXGA (1920×1200) 90 Hz",
+      "conectividad": "4G LTE + Wi-Fi 5",
+      "incluye": "Estuche folio + Tab Pen Plus"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Tablet LTE con lápiz — para firmas digitales y trabajo en campo",
+    "precioDesde": 1219000
+  },
+  {
+    "id": "LED-ZADX0170CO",
+    "slug": "lenovo-tab-plus-8gb-256gb-sleeve",
+    "nombre": "Tablet Lenovo Tab Plus 11.5\" 8GB/256GB",
+    "marca": "Lenovo",
+    "categoria": "tablet",
+    "referencia": "ZADX0170CO",
+    "precio": 990000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "MediaTek Helio G99 (hasta 2.2 GHz, 8 núcleos)",
+      "ram": "8 GB LPDDR4x",
+      "almacenamiento": "256 GB UFS 2.2",
+      "pantalla": "11.5\" 2K (2000×1200) IPS 90 Hz",
+      "bateria": "8600 mAh",
+      "incluye": "Sleeve + audífonos"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Tablet premium Lenovo — pantalla 2K con batería de larga duración",
+    "precioDesde": 1343000
+  },
+  {
+    "id": "LED-SM-X230NZAE",
+    "slug": "samsung-galaxy-tab-a11plus-8gb-256gb",
+    "nombre": "Samsung Galaxy Tab A11+ 8GB/256GB",
+    "marca": "Samsung",
+    "categoria": "tablet",
+    "referencia": "SM-X230NZAECOO",
+    "precio": 789000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "procesador": "Octa-Core 2.5 GHz",
+      "ram": "8 GB",
+      "almacenamiento": "256 GB",
+      "pantalla": "11\" WUXGA (1920×1200)",
+      "bateria": "7040 mAh"
+    },
+    "usoCaso": "tablet-empresarial",
+    "descripcionUso": "Galaxy Tab A11+ con más memoria — para equipos que necesitan más espacio",
+    "precioDesde": 1070000
+  },
+  {
+    "id": "LED-FQC-10572",
+    "slug": "licencia-windows-11-pro-esd-multilanguage",
+    "nombre": "Windows 11 Pro ESD Multilanguage",
+    "marca": "Microsoft",
+    "categoria": "licencia",
+    "referencia": "FQC-10572",
+    "precio": 815000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "tipo": "ESD — descarga digital inmediata",
+      "version": "Windows 11 Pro 64-bit",
+      "entrega": "Clave digital por correo"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Windows 11 Pro ESD — versión digital disponible en todos los idiomas",
+    "precioDesde": 1454000
+  },
+  {
+    "id": "LED-ESET-H-10-1-ES",
+    "slug": "eset-small-business-security-10eq-1ano",
+    "nombre": "ESET Small Business Security · 10 equipos",
+    "marca": "ESET",
+    "categoria": "licencia",
+    "referencia": "ESET-H-10-1-ES",
+    "precio": 595000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "cobertura": "10 dispositivos",
+      "duracion": "1 año",
+      "entrega": "ESD — descarga digital"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "ESET para 10 equipos — protección para toda la empresa sin complicaciones",
+    "precioDesde": 1062000
+  },
+  {
+    "id": "LED-KL4541DDKFS",
+    "slug": "kaspersky-small-office-10-usuarios-1ano",
+    "nombre": "Kaspersky Small Office Security · 10 equipos",
+    "marca": "Kaspersky",
+    "categoria": "licencia",
+    "referencia": "KL4541DDKFS",
+    "precio": 519000,
+    "precioIvaIncluido": false,
+    "proveedor": "ledacom",
+    "specs": {
+      "cobertura": "10 usuarios + 1 servidor",
+      "duracion": "1 año",
+      "entrega": "Electrónica — activación inmediata"
+    },
+    "usoCaso": "licencia",
+    "descripcionUso": "Kaspersky para 10 equipos — seguridad completa para toda la oficina",
+    "precioDesde": 926000
+  },
+  {
     "id": "IS-MON-SAM24-320",
     "slug": "monitor-samsung-24-fhd-100hz-infoshop",
     "nombre": "Monitor Samsung 24\" FHD 100Hz",

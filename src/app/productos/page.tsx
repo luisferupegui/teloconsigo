@@ -19,78 +19,112 @@ export const metadata = {
     "Equipos tecnológicos corporativos: portátiles ejecutivos, PCs empresariales, monitores, tablets, accesorios y licencias. Cotización rápida.",
 };
 
-// ─── Secciones por caso de uso ────────────────────────────────────────────────
+// ─── Mapa de abreviaciones para labels de specs ───────────────────────────────
+
+const SPEC_LABEL: Record<string, string | null> = {
+  procesador:    "CPU",
+  ram:           "RAM",
+  almacenamiento:"SSD",
+  pantalla:      "Pantalla",
+  monitor:       "Monitor",
+  so:            "SO",
+  garantia:      "Garantía",
+  conectividad:  "Red",
+  bateria:       "Batería",
+  capacidad:     "Cap.",
+  interfaz:      "Puerto",
+  cobertura:     "Equipos",
+  duracion:      "Vigencia",
+  clase:         "Clase",
+  velocidad:     "Vel.",
+  frecuencia:    "Refresco",
+  tipo:          "Tipo",
+  entrega:       "Entrega",
+  incluye:       "Incluye",
+  version:       "Versión",
+  // omitidos
+  puertos:       null,
+  extra:         null,
+  angulo:        null,
+  brillo:        null,
+};
+
+// ─── Paleta de colores por categoría ─────────────────────────────────────────
+// Inspirada en el azul corporativo #1e6cff como ancla.
+// Colores profesionales y equilibrados, distinguibles entre sí.
 
 const SECCIONES = [
   {
-    usoCaso: "portatil-ejecutivo" as const,
-    titulo: "Portátiles Ejecutivos",
-    subtitulo: "Livianos · Elegantes · Batería larga",
-    descripcion:
-      "Para profesionales que exigen lo mejor. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
-    icon: Laptop,
-    color: "from-blue-600 to-blue-800",
-    badgeColor: "bg-blue-100 text-blue-800",
+    usoCaso:     "portatil-ejecutivo" as const,
+    titulo:      "Portátiles Ejecutivos",
+    tags:        ["Livianos", "Elegantes", "Batería larga"],
+    descripcion: "Para profesionales que exigen lo mejor. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
+    icon:        Laptop,
+    // Degradado profundo en el azul de marca
+    iconGradient:"from-[#0f3d91] to-[#1e6cff]",
+    // Badge pill: fondo muy suave, texto oscuro, borde sutil
+    badge:       "bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-200",
+    tagText:     "text-blue-700",
   },
   {
-    usoCaso: "portatil-oficina" as const,
-    titulo: "Equipos para Oficina",
-    subtitulo: "Rápidos · Confiables · Multitarea",
-    descripcion:
-      "El balance perfecto entre precio y rendimiento para el trabajo diario. Ideales para contadores, abogados y startups.",
-    icon: Laptop,
-    color: "from-indigo-500 to-indigo-700",
-    badgeColor: "bg-indigo-100 text-indigo-800",
+    usoCaso:     "portatil-oficina" as const,
+    titulo:      "Equipos para Oficina",
+    tags:        ["Rápidos", "Confiables", "Multitarea"],
+    descripcion: "El balance perfecto entre precio y rendimiento para el trabajo diario. Ideales para contadores, abogados y startups.",
+    icon:        Laptop,
+    iconGradient:"from-sky-600 to-sky-400",
+    badge:       "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200",
+    tagText:     "text-sky-700",
   },
   {
-    usoCaso: "pc-empresarial" as const,
-    titulo: "PCs Empresariales",
-    subtitulo: "Oficinas · Puntos de venta · Empresas",
-    descripcion:
-      "Equipos de escritorio completos con monitor. Listos para instalar y trabajar desde el primer día.",
-    icon: Cpu,
-    color: "from-slate-600 to-slate-800",
-    badgeColor: "bg-slate-100 text-slate-800",
+    usoCaso:     "pc-empresarial" as const,
+    titulo:      "PCs Empresariales",
+    tags:        ["Oficinas", "Puntos de venta", "Empresas"],
+    descripcion: "Equipos de escritorio completos con monitor incluido. Listos para instalar y trabajar desde el primer día.",
+    icon:        Cpu,
+    iconGradient:"from-slate-700 to-slate-500",
+    badge:       "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-300",
+    tagText:     "text-slate-600",
   },
   {
-    usoCaso: "monitor" as const,
-    titulo: "Monitores",
-    subtitulo: "Productividad · Setups · Ergonomía",
-    descripcion:
-      "Samsung, LG, AOC. Para un solo monitor o para montar doble pantalla y multiplicar tu productividad.",
-    icon: Monitor,
-    color: "from-cyan-500 to-cyan-700",
-    badgeColor: "bg-cyan-100 text-cyan-800",
+    usoCaso:     "monitor" as const,
+    titulo:      "Monitores",
+    tags:        ["Productividad", "Setups dobles", "Ergonomía"],
+    descripcion: "Samsung, LG, AOC, Dahua. Desde 22\" hasta 32\". Para escritorios de una o doble pantalla.",
+    icon:        Monitor,
+    iconGradient:"from-teal-700 to-teal-500",
+    badge:       "bg-teal-50 text-teal-800 ring-1 ring-inset ring-teal-200",
+    tagText:     "text-teal-700",
   },
   {
-    usoCaso: "tablet-empresarial" as const,
-    titulo: "Tablets Empresariales",
-    subtitulo: "Ventas · Inventario · Movilidad",
-    descripcion:
-      "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo y Samsung con soporte garantizado.",
-    icon: Tablet,
-    color: "from-violet-500 to-violet-700",
-    badgeColor: "bg-violet-100 text-violet-800",
+    usoCaso:     "tablet-empresarial" as const,
+    titulo:      "Tablets Empresariales",
+    tags:        ["Ventas", "Inventario", "Movilidad"],
+    descripcion: "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo y Samsung con soporte garantizado.",
+    icon:        Tablet,
+    iconGradient:"from-indigo-700 to-indigo-500",
+    badge:       "bg-indigo-50 text-indigo-800 ring-1 ring-inset ring-indigo-200",
+    tagText:     "text-indigo-700",
   },
   {
-    usoCaso: "accesorio" as const,
-    titulo: "Accesorios",
-    subtitulo: "Mouse · Teclados · USB · Discos",
-    descripcion:
-      "Todo lo que necesita tu equipo de trabajo: combos inalámbricos Logitech, memorias USB, microSD y discos externos Kingston y ADATA.",
-    icon: Package,
-    color: "from-orange-500 to-orange-700",
-    badgeColor: "bg-orange-100 text-orange-800",
+    usoCaso:     "accesorio" as const,
+    titulo:      "Accesorios",
+    tags:        ["Mouse", "Teclados", "USB", "Discos"],
+    descripcion: "Combos inalámbricos Logitech, memorias USB y microSD Kingston, discos externos ADATA. Todo lo que necesita tu equipo.",
+    icon:        Package,
+    iconGradient:"from-amber-700 to-amber-500",
+    badge:       "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-200",
+    tagText:     "text-amber-700",
   },
   {
-    usoCaso: "licencia" as const,
-    titulo: "Licencias y Software",
-    subtitulo: "Windows · Office · Antivirus",
-    descripcion:
-      "Licencias originales Microsoft y antivirus empresarial. Activación inmediata, sin complicaciones.",
-    icon: Key,
-    color: "from-emerald-500 to-emerald-700",
-    badgeColor: "bg-emerald-100 text-emerald-800",
+    usoCaso:     "licencia" as const,
+    titulo:      "Licencias y Software",
+    tags:        ["Windows", "Office", "Antivirus"],
+    descripcion: "Licencias originales Microsoft y antivirus empresarial ESET y Kaspersky. Activación inmediata, sin complicaciones.",
+    icon:        Key,
+    iconGradient:"from-emerald-700 to-emerald-500",
+    badge:       "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200",
+    tagText:     "text-emerald-700",
   },
 ] as const;
 
@@ -99,52 +133,63 @@ const SECCIONES = [
 function BusinessProductCard({ product }: { product: BusinessProduct }) {
   const price = product.precioDesde ?? product.precio;
 
-  // Muestra solo las 3 primeras specs relevantes
-  const specEntries = Object.entries(product.specs).slice(0, 3);
+  // Filtra y abrevia las specs, muestra máximo 3
+  const specRows = Object.entries(product.specs)
+    .map(([k, v]) => {
+      const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
+      return label ? { label, value: String(v) } : null;
+    })
+    .filter((x): x is { label: string; value: string } => x !== null)
+    .slice(0, 3);
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
-      <h3 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2">
+    <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+      {/* Nombre + descripción */}
+      <h3 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
         {product.nombre}
       </h3>
-
-      <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2">
+      <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2 min-h-[2rem]">
         {product.descripcionUso}
       </p>
 
-      {/* Specs principales */}
-      <div className="mt-3 space-y-1 flex-1">
-        {specEntries.map(([k, v]) => (
-          <div key={k} className="flex gap-1.5 text-xs text-zinc-600">
-            <span className="font-medium capitalize text-zinc-400 w-20 shrink-0">
-              {k}
+      {/* Specs — etiquetas abreviadas con ancho fijo */}
+      <div className="mt-3 space-y-1.5 flex-1">
+        {specRows.map(({ label, value }) => (
+          <div key={label} className="flex items-baseline gap-2 text-xs leading-4">
+            <span className="shrink-0 min-w-[48px] font-medium text-zinc-400 truncate">
+              {label}
             </span>
-            <span className="line-clamp-1">{String(v)}</span>
+            <span className="flex-1 min-w-0 text-zinc-700 line-clamp-1">
+              {value}
+            </span>
           </div>
         ))}
+        {/* Relleno si hay menos de 3 specs para mantener altura uniforme */}
+        {specRows.length < 3 && (
+          <div className="h-[calc((3-var(--count))*1.25rem)]"
+               style={{ height: `${(3 - specRows.length) * 1.25}rem` }} />
+        )}
       </div>
 
-      {/* Precio y CTA */}
-      <div className="mt-4 flex items-end justify-between gap-2">
+      {/* Precio y CTA — siempre al fondo */}
+      <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
         <div>
           {price ? (
             <>
-              <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wide">
+              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
                 Desde
               </span>
-              <p className="text-lg font-bold text-zinc-900 leading-tight">
+              <p className="text-base font-bold text-zinc-900 leading-tight mt-0.5">
                 {formatCOP(price)}
               </p>
             </>
           ) : (
-            <p className="text-sm font-semibold text-zinc-500">
-              Consultar precio
-            </p>
+            <p className="text-sm font-medium text-zinc-400">Consultar precio</p>
           )}
         </div>
         <Link
           href={`/conseguir?ref=${product.referencia ?? product.slug}`}
-          className="shrink-0 rounded-full bg-[#1e6cff] px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+          className="shrink-0 rounded-full bg-[#1e6cff] px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
         >
           Cotizar
         </Link>
@@ -169,35 +214,51 @@ function SeccionUso({
 
   return (
     <section className="mb-16">
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-        <div className="flex items-center gap-3">
+      {/* Header de sección */}
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+        <div className="flex items-start gap-3">
+          {/* Icono con sombra */}
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${sec.color} shrink-0`}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${sec.iconGradient} shadow-lg`}
           >
             <sec.icon className="h-5 w-5 text-white" />
           </div>
+
           <div>
             <h2 className="text-xl font-bold text-zinc-900">{sec.titulo}</h2>
-            <p className="text-sm text-zinc-500">{sec.subtitulo}</p>
+            {/* Tags como chips de colores */}
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {sec.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 ${sec.tagText}`}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* Precio mínimo */}
         {minPrecio && (
-          <div className="text-right">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-wide">
+          <div className="text-right shrink-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
               Desde
             </p>
-            <p className="text-xl font-bold text-zinc-900">
+            <p className="text-2xl font-bold text-zinc-900 tabular-nums">
               {formatCOP(minPrecio)}
             </p>
           </div>
         )}
       </div>
 
-      <p className="text-sm text-zinc-600 mb-6 max-w-2xl">{sec.descripcion}</p>
+      <p className="text-sm text-zinc-600 mb-6 max-w-2xl leading-relaxed">
+        {sec.descripcion}
+      </p>
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm text-zinc-400">
+        <div className="rounded-2xl border border-dashed border-zinc-200 p-10 text-center text-sm text-zinc-400">
           Próximamente — estamos cargando el catálogo de{" "}
           {sec.titulo.toLowerCase()}.
         </div>
@@ -234,27 +295,27 @@ export default function ProductosPage() {
       <div className="mb-12">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl">
+            <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl leading-tight">
               Soluciones Tecnológicas
               <br />
               <span className="text-[#1e6cff]">para tu Empresa</span>
             </h1>
-            <p className="mt-3 text-zinc-600 max-w-xl text-base">
+            <p className="mt-3 text-zinc-500 max-w-xl text-base leading-relaxed">
               No vendemos referencias técnicas. Te ayudamos a elegir el equipo
-              correcto para tu operación, con cotización rápida y entrega ágil.
+              correcto para tu operación — con cotización rápida y entrega ágil.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/asesor"
-              className="inline-flex items-center gap-2 rounded-full bg-[#1e6cff] px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition"
+              className="inline-flex items-center gap-2 rounded-full bg-[#1e6cff] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition shadow-md shadow-blue-200"
             >
               <Zap className="h-4 w-4" />
               Asesor IA
             </Link>
             <Link
               href="/conseguir"
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+              className="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition"
             >
               <MessageCircle className="h-4 w-4" />
               Cotizar ahora
@@ -262,7 +323,7 @@ export default function ProductosPage() {
           </div>
         </div>
 
-        {/* Filtros rápidos */}
+        {/* Filtros rápidos — pills con colores por categoría */}
         <div className="mt-8 flex flex-wrap gap-2">
           {SECCIONES.map((s) => {
             const count = byUso(s.usoCaso).length;
@@ -270,18 +331,23 @@ export default function ProductosPage() {
               <a
                 key={s.usoCaso}
                 href={`#${s.usoCaso}`}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition hover:opacity-80 ${s.badgeColor}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition hover:opacity-80 ${s.badge}`}
               >
                 <s.icon className="h-3.5 w-3.5" />
                 {s.titulo}
                 {count > 0 && (
-                  <span className="ml-0.5 opacity-60">({count})</span>
+                  <span className="ml-0.5 tabular-nums opacity-60">
+                    ({count})
+                  </span>
                 )}
               </a>
             );
           })}
         </div>
       </div>
+
+      {/* Divider */}
+      <div className="border-t border-zinc-100 mb-12" />
 
       {/* Secciones */}
       {SECCIONES.map((sec) => (
@@ -291,12 +357,12 @@ export default function ProductosPage() {
       ))}
 
       {/* CTA final */}
-      <div className="mt-8 rounded-2xl bg-gradient-to-r from-[#1e6cff] to-blue-700 p-8 text-white text-center">
+      <div className="mt-4 rounded-2xl bg-gradient-to-r from-[#0f3d91] to-[#1e6cff] p-8 text-white text-center">
         <Building2 className="mx-auto mb-3 h-8 w-8 opacity-80" />
         <h2 className="text-xl font-bold mb-2">
           ¿No encontraste lo que buscabas?
         </h2>
-        <p className="text-blue-100 text-sm mb-5 max-w-md mx-auto">
+        <p className="text-blue-100 text-sm mb-5 max-w-md mx-auto leading-relaxed">
           Tenemos acceso a cientos de referencias más a través de nuestros
           mayoristas. Cuéntanos qué necesitas y te cotizamos en minutos.
         </p>
