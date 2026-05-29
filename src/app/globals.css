@@ -167,18 +167,50 @@ html {
   animation-play-state: paused;
 }
 
-/* Scrollbar más fino */
+/* Scrollbar más fino — tema claro (global) */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 8px;
+  border-radius: 100px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Scrollbar neon — dropdowns y paneles oscuros  */
+.scrollbar-neon {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(77, 141, 255, 0.30) transparent;
+}
+.scrollbar-neon::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-neon::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;
+}
+.scrollbar-neon::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(77, 141, 255, 0.0) 0%,
+    rgba(77, 141, 255, 0.45) 30%,
+    rgba(30, 108, 255, 0.55) 70%,
+    rgba(77, 141, 255, 0.0) 100%
+  );
+  border-radius: 100px;
+}
+.scrollbar-neon::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(77, 141, 255, 0.0) 0%,
+    rgba(77, 141, 255, 0.75) 30%,
+    rgba(30, 108, 255, 0.85) 70%,
+    rgba(77, 141, 255, 0.0) 100%
+  );
 }

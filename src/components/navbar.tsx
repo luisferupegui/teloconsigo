@@ -299,7 +299,7 @@ export function Navbar() {
               {catOpen && (
                 <div className="absolute left-0 top-full mt-1.5 w-60 rounded-xl border
                                 border-white/10 bg-[#0f1626] shadow-2xl shadow-black/60
-                                py-1 z-50 max-h-72 overflow-y-auto">
+                                py-1 z-50 max-h-72 overflow-y-auto scrollbar-neon">
                   <button
                     type="button"
                     onClick={() => { setSelectedCat(""); setCatOpen(false); }}
