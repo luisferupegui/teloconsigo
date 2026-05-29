@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CategoryFilters } from "@/components/category-filters";
 import { categories } from "@/lib/categories";
@@ -49,14 +48,9 @@ export default async function CategoriaPage({
       </nav>
 
       <div className="flex items-center gap-4">
-        <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-zinc-200">
-          <Image
-            src={cat.imagen}
-            alt={cat.nombre}
-            fill
-            sizes="80px"
-            className="object-cover"
-          />
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl
+                        border border-[#1e6cff]/25 bg-[#1e6cff]/8 shrink-0">
+          <cat.Icon className="h-10 w-10 text-[#1e6cff]" />
         </div>
         <div>
           <h1 className="font-display text-3xl font-bold text-zinc-900">

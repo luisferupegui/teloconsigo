@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ProductForm } from "../ProductForm";
-import { createProduct } from "../actions";
+import { ProductForm } from "../../ProductForm";
+import { createProduct } from "../../actions";
 
 export const metadata = { title: "Nuevo producto" };
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductById } from "@/lib/products";
-import { ProductForm } from "../../ProductForm";
-import { updateProduct } from "../../actions";
+import { ProductForm } from "../../../ProductForm";
+import { updateProduct } from "../../../actions";
 
 export const metadata = { title: "Editar producto" };
 

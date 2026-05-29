@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoutButton } from "../components/logout-button";
 
 export const metadata = { title: "Admin · Te lo Consigo" };
 
@@ -22,12 +23,15 @@ export default function AdminLayout({
               MODO DESARROLLO
             </span>
           </div>
-          <Link
-            href="/"
-            className="text-sm text-zinc-600 hover:text-[#1e6cff]"
-          >
-            ← Ver tienda
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="text-sm text-zinc-600 hover:text-[#1e6cff]"
+            >
+              ← Ver tienda
+            </Link>
+            <LogoutButton />
+          </div>
         </div>
         <div className="mx-auto flex max-w-7xl gap-1 px-4 sm:px-6 lg:px-8">
           {[

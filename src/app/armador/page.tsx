@@ -9,7 +9,7 @@ import { SmartImage } from "@/components/smart-image";
 
 const slots = [
   { key: "procesadores", label: "Procesador (CPU)", emoji: "🧠" },
-  { key: "placas-madre", label: "Placa madre", emoji: "🔌" },
+  { key: "motherboards", label: "Motherboard", emoji: "🔌" },
   { key: "memoria-ram", label: "Memoria RAM", emoji: "💾" },
   { key: "tarjetas-graficas", label: "Tarjeta gráfica (GPU)", emoji: "🎮" },
   { key: "almacenamiento", label: "Almacenamiento", emoji: "💿" },
@@ -29,7 +29,7 @@ export default function ArmadorPage() {
 
   const compatibility = useMemo(() => {
     const cpu = build["procesadores"];
-    const mb = build["placas-madre"];
+    const mb = build["motherboards"];
     const ram = build["memoria-ram"];
     const issues: string[] = [];
     const ok: string[] = [];

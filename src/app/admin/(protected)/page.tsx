@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getAllProducts, formatCOP } from "@/lib/products";
 import { categories } from "@/lib/categories";
-import { deleteProduct } from "./actions";
+import { deleteProduct } from "../actions";
 import { SmartImage } from "@/components/smart-image";
 
 export const dynamic = "force-dynamic";

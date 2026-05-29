@@ -112,7 +112,7 @@ export function Navbar() {
 
         {/* ── Logo — abarca ambas filas ───────────────────────────── */}
         <div className="row-span-2 self-center py-3">
-          <Link href="/" className="group shrink-0 block">
+          <Link href="/" className="group shrink-0 block" style={{ transform: "translateY(-5%)", display: "block" }}>
             <Image
               src="/logo-oscuro.png"
               alt="Te lo Consigo"
@@ -256,7 +256,10 @@ export function Navbar() {
                 >
                   {selectedCatData ? (
                     <>
-                      <span className="text-base leading-none">{selectedCatData.emoji}</span>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full
+                                      border border-[#1e6cff]/40 bg-[#1e6cff]/10 shrink-0">
+                        <selectedCatData.Icon className="h-2.5 w-2.5 text-[#4d8dff]" />
+                      </div>
                       <span className="max-w-[110px] truncate">{selectedCatData.nombre}</span>
                     </>
                   ) : (
@@ -320,7 +323,10 @@ export function Navbar() {
                           : "text-zinc-300 hover:text-white hover:bg-white/5"
                       }`}
                     >
-                      <span className="text-base leading-none">{cat.emoji}</span>
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full
+                                      border border-[#1e6cff]/30 bg-[#1e6cff]/8 shrink-0">
+                        <cat.Icon className="h-3 w-3 text-[#4d8dff]" />
+                      </div>
                       {cat.nombre}
                     </button>
                   ))}
@@ -447,7 +453,10 @@ export function Navbar() {
                 className="flex items-center gap-2 rounded px-2 py-2 text-sm text-zinc-400
                            hover:text-white hover:bg-white/5 transition"
               >
-                <span>{cat.emoji}</span>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full
+                                border border-[#1e6cff]/30 bg-[#1e6cff]/8 shrink-0">
+                  <cat.Icon className="h-2.5 w-2.5 text-[#4d8dff]" />
+                </div>
                 {cat.nombre}
               </Link>
             ))}

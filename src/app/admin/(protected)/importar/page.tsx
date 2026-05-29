@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { importCSV } from "../actions";
+import { importCSV } from "../../actions";
 
 export const metadata = { title: "Importar CSV" };
 

@@ -1,84 +1,118 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Cpu, Laptop, CircuitBoard, MemoryStick, Gamepad2, Zap, Monitor,
+  Thermometer, Box, Wifi, Mouse, Headphones, Video, HardDrive,
+  Shield, Keyboard, Printer,
+} from "lucide-react";
+
 export type Category = {
   slug: string;
   nombre: string;
   descripcion: string;
-  emoji: string;
-  imagen: string;
+  Icon: LucideIcon;
 };
-
-// Imágenes desde Unsplash (libres de uso) optimizadas para web
-const U = (id: string, w = 400) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 export const categories: Category[] = [
   {
     slug: "procesadores",
     nombre: "Procesadores",
     descripcion: "CPUs Intel y AMD para todo presupuesto",
-    emoji: "🧠",
-    imagen: U("photo-1591488320449-011701bb6704"),
+    Icon: Cpu,
   },
   {
-    slug: "tarjetas-graficas",
-    nombre: "Tarjetas gráficas",
-    descripcion: "GPU NVIDIA y AMD para gaming y trabajo",
-    emoji: "🎮",
-    imagen: U("photo-1591405351990-4726e331f141"),
+    slug: "portatiles",
+    nombre: "Portátiles",
+    descripcion: "Movilidad y potencia para cada necesidad",
+    Icon: Laptop,
   },
   {
-    slug: "placas-madre",
-    nombre: "Placas madre",
+    slug: "motherboards",
+    nombre: "Motherboards",
     descripcion: "Boards AM5, AM4, LGA1700 y más",
-    emoji: "🔌",
-    imagen: U("photo-1518770660439-4636190af475"),
+    Icon: CircuitBoard,
   },
   {
     slug: "memoria-ram",
     nombre: "Memoria RAM",
     descripcion: "DDR4 y DDR5 de alto rendimiento",
-    emoji: "💾",
-    imagen: U("photo-1591799264318-7e6ef8ddb7ea"),
+    Icon: MemoryStick,
   },
   {
-    slug: "almacenamiento",
-    nombre: "Almacenamiento",
-    descripcion: "SSD NVMe, SATA y discos duros",
-    emoji: "💿",
-    imagen: U("photo-1597872200969-2b65d56bd16b"),
+    slug: "tarjetas-graficas",
+    nombre: "Tarjetas Gráficas",
+    descripcion: "GPU NVIDIA y AMD para gaming y diseño",
+    Icon: Gamepad2,
   },
   {
     slug: "fuentes-de-poder",
-    nombre: "Fuentes de poder",
+    nombre: "Fuentes de Poder",
     descripcion: "PSU certificadas 80+ Bronze a Titanium",
-    emoji: "⚡",
-    imagen: U("photo-1601737487795-dab272f52420"),
-  },
-  {
-    slug: "gabinetes",
-    nombre: "Gabinetes",
-    descripcion: "Chasis ATX, mATX e ITX",
-    emoji: "📦",
-    imagen: U("photo-1587202372634-32705e3bf49c"),
-  },
-  {
-    slug: "refrigeracion",
-    nombre: "Refrigeración",
-    descripcion: "Aire, líquida y ventiladores",
-    emoji: "❄️",
-    imagen: U("photo-1587202372616-b43abea06c2a"),
+    Icon: Zap,
   },
   {
     slug: "monitores",
     nombre: "Monitores",
     descripcion: "Gaming, profesionales y ultrawide",
-    emoji: "🖥️",
-    imagen: U("photo-1527443224154-c4a3942d3acf"),
+    Icon: Monitor,
   },
   {
-    slug: "perifericos",
-    nombre: "Periféricos",
-    descripcion: "Teclados, mouse, audífonos y más",
-    emoji: "⌨️",
-    imagen: U("photo-1587829741301-dc798b83add3"),
+    slug: "refrigeracion",
+    nombre: "Refrigeración",
+    descripcion: "Aire, líquida y ventiladores",
+    Icon: Thermometer,
+  },
+  {
+    slug: "equipos-escritorio",
+    nombre: "Equipos de Escritorio",
+    descripcion: "PCs completos listos para trabajar",
+    Icon: Box,
+  },
+  {
+    slug: "redes",
+    nombre: "Redes",
+    descripcion: "Routers, switches y accesorios de red",
+    Icon: Wifi,
+  },
+  {
+    slug: "mouse-pad",
+    nombre: "Mouse & Pad Mouse",
+    descripcion: "Precisión y control en cada movimiento",
+    Icon: Mouse,
+  },
+  {
+    slug: "auriculares-audio",
+    nombre: "Auriculares & Audio",
+    descripcion: "Sonido inmersivo de alta calidad",
+    Icon: Headphones,
+  },
+  {
+    slug: "kits-streaming",
+    nombre: "Kits de Streaming",
+    descripcion: "Todo lo que necesitas para crear contenido",
+    Icon: Video,
+  },
+  {
+    slug: "almacenamiento",
+    nombre: "Almacenamiento",
+    descripcion: "SSD NVMe, SATA y discos duros",
+    Icon: HardDrive,
+  },
+  {
+    slug: "proteccion-accesorios",
+    nombre: "Protección y Accesorios",
+    descripcion: "Protege y complementa tus dispositivos",
+    Icon: Shield,
+  },
+  {
+    slug: "teclados",
+    nombre: "Teclados",
+    descripcion: "Comodidad y precisión para cada uso",
+    Icon: Keyboard,
+  },
+  {
+    slug: "impresoras",
+    nombre: "Impresoras",
+    descripcion: "Impresiones nítidas para hogar y oficina",
+    Icon: Printer,
   },
 ];

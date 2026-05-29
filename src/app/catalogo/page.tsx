@@ -70,7 +70,10 @@ export default async function CatalogoPage({
               href={`/categoria/${cat.slug}`}
               className="flex items-center gap-2 rounded px-3 py-2 text-sm hover:bg-blue-50"
             >
-              <span>{cat.emoji}</span>
+              <div className="flex h-6 w-6 items-center justify-center rounded-full
+                              border border-[#1e6cff]/25 bg-[#1e6cff]/8 shrink-0">
+                <cat.Icon className="h-3 w-3 text-[#1e6cff]" />
+              </div>
               {cat.nombre}
             </Link>
           ))}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono, Bebas_Neue } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -62,11 +63,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <html
       lang="es-CO"
@@ -78,11 +82,11 @@ export default function RootLayout({
             <CompareProvider>
               <CartProvider>
                 <ScrollToTop />
-                <Navbar />
+                {!isAdmin && <Navbar />}
                 <main className="flex-1">{children}</main>
-                <Footer />
-                <FloatingWhatsApp />
-                <CompareBar />
+                {!isAdmin && <Footer />}
+                {!isAdmin && <FloatingWhatsApp />}
+                {!isAdmin && <CompareBar />}
               </CartProvider>
             </CompareProvider>
           </WishlistProvider>
