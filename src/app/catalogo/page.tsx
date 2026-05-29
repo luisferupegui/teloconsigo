@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
-import { products } from "@/lib/products";
+import { getAllProducts } from "@/lib/products";
 import { categories } from "@/lib/categories";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Catálogo completo",
@@ -15,6 +17,7 @@ export default async function CatalogoPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const products = getAllProducts();
   const filtrados = q
     ? products.filter((p) =>
         `${p.nombre} ${p.marca} ${p.categoria}`
