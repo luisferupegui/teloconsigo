@@ -8,7 +8,7 @@ import {
   Cpu, Laptop, CircuitBoard, MemoryStick,
   Gamepad2, Zap, Monitor, Thermometer,
   Box, Wifi, Mouse, Headphones,
-  Video, HardDrive, Shield, Keyboard, Printer,
+  Video, HardDrive, Shield, Keyboard, Printer, Package,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -119,11 +119,18 @@ const ITEMS: {
     Icon: HardDrive,
   },
   {
-    name: "Protección y Accesorios",
-    desc: "Protege y complementa tus dispositivos.",
-    href: "/catalogo?q=accesorios",
+    name: "Protección Eléctrica",
+    desc: "UPS y reguladores para proteger tus equipos.",
+    href: "/categoria/proteccion",
     img:  "/carousel/proteccion-accesorios.png",
     Icon: Shield,
+  },
+  {
+    name: "Accesorios",
+    desc: "Mochilas, cargadores, hubs y cables.",
+    href: "/categoria/accesorios",
+    img:  "/carousel/accesorios.png",
+    Icon: Package,
   },
   {
     name: "Teclados",
@@ -282,7 +289,8 @@ export function CategoryCarousel() {
                              group-hover/card:-translate-y-[6px]
                              group-hover/card:border-[#2563EB]/35
                              shadow-[0_10px_30px_rgba(15,23,42,0.06)]
-                             group-hover/card:shadow-[0_20px_50px_rgba(15,23,42,0.13)]"
+                             group-hover/card:shadow-[0_20px_50px_rgba(15,23,42,0.13)]
+                             overflow-hidden will-change-transform"
                 >
                   {/*
                     ── Imagen ──────────────────────────────────────────────
@@ -300,7 +308,6 @@ export function CategoryCarousel() {
                       unoptimized
                       className="object-contain transition-transform duration-300
                                  group-hover/card:scale-110"
-                      style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.08))" }}
                     />
                   </div>
 

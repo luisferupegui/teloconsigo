@@ -79,7 +79,8 @@ const CAT_ACCENTS: Record<string, string> = {
   "auriculares-audio": "#f43f5e",
   "kits-streaming": "#a855f7",
   almacenamiento: "#0891b2",
-  "proteccion-accesorios": "#eab308",
+  proteccion: "#eab308",
+  accesorios: "#f59e0b",
   teclados: "#6366f1",
   impresoras: "#ef4444",
 };

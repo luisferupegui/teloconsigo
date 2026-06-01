@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Cpu, Laptop, CircuitBoard, MemoryStick, Gamepad2, Zap, Monitor,
   Thermometer, Box, Wifi, Mouse, Headphones, Video, HardDrive,
-  Shield, Keyboard, Printer,
+  Shield, Keyboard, Printer, Package,
 } from "lucide-react";
 
 export type Linea = {
@@ -10,6 +10,7 @@ export type Linea = {
   nombre: string;
   slug: string;
   imagen?: string;
+  tipo?: "laser" | "inyeccion"; // agrupación por tipo (p. ej. impresoras)
 };
 
 export type Category = {
@@ -17,7 +18,6 @@ export type Category = {
   nombre: string;
   descripcion: string;
   Icon: LucideIcon;
-  imagen?: string;
   lineas?: Linea[];
 };
 
@@ -74,18 +74,18 @@ export const categories: Category[] = [
       { marca: "Acer",              nombre: "TravelMate",    slug: "acer-travelmate",   imagen: `${L}/portatiles/acer-travelmate.png` },
       { marca: "MSI",               nombre: "Modern",        slug: "msi-modern",        imagen: `${L}/portatiles/msi-modern.png` },
       { marca: "MSI",               nombre: "Katana",        slug: "msi-katana",        imagen: `${L}/portatiles/msi-katana.png` },
-      { marca: "MSI",               nombre: "Cyborg",        slug: "msi-cyborg" },
-      { marca: "MSI",               nombre: "Stealth",       slug: "msi-stealth" },
-      { marca: "MSI",               nombre: "Raider",        slug: "msi-raider" },
-      { marca: "Dell",              nombre: "Inspiron",      slug: "dell-inspiron" },
-      { marca: "Dell",              nombre: "Latitude",      slug: "dell-latitude" },
-      { marca: "Dell",              nombre: "Vostro",        slug: "dell-vostro" },
-      { marca: "Dell",              nombre: "XPS",           slug: "dell-xps" },
-      { marca: "Dell",              nombre: "Alienware",     slug: "dell-alienware" },
-      { marca: "Dell",              nombre: "Precision",     slug: "dell-precision" },
-      { marca: "Microsoft Surface", nombre: "Surface Laptop",slug: "surface-laptop" },
-      { marca: "Microsoft Surface", nombre: "Surface Pro",   slug: "surface-pro" },
-      { marca: "Microsoft Surface", nombre: "Surface Studio", slug: "surface-studio" },
+      { marca: "MSI",               nombre: "Cyborg",        slug: "msi-cyborg", imagen: `${L}/portatiles/msi-cyborg.png` },
+      { marca: "MSI",               nombre: "Stealth",       slug: "msi-stealth", imagen: `${L}/portatiles/msi-stealth.png` },
+      { marca: "MSI",               nombre: "Raider",        slug: "msi-raider", imagen: `${L}/portatiles/msi-raider.png` },
+      { marca: "Dell",              nombre: "Inspiron",      slug: "dell-inspiron", imagen: `${L}/portatiles/dell-inspiron.png` },
+      { marca: "Dell",              nombre: "Latitude",      slug: "dell-latitude", imagen: `${L}/portatiles/dell-latitude.png` },
+      { marca: "Dell",              nombre: "Vostro",        slug: "dell-vostro", imagen: `${L}/portatiles/dell-vostro.png` },
+      { marca: "Dell",              nombre: "XPS",           slug: "dell-xps", imagen: `${L}/portatiles/dell-xps.png` },
+      { marca: "Dell",              nombre: "Alienware",     slug: "dell-alienware", imagen: `${L}/portatiles/dell-alienware.png` },
+      { marca: "Dell",              nombre: "Precision",     slug: "dell-precision", imagen: `${L}/portatiles/dell-precision.png` },
+      { marca: "Microsoft Surface", nombre: "Surface Laptop",slug: "surface-laptop", imagen: `${L}/portatiles/surface-laptop.png` },
+      { marca: "Microsoft Surface", nombre: "Surface Pro",   slug: "surface-pro", imagen: `${L}/portatiles/surface-pro.png` },
+      { marca: "Microsoft Surface", nombre: "Surface Studio", slug: "surface-studio", imagen: `${L}/portatiles/surface-studio.png` },
     ],
   },
   {
@@ -94,20 +94,20 @@ export const categories: Category[] = [
     descripcion: "Boards AM5, AM4, LGA1700 y más",
     Icon: CircuitBoard,
     lineas: [
-      { marca: "ASUS",     nombre: "Prime",          slug: "asus-prime" },
-      { marca: "ASUS",     nombre: "TUF Gaming",     slug: "asus-tuf-gaming-board" },
+      { marca: "ASUS",     nombre: "Prime",          slug: "asus-prime", imagen: `${L}/motherboards/asus-prime.png` },
+      { marca: "ASUS",     nombre: "TUF Gaming",     slug: "asus-tuf-gaming-board", imagen: `${L}/motherboards/asus-tuf-gaming-board.png` },
       { marca: "ASUS",     nombre: "ROG Strix",      slug: "asus-rog-strix-board",    imagen: `${L}/motherboards/asus-rog-strix.png` },
-      { marca: "ASUS",     nombre: "ProArt",         slug: "asus-proart" },
-      { marca: "MSI",      nombre: "PRO Series",     slug: "msi-pro-series" },
+      { marca: "ASUS",     nombre: "ProArt",         slug: "asus-proart", imagen: `${L}/motherboards/asus-proart.png` },
+      { marca: "MSI",      nombre: "PRO Series",     slug: "msi-pro-series", imagen: `${L}/motherboards/msi-pro-series.png` },
       { marca: "MSI",      nombre: "MAG",            slug: "msi-mag",                 imagen: `${L}/motherboards/msi-mag.png` },
-      { marca: "MSI",      nombre: "MPG",            slug: "msi-mpg" },
-      { marca: "MSI",      nombre: "MEG",            slug: "msi-meg" },
-      { marca: "GIGABYTE", nombre: "Ultra Durable",  slug: "gigabyte-ultra-durable" },
-      { marca: "GIGABYTE", nombre: "Gaming X",       slug: "gigabyte-gaming-x" },
+      { marca: "MSI",      nombre: "MPG",            slug: "msi-mpg", imagen: `${L}/motherboards/msi-mpg.png` },
+      { marca: "MSI",      nombre: "MEG",            slug: "msi-meg", imagen: `${L}/motherboards/msi-meg.png` },
+      { marca: "GIGABYTE", nombre: "Ultra Durable",  slug: "gigabyte-ultra-durable", imagen: `${L}/motherboards/gigabyte-ultra-durable.png` },
+      { marca: "GIGABYTE", nombre: "Gaming X",       slug: "gigabyte-gaming-x", imagen: `${L}/motherboards/gigabyte-gaming-x.png` },
       { marca: "GIGABYTE", nombre: "AORUS",          slug: "gigabyte-aorus",          imagen: `${L}/motherboards/gigabyte-aorus.png` },
-      { marca: "ASRock",   nombre: "Steel Legend",   slug: "asrock-steel-legend" },
+      { marca: "ASRock",   nombre: "Steel Legend",   slug: "asrock-steel-legend", imagen: `${L}/motherboards/asrock-steel-legend.png` },
       { marca: "ASRock",   nombre: "Phantom Gaming", slug: "asrock-phantom-gaming",   imagen: `${L}/motherboards/asrock-phantom-gaming.png` },
-      { marca: "ASRock",   nombre: "Taichi",         slug: "asrock-taichi" },
+      { marca: "ASRock",   nombre: "Taichi",         slug: "asrock-taichi", imagen: `${L}/motherboards/asrock-taichi.png` },
     ],
   },
   {
@@ -226,7 +226,6 @@ export const categories: Category[] = [
     nombre: "Redes",
     descripcion: "Routers, switches y accesorios de red",
     Icon: Wifi,
-    imagen: "/products/Linksys_Velop_Mesh.png",
     lineas: [
       { marca: "TP-Link",  nombre: "Archer",     slug: "tplink-archer",     imagen: `${L}/redes/tplink.png` },
       { marca: "TP-Link",  nombre: "Deco",       slug: "tplink-deco",       imagen: `${L}/redes/tplink.png` },
@@ -244,7 +243,6 @@ export const categories: Category[] = [
     nombre: "Mouse & Pad Mouse",
     descripcion: "Precisión y control en cada movimiento",
     Icon: Mouse,
-    imagen: "/products/Logitech_G502_Gaming_Mouse.png",
     lineas: [
       { marca: "Logitech", nombre: "G203",       slug: "logitech-g203",      imagen: `${L}/mouse-pad/logitech-g.png` },
       { marca: "Logitech", nombre: "G305",       slug: "logitech-g305",      imagen: `${L}/mouse-pad/logitech-g.png` },
@@ -259,7 +257,6 @@ export const categories: Category[] = [
     nombre: "Auriculares & Audio",
     descripcion: "Sonido inmersivo de alta calidad",
     Icon: Headphones,
-    imagen: "/products/JBL_Quantum_Headset.png",
     lineas: [
       { marca: "Sennheiser",     nombre: "HD Series",    slug: "sennheiser-hd",       imagen: `${L}/auriculares-audio/sennheiser.png` },
       { marca: "Sennheiser",     nombre: "Momentum",     slug: "sennheiser-momentum", imagen: `${L}/auriculares-audio/sennheiser.png` },
@@ -278,7 +275,6 @@ export const categories: Category[] = [
     nombre: "Kits de Streaming",
     descripcion: "Todo lo que necesitas para crear contenido",
     Icon: Video,
-    imagen: "/products/Elgato_Stream_Deck.png",
     lineas: [
       { marca: "Elgato",   nombre: "Stream Deck",         slug: "elgato-stream-deck",  imagen: `${L}/kits-streaming/elgato.png` },
       { marca: "Elgato",   nombre: "Wave Mic",            slug: "elgato-wave",         imagen: `${L}/kits-streaming/elgato.png` },
@@ -298,7 +294,6 @@ export const categories: Category[] = [
     nombre: "Almacenamiento",
     descripcion: "SSD NVMe, SATA y discos duros",
     Icon: HardDrive,
-    imagen: "/products/WD_Black_SSD.png",
     lineas: [
       { marca: "WD",      nombre: "Blue",       slug: "wd-blue",           imagen: `${L}/almacenamiento/wd-blue.png` },
       { marca: "WD",      nombre: "Black",      slug: "wd-black",          imagen: `${L}/almacenamiento/wd-black.png` },
@@ -313,14 +308,21 @@ export const categories: Category[] = [
     ],
   },
   {
-    slug: "proteccion-accesorios",
-    nombre: "Protección y Accesorios",
-    descripcion: "Protege y complementa tus dispositivos",
+    slug: "proteccion",
+    nombre: "Protección Eléctrica",
+    descripcion: "UPS y reguladores para proteger tus equipos",
     Icon: Shield,
-    imagen: "/products/APC_UPS_Battery_Backup.png",
     lineas: [
-      { marca: "APC",    nombre: "Back-UPS",         slug: "apc-back-ups",     imagen: `${L}/proteccion-accesorios/apc.png` },
-      { marca: "APC",    nombre: "Smart-UPS",        slug: "apc-smart-ups",    imagen: `${L}/proteccion-accesorios/apc.png` },
+      { marca: "APC", nombre: "Back-UPS",  slug: "apc-back-ups",  imagen: `${L}/proteccion-accesorios/apc.png` },
+      { marca: "APC", nombre: "Smart-UPS", slug: "apc-smart-ups", imagen: `${L}/proteccion-accesorios/apc.png` },
+    ],
+  },
+  {
+    slug: "accesorios",
+    nombre: "Accesorios",
+    descripcion: "Mochilas, cargadores, hubs y cables para tu equipo",
+    Icon: Package,
+    lineas: [
       { marca: "Targus", nombre: "Mochilas",         slug: "targus-mochilas",  imagen: `${L}/proteccion-accesorios/targus.png` },
       { marca: "Targus", nombre: "Docking Stations", slug: "targus-docking",   imagen: `${L}/proteccion-accesorios/targus.png` },
       { marca: "Anker",  nombre: "Cargadores GaN",   slug: "anker-gan",        imagen: `${L}/proteccion-accesorios/anker.png` },
@@ -334,7 +336,6 @@ export const categories: Category[] = [
     nombre: "Teclados",
     descripcion: "Comodidad y precisión para cada uso",
     Icon: Keyboard,
-    imagen: "/products/Logitech_MX_Keys.png",
     lineas: [
       { marca: "Logitech", nombre: "K380",      slug: "logitech-k380",      imagen: `${L}/teclados/logitech-mx.png` },
       { marca: "Logitech", nombre: "MX Keys",   slug: "logitech-mx-keys",   imagen: `${L}/teclados/logitech-mx.png` },
@@ -348,15 +349,29 @@ export const categories: Category[] = [
     nombre: "Impresoras",
     descripcion: "Impresiones nítidas para hogar y oficina",
     Icon: Printer,
-    imagen: "/products/Epson_EcoTank_Printer.png",
     lineas: [
-      { marca: "Epson",   nombre: "EcoTank",    slug: "epson-ecotank",   imagen: `${L}/impresoras/epson-ecotank.png` },
-      { marca: "Epson",   nombre: "WorkForce",  slug: "epson-workforce", imagen: `${L}/impresoras/epson-workforce.png` },
-      { marca: "Canon",   nombre: "PIXMA",      slug: "canon-pixma",     imagen: `${L}/impresoras/canon-pixma.png` },
-      { marca: "Canon",   nombre: "MAXIFY",     slug: "canon-maxify",    imagen: `${L}/impresoras/canon-maxify.png` },
-      { marca: "Brother", nombre: "DCP Series", slug: "brother-dcp",     imagen: `${L}/impresoras/brother.png` },
-      { marca: "Brother", nombre: "HL Series",  slug: "brother-hl",      imagen: `${L}/impresoras/brother.png` },
-      { marca: "Kyocera", nombre: "ECOSYS",     slug: "kyocera-ecosys",  imagen: `${L}/impresoras/kyocera.png` },
+      /* ── Impresoras Láser ── */
+      { marca: "HP",      nombre: "LaserJet Pro",      slug: "hp-laserjet-pro", imagen: `${L}/impresoras/hp-laserjet-pro.png`,      tipo: "laser" },
+      { marca: "HP",      nombre: "LaserJet Pro MFP",  slug: "hp-laserjet-pro-mfp", imagen: `${L}/impresoras/hp-laserjet-pro-mfp.png`,  tipo: "laser" },
+      { marca: "Brother", nombre: "HL-L Series",       slug: "brother-hl-l", imagen: `${L}/impresoras/brother-hl-l.png`,         tipo: "laser" },
+      { marca: "Brother", nombre: "MFC-L Series",      slug: "brother-mfc-l", imagen: `${L}/impresoras/brother-mfc-l.png`,        tipo: "laser" },
+      { marca: "Canon",   nombre: "imageCLASS LBP",    slug: "canon-imageclass-lbp", imagen: `${L}/impresoras/canon-imageclass-lbp.png`, tipo: "laser" },
+      { marca: "Canon",   nombre: "imageCLASS MF",     slug: "canon-imageclass-mf", imagen: `${L}/impresoras/canon-imageclass-mf.png`,  tipo: "laser" },
+      { marca: "Kyocera", nombre: "ECOSYS PA",         slug: "kyocera-ecosys-pa", imagen: `${L}/impresoras/kyocera-ecosys-pa.png`,    tipo: "laser" },
+      { marca: "Kyocera", nombre: "ECOSYS MA",         slug: "kyocera-ecosys-ma", imagen: `${L}/impresoras/kyocera-ecosys-ma.png`,    tipo: "laser" },
+      { marca: "Kyocera", nombre: "ECOSYS Color",      slug: "kyocera-ecosys-color", imagen: `${L}/impresoras/kyocera-ecosys-color.png`, tipo: "laser" },
+      { marca: "Kyocera", nombre: "TASKalfa",          slug: "kyocera-taskalfa", imagen: `${L}/impresoras/kyocera-taskalfa.png`,     tipo: "laser" },
+      /* ── Impresoras de Inyección de Tinta ── */
+      { marca: "HP",      nombre: "DeskJet",           slug: "hp-deskjet", imagen: `${L}/impresoras/hp-deskjet.png`,           tipo: "inyeccion" },
+      { marca: "HP",      nombre: "Smart Tank",        slug: "hp-smart-tank", imagen: `${L}/impresoras/hp-smart-tank.png`,        tipo: "inyeccion" },
+      { marca: "Brother", nombre: "MFC-J Series",      slug: "brother-mfc-j", imagen: `${L}/impresoras/brother-mfc-j.png`,        tipo: "inyeccion" },
+      { marca: "Brother", nombre: "DCP-T InkBenefit",  slug: "brother-dcp-t", imagen: `${L}/impresoras/brother-dcp-t.png`,        tipo: "inyeccion" },
+      { marca: "Canon",   nombre: "PIXMA",             slug: "canon-pixma", imagen: `${L}/impresoras/canon-pixma.png`,          tipo: "inyeccion" },
+      { marca: "Canon",   nombre: "PIXMA G MegaTank",  slug: "canon-pixma-g", imagen: `${L}/impresoras/canon-pixma-g.png`,        tipo: "inyeccion" },
+      { marca: "Epson",   nombre: "EcoTank L3000",     slug: "epson-ecotank-l3000", imagen: `${L}/impresoras/epson-ecotank-l3000.png`,  tipo: "inyeccion" },
+      { marca: "Epson",   nombre: "EcoTank L5000",     slug: "epson-ecotank-l5000", imagen: `${L}/impresoras/epson-ecotank-l5000.png`,  tipo: "inyeccion" },
+      { marca: "Epson",   nombre: "WorkForce Pro",     slug: "epson-workforce-pro", imagen: `${L}/impresoras/epson-workforce-pro.png`,  tipo: "inyeccion" },
+      { marca: "Epson",   nombre: "Expression",        slug: "epson-expression", imagen: `${L}/impresoras/epson-expression.png`,     tipo: "inyeccion" },
     ],
   },
 ];

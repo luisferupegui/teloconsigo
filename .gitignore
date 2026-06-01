@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# imágenes originales 2K (pristinos, ~500MB — no van al repo)
+/public/lineas-orig/
+
+# carpeta de staging de imágenes nuevas
+/public/lineas-nuevas/
+
+# archivos temporales de proveedores
+data/suppliers/_tmp_download.pdf
