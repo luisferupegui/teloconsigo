@@ -87,7 +87,7 @@ export function Navbar() {
   const navLinks = [
     ["/", "Inicio"],
     ["/catalogo", "Productos"],
-    ["/soluciones", "Ofertas"],
+    ["/soluciones", "Promociones"],
     ["/armador", "Armador de PC"],
     ["/conseguir", "Te lo conseguimos"],
     ["/contacto", "Contacto"],

@@ -10,7 +10,7 @@ export type Linea = {
   nombre: string;
   slug: string;
   imagen?: string;
-  tipo?: "laser" | "inyeccion"; // agrupación por tipo (p. ej. impresoras)
+  tipo?: "laser" | "inyeccion" | "almacenamiento-mem" | "conectividad" | "perifericos" | "audio-video" | "energia-soporte";
 };
 
 export type Category = {
@@ -320,15 +320,34 @@ export const categories: Category[] = [
   {
     slug: "accesorios",
     nombre: "Accesorios",
-    descripcion: "Mochilas, cargadores, hubs y cables para tu equipo",
+    descripcion: "Almacenamiento, conectividad, periféricos, audio y energía para tu equipo",
     Icon: Package,
     lineas: [
-      { marca: "Targus", nombre: "Mochilas",         slug: "targus-mochilas",  imagen: `${L}/proteccion-accesorios/targus.png` },
-      { marca: "Targus", nombre: "Docking Stations", slug: "targus-docking",   imagen: `${L}/proteccion-accesorios/targus.png` },
-      { marca: "Anker",  nombre: "Cargadores GaN",   slug: "anker-gan",        imagen: `${L}/proteccion-accesorios/anker.png` },
-      { marca: "Anker",  nombre: "Power Banks",      slug: "anker-powerbank",  imagen: `${L}/proteccion-accesorios/anker.png` },
-      { marca: "Belkin", nombre: "Hubs USB-C",       slug: "belkin-hubs",      imagen: `${L}/proteccion-accesorios/belkin.png` },
-      { marca: "Belkin", nombre: "Cables Premium",   slug: "belkin-cables",    imagen: `${L}/proteccion-accesorios/belkin.png` },
+      // ── Almacenamiento y Memoria ──────────────────────────────────────
+      { marca: "SanDisk",  nombre: "USB Dual Drive Go",       slug: "sandisk-usb-dual",   imagen: `${L}/accesorios/usb-dual-drive.png`,      tipo: "almacenamiento-mem" },
+      { marca: "Seagate",  nombre: "HDD Externo Portátil",    slug: "seagate-hdd-ext",    imagen: `${L}/accesorios/hdd-externo.png`,          tipo: "almacenamiento-mem" },
+      { marca: "Kingston", nombre: "SSD Portátil XS2000",     slug: "kingston-ssd-port",  imagen: `${L}/accesorios/ssd-portatil.png`,         tipo: "almacenamiento-mem" },
+      { marca: "SanDisk",  nombre: "Micro SD + Adaptador",    slug: "sandisk-microsd",    imagen: `${L}/accesorios/micro-sd.png`,             tipo: "almacenamiento-mem" },
+      // ── Conectividad y Expansión ──────────────────────────────────────
+      { marca: "Anker",    nombre: "Hub USB-C 7-en-1",        slug: "anker-hub-usbc",     imagen: `${L}/accesorios/hub-usbc.png`,             tipo: "conectividad" },
+      { marca: "Belkin",   nombre: "Adaptador USB-C a HDMI",  slug: "belkin-usbc-hdmi",   imagen: `${L}/accesorios/adaptador-usbc-hdmi.png`,  tipo: "conectividad" },
+      { marca: "TP-Link",  nombre: "Tarjeta Wi-Fi USB",       slug: "tplink-wifi-usb",    imagen: `${L}/accesorios/wifi-usb.png`,             tipo: "conectividad" },
+      { marca: "Ugreen",   nombre: "Cable Ethernet CAT6",     slug: "ugreen-ethernet",    imagen: `${L}/accesorios/ethernet-cat6.png`,        tipo: "conectividad" },
+      // ── Periféricos de Entrada ────────────────────────────────────────
+      { marca: "Logitech", nombre: "Combo Inalámbrico MK295", slug: "logitech-mk295",     imagen: `${L}/accesorios/combo-teclado-mouse.png`,  tipo: "perifericos" },
+      { marca: "Redragon", nombre: "Teclado Mecánico Gaming", slug: "redragon-teclado",   imagen: `${L}/accesorios/teclado-mecanico.png`,     tipo: "perifericos" },
+      { marca: "Anker",    nombre: "Mouse Ergonómico Vertical",slug: "anker-mouse-erg",   imagen: `${L}/accesorios/mouse-ergonomico.png`,     tipo: "perifericos" },
+      { marca: "Logitech", nombre: "Desk Mat Studio 70×30",   slug: "logitech-desk-mat",  imagen: `${L}/accesorios/mousepad-desk-mat.png`,    tipo: "perifericos" },
+      // ── Audio, Video y Streaming ──────────────────────────────────────
+      { marca: "HyperX",   nombre: "Headset Gaming Cloud",    slug: "hyperx-cloud",       imagen: `${L}/accesorios/headset-gaming.png`,       tipo: "audio-video" },
+      { marca: "Logitech", nombre: "Webcam C920 Full HD",     slug: "logitech-c920",      imagen: `${L}/accesorios/webcam.png`,               tipo: "audio-video" },
+      { marca: "Creative", nombre: "Barra de Sonido Stage",   slug: "creative-stage",     imagen: `${L}/accesorios/barra-sonido.png`,         tipo: "audio-video" },
+      // ── Energía, Soporte y Mantenimiento ──────────────────────────────
+      { marca: "Anker",    nombre: "Cargador GaN 65W USB-C",  slug: "anker-gan-65w",      imagen: `${L}/accesorios/cargador-gan.png`,         tipo: "energia-soporte" },
+      { marca: "Nexstand", nombre: "Soporte Elevador K7",     slug: "nexstand-k7",        imagen: `${L}/accesorios/soporte-laptop.png`,       tipo: "energia-soporte" },
+      { marca: "Belkin",   nombre: "Multitoma 6+3 USB",       slug: "belkin-multitoma",   imagen: `${L}/accesorios/multitoma-usb.png`,        tipo: "energia-soporte" },
+      { marca: "MECO",     nombre: "Soplador Eléctrico Mini", slug: "meco-soplador",      imagen: `${L}/accesorios/soplador-electrico.png`,   tipo: "energia-soporte" },
+      { marca: "iFixit",   nombre: "Kit Herramientas 16 pzs", slug: "ifixit-kit",         imagen: `${L}/accesorios/kit-herramientas.png`,     tipo: "energia-soporte" },
     ],
   },
   {

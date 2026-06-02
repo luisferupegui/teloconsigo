@@ -63,7 +63,7 @@ const SECCIONES = [
     // Degradado profundo en el azul de marca
     iconGradient:"from-[#0f3d91] to-[#1e6cff]",
     // Badge pill: fondo muy suave, texto oscuro, borde sutil
-    badge:       "bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-200",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-blue-700",
   },
   {
@@ -73,7 +73,7 @@ const SECCIONES = [
     descripcion: "El balance perfecto entre precio y rendimiento para el trabajo diario. Ideales para contadores, abogados y startups.",
     icon:        Laptop,
     iconGradient:"from-sky-600 to-sky-400",
-    badge:       "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-sky-700",
   },
   {
@@ -83,7 +83,7 @@ const SECCIONES = [
     descripcion: "Equipos de escritorio completos con monitor incluido. Listos para instalar y trabajar desde el primer día.",
     icon:        Cpu,
     iconGradient:"from-slate-700 to-slate-500",
-    badge:       "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-300",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-slate-600",
   },
   {
@@ -93,7 +93,7 @@ const SECCIONES = [
     descripcion: "Samsung, LG, AOC, Dahua. Desde 22\" hasta 32\". Para escritorios de una o doble pantalla.",
     icon:        Monitor,
     iconGradient:"from-teal-700 to-teal-500",
-    badge:       "bg-teal-50 text-teal-800 ring-1 ring-inset ring-teal-200",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-teal-700",
   },
   {
@@ -103,7 +103,7 @@ const SECCIONES = [
     descripcion: "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo y Samsung con soporte garantizado.",
     icon:        Tablet,
     iconGradient:"from-indigo-700 to-indigo-500",
-    badge:       "bg-indigo-50 text-indigo-800 ring-1 ring-inset ring-indigo-200",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-indigo-700",
   },
   {
@@ -113,7 +113,7 @@ const SECCIONES = [
     descripcion: "Combos inalámbricos Logitech, memorias USB y microSD Kingston, discos externos ADATA. Todo lo que necesita tu equipo.",
     icon:        Package,
     iconGradient:"from-amber-700 to-amber-500",
-    badge:       "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-200",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-amber-700",
   },
   {
@@ -123,7 +123,7 @@ const SECCIONES = [
     descripcion: "Licencias originales Microsoft y antivirus empresarial ESET y Kaspersky. Activación inmediata, sin complicaciones.",
     icon:        Key,
     iconGradient:"from-emerald-700 to-emerald-500",
-    badge:       "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200",
+    badge:       "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600",
     tagText:     "text-emerald-700",
   },
 ] as const;
@@ -293,38 +293,29 @@ export default function ProductosPage() {
 
       {/* Hero */}
       <div className="mb-12">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl leading-tight">
-              Soluciones Tecnológicas
-              <br />
-              <span className="text-[#1e6cff]">para tu Empresa</span>
-            </h1>
-            <p className="mt-3 text-zinc-500 max-w-xl text-base leading-relaxed">
-              No vendemos referencias técnicas. Te ayudamos a elegir el equipo
-              correcto para tu operación — con cotización rápida y entrega ágil.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/asesor"
-              className="inline-flex items-center gap-2 rounded-full bg-[#1e6cff] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition shadow-md shadow-blue-200"
-            >
-              <Zap className="h-4 w-4" />
-              Asesor IA
-            </Link>
+        <div className="max-w-xl">
+          <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl leading-tight">
+            Soluciones Tecnológicas
+            <br />
+            <span className="text-[#1e6cff]">para tu Empresa</span>
+          </h1>
+          <p className="mt-3 text-zinc-500 text-base leading-relaxed">
+            No vendemos referencias técnicas. Te ayudamos a elegir el equipo
+            correcto para tu operación — con cotización rápida y entrega ágil.
+          </p>
+          <div className="mt-12">
             <Link
               href="/conseguir"
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#128C7E] to-[#25D366] px-6 py-3 text-sm font-bold text-white shadow-md shadow-[#25D366]/30 hover:shadow-lg hover:shadow-[#25D366]/50 hover:brightness-110 hover:scale-[1.02] transition-all duration-200"
             >
               <MessageCircle className="h-4 w-4" />
-              Cotizar ahora
+              Cotiza Ya Mismo
             </Link>
           </div>
         </div>
 
         {/* Filtros rápidos — pills con colores por categoría */}
-        <div className="mt-8 flex flex-wrap gap-2">
+        <div className="mt-11 flex flex-wrap gap-2.5">
           {SECCIONES.map((s) => {
             const count = byUso(s.usoCaso).length;
             return (

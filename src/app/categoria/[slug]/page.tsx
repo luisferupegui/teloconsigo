@@ -107,8 +107,13 @@ export default async function CategoriaPage({
   const TIPO_LABEL: Record<string, string> = {
     laser: "Impresoras Láser",
     inyeccion: "Impresoras de Inyección de Tinta",
+    "almacenamiento-mem": "Almacenamiento y Memoria",
+    conectividad: "Conectividad y Expansión",
+    perifericos: "Periféricos de Entrada",
+    "audio-video": "Audio, Video y Streaming",
+    "energia-soporte": "Energía, Soporte y Mantenimiento",
   };
-  const TIPO_ORDEN = ["laser", "inyeccion"] as const;
+  const TIPO_ORDEN = ["laser", "inyeccion", "almacenamiento-mem", "conectividad", "perifericos", "audio-video", "energia-soporte"] as const;
   const lineas = cat.lineas ?? [];
   const usaTipo = lineas.some((l) => l.tipo);
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { type Product, formatCOP } from "@/lib/products-types";
 import productsData from "../../../data/products.json";
-const products = productsData as Product[];
+const products = productsData as unknown as Product[];
 import { SmartImage } from "@/components/smart-image";
 
 const slots = [

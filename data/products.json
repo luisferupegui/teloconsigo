@@ -182,7 +182,6 @@
     },
     "descripcion": "Mejor relación precio/rendimiento de Zen 4. Ideal para builds gaming 1080p/1440p con futuro asegurado."
   },
-
   {
     "id": "9",
     "slug": "lenovo-legion-pro-7i-gen-8",
@@ -355,7 +354,6 @@
     },
     "descripcion": "El estándar empresarial. Ultradelgado, certificación MIL-STD-810H y teclado ThinkPad legendario."
   },
-
   {
     "id": "17",
     "slug": "asus-rog-strix-z790-e-gaming-wifi",
@@ -535,7 +533,6 @@
     },
     "descripcion": "Diseño Taichi icónico con engranajes. VRM 24+1+2 fases para overclock extremo en LGA1700."
   },
-
   {
     "id": "25",
     "slug": "kingston-fury-beast-ddr5-6000-32gb",
@@ -706,7 +703,6 @@
     },
     "descripcion": "DDR5 standard JEDEC para builds productividad. Bajo voltaje y ECC integrado."
   },
-
   {
     "id": "33",
     "slug": "nvidia-rtx-4090-founders",
@@ -881,7 +877,6 @@
     },
     "descripcion": "QHD sin compromisos. 12 GB VRAM y excelente raster a precio agresivo frente a la 4060 Ti."
   },
-
   {
     "id": "41",
     "slug": "corsair-rm850x-2024",
@@ -1052,7 +1047,6 @@
     },
     "descripcion": "1250W Titanium con RGB sincronizado. Para builds workstation con doble GPU."
   },
-
   {
     "id": "49",
     "slug": "lg-ultragear-27gp850-b",
@@ -1225,7 +1219,6 @@
     },
     "descripcion": "Mini LED con 1152 zonas de dimming. Brillo HDR1000 real y 240 Hz para competitivos."
   },
-
   {
     "id": "57",
     "slug": "thermaltake-toughliquid-360-argb",
@@ -1398,7 +1391,6 @@
     },
     "descripcion": "Disipador de aire dual-tower con ARGB. Compite con AIOs 240 mm por mucho menos plata."
   },
-
   {
     "id": "65",
     "slug": "lenovo-legion-tower-5-gen-8",
@@ -1570,7 +1562,6 @@
     },
     "descripcion": "Mini PC empresarial de 1 litro. Soporta montaje detrás del monitor (VESA)."
   },
-
   {
     "id": "73",
     "slug": "tp-link-archer-axe300",
@@ -1742,7 +1733,6 @@
     },
     "descripcion": "Mesh Wi-Fi 6 económico para hogar promedio. EasyMesh para expansión con otras marcas."
   },
-
   {
     "id": "81",
     "slug": "logitech-mx-master-3s",
@@ -1914,7 +1904,6 @@
     },
     "descripcion": "Mousepad XL con RGB perimetral. Cubre teclado + mouse, ideal para setups gaming."
   },
-
   {
     "id": "89",
     "slug": "sennheiser-hd-660s2",
@@ -2087,7 +2076,6 @@
     },
     "descripcion": "Construcción profesional Shure. Para mixing, mastering y monitoreo de estudio."
   },
-
   {
     "id": "97",
     "slug": "elgato-stream-deck-mk2",
@@ -2280,7 +2268,6 @@
     },
     "descripcion": "Streaming económico con brazo articulado y RGB. Punto de entrada para nuevos creators."
   },
-
   {
     "id": "106",
     "slug": "wd-black-sn850x-2tb",
@@ -2454,13 +2441,12 @@
     },
     "descripcion": "MicroSD V30 para 4K. Compatible con Steam Deck, Switch, GoPro y drones."
   },
-
   {
     "id": "114",
     "slug": "apc-back-ups-pro-1500va",
     "nombre": "APC Back-UPS Pro 1500VA Tower",
     "marca": "APC",
-    "categoria": "proteccion-accesorios",
+    "categoria": "proteccion",
     "precio": 957000,
     "stock": 14,
     "rating": 4.8,
@@ -2482,7 +2468,7 @@
     "slug": "apc-pe6-power-strip",
     "nombre": "APC Essential SurgeArrest 6-Outlet",
     "marca": "APC",
-    "categoria": "proteccion-accesorios",
+    "categoria": "accesorios",
     "precio": 89000,
     "stock": 87,
     "rating": 4.7,
@@ -2503,7 +2489,7 @@
     "slug": "deepcool-ag400-digital",
     "nombre": "DeepCool AG400 DIGITAL Air Cooler",
     "marca": "DeepCool",
-    "categoria": "proteccion-accesorios",
+    "categoria": "refrigeracion",
     "precio": 251000,
     "stock": 32,
     "rating": 4.7,
@@ -2524,7 +2510,7 @@
     "slug": "deepcool-ch560-digital",
     "nombre": "DeepCool CH560 DIGITAL Case ATX",
     "marca": "DeepCool",
-    "categoria": "proteccion-accesorios",
+    "categoria": "equipos-escritorio",
     "precio": 379000,
     "precioAnterior": 442000,
     "stock": 11,
@@ -2546,7 +2532,7 @@
     "slug": "targus-citylite-pro-15-6",
     "nombre": "Targus CityLite Pro 15.6\" Backpack",
     "marca": "Targus",
-    "categoria": "proteccion-accesorios",
+    "categoria": "accesorios",
     "precio": 251000,
     "stock": 28,
     "rating": 4.6,
@@ -2567,7 +2553,7 @@
     "slug": "ergo-laptop-stand-aluminum",
     "nombre": "Ergo Aluminum Laptop Stand (ajustable)",
     "marca": "Ergo",
-    "categoria": "proteccion-accesorios",
+    "categoria": "accesorios",
     "precio": 189000,
     "stock": 41,
     "rating": 4.7,
@@ -2588,7 +2574,7 @@
     "slug": "anker-737-power-bank-140w",
     "nombre": "Anker 737 Power Bank 24000mAh 140W",
     "marca": "Anker",
-    "categoria": "proteccion-accesorios",
+    "categoria": "accesorios",
     "precio": 700000,
     "stock": 19,
     "rating": 4.8,
@@ -2610,7 +2596,7 @@
     "slug": "belkin-boostcharge-pro-3-in-1",
     "nombre": "Belkin BOOST↑CHARGE PRO 3-in-1 Wireless 15W",
     "marca": "Belkin",
-    "categoria": "proteccion-accesorios",
+    "categoria": "accesorios",
     "precio": 636000,
     "stock": 13,
     "rating": 4.7,
@@ -2626,7 +2612,6 @@
     },
     "descripcion": "Cargador inalámbrico 3-en-1 MagSafe. Carga iPhone, Apple Watch y AirPods simultáneo."
   },
-
   {
     "id": "122",
     "slug": "logitech-g-pro-x-tkl-lightspeed",
@@ -2798,7 +2783,6 @@
     },
     "descripcion": "Diseño slim aluminio-like. Equilibrio entre estética y precio para oficina."
   },
-
   {
     "id": "130",
     "slug": "epson-ecotank-l3250",
@@ -2970,5 +2954,427 @@
       "compacta": "Sí (footprint mínimo)"
     },
     "descripcion": "Láser color compacta solo impresión. Perfecta para puestos individuales en oficinas."
+  },
+  {
+    "id": "138",
+    "slug": "sandisk-usb-dual-drive-go-64gb",
+    "nombre": "SanDisk Ultra Dual Drive Go 64 GB",
+    "marca": "SanDisk",
+    "categoria": "accesorios",
+    "precio": 69000,
+    "stock": 65,
+    "rating": 4.7,
+    "reviews": 543,
+    "imagen": "/lineas/accesorios/usb-dual-drive.png",
+    "specs": {
+      "capacidad": "64 GB",
+      "interfaces": "USB-A 3.1 + USB-C",
+      "lectura": "150 MB/s",
+      "cuerpo": "Metalico giratorio",
+      "compatibilidad": "Smartphone Android, PC, Mac",
+      "garantia": "5 anos"
+    },
+    "descripcion": "Pendrive dual USB-A/USB-C. Transfiere fotos y videos entre movil y PC sin cables adicionales."
+  },
+  {
+    "id": "139",
+    "slug": "seagate-backup-plus-portable-1tb",
+    "nombre": "Seagate Backup Plus Portable 1 TB",
+    "marca": "Seagate",
+    "categoria": "accesorios",
+    "precio": 349000,
+    "stock": 32,
+    "rating": 4.6,
+    "reviews": 789,
+    "imagen": "/lineas/accesorios/hdd-externo.png",
+    "specs": {
+      "capacidad": "1 TB",
+      "interfaz": "USB 3.0 (compatible USB 2.0)",
+      "velocidad": "5 Gbps",
+      "dimension": "107 x 73 x 12 mm",
+      "peso": "149 g",
+      "garantia": "2 anos"
+    },
+    "descripcion": "HDD externo portatil de 1 TB. Backup automatico con Seagate Dashboard y software gratuito."
+  },
+  {
+    "id": "140",
+    "slug": "kingston-xs2000-480gb-ssd-portatil",
+    "nombre": "Kingston XS2000 480 GB SSD Portatil",
+    "marca": "Kingston",
+    "categoria": "accesorios",
+    "precio": 299000,
+    "stock": 28,
+    "rating": 4.8,
+    "reviews": 312,
+    "imagen": "/lineas/accesorios/ssd-portatil.png",
+    "specs": {
+      "capacidad": "480 GB",
+      "interfaz": "USB 3.2 Gen 2x2 (USB-C)",
+      "lectura": "2000 MB/s",
+      "escritura": "2000 MB/s",
+      "resistencia": "IP55 (agua y polvo)",
+      "garantia": "5 anos"
+    },
+    "descripcion": "SSD portatil de 2000 MB/s. Hasta 6x mas rapido que un HDD externo tipico, resistente IP55."
+  },
+  {
+    "id": "141",
+    "slug": "sandisk-ultra-microsdxc-128gb",
+    "nombre": "SanDisk Ultra microSDXC 128 GB + Adaptador",
+    "marca": "SanDisk",
+    "categoria": "accesorios",
+    "precio": 72000,
+    "stock": 90,
+    "rating": 4.7,
+    "reviews": 1245,
+    "imagen": "/lineas/accesorios/micro-sd.png",
+    "specs": {
+      "capacidad": "128 GB",
+      "clase": "UHS-I U1 A1",
+      "lectura": "120 MB/s",
+      "uso": "Smartphones, tablets, camaras",
+      "adaptador": "SD incluido",
+      "garantia": "10 anos"
+    },
+    "descripcion": "MicroSD A1 para apps y contenido. Adaptador SD incluido para camaras y laptops."
+  },
+  {
+    "id": "142",
+    "slug": "anker-powerexpand-7en1-hub-usbc",
+    "nombre": "Anker PowerExpand+ 7-en-1 Hub USB-C",
+    "marca": "Anker",
+    "categoria": "accesorios",
+    "precio": 199000,
+    "stock": 41,
+    "rating": 4.8,
+    "reviews": 876,
+    "imagen": "/lineas/accesorios/hub-usbc.png",
+    "specs": {
+      "puertos": "4K HDMI + 2xUSB-A 3.0 + USB-C PD + SD + microSD + audio 3.5mm",
+      "pd": "100W Power Delivery pass-through",
+      "hdmi": "4K@30Hz",
+      "usb_velocidad": "5 Gbps",
+      "cable": "USB-C 30 cm integrado",
+      "garantia": "18 meses"
+    },
+    "descripcion": "Hub 7-en-1 con HDMI 4K y carga 100W. Convierte un puerto USB-C en 7 conexiones simultaneas."
+  },
+  {
+    "id": "143",
+    "slug": "belkin-adaptador-usbc-hdmi-4k",
+    "nombre": "Belkin Adaptador USB-C a HDMI 4K 60Hz",
+    "marca": "Belkin",
+    "categoria": "accesorios",
+    "precio": 65000,
+    "stock": 75,
+    "rating": 4.6,
+    "reviews": 432,
+    "imagen": "/lineas/accesorios/adaptador-usbc-hdmi.png",
+    "specs": {
+      "entrada": "USB-C (Thunderbolt 3/4 compatible)",
+      "salida": "HDMI 2.0",
+      "resolucion": "4K@60Hz / 1080p@120Hz",
+      "hdr": "Si (HDR10)",
+      "longitud": "12 cm",
+      "garantia": "2 anos"
+    },
+    "descripcion": "Adaptador USB-C a HDMI 4K@60Hz. Compatible con MacBook, iPad Pro y portatiles USB-C."
+  },
+  {
+    "id": "144",
+    "slug": "tplink-archer-t3u-wifi-usb",
+    "nombre": "TP-Link Archer T3U Tarjeta Wi-Fi USB",
+    "marca": "TP-Link",
+    "categoria": "accesorios",
+    "precio": 99000,
+    "stock": 55,
+    "rating": 4.5,
+    "reviews": 678,
+    "imagen": "/lineas/accesorios/wifi-usb.png",
+    "specs": {
+      "estandar": "Wi-Fi 5 (802.11ac) dual-band",
+      "velocidad": "1300 Mbps (5 GHz) + 400 Mbps (2.4 GHz)",
+      "antena": "Omnidireccional de alta ganancia",
+      "usb": "USB 3.0",
+      "os": "Windows / macOS / Linux",
+      "garantia": "2 anos"
+    },
+    "descripcion": "Adaptador Wi-Fi 5 de doble banda con antena. Agrega Wi-Fi ac a PCs de escritorio y laptops."
+  },
+  {
+    "id": "145",
+    "slug": "ugreen-cable-ethernet-cat6-3m",
+    "nombre": "Ugreen Cable Ethernet CAT6 3 m",
+    "marca": "Ugreen",
+    "categoria": "accesorios",
+    "precio": 35000,
+    "stock": 120,
+    "rating": 4.8,
+    "reviews": 2134,
+    "imagen": "/lineas/accesorios/ethernet-cat6.png",
+    "specs": {
+      "categoria": "CAT6 (750 MHz)",
+      "velocidad": "10 Gbps",
+      "longitud": "3 metros",
+      "conector": "RJ-45 chapado en oro",
+      "blindaje": "UTP con nylon trenzado",
+      "garantia": "18 meses"
+    },
+    "descripcion": "Cable Ethernet CAT6 de 3 m. Conexion estable y rapida para gaming, streaming y home office."
+  },
+  {
+    "id": "146",
+    "slug": "logitech-mk295-combo-inalambrico",
+    "nombre": "Logitech MK295 Combo Teclado + Mouse Inalambrico",
+    "marca": "Logitech",
+    "categoria": "accesorios",
+    "precio": 179000,
+    "stock": 48,
+    "rating": 4.6,
+    "reviews": 987,
+    "imagen": "/lineas/accesorios/combo-teclado-mouse.png",
+    "specs": {
+      "conexion": "USB receptor Logi Bolt (2.4 GHz)",
+      "teclado": "Tamano completo silencioso — 90% menos ruido",
+      "mouse": "Ambidiestro 1000 DPI, 3 botones",
+      "bateria_teclado": "24 meses",
+      "bateria_mouse": "12 meses",
+      "alcance": "10 m",
+      "garantia": "3 anos"
+    },
+    "descripcion": "Combo teclado + mouse silent para home office. Escritura silenciosa y receptor unico para ambos."
+  },
+  {
+    "id": "147",
+    "slug": "redragon-k552-teclado-mecanico-gaming",
+    "nombre": "Redragon K552 Teclado Mecanico Gaming TKL",
+    "marca": "Redragon",
+    "categoria": "accesorios",
+    "precio": 399000,
+    "stock": 22,
+    "rating": 4.7,
+    "reviews": 654,
+    "imagen": "/lineas/accesorios/teclado-mecanico.png",
+    "specs": {
+      "formato": "Tenkeyless (TKL) 87 teclas",
+      "switches": "Outemu Blue (tactil + audible)",
+      "iluminacion": "LED rojo fijo",
+      "n_key_rollover": "N-Key Rollover",
+      "cable": "USB-A 1.8 m trenzado",
+      "garantia": "1 ano"
+    },
+    "descripcion": "Teclado mecanico gaming TKL con switches Blue. Feedback tactil y audible para gaming y codigo."
+  },
+  {
+    "id": "148",
+    "slug": "anker-mouse-ergonomico-vertical",
+    "nombre": "Anker 2.4G Mouse Ergonomico Vertical",
+    "marca": "Anker",
+    "categoria": "accesorios",
+    "precio": 229000,
+    "stock": 35,
+    "rating": 4.5,
+    "reviews": 543,
+    "imagen": "/lineas/accesorios/mouse-ergonomico.png",
+    "specs": {
+      "tipo": "Vertical inalambrico 2.4 GHz",
+      "dpi": "800 / 1200 / 1600 DPI ajustable",
+      "botones": "5 programables",
+      "receptor": "Nano USB",
+      "bateria": "AA x2 (18 meses aprox.)",
+      "garantia": "18 meses"
+    },
+    "descripcion": "Mouse vertical ergonomico. Postura natural de la muneca para reducir fatiga en jornadas largas."
+  },
+  {
+    "id": "149",
+    "slug": "logitech-desk-mat-studio",
+    "nombre": "Logitech Desk Mat Studio 70x30 cm",
+    "marca": "Logitech",
+    "categoria": "accesorios",
+    "precio": 99000,
+    "stock": 60,
+    "rating": 4.8,
+    "reviews": 432,
+    "imagen": "/lineas/accesorios/mousepad-desk-mat.png",
+    "specs": {
+      "dimension": "70 x 30 cm",
+      "superficie": "Microtextura optima",
+      "base": "Antideslizante de goma",
+      "bordes": "Cosidos",
+      "grosor": "2 mm",
+      "colores": "Rose / Azul / Grafito"
+    },
+    "descripcion": "Desk mat XL para teclado y mouse. Superficie uniforme y base antideslizante para escritorios completos."
+  },
+  {
+    "id": "150",
+    "slug": "hyperx-cloud-stinger-headset-gaming",
+    "nombre": "HyperX Cloud Stinger Headset Gaming",
+    "marca": "HyperX",
+    "categoria": "accesorios",
+    "precio": 289000,
+    "stock": 27,
+    "rating": 4.6,
+    "reviews": 1098,
+    "imagen": "/lineas/accesorios/headset-gaming.png",
+    "specs": {
+      "drivers": "50 mm drivers de neodimio",
+      "frecuencia": "18 Hz - 23 kHz",
+      "microfono": "Boom unidireccional giratorio 90 grados",
+      "conexion": "USB + 3.5mm (splitter incluido)",
+      "peso": "275 g",
+      "garantia": "2 anos"
+    },
+    "descripcion": "Headset gaming liviano con microfono boom. Sonido inmersivo para gaming y comunicacion en equipo."
+  },
+  {
+    "id": "151",
+    "slug": "logitech-c920-webcam-full-hd",
+    "nombre": "Logitech C920 HD Pro Webcam Full HD",
+    "marca": "Logitech",
+    "categoria": "accesorios",
+    "precio": 229000,
+    "stock": 31,
+    "rating": 4.7,
+    "reviews": 2340,
+    "imagen": "/lineas/accesorios/webcam.png",
+    "specs": {
+      "resolucion": "1080p@30fps / 720p@60fps",
+      "lente": "Vidrio Carl Zeiss Tessar",
+      "campo_visual": "78 grados",
+      "microfono": "Dual estereo con reduccion de ruido",
+      "foco": "Autofoco Full HD",
+      "conexion": "USB-A",
+      "garantia": "3 anos"
+    },
+    "descripcion": "Webcam Full HD con lente Zeiss y microfono dual. Imagen clara para reuniones y streaming."
+  },
+  {
+    "id": "152",
+    "slug": "creative-stage-360-barra-sonido",
+    "nombre": "Creative Stage 360 Barra de Sonido 2.1",
+    "marca": "Creative",
+    "categoria": "accesorios",
+    "precio": 349000,
+    "stock": 18,
+    "rating": 4.6,
+    "reviews": 367,
+    "imagen": "/lineas/accesorios/barra-sonido.png",
+    "specs": {
+      "configuracion": "2.1 (2 satelites + subwoofer)",
+      "potencia": "40W RMS total",
+      "frecuencia": "45 Hz - 20 kHz",
+      "bluetooth": "5.0 (alcance 10 m)",
+      "entradas": "BT + USB + Aux 3.5mm",
+      "garantia": "1 ano"
+    },
+    "descripcion": "Barra de sonido 2.1 para escritorio con Bluetooth 5.0. Graves potentes y claridad de dialogo."
+  },
+  {
+    "id": "153",
+    "slug": "anker-nano-ii-65w-cargador-gan",
+    "nombre": "Anker Nano II 65W Cargador GaN USB-C",
+    "marca": "Anker",
+    "categoria": "accesorios",
+    "precio": 179000,
+    "stock": 55,
+    "rating": 4.8,
+    "reviews": 1543,
+    "imagen": "/lineas/accesorios/cargador-gan.png",
+    "specs": {
+      "potencia": "65W USB-C PD 3.0",
+      "tecnologia": "GaN II (33% mas compacto vs silicio)",
+      "compatibilidad": "MacBook Air, portatiles USB-C, iPhone, Android",
+      "voltaje": "5V/3A · 9V/3A · 15V/3A · 20V/3.25A",
+      "dimension": "40 x 40 x 38 mm",
+      "garantia": "18 meses"
+    },
+    "descripcion": "Cargador GaN 65W en formato mini. Carga MacBook Air, portatiles y smartphones en un bloque compacto."
+  },
+  {
+    "id": "154",
+    "slug": "nexstand-k7-soporte-laptop",
+    "nombre": "Nexstand K7 Soporte Elevador Laptop",
+    "marca": "Nexstand",
+    "categoria": "accesorios",
+    "precio": 139000,
+    "stock": 44,
+    "rating": 4.7,
+    "reviews": 765,
+    "imagen": "/lineas/accesorios/soporte-laptop.png",
+    "specs": {
+      "material": "Plastico ABS y aluminio",
+      "ajuste": "6 niveles de altura",
+      "compatibilidad": "Portatiles 10-17 pulgadas",
+      "plegable": "Si (cabe en funda de laptop)",
+      "carga_max": "10 kg",
+      "garantia": "1 ano"
+    },
+    "descripcion": "Soporte plegable para laptop con 6 niveles. Mejora postura y ventilacion; se guarda en la funda."
+  },
+  {
+    "id": "155",
+    "slug": "belkin-multitoma-6-3usb",
+    "nombre": "Belkin Multitoma 6 Tomas + 3 USB-A",
+    "marca": "Belkin",
+    "categoria": "accesorios",
+    "precio": 109000,
+    "stock": 82,
+    "rating": 4.7,
+    "reviews": 1234,
+    "imagen": "/lineas/accesorios/multitoma-usb.png",
+    "specs": {
+      "tomas_ac": "6 (separadas para adaptadores grandes)",
+      "puertos_usb": "3xUSB-A 2.4A (12W total)",
+      "proteccion": "4320 Joules",
+      "cable": "1.8 m",
+      "boton": "Interruptor maestro con LED",
+      "garantia": "Equipo conectado hasta $300K"
+    },
+    "descripcion": "Multitoma con 3 puertos USB-A integrados. Carga dispositivos sin ocupar tomas electricas."
+  },
+  {
+    "id": "156",
+    "slug": "meco-soplador-electrico-mini",
+    "nombre": "MECO Soplador Electrico de Aire Mini",
+    "marca": "MECO",
+    "categoria": "accesorios",
+    "precio": 119000,
+    "stock": 38,
+    "rating": 4.5,
+    "reviews": 289,
+    "imagen": "/lineas/accesorios/soplador-electrico.png",
+    "specs": {
+      "potencia": "550W",
+      "velocidad": "2 velocidades (15000 / 18000 RPM)",
+      "flujo_aire": "33 m/s a maxima velocidad",
+      "uso": "Teclados, PC internos, camaras, instrumentos",
+      "peso": "490 g",
+      "garantia": "1 ano"
+    },
+    "descripcion": "Soplador electrico de alta velocidad. Limpia polvo de teclados, PC, camaras y electronicos sin aerosoles."
+  },
+  {
+    "id": "157",
+    "slug": "ifixit-kit-herramientas-16pzs",
+    "nombre": "iFixit Essential Electronics Toolkit 16 piezas",
+    "marca": "iFixit",
+    "categoria": "accesorios",
+    "precio": 89000,
+    "stock": 50,
+    "rating": 4.9,
+    "reviews": 876,
+    "imagen": "/lineas/accesorios/kit-herramientas.png",
+    "specs": {
+      "piezas": "16 herramientas de precision",
+      "mangos": "ESD-safe",
+      "incluye": "Puntas Pentalobe, Torx, Phillips, Spudger, pinzas",
+      "estuche": "Enrollable de tela resistente",
+      "garantia": "Garantia de por vida en herramientas",
+      "uso": "Smartphones, laptops, consolas, electronica"
+    },
+    "descripcion": "Kit de herramientas de precision iFixit. Puntas universales y mango ESD para reparar cualquier dispositivo."
   }
 ]

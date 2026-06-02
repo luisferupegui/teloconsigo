@@ -10,8 +10,7 @@ AMD Ryzen 5 7600,AMD,procesadores,1099000,,15,4.7,80,🧠,true,"Procesador 6 nú
 export default function ImportarPage() {
   async function handleImport(formData: FormData) {
     "use server";
-    const res = await importCSV(formData);
-    return res;
+    await importCSV(formData);
   }
 
   return (

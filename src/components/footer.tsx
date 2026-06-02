@@ -2,21 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Send,
-  CheckCircle2,
-  ShieldCheck,
-  Truck,
-  CreditCard,
-  Award,
-  ArrowUp,
-} from "lucide-react";
+import type { CSSProperties } from "react";
+import { ShieldCheck, Truck, CreditCard, Award, ArrowUp, Mail, Phone, MapPin } from "lucide-react";
 
-// SVG inline para iconos sociales (lucide v1.16 no los tenía)
 function FacebookIcon({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -52,86 +40,44 @@ function TiktokIcon({ className = "" }: { className?: string }) {
     </svg>
   );
 }
-function WhatsappIcon({ className = "" }: { className?: string }) {
+function WhatsappIcon({ className = "", style }: { className?: string; style?: CSSProperties }) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
       <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.595 5.392zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.713.307 1.27.489 1.703.625.717.227 1.369.195 1.883.118.575-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413z" />
     </svg>
   );
 }
 
-export function Footer() {
-  const [sent, setSent] = useState(false);
+const PAYMENT_METHODS = ["Visa", "Mastercard", "PSE", "Bancolombia"];
 
+const TRUST_ITEMS = [
+  { icon: ShieldCheck, label: "Productos originales", color: "text-[#4d8dff]" },
+  { icon: Award,       label: "Garantía oficial",     color: "text-emerald-400" },
+  { icon: Truck,       label: "Envíos a Colombia",    color: "text-amber-400"   },
+  { icon: CreditCard,  label: "Pago seguro",          color: "text-violet-400"  },
+];
+
+const SOCIAL = [
+  { Icon: InstagramIcon, label: "Instagram", href: "#", bg: "hover:bg-gradient-to-br hover:from-pink-500 hover:via-orange-500 hover:to-yellow-400" },
+  { Icon: FacebookIcon,  label: "Facebook",  href: "#", bg: "hover:bg-[#1877F2]" },
+  { Icon: TiktokIcon,    label: "TikTok",    href: "#", bg: "hover:bg-zinc-900"   },
+  { Icon: YoutubeIcon,   label: "YouTube",   href: "#", bg: "hover:bg-red-600"    },
+  { Icon: LinkedinIcon,  label: "LinkedIn",  href: "#", bg: "hover:bg-[#0A66C2]"  },
+];
+
+export function Footer() {
   return (
     <footer className="relative bg-[#050a18] text-zinc-300 mt-auto overflow-hidden">
-      {/* Tech grid background */}
       <div className="absolute inset-0 bg-tech-grid-dark opacity-30 pointer-events-none" />
-      {/* Subtle ambient blue glow */}
       <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-[#1e6cff] opacity-10 blur-[120px] pointer-events-none" />
 
-      {/* Newsletter top strip */}
-      <div className="relative border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-6 lg:grid-cols-2">
-            <div>
-              <h3 className="font-display text-2xl font-bold text-white sm:text-3xl">
-                Mantente al día con lo último en tecnología
-              </h3>
-              <p className="mt-2 text-sm text-zinc-400">
-                Recibe ofertas exclusivas, lanzamientos y guías de armado en tu
-                correo. Sin spam, prometido.
-              </p>
-            </div>
-            {sent ? (
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                <CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" />
-                <div>
-                  <p className="font-display font-bold text-emerald-200">
-                    ¡Listo!
-                  </p>
-                  <p className="text-xs text-emerald-300/80">
-                    Te suscribiste al newsletter.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setSent(true);
-                }}
-                className="flex flex-col gap-2 sm:flex-row"
-              >
-                <input
-                  required
-                  type="email"
-                  placeholder="tu@correo.com"
-                  className="flex-1 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#4d8dff] focus:outline-none focus:ring-2 focus:ring-[#4d8dff]/20"
-                />
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1e6cff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#1e6cff]/30 hover:bg-[#1858d6] transition"
-                >
-                  Suscribirme <Send className="h-4 w-4" />
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* ── Main grid ── */}
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
 
-      {/* Main grid */}
-      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
-          {/* Logo + descripción */}
+          {/* Logo + tagline */}
           <div className="lg:col-span-2">
-            <Link
-              href="/"
-              className="group relative inline-block"
-              aria-label="Te lo Consigo · Inicio"
-            >
-              {/* Glow azul detrás del logo */}
+            <Link href="/" className="group relative inline-block" aria-label="Te lo Consigo · Inicio">
               <div className="absolute inset-0 -m-6 rounded-3xl bg-[#1e6cff] opacity-20 blur-3xl group-hover:opacity-40 transition duration-500" />
               <Image
                 src="/Logo%20Oscuro%20Con%20Slogan.png"
@@ -139,279 +85,149 @@ export function Footer() {
                 width={1200}
                 height={450}
                 quality={100}
-                className="relative h-32 w-auto mix-blend-lighten transition group-hover:scale-105"
+                className="relative h-40 w-auto mix-blend-lighten transition group-hover:scale-105"
                 unoptimized
               />
             </Link>
-            <p className="mt-5 max-w-md text-sm text-zinc-400 leading-relaxed">
-              Tecnología con atención personalizada. Hardware, periféricos y
-              equipos para profesionales y entusiastas. Si no lo encuentras, te
-              lo conseguimos.
+            <p className="mt-5 max-w-xs text-sm text-zinc-400 leading-loose">
+              Tecnología con atención personalizada. Hardware, periféricos y equipos para profesionales y empresas. Si no lo encuentras, te lo conseguimos.
             </p>
-
-            {/* Trust badges */}
-            <div className="mt-6 grid grid-cols-2 gap-3 max-w-md">
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
-                <ShieldCheck className="h-4 w-4 text-[#4d8dff] shrink-0" />
-                <span className="text-zinc-300">Productos originales</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
-                <Truck className="h-4 w-4 text-[#4d8dff] shrink-0" />
-                <span className="text-zinc-300">Envíos a Colombia</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
-                <Award className="h-4 w-4 text-[#4d8dff] shrink-0" />
-                <span className="text-zinc-300">Garantía oficial</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
-                <CreditCard className="h-4 w-4 text-[#4d8dff] shrink-0" />
-                <span className="text-zinc-300">Pago seguro</span>
-              </div>
-            </div>
           </div>
 
-          {/* Tienda */}
+          {/* TIENDA */}
           <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white">
-              Tienda
-            </h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              <li>
-                <Link href="/catalogo" className="hover:text-[#4d8dff] transition">
-                  Catálogo completo
-                </Link>
-              </li>
-              <li>
-                <Link href="/ofertas" className="hover:text-[#4d8dff] transition">
-                  🔥 Ofertas
-                </Link>
-              </li>
-              <li>
-                <Link href="/armador" className="hover:text-[#4d8dff] transition">
-                  Armador de PC
-                </Link>
-              </li>
-              <li>
-                <Link href="/asesor" className="hover:text-[#4d8dff] transition">
-                  Asesor IA
-                </Link>
-              </li>
-              <li>
-                <Link href="/conseguir" className="hover:text-[#4d8dff] transition">
-                  Te lo conseguimos
-                </Link>
-              </li>
-              <li>
-                <Link href="/comparar" className="hover:text-[#4d8dff] transition">
-                  Comparar productos
-                </Link>
-              </li>
+            <h3 className="font-display text-[13px] font-bold uppercase tracking-widest text-[#4d8dff]">Tienda</h3>
+            <ul className="mt-5 space-y-3 text-sm">
+              {[
+                ["Catálogo completo", "/catalogo"],
+                ["Ofertas",           "/ofertas"],
+                ["Armador de PC",     "/armador"],
+                ["Cotiza Ya Mismo",   "/conseguir"],
+              ].map(([label, href]) => (
+                <li key={label}><Link href={href} className="hover:text-[#4d8dff] transition">{label}</Link></li>
+              ))}
             </ul>
           </div>
 
-          {/* Empresa */}
+          {/* EMPRESA */}
           <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white">
-              Empresa
-            </h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              <li>
-                <Link href="/nosotros" className="hover:text-[#4d8dff] transition">
-                  Sobre nosotros
-                </Link>
-              </li>
-              <li>
-                <Link href="/contacto" className="hover:text-[#4d8dff] transition">
-                  Contacto
-                </Link>
-              </li>
-              <li>
-                <Link href="/empresas" className="hover:text-[#4d8dff] transition">
-                  Para empresas
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="hover:text-[#4d8dff] transition">
-                  Blog tech
-                </Link>
-              </li>
-              <li>
-                <Link href="/trabaja-con-nosotros" className="hover:text-[#4d8dff] transition">
-                  Trabaja con nosotros
-                </Link>
-              </li>
+            <h3 className="font-display text-[13px] font-bold uppercase tracking-widest text-[#4d8dff]">Empresa</h3>
+            <ul className="mt-5 space-y-3 text-sm">
+              {[
+                ["Sobre nosotros",  "/nosotros"],
+                ["Contacto",        "/contacto"],
+                ["Devoluciones",    "/devoluciones"],
+                ["Blog tech",       "/blog"],
+              ].map(([label, href]) => (
+                <li key={label}><Link href={href} className="hover:text-[#4d8dff] transition">{label}</Link></li>
+              ))}
             </ul>
           </div>
 
-          {/* Ayuda + Contacto */}
+          {/* AYUDA */}
           <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white">
-              Ayuda
-            </h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              <li>
-                <Link href="/envios" className="hover:text-[#4d8dff] transition">
-                  Envíos
-                </Link>
-              </li>
-              <li>
-                <Link href="/garantia" className="hover:text-[#4d8dff] transition">
-                  Garantía
-                </Link>
-              </li>
-              <li>
-                <Link href="/devoluciones" className="hover:text-[#4d8dff] transition">
-                  Devoluciones
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:text-[#4d8dff] transition">
-                  Preguntas frecuentes
-                </Link>
-              </li>
+            <h3 className="font-display text-[13px] font-bold uppercase tracking-widest text-[#4d8dff]">Ayuda</h3>
+            <ul className="mt-5 space-y-3 text-sm">
+              {[
+                ["Envíos",               "/envios"],
+                ["Garantía",             "/garantia"],
+                ["Preguntas frecuentes", "/faq"],
+              ].map(([label, href]) => (
+                <li key={label}><Link href={href} className="hover:text-[#4d8dff] transition">{label}</Link></li>
+              ))}
             </ul>
+          </div>
 
-            <h3 className="mt-6 font-display text-sm font-bold uppercase tracking-wider text-white">
-              Contacto
-            </h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+          {/* CONTACTO */}
+          <div>
+            <h3 className="font-display text-[13px] font-bold uppercase tracking-widest text-[#4d8dff]">Contacto</h3>
+            <ul className="mt-5 space-y-3.5">
               <li>
-                <a
-                  href="tel:+14079169299"
-                  className="flex items-center gap-2 hover:text-[#4d8dff] transition"
-                >
-                  <Phone className="h-4 w-4" /> +1 407 916 9299
+                <a href="https://wa.me/14079169299" className="flex items-center gap-3 group">
+                  <WhatsappIcon
+                    className="h-[18px] w-[18px] shrink-0 text-emerald-400 transition group-hover:text-emerald-300"
+                    style={{ filter: "drop-shadow(0 0 5px rgba(52,211,153,0.75))" }}
+                  />
+                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">+1 407 916 9299</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="mailto:contacto@teloconsigo.com"
-                  className="flex items-center gap-2 hover:text-[#4d8dff] transition break-all"
-                >
-                  <Mail className="h-4 w-4 shrink-0" />
-                  <span>contacto@teloconsigo.com</span>
+                <a href="mailto:contacto@teloconsigo.com" className="flex items-center gap-3 group">
+                  <Mail
+                    className="h-[18px] w-[18px] shrink-0 text-[#4d8dff] transition group-hover:text-blue-300"
+                    style={{ filter: "drop-shadow(0 0 5px rgba(77,141,255,0.75))" }}
+                  />
+                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">contacto@teloconsigo.com</span>
                 </a>
               </li>
-              <li className="flex items-center gap-2 text-zinc-400">
-                <MapPin className="h-4 w-4 shrink-0" />
-                <span>Medellín, Colombia</span>
+              <li className="flex items-center gap-3">
+                <MapPin
+                  className="h-[18px] w-[18px] shrink-0 text-violet-400"
+                  style={{ filter: "drop-shadow(0 0 5px rgba(167,139,250,0.75))" }}
+                />
+                <span className="text-xs text-zinc-400 whitespace-nowrap">Medellín, Colombia</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Redes sociales + métodos de pago */}
-        <div className="mt-12 grid gap-6 border-t border-white/10 pt-8 md:grid-cols-2">
-          {/* Social */}
+        {/* ── Trust badges strip ── */}
+        <div className="mt-8 border-t border-white/10 pt-4">
+          <div className="grid grid-cols-2 gap-1 sm:grid-cols-4 sm:divide-x divide-white/10">
+            {TRUST_ITEMS.map(({ icon: Icon, label, color }) => (
+              <div key={label} className="flex items-center justify-center gap-2.5 px-4 py-2">
+                <Icon className={`h-5 w-5 shrink-0 ${color}`} />
+                <span className="text-xs font-semibold text-zinc-300">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Social + Pagos ── */}
+        <div className="mt-6 flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-              Síguenos
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[
-                {
-                  Icon: WhatsappIcon,
-                  label: "WhatsApp",
-                  href: "https://wa.me/14079169299",
-                  color: "hover:bg-emerald-500",
-                },
-                {
-                  Icon: FacebookIcon,
-                  label: "Facebook",
-                  href: "#",
-                  color: "hover:bg-[#1877F2]",
-                },
-                {
-                  Icon: InstagramIcon,
-                  label: "Instagram",
-                  href: "#",
-                  color: "hover:bg-gradient-to-br hover:from-pink-500 hover:via-orange-500 hover:to-yellow-400",
-                },
-                {
-                  Icon: TiktokIcon,
-                  label: "TikTok",
-                  href: "#",
-                  color: "hover:bg-zinc-900",
-                },
-                {
-                  Icon: YoutubeIcon,
-                  label: "YouTube",
-                  href: "#",
-                  color: "hover:bg-red-600",
-                },
-                {
-                  Icon: LinkedinIcon,
-                  label: "LinkedIn",
-                  href: "#",
-                  color: "hover:bg-[#0A66C2]",
-                },
-              ].map(({ Icon, label, href, color }) => (
+            <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-4">Síguenos</p>
+            <div className="flex gap-2.5">
+              {SOCIAL.map(({ Icon, label, href, bg }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={label}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:border-transparent transition ${color}`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:border-transparent transition ${bg}`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-5 w-5" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Pagos */}
-          <div className="md:text-right">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-              Métodos de pago
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 md:justify-end">
-              {["Visa", "Mastercard", "PSE", "ePayco", "Nequi", "Bancolombia"].map(
-                (m) => (
-                  <span
-                    key={m}
-                    className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-300"
-                  >
-                    {m}
-                  </span>
-                ),
-              )}
+          <div className="sm:text-right">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-4">Métodos de pago</p>
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              {PAYMENT_METHODS.map((m) => (
+                <span
+                  key={m}
+                  className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold tracking-wide text-zinc-300"
+                >
+                  {m}
+                </span>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Copyright */}
+      {/* ── Copyright ── */}
       <div className="relative border-t border-white/10 bg-[#020611]">
-        <div className="mx-auto flex flex-col items-center justify-between gap-3 max-w-7xl px-4 py-5 text-xs text-zinc-500 sm:px-6 md:flex-row lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-5 text-xs text-zinc-500 sm:px-6 lg:px-8">
           <button
-            onClick={() =>
-              typeof window !== "undefined" &&
-              window.scrollTo({ top: 0, behavior: "smooth" })
-            }
+            onClick={() => typeof window !== "undefined" && window.scrollTo({ top: 0, behavior: "smooth" })}
             className="absolute -top-5 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-[#1e6cff] text-white shadow-lg shadow-[#1e6cff]/40 hover:bg-[#1858d6] hover:-translate-y-0.5 transition"
             aria-label="Volver arriba"
           >
             <ArrowUp className="h-5 w-5" />
           </button>
-          <p>
-            © {new Date().getFullYear()}{" "}
-            <span className="font-semibold text-zinc-300">Te lo Consigo</span>{" "}
-            · Todos los derechos reservados.
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link href="/terminos" className="hover:text-zinc-300 transition">
-              Términos
-            </Link>
-            <Link href="/privacidad" className="hover:text-zinc-300 transition">
-              Privacidad
-            </Link>
-            <Link href="/cookies" className="hover:text-zinc-300 transition">
-              Cookies
-            </Link>
-            <span className="hidden md:inline">·</span>
-            <span>
-              Hecho con <span className="text-red-500">♥</span> en Colombia
-            </span>
-          </div>
+          <p>© {new Date().getFullYear()} <span className="font-semibold text-zinc-300">Teloconsigo.co</span> – Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

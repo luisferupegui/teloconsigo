@@ -5,7 +5,8 @@ import { CategoryCarousel } from "@/components/category-carousel";
 import { HeroSlider } from "@/components/hero-slider";
 import { BrandMarquee } from "@/components/brand-marquee";
 import { StatsSection } from "@/components/counter";
-import { getFeaturedProducts, getAllProducts } from "@/lib/products";
+import { loadBusinessProducts } from "@/lib/products";
+import { BusinessFeaturedCard } from "@/components/business-featured-card";
 import {
   ChevronRight,
   ChevronDown,
@@ -34,31 +35,34 @@ export const dynamic = "force-dynamic";
 
 
 export default function Home() {
-  // Curado: mezclamos categorías para variedad visual en lugar de mostrar
-  // varios items del mismo tipo seguidos.
-  const allFeatured = getFeaturedProducts();
-  const seenCats = new Set<string>();
-  const featured: typeof allFeatured = [];
-  for (const p of allFeatured) {
-    if (!seenCats.has(p.categoria)) {
-      featured.push(p);
-      seenCats.add(p.categoria);
-      if (featured.length === 8) break;
-    }
-  }
-  // Si no llegamos a 8 con la regla anti-duplicados, completamos con el resto.
-  if (featured.length < 8) {
-    for (const p of allFeatured) {
-      if (!featured.includes(p)) {
-        featured.push(p);
-        if (featured.length === 8) break;
-      }
-    }
-  }
+  const FEATURED_REFS = [
+    "21M30053LM",      // Lenovo ThinkPad E14 Gen 6 Ryzen 5
+    "PP70R",           // Dell Pro 15 Essential i5
+    "P3406CKANZ0441X", // Asus ExpertBook P3406 Ryzen AI 7
+    "YJ9PX",           // Dell OptiPlex 7020 SFF + Monitor 23.8"
+    "12SD002ALS",      // Lenovo ThinkCentre neo 50a 24 Gen 5
+    "LS27F320GANX",    // Monitor Samsung 27" IPS 120Hz
+    "KLQ-00219",       // Microsoft 365 Standard ESD
+    "ZAFM0226CO",      // Lenovo IdeaTab LTE 5G 11"
+  ];
+  const allBusiness = loadBusinessProducts();
+  const featuredBusiness = FEATURED_REFS
+    .map((ref) => allBusiness.find((p) => p.referencia === ref))
+    .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
-  const ofertas = getAllProducts()
-    .filter((p) => p.precioAnterior)
-    .slice(0, 8);
+  const ACCESORIOS_REFS = [
+    "1115-KDT128",     // USB 128GB Kingston
+    "PB-ADP10K-ADATA", // Power Bank ADATA 10.000mAh
+    "6095-MV-JAL",     // Mouse Vertical Ergonómico
+    "6416-MK235",      // Combo Logitech MK235
+    "HUB-USBC-7EN1",   // Hub USB-C 7-en-1 Anker
+    "5035-AHD330-1T",  // Disco Externo 1TB ADATA
+    "5004-KXS1000-1T", // SSD Portátil Kingston 1TB
+    "22U401A-B",       // Monitor LG 22" VA 100Hz
+  ];
+  const accesorios = ACCESORIOS_REFS
+    .map((ref) => allBusiness.find((p) => p.referencia === ref))
+    .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   return (
     <div className="flex flex-col bg-[#080d14]">
@@ -92,58 +96,56 @@ export default function Home() {
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
               <p className="font-mono text-xs uppercase tracking-widest text-[#1e6cff] mb-1">
-                — Lo más vendido
+                — Soluciones para empresas
               </p>
               <h2 className="font-display text-3xl font-black text-white sm:text-4xl">
                 PRODUCTOS DESTACADOS
               </h2>
             </div>
             <Link
-              href="/catalogo"
+              href="/soluciones"
               className="flex items-center gap-1.5 text-sm font-semibold text-zinc-400 hover:text-[#1e6cff] transition"
             >
-              Ver todo el catálogo <ChevronRight className="h-4 w-4" />
+              Ver promociones <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Grid — 8 productos curados (1 por categoría para variedad) */}
+          {/* Grid — 8 productos curados de PROMOCIONES */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {featured.map((p, i) => (
-              <Reveal key={p.id} delay={i * 60}>
-                <ProductCard product={p} />
+            {featuredBusiness.map((p, i) => (
+              <Reveal key={p.referencia} delay={i * 60}>
+                <BusinessFeaturedCard product={p} />
               </Reveal>
             ))}
           </div>
 
-          {/* Ofertas strip */}
-          {ofertas.length > 0 && (
-            <div className="mt-12">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-6 w-1 bg-orange-500" />
-                  <h3 className="font-display text-xl font-black text-white">
-                    OFERTAS DE LA SEMANA
-                  </h3>
-                  <span className="rounded-full bg-orange-500 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider animate-pulse">
-                    Hot
-                  </span>
-                </div>
-                <Link
-                  href="/catalogo"
-                  className="flex items-center gap-1 text-xs font-semibold text-orange-400 hover:text-orange-300 transition"
-                >
-                  Ver todas <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
+          {/* Accesorios & Esenciales strip */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-1 bg-orange-500" />
+                <h3 className="font-display text-xl font-black text-white">
+                  ACCESORIOS & ESENCIALES
+                </h3>
+                <span className="rounded-full bg-orange-500 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                  Desde $104.000
+                </span>
               </div>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {ofertas.map((p, i) => (
-                  <Reveal key={p.id} delay={i * 60}>
-                    <ProductCard product={p} />
-                  </Reveal>
-                ))}
-              </div>
+              <Link
+                href="/soluciones#accesorio"
+                className="flex items-center gap-1 text-xs font-semibold text-orange-400 hover:text-orange-300 transition"
+              >
+                Ver accesorios <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
-          )}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {accesorios.map((p, i) => (
+                <Reveal key={p.referencia} delay={i * 60}>
+                  <BusinessFeaturedCard product={p} />
+                </Reveal>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
