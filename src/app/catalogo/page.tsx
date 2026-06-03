@@ -2,7 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { existsSync } from "fs";
 import path from "path";
-import { ArrowRight, MessageCircle, Users2, LayoutGrid } from "lucide-react";
+import {
+  ArrowRight, MessageCircle, Users2, LayoutGrid,
+  Home, Gamepad2, Briefcase, Laptop, Server, Video, Wifi,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export const metadata = {
   title: "Soluciones a medida | teloconsigo.co",
@@ -12,7 +16,22 @@ export const metadata = {
 
 // ─── Datos de cada solución ───────────────────────────────────────────────────
 
-const SOLUCIONES = [
+type Solucion = {
+  numero: string;
+  titulo: string;
+  tagline: string;
+  descripcion: string;
+  recomendado: readonly string[];
+  accesorios: readonly string[];
+  idealPara: string;
+  foto: string;
+  acento: string;
+  acentoBg: string;
+  tipo: string;
+  Icon: LucideIcon;
+};
+
+const SOLUCIONES: Solucion[] = [
   {
     numero: "01",
     titulo: "Hogar y Estudio",
@@ -26,6 +45,7 @@ const SOLUCIONES = [
     acento: "#4d8dff",
     acentoBg: "#1e6cff",
     tipo: "hogar-estudio",
+    Icon: Home,
   },
   {
     numero: "02",
@@ -40,6 +60,7 @@ const SOLUCIONES = [
     acento: "#f87171",
     acentoBg: "#ef4444",
     tipo: "gaming-streaming",
+    Icon: Gamepad2,
   },
   {
     numero: "03",
@@ -54,6 +75,7 @@ const SOLUCIONES = [
     acento: "#22d3ee",
     acentoBg: "#0891b2",
     tipo: "productividad-oficina",
+    Icon: Briefcase,
   },
   {
     numero: "04",
@@ -68,6 +90,7 @@ const SOLUCIONES = [
     acento: "#c084fc",
     acentoBg: "#9333ea",
     tipo: "movilidad-premium",
+    Icon: Laptop,
   },
   {
     numero: "05",
@@ -82,6 +105,7 @@ const SOLUCIONES = [
     acento: "#34d399",
     acentoBg: "#059669",
     tipo: "redes-servidores",
+    Icon: Server,
   },
   {
     numero: "06",
@@ -96,6 +120,7 @@ const SOLUCIONES = [
     acento: "#fb923c",
     acentoBg: "#ea580c",
     tipo: "creadores-produccion",
+    Icon: Video,
   },
   {
     numero: "07",
@@ -110,8 +135,9 @@ const SOLUCIONES = [
     acento: "#fbbf24",
     acentoBg: "#d97706",
     tipo: "smart-home",
+    Icon: Wifi,
   },
-] as const;
+];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -181,15 +207,18 @@ export default function CatalogoPage() {
           </Link>
 
           {/* Navegación rápida — pills */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3 mt-6">
             {soluciones.map((s) => (
               <a
                 key={s.numero}
                 href={`#solucion-${s.numero}`}
-                className="inline-flex items-center rounded-full border border-white/10
-                           bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-zinc-300
-                           hover:bg-white/10 hover:text-white transition"
+                className="inline-flex items-center gap-2 rounded-full
+                           bg-[#1e6cff] px-4 py-2 text-xs font-semibold text-white
+                           shadow-sm shadow-[#1e6cff]/20
+                           hover:bg-[#1858d6] hover:shadow-[#1e6cff]/40
+                           transition-all duration-200"
               >
+                <s.Icon className="h-3.5 w-3.5 shrink-0" />
                 {s.titulo}
               </a>
             ))}

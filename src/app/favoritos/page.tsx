@@ -4,30 +4,42 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Trash2 } from "lucide-react";
 import { useWishlist } from "@/lib/wishlist";
-import type { Product } from "@/lib/products-types";
+import type { Product, BusinessProduct } from "@/lib/products-types";
 import { ProductCard } from "@/components/product-card";
+import { BusinessFeaturedCard } from "@/components/business-featured-card";
 
 export default function FavoritosPage() {
   const { ids, clear, count } = useWishlist();
-  const [all, setAll] = useState<Product[]>([]);
+  const [regular, setRegular] = useState<Product[]>([]);
+  const [business, setBusiness] = useState<(BusinessProduct & { imageUrl: string | null })[]>([]);
 
   useEffect(() => {
     fetch("/api/products")
       .then((r) => r.json())
-      .then(setAll)
+      .then(setRegular)
+      .catch(() => {});
+
+    fetch("/api/business-products")
+      .then((r) => r.json())
+      .then(setBusiness)
       .catch(() => {});
   }, []);
 
-  const products = ids
-    .map((id) => all.find((p) => p.id === id))
+  const favoriteRegular = ids
+    .map((id) => regular.find((p) => p.id === id))
     .filter((p): p is Product => Boolean(p));
+
+  type BizWithImg = BusinessProduct & { imageUrl: string | null };
+  const favoriteBusiness = ids
+    .map((id) => business.find((p) => (p.referencia ?? p.slug ?? p.nombre) === id))
+    .filter((p): p is BizWithImg => Boolean(p));
+
+  const total = favoriteRegular.length + favoriteBusiness.length;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <nav className="text-xs text-zinc-500 mb-3">
-        <Link href="/" className="hover:underline">
-          Inicio
-        </Link>
+        <Link href="/" className="hover:underline">Inicio</Link>
         <span className="mx-2">/</span>
         <span>Favoritos</span>
       </nav>
@@ -56,8 +68,7 @@ export default function FavoritosPage() {
                 Mis favoritos ❤️
               </h1>
               <p className="mt-1 text-sm text-zinc-600">
-                {count} producto{count !== 1 && "s"} guardado
-                {count !== 1 && "s"}
+                {total} producto{total !== 1 && "s"} guardado{total !== 1 && "s"}
               </p>
             </div>
             <button
@@ -67,11 +78,22 @@ export default function FavoritosPage() {
               <Trash2 className="h-4 w-4" /> Limpiar
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+
+          {favoriteBusiness.length > 0 && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+              {favoriteBusiness.map((p) => (
+                <BusinessFeaturedCard key={p.referencia ?? p.nombre} product={p} imageUrl={p.imageUrl} />
+              ))}
+            </div>
+          )}
+
+          {favoriteRegular.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {favoriteRegular.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

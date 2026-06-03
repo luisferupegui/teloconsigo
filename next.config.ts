@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["sharp"],
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
