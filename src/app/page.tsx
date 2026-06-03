@@ -5,7 +5,8 @@ import { CategoryCarousel } from "@/components/category-carousel";
 import { HeroSlider } from "@/components/hero-slider";
 import { BrandMarquee } from "@/components/brand-marquee";
 import { StatsSection } from "@/components/counter";
-import { loadBusinessProducts } from "@/lib/products";
+import { loadPublishedBusinessProducts, pickHomeCards } from "@/lib/products";
+import { resolveProductImage } from "@/lib/product-images";
 import { BusinessFeaturedCard } from "@/components/business-featured-card";
 import {
   ChevronRight,
@@ -35,34 +36,18 @@ export const dynamic = "force-dynamic";
 
 
 export default function Home() {
-  const FEATURED_REFS = [
-    "21M30053LM",      // Lenovo ThinkPad E14 Gen 6 Ryzen 5
-    "PP70R",           // Dell Pro 15 Essential i5
-    "P3406CKANZ0441X", // Asus ExpertBook P3406 Ryzen AI 7
-    "YJ9PX",           // Dell OptiPlex 7020 SFF + Monitor 23.8"
-    "12SD002ALS",      // Lenovo ThinkCentre neo 50a 24 Gen 5
-    "LS27F320GANX",    // Monitor Samsung 27" IPS 120Hz
-    "KLQ-00219",       // Microsoft 365 Standard ESD
-    "ZAFM0226CO",      // Lenovo IdeaTab LTE 5G 11"
-  ];
-  const allBusiness = loadBusinessProducts();
-  const featuredBusiness = FEATURED_REFS
-    .map((ref) => allBusiness.find((p) => p.referencia === ref))
-    .filter((p): p is NonNullable<typeof p> => p !== undefined);
-
-  const ACCESORIOS_REFS = [
-    "1115-KDT128",     // USB 128GB Kingston
-    "PB-ADP10K-ADATA", // Power Bank ADATA 10.000mAh
-    "6095-MV-JAL",     // Mouse Vertical Ergonómico
-    "6416-MK235",      // Combo Logitech MK235
-    "HUB-USBC-7EN1",   // Hub USB-C 7-en-1 Anker
-    "5035-AHD330-1T",  // Disco Externo 1TB ADATA
-    "5004-KXS1000-1T", // SSD Portátil Kingston 1TB
-    "22U401A-B",       // Monitor LG 22" VA 100Hz
-  ];
-  const accesorios = ACCESORIOS_REFS
-    .map((ref) => allBusiness.find((p) => p.referencia === ref))
-    .filter((p): p is NonNullable<typeof p> => p !== undefined);
+  // Cards del home controladas desde el panel admin (flags por producto):
+  //   destacado → "Productos Destacados" · enAccesorios → "Accesorios & Esenciales"
+  // Máx 12 por sección, mín 4 (auto-relleno). Ver pickHomeCards en lib/products.
+  const allBusiness = loadPublishedBusinessProducts();
+  const featuredBusiness = pickHomeCards(allBusiness, (p) => !!p.destacado);
+  const usedRefs = new Set(
+    featuredBusiness.map((p) => p.referencia ?? p.slug ?? p.id),
+  );
+  const accesorios = pickHomeCards(allBusiness, (p) => !!p.enAccesorios, {
+    preferSegmentos: ["accesorios", "smart-home"],
+    exclude: usedRefs,
+  });
 
   return (
     <div className="flex flex-col bg-[#080d14]">
@@ -113,8 +98,11 @@ export default function Home() {
           {/* Grid — 8 productos curados de PROMOCIONES */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {featuredBusiness.map((p, i) => (
-              <Reveal key={p.referencia} delay={i * 60}>
-                <BusinessFeaturedCard product={p} />
+              <Reveal key={p.referencia ?? p.slug} delay={i * 60}>
+                <BusinessFeaturedCard
+                  product={p}
+                  imageUrl={resolveProductImage(p.referencia ?? p.slug, "card")}
+                />
               </Reveal>
             ))}
           </div>
@@ -140,8 +128,11 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {accesorios.map((p, i) => (
-                <Reveal key={p.referencia} delay={i * 60}>
-                  <BusinessFeaturedCard product={p} />
+                <Reveal key={p.referencia ?? p.slug} delay={i * 60}>
+                  <BusinessFeaturedCard
+                    product={p}
+                    imageUrl={resolveProductImage(p.referencia ?? p.slug, "card")}
+                  />
                 </Reveal>
               ))}
             </div>

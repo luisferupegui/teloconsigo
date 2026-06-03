@@ -35,8 +35,9 @@ export default function AdminLayout({
         </div>
         <div className="mx-auto flex max-w-7xl gap-1 px-4 sm:px-6 lg:px-8">
           {[
-            ["/admin", "📦 Productos"],
-            ["/admin/nuevo", "➕ Nuevo producto"],
+            ["/admin", "📦 Catálogo"],
+            ["/admin/productos", "📋 Productos y Promociones"],
+            ["/admin/nuevo", "➕ Nuevo"],
             ["/admin/importar", "📥 Importar CSV"],
           ].map(([href, label]) => (
             <Link

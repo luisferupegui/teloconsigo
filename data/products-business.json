@@ -16,7 +16,10 @@
     },
     "descripcion": "Portátil corporativo Lenovo V14 G5 con Core 5 210H. Ideal para oficina con garantía Onsite.",
     "usoCaso": "portatil-oficina",
-    "precioDesde": 3380000
+    "precioDesde": 3380000,
+    "segmento": "productividad-oficina",
+    "publicado": true,
+    "destacado": false
   },
   {
     "referencia": "21M30053LM",
@@ -35,7 +38,12 @@
     },
     "descripcion": "Lenovo ThinkPad E14 Gen 6 con Ryzen 5. Pantalla WUXGA, memoria DDR5 y conectividad completa.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 4731000
+    "precioDesde": 4731000,
+    "segmento": "movilidad-premium",
+    "publicado": true,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": false
   },
   {
     "referencia": "PP70R",
@@ -54,7 +62,12 @@
     },
     "descripcion": "Dell Pro 15 Essential con i5 de 12.ª gen. Balance de desempeño y movilidad para equipos corporativos.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3076000
+    "precioDesde": 3076000,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": false,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "6F1NR",
@@ -73,7 +86,10 @@
     },
     "descripcion": "Dell Pro 14 con Ryzen 5 PRO y NPU integrada. 16 GB y pantalla FHD+ para productividad empresarial.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3614000
+    "precioDesde": 3614000,
+    "segmento": "movilidad-premium",
+    "publicado": true,
+    "destacado": false
   },
   {
     "referencia": "9KP97",
@@ -92,7 +108,10 @@
     },
     "descripcion": "Dell Pro 15 con i7 de última gen y 16 GB DDR5. Ideal para carga de trabajo intensiva en movilidad.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 4056000
+    "precioDesde": 4056000,
+    "segmento": "movilidad-premium",
+    "publicado": true,
+    "destacado": false
   },
   {
     "referencia": "VP6RM",
@@ -111,7 +130,10 @@
     },
     "descripcion": "Dell Inspiron 5440 con Core 7 de Meteor Lake y 16 GB. Portátil equilibrado para trabajo híbrido.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3934000
+    "precioDesde": 3934000,
+    "segmento": "movilidad-premium",
+    "publicado": true,
+    "destacado": false
   },
   {
     "referencia": "B1403CVAS65014X",
@@ -130,7 +152,9 @@
     },
     "descripcion": "Asus ExpertBook B1403 con i5 Raptor Lake. Puerto RJ45 integrado y diseño empresarial compacto.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3560000
+    "precioDesde": 3560000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "B1403CVAS61429X",
@@ -149,7 +173,9 @@
     },
     "descripcion": "Asus ExpertBook B1403 tope de gama con i7 y 1 TB de almacenamiento. Rendimiento sin compromisos.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3934000
+    "precioDesde": 3934000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "B3405CVALY0226X",
@@ -168,7 +194,9 @@
     },
     "descripcion": "Asus ExpertBook B3405 con pantalla WUXGA y 16 GB DDR5. Visibilidad extendida para profesionales.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 4105000
+    "precioDesde": 4105000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "P3406CKANZ0441X",
@@ -187,7 +215,12 @@
     },
     "descripcion": "Asus ExpertBook P3406 con NPU de 50 TOPS para IA. Pantalla WQXGA y Ryzen AI de última generación.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 5451000
+    "precioDesde": 5451000,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": false,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "NX.KJTAL.002",
@@ -206,7 +239,9 @@
     },
     "descripcion": "Acer Aspire 14 con i5 Raptor Lake y 16 GB. Portátil delgado y liviano para trabajo en movilidad.",
     "usoCaso": "portatil-oficina",
-    "precioDesde": 3216000
+    "precioDesde": 3216000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "NX.B0YAL.007",
@@ -225,7 +260,9 @@
     },
     "descripcion": "Acer TravelMate P214 para ejecutivos. Diseño empresarial robusto con certificación MIL-STD-810.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3918000
+    "precioDesde": 3918000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "NX.B64AL.002",
@@ -244,7 +281,9 @@
     },
     "descripcion": "Acer TravelMate P214 con Core 5 120U y 1 TB. Pantalla WUXGA y máximo almacenamiento corporativo.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3934000
+    "precioDesde": 3934000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "8N5DF",
@@ -263,7 +302,9 @@
     },
     "descripcion": "Dell ProOne AIO con Core Ultra 7 265. Todo en uno empresarial de alta gama con pantalla FHD.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 6540000
+    "precioDesde": 6540000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "CQ1V4LT",
@@ -282,7 +323,9 @@
     },
     "descripcion": "HP ProOne 240 G10 AIO con Core Ultra 5. Diseño compacto para oficinas que buscan escritorios limpios.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 4182000
+    "precioDesde": 4182000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "12SD002ALS",
@@ -301,7 +344,12 @@
     },
     "descripcion": "Lenovo ThinkCentre neo 50a 24 Gen 5 con i5 de 13.ª gen. AIO empresarial con pantalla de 24\" IPS.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 4990000
+    "precioDesde": 4990000,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": false,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "YJ9PX",
@@ -320,7 +368,12 @@
     },
     "descripcion": "Dell OptiPlex 7020 SFF con i5-14500 vPro y monitor 23.8\" incluido. Garantía 3 años para flotas.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 3900000
+    "precioDesde": 3900000,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": false,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "13DG000TLD",
@@ -339,7 +392,9 @@
     },
     "descripcion": "Lenovo ThinkCentre neo 30s Gen 5 con i7 y monitor 23.8\" incluido. Sin OS para flota con licencia propia.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 3625000
+    "precioDesde": 3625000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "13C50021LD",
@@ -358,7 +413,12 @@
     },
     "descripcion": "Lenovo ThinkCentre neo 50q Gen 5 ultra-compacto con Linux. Ideal para empresas con imagen corporativa personalizada.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 2854000
+    "precioDesde": 2854000,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": false,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "13C50026LD",
@@ -377,7 +437,12 @@
     },
     "descripcion": "Lenovo ThinkCentre neo 50q Gen 5 con monitor IPS 100 Hz incluido. Ultra-compacto para call centers.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 2927000
+    "precioDesde": 2927000,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": false,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "13C50005LS",
@@ -396,7 +461,9 @@
     },
     "descripcion": "Lenovo ThinkCentre neo 50q Gen 5 con Core 7 de alto rendimiento y Win 11 Pro. Para operaciones intensivas.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 4516000
+    "precioDesde": 4516000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "P81467-DM5",
@@ -415,7 +482,9 @@
       "garantia": "1 año"
     },
     "descripcion": "HPE ProLiant DL320 Gen11 en rack 1U con Xeon Silver 4510. Para data center y cargas de trabajo críticas.",
-    "precioDesde": 32084000
+    "precioDesde": 32084000,
+    "segmento": "redes-servidores",
+    "publicado": true
   },
   {
     "referencia": "TS-433-4G-US",
@@ -434,7 +503,9 @@
       "garantia": "1 año"
     },
     "descripcion": "NAS QNAP TS-433 de 4 bahías para backup y almacenamiento en red. Conectividad 2.5GbE incluida.",
-    "precioDesde": 2356000
+    "precioDesde": 2356000,
+    "segmento": "redes-servidores",
+    "publicado": true
   },
   {
     "referencia": "ZAF00179CO",
@@ -454,7 +525,9 @@
       "incluye": "Estuche + Cargador"
     },
     "descripcion": "Tableta Lenovo 8.7\" para trabajo diario. Incluye estuche y cargador. Pantalla IPS antihuella.",
-    "precioDesde": 671000
+    "precioDesde": 671000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZAF10118CO",
@@ -474,7 +547,9 @@
       "incluye": "Estuche + Cargador"
     },
     "descripcion": "Tableta Lenovo 8.7\" con 4G LTE. Conectividad celular para vendedores en campo. Incluye estuche.",
-    "precioDesde": 785000
+    "precioDesde": 785000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZAEH0127CO",
@@ -494,7 +569,9 @@
       "incluye": "Combo Case + Audífonos"
     },
     "descripcion": "Tableta Lenovo 10\" con pantalla WUXGA. Combo con case y audífonos incluidos para equipos de trabajo.",
-    "precioDesde": 812000
+    "precioDesde": 812000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZAEJ0134CO",
@@ -514,7 +591,9 @@
       "incluye": "Estuche tipo libro + Cargador"
     },
     "descripcion": "Tableta Lenovo 10\" LTE con estuche libro y cargador. Conectividad 4G para trabajo en terreno.",
-    "precioDesde": 975000
+    "precioDesde": 975000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZAFR0130CO",
@@ -534,7 +613,9 @@
       "incluye": "Case + Stylus Pen"
     },
     "descripcion": "Lenovo IdeaTab 11\" con pantalla 2.5K 90Hz y stylus incluido. Ideal para diseñadores y ejecutivos.",
-    "precioDesde": 1070000
+    "precioDesde": 1070000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZAFR0210CO",
@@ -554,7 +635,9 @@
       "incluye": "Teclado Lenovo Folio + Lenovo Tab Pen Plus"
     },
     "descripcion": "Kit tablet+teclado+stylus Lenovo. Reemplaza portátil básico para trabajo en movilidad.",
-    "precioDesde": 1343000
+    "precioDesde": 1343000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZADX0170CO",
@@ -574,7 +657,9 @@
       "incluye": "Combo Sleeve + Audífonos"
     },
     "descripcion": "Lenovo Tab Plus con 256GB y altavoces JBL. Pantalla 2K para presentaciones y consumo de contenido.",
-    "precioDesde": 1562000
+    "precioDesde": 1562000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "ZAFM0226CO",
@@ -594,7 +679,10 @@
       "incluye": "Teclado + Cargador + Folio"
     },
     "descripcion": "Tablet empresarial 5G con teclado y funda. Máxima conectividad para equipos comerciales en campo.",
-    "precioDesde": 1831000
+    "precioDesde": 1831000,
+    "segmento": "movilidad-premium",
+    "publicado": true,
+    "destacado": true
   },
   {
     "referencia": "KLQ-00219",
@@ -612,7 +700,12 @@
       "soporte": "Microsoft 24/7"
     },
     "descripcion": "Microsoft 365 Standard anual ESD. Incluye todas las apps de Office + Teams + 1TB OneDrive por usuario.",
-    "precioDesde": 609000
+    "precioDesde": 609000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": true
   },
   {
     "referencia": "FQC-10553",
@@ -630,7 +723,9 @@
       "soporte": "Soporte técnico Microsoft"
     },
     "descripcion": "Windows 11 Pro OEM para máquina nueva. Licencia genuina con BitLocker, Remote Desktop y Hyper-V.",
-    "precioDesde": 870000
+    "precioDesde": 870000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "EP2-06608",
@@ -648,7 +743,9 @@
       "idioma": "Español"
     },
     "descripcion": "Microsoft Office 2024 perpetuo para empresas. Pago único sin mensualidad. Incluye Outlook 2024.",
-    "precioDesde": 1147000
+    "precioDesde": 1147000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "FQC-10572",
@@ -666,7 +763,9 @@
       "transferible": "Sí"
     },
     "descripcion": "Windows 11 Pro ESD transferible. Para upgrade de equipos existentes. Todas las versiones de idioma.",
-    "precioDesde": 1222000
+    "precioDesde": 1222000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "ESET-H-5-1-ESD",
@@ -684,7 +783,9 @@
       "so": "Windows / macOS / Android"
     },
     "descripcion": "ESET Small Business Security para 5 equipos por 1 año. Protección multicapa antivirus + firewall.",
-    "precioDesde": 553000
+    "precioDesde": 553000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "ESET-H-10-1-ES",
@@ -702,7 +803,9 @@
       "so": "Windows / macOS / Android"
     },
     "descripcion": "ESET Small Business Security 10 puestos. Consola de administración centralizada incluida.",
-    "precioDesde": 892000
+    "precioDesde": 892000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "KL4541DDEFS",
@@ -720,7 +823,13 @@
       "so": "Windows / macOS / Android / iOS"
     },
     "descripcion": "Kaspersky Small Office Security para 5 usuarios. Entrega inmediata. VPN y gestor de contraseñas incluidos.",
-    "precioDesde": 403000
+    "precioDesde": 403000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false
   },
   {
     "referencia": "KL4541DDNFS",
@@ -738,7 +847,9 @@
       "so": "Windows / macOS / Android / iOS + 1 servidor"
     },
     "descripcion": "Kaspersky KSOS 10 usuarios con protección de servidor incluida. Para empresas que manejan datos sensibles.",
-    "precioDesde": 1378000
+    "precioDesde": 1378000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "22U401A-B",
@@ -757,7 +868,10 @@
       "entradas": "HDMI + VGA"
     },
     "descripcion": "Monitor LG 22\" FHD VA 100Hz. Panel VA con excelente contraste para uso corporativo y home office.",
-    "precioDesde": 421000
+    "precioDesde": 421000,
+    "segmento": "monitores",
+    "publicado": true,
+    "enAccesorios": true
   },
   {
     "referencia": "24U411A-B",
@@ -776,7 +890,9 @@
       "entradas": "HDMI + VGA"
     },
     "descripcion": "Monitor LG 24\" FHD IPS 120Hz. Colores precisos y ángulos de visión amplios para productividad.",
-    "precioDesde": 518000
+    "precioDesde": 518000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "27U411A-B",
@@ -795,7 +911,9 @@
       "entradas": "HDMI + VGA"
     },
     "descripcion": "Monitor LG 27\" IPS 120Hz. Gran área de trabajo FHD para diseño, presentaciones y multitarea.",
-    "precioDesde": 583000
+    "precioDesde": 583000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "24F320GAN",
@@ -814,7 +932,9 @@
       "entradas": "HDMI + VGA"
     },
     "descripcion": "Monitor Samsung 24\" FHD IPS 100Hz. Imagen nítida con Eye Saver Mode para largas jornadas.",
-    "precioDesde": 636000
+    "precioDesde": 636000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "LS27D300GANXZA",
@@ -833,7 +953,9 @@
       "entradas": "HDMI + VGA"
     },
     "descripcion": "Monitor Samsung 27\" FHD IPS 100Hz. Amplio espacio visual con AMD FreeSync para trabajo fluido.",
-    "precioDesde": 729000
+    "precioDesde": 729000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "LS27F320GANX",
@@ -852,7 +974,12 @@
       "entradas": "HDMI 1.4 + DP"
     },
     "descripcion": "Monitor Samsung 27\" IPS 120Hz. Mayor fluidez visual para diseñadores y analistas de datos.",
-    "precioDesde": 803000
+    "precioDesde": 803000,
+    "descripcionUso": "",
+    "destacado": true,
+    "enPromocion": false,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "LS32D390GA",
@@ -872,7 +999,9 @@
       "curvatura": "1800R"
     },
     "descripcion": "Samsung 32\" curvo VA 100Hz. Inmersión total para salas de reunión, trading y estaciones premium.",
-    "precioDesde": 934000
+    "precioDesde": 934000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "VG249QE5A",
@@ -892,7 +1021,9 @@
       "freesync": "AMD FreeSync Premium"
     },
     "descripcion": "Asus TUF Gaming 24\" IPS 146Hz. Ultra rápida para gaming competitivo y diseño con colores fieles.",
-    "precioDesde": 629000
+    "precioDesde": 629000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "KG270",
@@ -912,7 +1043,9 @@
       "freesync": "AMD FreeSync Premium"
     },
     "descripcion": "Acer Nitro 27\" IPS 180Hz. La fluidez máxima para gaming competitivo en un panel grande y preciso.",
-    "precioDesde": 1037000
+    "precioDesde": 1037000,
+    "segmento": "monitores",
+    "publicado": true
   },
   {
     "referencia": "82YT00TKLM",
@@ -932,7 +1065,9 @@
       "color": "Arctic Grey"
     },
     "descripcion": "Lenovo V14 G4 con Ryzen 5 7520U y 16GB DDR5. Puerto RJ45 integrado para conexión cableada en oficina.",
-    "precioDesde": 2122000
+    "precioDesde": 2122000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "G6P3X",
@@ -952,7 +1087,9 @@
       "garantia": "1 año"
     },
     "descripcion": "Dell Inspiron 15 3530 con i5 de 13.ª gen. Ubuntu preinstalado para empresas con infraestructura Linux.",
-    "precioDesde": 2587000
+    "precioDesde": 2587000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "AG15-71P-55RT",
@@ -972,7 +1109,9 @@
       "garantia": "1 año"
     },
     "descripcion": "Acer Aspire 15 con i5 de 13.ª gen y DDR5. Opción económica sin OS para flotas con imagen propia.",
-    "precioDesde": 2163000
+    "precioDesde": 2163000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "X1502ZA-EJ2539W",
@@ -992,7 +1131,9 @@
       "garantia": "1 año"
     },
     "descripcion": "Asus VivoBook 15 con i5-12500H y Windows 11 incluido. Listo para trabajar desde el primer día.",
-    "precioDesde": 3737000
+    "precioDesde": 3737000,
+    "segmento": "movilidad-premium",
+    "publicado": true
   },
   {
     "referencia": "FX607VU",
@@ -1012,7 +1153,9 @@
       "color": "Mecha Gray"
     },
     "descripcion": "Asus TUF FX607V con RTX 3050 y pantalla WUXGA. Gaming y render 3D para diseñadores y creadores.",
-    "precioDesde": 2573000
+    "precioDesde": 2573000,
+    "segmento": "gaming-streaming",
+    "publicado": true
   },
   {
     "referencia": "PC-R5-5600GT-22",
@@ -1032,7 +1175,9 @@
       "incluye": "Teclado + Mouse PowerGroup"
     },
     "descripcion": "PC de escritorio Ryzen 5 5600GT + monitor ASUS 22\". Solución completa para call center y oficina básica.",
-    "precioDesde": 2454000
+    "precioDesde": 2454000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "PC-R7-5700G-24",
@@ -1052,7 +1197,9 @@
       "incluye": "Teclado + Mouse"
     },
     "descripcion": "PC Ryzen 7 5700G + monitor Acer 24\" 144Hz. Potencia y fluidez visual para diseñadores y analistas.",
-    "precioDesde": 2950000
+    "precioDesde": 2950000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "PC-R5-8600G-24",
@@ -1072,7 +1219,9 @@
       "incluye": "Teclado + Mouse / 750W 80+ Bronze"
     },
     "descripcion": "PC Ryzen 5 8600G con DDR5 + monitor 24\" 144Hz. La actualización ideal para equipos de trabajo modernos.",
-    "precioDesde": 3216000
+    "precioDesde": 3216000,
+    "segmento": "productividad-oficina",
+    "publicado": true
   },
   {
     "referencia": "R1000-JAL",
@@ -1090,7 +1239,9 @@
       "proteccion": "Picos y bajo/alto voltaje"
     },
     "descripcion": "Regulador Jaltech 1000VA 4 tomas. Protege PCs, monitores y periféricos de fluctuaciones de voltaje.",
-    "precioDesde": 255000
+    "precioDesde": 255000,
+    "segmento": "redes-servidores",
+    "publicado": true
   },
   {
     "referencia": "R1800-JAL",
@@ -1108,7 +1259,9 @@
       "proteccion": "Picos, cortes y bajo/alto voltaje"
     },
     "descripcion": "Regulador Jaltech 1800VA 8 tomas. Para estaciones con múltiples equipos: PC + monitor + impresora.",
-    "precioDesde": 718000
+    "precioDesde": 718000,
+    "segmento": "redes-servidores",
+    "publicado": true
   },
   {
     "referencia": "CDP-758",
@@ -1127,7 +1280,9 @@
       "puerto": "USB monitoreo"
     },
     "descripcion": "UPS CDP 750VA interactiva. Respaldo de batería y regulación para PCs, routers y pequeñas redes.",
-    "precioDesde": 908000
+    "precioDesde": 908000,
+    "segmento": "redes-servidores",
+    "publicado": true
   },
   {
     "referencia": "UPS1200-JAL",
@@ -1146,7 +1301,9 @@
       "puerto": "USB + RJ-11"
     },
     "descripcion": "UPS Jaltech 1200VA con 6 tomas. Protege equipos de red y servidores pequeños ante cortes eléctricos.",
-    "precioDesde": 1020000
+    "precioDesde": 1020000,
+    "segmento": "redes-servidores",
+    "publicado": true
   },
   {
     "referencia": "1115-KDT128",
@@ -1164,7 +1321,13 @@
       "garantia": "5 años"
     },
     "descripcion": "Pendrive 128GB Kingston USB 3.2. Transferencia rápida de archivos, presentaciones y backups diarios.",
-    "precioDesde": 104000
+    "precioDesde": 104000,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": false,
+    "segmento": "accesorios",
+    "publicado": true,
+    "enAccesorios": true
   },
   {
     "referencia": "1733-KSD256",
@@ -1183,7 +1346,9 @@
       "garantia": "Limitada de por vida"
     },
     "descripcion": "MicroSD 256GB Class 10 con adaptador. Amplía almacenamiento de tablets y cámaras corporativas.",
-    "precioDesde": 156000
+    "precioDesde": 156000,
+    "segmento": "accesorios",
+    "publicado": true
   },
   {
     "referencia": "5035-AHD330-1T",
@@ -1202,7 +1367,10 @@
       "garantia": "3 años"
     },
     "descripcion": "HDD externo 1TB con protección antigolpes militar. Backup portátil resistente para trabajo en campo.",
-    "precioDesde": 396000
+    "precioDesde": 396000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "enAccesorios": true
   },
   {
     "referencia": "5004-KXS1000-1T",
@@ -1221,7 +1389,10 @@
       "garantia": "5 años"
     },
     "descripcion": "SSD portátil 1TB con 1050 MB/s. 10× más rápido que un HDD externo. Ideal para backups y edición.",
-    "precioDesde": 512000
+    "precioDesde": 512000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "enAccesorios": true
   },
   {
     "referencia": "6416-MK235",
@@ -1240,7 +1411,13 @@
       "alcance": "10 m"
     },
     "descripcion": "Combo Logitech MK235 inalámbrico. Teclado full-size silencioso + mouse preciso para oficina y home office.",
-    "precioDesde": 248000
+    "precioDesde": 248000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "enAccesorios": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": true
   },
   {
     "referencia": "6095-MV-JAL",
@@ -1259,7 +1436,13 @@
       "ergonomia": "Postura natural 57° — reduce fatiga de muñeca"
     },
     "descripcion": "Mouse vertical ergonómico inalámbrico. Elimina tensión en muñeca y codo en jornadas de trabajo largas.",
-    "precioDesde": 184000
+    "precioDesde": 184000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": true,
+    "enAccesorios": true
   },
   {
     "referencia": "HUB-USBC-7EN1",
@@ -1278,7 +1461,10 @@
       "garantia": "18 meses"
     },
     "descripcion": "Hub USB-C 7-en-1 con HDMI 4K y carga 100W. Convierte un solo puerto en 7 conexiones simultáneas.",
-    "precioDesde": 280000
+    "precioDesde": 280000,
+    "segmento": "accesorios",
+    "publicado": true,
+    "enAccesorios": true
   },
   {
     "referencia": "PB-ADP10K-ADATA",
@@ -1297,6 +1483,12 @@
       "peso": "220 g"
     },
     "descripcion": "Power bank 10.000mAh con carga rápida 22.5W. Para equipos en campo, viajes y reuniones fuera de oficina.",
-    "precioDesde": 184000
+    "precioDesde": 184000,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": false,
+    "segmento": "accesorios",
+    "publicado": true,
+    "enAccesorios": true
   }
 ]

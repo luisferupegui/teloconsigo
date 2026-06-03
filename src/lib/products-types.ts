@@ -16,11 +16,61 @@ export type Product = {
   descripcion: string;
 };
 
+// ─── Segmentos (categoría única del admin, alineada con /catalogo) ─────────────
+export type Segmento =
+  | "hogar-estudio"
+  | "gaming-streaming"
+  | "productividad-oficina"
+  | "movilidad-premium"
+  | "redes-servidores"
+  | "creadores-produccion"
+  | "smart-home"
+  | "monitores"
+  | "accesorios";
+
+export const SEGMENTOS: { value: Segmento; label: string }[] = [
+  { value: "hogar-estudio",         label: "Hogar y Estudio"          },
+  { value: "gaming-streaming",      label: "Gaming y Streaming"       },
+  { value: "productividad-oficina", label: "Productividad y Oficina"  },
+  { value: "movilidad-premium",     label: "Movilidad Premium"        },
+  { value: "redes-servidores",      label: "Redes y Servidores"       },
+  { value: "creadores-produccion",  label: "Creadores y Producción"   },
+  { value: "smart-home",            label: "Smart Home y Conectividad"},
+  { value: "monitores",             label: "Monitores"                },
+  { value: "accesorios",            label: "Accesorios"               },
+];
+
+export const SEGMENTO_LABEL: Record<string, string> = Object.fromEntries(
+  SEGMENTOS.map((s) => [s.value, s.label]),
+);
+
+// Color por segmento para los chips de la lista admin
+export const SEGMENTO_COLOR: Record<Segmento, string> = {
+  "hogar-estudio":         "bg-blue-100 text-blue-700",
+  "gaming-streaming":      "bg-red-100 text-red-700",
+  "productividad-oficina": "bg-cyan-100 text-cyan-700",
+  "movilidad-premium":     "bg-violet-100 text-violet-700",
+  "redes-servidores":      "bg-emerald-100 text-emerald-700",
+  "creadores-produccion":  "bg-orange-100 text-orange-700",
+  "smart-home":            "bg-amber-100 text-amber-700",
+  "monitores":             "bg-teal-100 text-teal-700",
+  "accesorios":            "bg-zinc-100 text-zinc-600",
+};
+
+// Capacidad de las secciones del home (cards): mínimo y máximo por sección.
+export const HOME_MIN = 4;
+export const HOME_MAX = 12;
+
 export type BusinessProduct = {
   id: string;
   slug: string;
   nombre: string;
   marca: string;
+  // `segmento` es la ÚNICA categoría que gestiona el admin (9 opciones).
+  segmento?: Segmento;
+  // `publicado`: controla si el producto se ve en la web pública.
+  publicado?: boolean;
+  // ── Legacy (lo sigue usando el storefront actual; no editar desde el admin) ──
   categoria: "portatil" | "pc" | "monitor" | "tablet" | "licencia" | "accesorio";
   usoCaso:
     | "portatil-ejecutivo"
@@ -38,7 +88,11 @@ export type BusinessProduct = {
   proveedor: "ledacom" | "infoshop" | "manual";
   specs: Record<string, string>;
   descripcionUso: string;
+  // Ubicación en el home (independientes): destacado = "Productos Destacados",
+  // enAccesorios = "Accesorios & Esenciales", enPromocion = Promociones.
   destacado?: boolean;
+  enAccesorios?: boolean;
+  enPromocion?: boolean;
 };
 
 export const formatCOP = (value: number) =>

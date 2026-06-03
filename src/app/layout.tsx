@@ -74,6 +74,7 @@ export default async function RootLayout({
   return (
     <html
       lang="es-CO"
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrains.variable} ${bebasNeue.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#e8edf5] text-zinc-900 font-sans">

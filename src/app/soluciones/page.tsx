@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { loadBusinessProducts, formatCOP } from "@/lib/products";
+import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
 import {
   Laptop,
@@ -266,7 +266,7 @@ function SeccionUso({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SolucionesPage() {
-  const allProducts = loadBusinessProducts();
+  const allProducts = loadPublishedBusinessProducts();
   const byUso = (uso: BusinessProduct["usoCaso"]) =>
     allProducts.filter((p) => p.usoCaso === uso);
 
