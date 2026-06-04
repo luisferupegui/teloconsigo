@@ -156,7 +156,7 @@ const SECCIONES: SeccionDef[] = [
     id:           "smart-home",
     filterBy:     "segmento",
     filterValue:  "smart-home",
-    titulo:       "Smart Home",
+    titulo:       "Smart Home y Conectividad",
     tags:         ["Domótica", "Cámaras", "Asistentes"],
     descripcion:  "Tecnología inteligente para hogares y oficinas modernas con automatización, conectividad y entretenimiento integrado.",
     icon:         Wifi,
