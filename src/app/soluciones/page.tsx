@@ -119,7 +119,7 @@ const SECCIONES: SeccionDef[] = [
     filterValue:  "portatil-ejecutivo",
     titulo:       "Movilidad Premium",
     tags:         ["Livianos", "Elegantes", "Batería larga"],
-    descripcion:  "Portátiles profesionales de alto nivel. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
+    descripcion:  "Portátiles profesionales de alto nivel. ThinkPad, Dell Pro, Asus ExpertBook.",
     icon:         Laptop,
     iconGradient: "from-[#0f3d91] to-[#1e6cff]",
     badge:        PILL,
