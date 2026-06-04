@@ -6,17 +6,20 @@ import {
   Monitor,
   Tablet,
   Building2,
-  Cpu,
   Key,
   Package,
   MessageCircle,
-  Zap,
+  Gamepad2,
+  Server,
+  Video,
+  Wifi,
+  Home,
 } from "lucide-react";
 
 export const metadata = {
-  title: "Soluciones Tecnológicas | teloconsigo.co",
+  title: "Promociones | teloconsigo.co",
   description:
-    "Soluciones tecnológicas corporativas para empresas en Colombia: portátiles ejecutivos, PCs empresariales, monitores, tablets, accesorios y licencias. Cotización con IA.",
+    "Soluciones tecnológicas para hogar, gaming, oficina, movilidad, redes, creadores y más. Cotización rápida con asesoría experta.",
 };
 
 // ─── Mapa de abreviaciones para labels de specs ───────────────────────────────
@@ -48,101 +51,181 @@ const SPEC_LABEL: Record<string, string | null> = {
   brillo:         null,
 };
 
-// ─── Secciones por caso de uso ────────────────────────────────────────────────
+// ─── Tipo de sección ──────────────────────────────────────────────────────────
+// filterBy:'usoCaso' → filtra por p.usoCaso (campos legacy existentes)
+// filterBy:'segmento' → filtra por p.segmento (nuevas categorías del admin)
 
-// Paleta oscura para los pills del filtro rápido:
-// fondo = tono oscuro de la categoría, texto blanco, ícono con color vivo del acento.
-// Hover: ligero brillo con ring más visible.
+type SeccionDef = {
+  id:           string;
+  filterBy:     "usoCaso" | "segmento";
+  filterValue:  string;
+  titulo:       string;
+  tags:         string[];
+  descripcion:  string;
+  icon:         React.ComponentType<{ className?: string }>;
+  iconGradient: string;
+  badge:        string;
+  badgeIcon:    string;
+  tagText:      string;
+};
 
-const SECCIONES = [
+// ─── 11 secciones ─────────────────────────────────────────────────────────────
+
+const PILL = "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30";
+
+const SECCIONES: SeccionDef[] = [
   {
-    usoCaso:      "portatil-ejecutivo" as const,
-    titulo:       "Portátiles Ejecutivos",
-    tags:         ["Livianos", "Elegantes", "Batería larga"],
-    descripcion:  "Para profesionales que exigen lo mejor. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
-    icon:         Laptop,
-    iconGradient: "from-[#0f3d91] to-[#1e6cff]",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
-    badgeIcon:    "text-white",
-    tagText:      "text-blue-700",
-  },
-  {
-    usoCaso:      "portatil-oficina" as const,
-    titulo:       "Equipos para Oficina",
-    tags:         ["Rápidos", "Confiables", "Multitarea"],
-    descripcion:  "El balance perfecto entre precio y rendimiento para el trabajo diario. Ideales para contadores, abogados y startups.",
-    icon:         Laptop,
+    id:           "hogar-estudio",
+    filterBy:     "usoCaso",
+    filterValue:  "portatil-oficina",
+    titulo:       "Hogar y Estudio",
+    tags:         ["Teletrabajo", "Estudio", "Económicos"],
+    descripcion:  "Portátiles ágiles y confiables para el hogar o el estudio. Balance ideal entre precio y rendimiento para el uso cotidiano.",
+    icon:         Home,
     iconGradient: "from-sky-600 to-sky-400",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
+    badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-sky-700",
   },
   {
-    usoCaso:      "pc-empresarial" as const,
-    titulo:       "PCs Empresariales",
+    id:           "gaming-streaming",
+    filterBy:     "segmento",
+    filterValue:  "gaming-streaming",
+    titulo:       "Gaming y Streaming",
+    tags:         ["Alta Gráficos", "FPS", "Streaming"],
+    descripcion:  "Equipos con tarjetas gráficas dedicadas, procesadores de alto desempeño y pantallas fluidas para juego y transmisión profesional.",
+    icon:         Gamepad2,
+    iconGradient: "from-violet-700 to-purple-500",
+    badge:        PILL,
+    badgeIcon:    "text-white",
+    tagText:      "text-violet-700",
+  },
+  {
+    id:           "productividad-oficina",
+    filterBy:     "usoCaso",
+    filterValue:  "pc-empresarial",
+    titulo:       "Productividad y Oficina",
     tags:         ["Oficinas", "Puntos de venta", "Empresas"],
-    descripcion:  "Equipos de escritorio completos con monitor incluido. Listos para instalar y trabajar desde el primer día.",
-    icon:         Cpu,
+    descripcion:  "PCs de escritorio completos con monitor incluido. Rendimiento confiable para operaciones del día a día desde el primer arranque.",
+    icon:         Building2,
     iconGradient: "from-slate-700 to-slate-500",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
+    badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-slate-600",
   },
   {
-    usoCaso:      "monitor" as const,
+    id:           "movilidad-premium",
+    filterBy:     "usoCaso",
+    filterValue:  "portatil-ejecutivo",
+    titulo:       "Movilidad Premium",
+    tags:         ["Livianos", "Elegantes", "Batería larga"],
+    descripcion:  "Portátiles profesionales de alto nivel. ThinkPad, Dell Pro, Asus ExpertBook — transmiten empresa desde el primer vistazo.",
+    icon:         Laptop,
+    iconGradient: "from-[#0f3d91] to-[#1e6cff]",
+    badge:        PILL,
+    badgeIcon:    "text-white",
+    tagText:      "text-blue-700",
+  },
+  {
+    id:           "redes-servidores",
+    filterBy:     "segmento",
+    filterValue:  "redes-servidores",
+    titulo:       "Redes y Servidores",
+    tags:         ["Routers", "Switches", "NAS"],
+    descripcion:  "Infraestructura de red empresarial. Conectividad estable, segura y escalable para oficinas y sucursales.",
+    icon:         Server,
+    iconGradient: "from-cyan-700 to-cyan-500",
+    badge:        PILL,
+    badgeIcon:    "text-white",
+    tagText:      "text-cyan-700",
+  },
+  {
+    id:           "creadores-produccion",
+    filterBy:     "segmento",
+    filterValue:  "creadores-produccion",
+    titulo:       "Creadores y Producción",
+    tags:         ["Diseño", "Video", "Edición"],
+    descripcion:  "Equipos con GPU dedicada y pantallas de alta fidelidad para diseñadores, editores de video y creadores de contenido.",
+    icon:         Video,
+    iconGradient: "from-rose-700 to-pink-500",
+    badge:        PILL,
+    badgeIcon:    "text-white",
+    tagText:      "text-rose-700",
+  },
+  {
+    id:           "smart-home",
+    filterBy:     "segmento",
+    filterValue:  "smart-home",
+    titulo:       "Smart Home",
+    tags:         ["Domótica", "Cámaras", "Asistentes"],
+    descripcion:  "Tecnología inteligente para el hogar y la oficina: cámaras, altavoces, hubs y automatización del espacio.",
+    icon:         Wifi,
+    iconGradient: "from-orange-600 to-amber-400",
+    badge:        PILL,
+    badgeIcon:    "text-white",
+    tagText:      "text-orange-700",
+  },
+  {
+    id:           "monitores",
+    filterBy:     "usoCaso",
+    filterValue:  "monitor",
     titulo:       "Monitores",
     tags:         ["Productividad", "Setups dobles", "Ergonomía"],
-    descripcion:  "Samsung, LG, AOC, Dahua. Desde 22\" hasta 32\". Para escritorios de una o doble pantalla.",
+    descripcion:  "Samsung, LG, AOC, Asus. Desde 22\" hasta 32\". Para escritorios de una o doble pantalla.",
     icon:         Monitor,
     iconGradient: "from-teal-700 to-teal-500",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
+    badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-teal-700",
   },
   {
-    usoCaso:      "tablet-empresarial" as const,
+    id:           "tablets-empresariales",
+    filterBy:     "usoCaso",
+    filterValue:  "tablet-empresarial",
     titulo:       "Tablets Empresariales",
     tags:         ["Ventas", "Inventario", "Movilidad"],
     descripcion:  "Para equipos en campo, puntos de venta y trabajo remoto. Lenovo y Samsung con soporte garantizado.",
     icon:         Tablet,
     iconGradient: "from-indigo-700 to-indigo-500",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
+    badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-indigo-700",
   },
   {
-    usoCaso:      "accesorio" as const,
+    id:           "accesorios",
+    filterBy:     "usoCaso",
+    filterValue:  "accesorio",
     titulo:       "Accesorios",
     tags:         ["Mouse", "Teclados", "USB", "Discos"],
     descripcion:  "Combos inalámbricos Logitech, memorias USB y microSD Kingston, discos externos ADATA. Todo lo que necesita tu equipo.",
     icon:         Package,
     iconGradient: "from-amber-700 to-amber-500",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
+    badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-amber-700",
   },
   {
-    usoCaso:      "licencia" as const,
+    id:           "licencias-software",
+    filterBy:     "usoCaso",
+    filterValue:  "licencia",
     titulo:       "Licencias y Software",
     tags:         ["Windows", "Office", "Antivirus"],
     descripcion:  "Licencias originales Microsoft y antivirus empresarial ESET y Kaspersky. Activación inmediata, sin complicaciones.",
     icon:         Key,
     iconGradient: "from-emerald-700 to-emerald-500",
-    badge:        "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-blue-600 hover:ring-white/30",
+    badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-emerald-700",
   },
-] as const;
+];
 
 // ─── Tarjeta de producto ──────────────────────────────────────────────────────
 
 function BusinessProductCard({ product }: { product: BusinessProduct }) {
   const price = product.precioDesde ?? product.precio;
 
-  // URL con contexto completo para el Asesor IA
   const asesorUrl = `/asesor?producto=${encodeURIComponent(product.nombre)}&ref=${encodeURIComponent(product.referencia ?? product.slug)}&precio=${price ?? ""}`;
 
-  // Filtra y abrevia las specs, muestra máximo 3
   const specRows = Object.entries(product.specs)
     .map(([k, v]) => {
       const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
@@ -153,7 +236,6 @@ function BusinessProductCard({ product }: { product: BusinessProduct }) {
 
   return (
     <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-      {/* Nombre + descripción */}
       <h3 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
         {product.nombre}
       </h3>
@@ -161,7 +243,6 @@ function BusinessProductCard({ product }: { product: BusinessProduct }) {
         {product.descripcionUso}
       </p>
 
-      {/* Specs — etiquetas abreviadas con ancho fijo */}
       <div className="mt-3 space-y-1.5 flex-1">
         {specRows.map(({ label, value }) => (
           <div key={label} className="flex items-baseline gap-2 text-xs leading-4">
@@ -178,7 +259,6 @@ function BusinessProductCard({ product }: { product: BusinessProduct }) {
         )}
       </div>
 
-      {/* Precio y CTA — siempre al fondo */}
       <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
         <div>
           {price ? (
@@ -194,7 +274,6 @@ function BusinessProductCard({ product }: { product: BusinessProduct }) {
             <p className="text-sm font-medium text-zinc-400">Consultar precio</p>
           )}
         </div>
-        {/* Cotizar → Asesor IA con contexto del producto */}
         <Link
           href={asesorUrl}
           className="shrink-0 rounded-full bg-[#1e6cff] px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
@@ -206,13 +285,13 @@ function BusinessProductCard({ product }: { product: BusinessProduct }) {
   );
 }
 
-// ─── Sección de categoría ─────────────────────────────────────────────────────
+// ─── Sección ──────────────────────────────────────────────────────────────────
 
 function SeccionUso({
   sec,
   products,
 }: {
-  sec: (typeof SECCIONES)[number];
+  sec: SeccionDef;
   products: BusinessProduct[];
 }) {
   const precios = products
@@ -266,11 +345,12 @@ function SeccionUso({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SolucionesPage() {
-  // Solo muestra productos marcados como "En Promociones" desde el admin.
-  // El flag enPromocion controla qué aparece aquí.
   const allProducts = loadPublishedBusinessProducts().filter((p) => p.enPromocion === true);
-  const byUso = (uso: BusinessProduct["usoCaso"]) =>
-    allProducts.filter((p) => p.usoCaso === uso);
+
+  const bySeccion = (filterBy: "usoCaso" | "segmento", filterValue: string) =>
+    allProducts.filter((p) =>
+      filterBy === "usoCaso" ? p.usoCaso === filterValue : p.segmento === filterValue
+    );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -278,7 +358,7 @@ export default function SolucionesPage() {
       <nav className="text-xs text-zinc-500 mb-6">
         <Link href="/" className="hover:underline">Inicio</Link>
         <span className="mx-2">/</span>
-        <span>Soluciones Tecnológicas</span>
+        <span>Promociones</span>
       </nav>
 
       {/* Hero */}
@@ -304,17 +384,16 @@ export default function SolucionesPage() {
           </div>
         </div>
 
-        {/* Filtros rápidos — pills oscuros con acento de color por categoría */}
+        {/* Pills de navegación rápida */}
         <div className="mt-11 flex flex-wrap gap-2.5">
           {SECCIONES.map((s) => {
-            const count = byUso(s.usoCaso).length;
+            const count = bySeccion(s.filterBy, s.filterValue).length;
             return (
               <a
-                key={s.usoCaso}
-                href={`#${s.usoCaso}`}
+                key={s.id}
+                href={`#${s.id}`}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${s.badge}`}
               >
-                {/* Ícono con color vivo del acento de la categoría */}
                 <s.icon className={`h-3.5 w-3.5 shrink-0 ${s.badgeIcon}`} />
                 {s.titulo}
                 {count > 0 && (
@@ -330,8 +409,8 @@ export default function SolucionesPage() {
 
       {/* Secciones */}
       {SECCIONES.map((sec) => (
-        <div key={sec.usoCaso} id={sec.usoCaso}>
-          <SeccionUso sec={sec} products={byUso(sec.usoCaso)} />
+        <div key={sec.id} id={sec.id}>
+          <SeccionUso sec={sec} products={bySeccion(sec.filterBy, sec.filterValue)} />
         </div>
       ))}
 
