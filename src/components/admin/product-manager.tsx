@@ -381,7 +381,7 @@ export function ProductManager({
       </div>
 
       {/* Controles */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <input
           type="search"
           placeholder="Buscar por nombre, marca, referencia…"
@@ -408,21 +408,29 @@ export function ProductManager({
         </select>
       </div>
 
-      {/* Encabezado de columnas (desktop) */}
-      <div className="mb-2 hidden items-center gap-3 px-4 text-[10px] font-bold uppercase tracking-wider text-zinc-400 sm:flex">
-        <span className="h-12 w-16 shrink-0" />
-        <span className="flex-1">Producto</span>
-        <span className="hidden w-44 shrink-0 md:block">Categoría</span>
-        <span className="w-28 shrink-0 text-right">Precio</span>
-        <span className="w-44 shrink-0">Estado</span>
-        <span className="w-[68px] shrink-0 text-right">Acción</span>
+      {/* Encabezado de columnas + contador integrado */}
+      <div className="hidden rounded-t-xl border border-zinc-200 bg-zinc-50 sm:block">
+        <div className="flex items-center gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+          <span className="w-16 shrink-0" />
+          <span className="flex-1">
+            Producto
+            <span className="ml-2 font-semibold normal-case tracking-normal text-zinc-400">
+              ({filtered.length} {filtered.length !== 1 ? "resultados" : "resultado"}{query && ` · "${query}"`})
+            </span>
+          </span>
+          <span className="hidden w-44 shrink-0 md:block">Categoría</span>
+          <span className="w-28 shrink-0 text-right">Precio</span>
+          <span className="w-44 shrink-0">Estado</span>
+          <span className="w-[68px] shrink-0 text-right">Acción</span>
+        </div>
       </div>
 
-      <p className="mb-3 text-xs text-zinc-400">
+      {/* Contador para móvil */}
+      <p className="mb-3 text-xs text-zinc-400 sm:hidden">
         {filtered.length} producto{filtered.length !== 1 ? "s" : ""}{query && ` para "${query}"`}
       </p>
 
-      <div className="space-y-2.5">
+      <div className="space-y-2 rounded-b-xl border-x border-b border-zinc-200 p-3 sm:mt-0">
         {filtered.map((p) => (
           <ProductRow
             key={p.referencia ?? p.id}
