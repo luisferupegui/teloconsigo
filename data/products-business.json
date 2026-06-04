@@ -498,7 +498,11 @@
     "descripcion": "HPE ProLiant DL320 Gen11 en rack 1U con Xeon Silver 4510. Para data center y cargas de trabajo críticas.",
     "precioDesde": 32084000,
     "segmento": "redes-servidores",
-    "publicado": true
+    "publicado": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enAccesorios": false,
+    "enPromocion": true
   },
   {
     "referencia": "TS-433-4G-US",
@@ -1200,7 +1204,11 @@
     "descripcion": "Asus TUF FX607V con RTX 3050 y pantalla WUXGA. Gaming y render 3D para diseñadores y creadores.",
     "precioDesde": 2573000,
     "segmento": "gaming-streaming",
-    "publicado": true
+    "publicado": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enAccesorios": false,
+    "enPromocion": true
   },
   {
     "referencia": "PC-R5-5600GT-22",
@@ -1445,7 +1453,9 @@
     "segmento": "accesorios",
     "publicado": true,
     "enAccesorios": true,
-    "enPromocion": true
+    "enPromocion": true,
+    "descripcionUso": "",
+    "destacado": false
   },
   {
     "referencia": "6416-MK235",
@@ -1546,5 +1556,65 @@
     "segmento": "accesorios",
     "publicado": true,
     "enAccesorios": true
+  },
+  {
+    "referencia": "manual-1780585108852",
+    "nombre": "Audífonos Bluetooth Inalámbrico, Reducción de ruido adaptativo",
+    "marca": "Soundcore",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "accesorios",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 98500,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Audífonos In ear Bluetooth Inalámbrico Soundcore P30i, reducción de ruido De 40db con ANC adaptativo soporte para móvil sonido superior y bajos potentes llamadas claras con Ia comodidad excepcional",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "id": "manual-1780585108852",
+    "slug": "audifonos-bluetooth-inalambrico-soundcore"
+  },
+  {
+    "referencia": "manual-1780586397903",
+    "nombre": "Regulador de Voltaje Automático FVR USB 1200va, 8 Tomas, 2 Usb Color Negro",
+    "marca": "Forza",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "accesorios",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 136000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Regulador De Voltaje Automático Forza FVR-1221USB 1200va, 8 Tomas, 2 Usb Color Negro",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "id": "manual-1780586397903",
+    "slug": "regulador-de-voltaje-automatico-fvr-usb-1200va-8-tomas-2-usb-color-negro"
+  },
+  {
+    "referencia": "manual-1780590058013",
+    "nombre": "Cámara Web USB 1080P con micrófono HD,  ideal para Streaming, Juegos y Videoconferencias",
+    "marca": "Nexxt",
+    "categoria": "pc",
+    "usoCaso": "pc-empresarial",
+    "segmento": "productividad-oficina",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 99000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Cámara Web USB para ordenador 1080P con micrófono HD,  ideal para streaming, juegos y videoconferencias en Mac, Windows, PC, portátiles y ordenadores de sobremesa.",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "id": "manual-1780590058013",
+    "slug": "camara-web-usb-1080p-con-microfono-hd-ideal-para-streaming-juegos-y-videoconferencias"
   }
 ]
