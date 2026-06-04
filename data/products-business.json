@@ -19,7 +19,8 @@
     "precioDesde": 3380000,
     "segmento": "productividad-oficina",
     "publicado": true,
-    "destacado": false
+    "destacado": false,
+    "enPromocion": true
   },
   {
     "referencia": "21M30053LM",
@@ -43,7 +44,7 @@
     "publicado": true,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": false
+    "enPromocion": true
   },
   {
     "referencia": "PP70R",
@@ -65,7 +66,7 @@
     "precioDesde": 3076000,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "movilidad-premium",
     "publicado": true
   },
@@ -89,7 +90,8 @@
     "precioDesde": 3614000,
     "segmento": "movilidad-premium",
     "publicado": true,
-    "destacado": false
+    "destacado": false,
+    "enPromocion": true
   },
   {
     "referencia": "9KP97",
@@ -111,7 +113,8 @@
     "precioDesde": 4056000,
     "segmento": "movilidad-premium",
     "publicado": true,
-    "destacado": false
+    "destacado": false,
+    "enPromocion": true
   },
   {
     "referencia": "VP6RM",
@@ -133,7 +136,8 @@
     "precioDesde": 3934000,
     "segmento": "movilidad-premium",
     "publicado": true,
-    "destacado": false
+    "destacado": false,
+    "enPromocion": true
   },
   {
     "referencia": "B1403CVAS65014X",
@@ -154,7 +158,8 @@
     "usoCaso": "portatil-ejecutivo",
     "precioDesde": 3560000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "B1403CVAS61429X",
@@ -175,7 +180,8 @@
     "usoCaso": "portatil-ejecutivo",
     "precioDesde": 3934000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "B3405CVALY0226X",
@@ -196,7 +202,8 @@
     "usoCaso": "portatil-ejecutivo",
     "precioDesde": 4105000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "P3406CKANZ0441X",
@@ -218,7 +225,7 @@
     "precioDesde": 5451000,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "movilidad-premium",
     "publicado": true
   },
@@ -241,7 +248,8 @@
     "usoCaso": "portatil-oficina",
     "precioDesde": 3216000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "NX.B0YAL.007",
@@ -262,7 +270,8 @@
     "usoCaso": "portatil-ejecutivo",
     "precioDesde": 3918000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "NX.B64AL.002",
@@ -283,7 +292,8 @@
     "usoCaso": "portatil-ejecutivo",
     "precioDesde": 3934000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "8N5DF",
@@ -304,7 +314,8 @@
     "usoCaso": "pc-empresarial",
     "precioDesde": 6540000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "CQ1V4LT",
@@ -325,7 +336,8 @@
     "usoCaso": "pc-empresarial",
     "precioDesde": 4182000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "12SD002ALS",
@@ -347,7 +359,7 @@
     "precioDesde": 4990000,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "productividad-oficina",
     "publicado": true
   },
@@ -371,7 +383,7 @@
     "precioDesde": 3900000,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "productividad-oficina",
     "publicado": true
   },
@@ -394,7 +406,8 @@
     "usoCaso": "pc-empresarial",
     "precioDesde": 3625000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "13C50021LD",
@@ -416,7 +429,7 @@
     "precioDesde": 2854000,
     "descripcionUso": "",
     "destacado": false,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "productividad-oficina",
     "publicado": true
   },
@@ -440,7 +453,7 @@
     "precioDesde": 2927000,
     "descripcionUso": "",
     "destacado": false,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "productividad-oficina",
     "publicado": true
   },
@@ -463,7 +476,8 @@
     "usoCaso": "pc-empresarial",
     "precioDesde": 4516000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "P81467-DM5",
@@ -527,7 +541,8 @@
     "descripcion": "Tableta Lenovo 8.7\" para trabajo diario. Incluye estuche y cargador. Pantalla IPS antihuella.",
     "precioDesde": 671000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZAF10118CO",
@@ -549,7 +564,8 @@
     "descripcion": "Tableta Lenovo 8.7\" con 4G LTE. Conectividad celular para vendedores en campo. Incluye estuche.",
     "precioDesde": 785000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZAEH0127CO",
@@ -571,7 +587,8 @@
     "descripcion": "Tableta Lenovo 10\" con pantalla WUXGA. Combo con case y audífonos incluidos para equipos de trabajo.",
     "precioDesde": 812000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZAEJ0134CO",
@@ -593,7 +610,8 @@
     "descripcion": "Tableta Lenovo 10\" LTE con estuche libro y cargador. Conectividad 4G para trabajo en terreno.",
     "precioDesde": 975000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZAFR0130CO",
@@ -615,7 +633,8 @@
     "descripcion": "Lenovo IdeaTab 11\" con pantalla 2.5K 90Hz y stylus incluido. Ideal para diseñadores y ejecutivos.",
     "precioDesde": 1070000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZAFR0210CO",
@@ -637,7 +656,8 @@
     "descripcion": "Kit tablet+teclado+stylus Lenovo. Reemplaza portátil básico para trabajo en movilidad.",
     "precioDesde": 1343000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZADX0170CO",
@@ -659,7 +679,8 @@
     "descripcion": "Lenovo Tab Plus con 256GB y altavoces JBL. Pantalla 2K para presentaciones y consumo de contenido.",
     "precioDesde": 1562000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ZAFM0226CO",
@@ -685,7 +706,7 @@
     "destacado": true,
     "descripcionUso": "",
     "enAccesorios": false,
-    "enPromocion": false
+    "enPromocion": true
   },
   {
     "referencia": "KLQ-00219",
@@ -729,7 +750,8 @@
     "descripcion": "Windows 11 Pro OEM para máquina nueva. Licencia genuina con BitLocker, Remote Desktop y Hyper-V.",
     "precioDesde": 870000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "EP2-06608",
@@ -749,7 +771,8 @@
     "descripcion": "Microsoft Office 2024 perpetuo para empresas. Pago único sin mensualidad. Incluye Outlook 2024.",
     "precioDesde": 1147000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "FQC-10572",
@@ -769,7 +792,8 @@
     "descripcion": "Windows 11 Pro ESD transferible. Para upgrade de equipos existentes. Todas las versiones de idioma.",
     "precioDesde": 1222000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ESET-H-5-1-ESD",
@@ -789,7 +813,8 @@
     "descripcion": "ESET Small Business Security para 5 equipos por 1 año. Protección multicapa antivirus + firewall.",
     "precioDesde": 553000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "ESET-H-10-1-ES",
@@ -809,7 +834,8 @@
     "descripcion": "ESET Small Business Security 10 puestos. Consola de administración centralizada incluida.",
     "precioDesde": 892000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "KL4541DDEFS",
@@ -833,7 +859,7 @@
     "descripcionUso": "",
     "destacado": false,
     "enAccesorios": true,
-    "enPromocion": false
+    "enPromocion": true
   },
   {
     "referencia": "KL4541DDNFS",
@@ -853,7 +879,8 @@
     "descripcion": "Kaspersky KSOS 10 usuarios con protección de servidor incluida. Para empresas que manejan datos sensibles.",
     "precioDesde": 1378000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "22U401A-B",
@@ -899,7 +926,8 @@
     "descripcion": "Monitor LG 24\" FHD IPS 120Hz. Colores precisos y ángulos de visión amplios para productividad.",
     "precioDesde": 518000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "27U411A-B",
@@ -920,7 +948,8 @@
     "descripcion": "Monitor LG 27\" IPS 120Hz. Gran área de trabajo FHD para diseño, presentaciones y multitarea.",
     "precioDesde": 583000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "24F320GAN",
@@ -941,7 +970,8 @@
     "descripcion": "Monitor Samsung 24\" FHD IPS 100Hz. Imagen nítida con Eye Saver Mode para largas jornadas.",
     "precioDesde": 636000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "LS27D300GANXZA",
@@ -962,7 +992,8 @@
     "descripcion": "Monitor Samsung 27\" FHD IPS 100Hz. Amplio espacio visual con AMD FreeSync para trabajo fluido.",
     "precioDesde": 729000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "LS27F320GANX",
@@ -984,7 +1015,7 @@
     "precioDesde": 803000,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "monitores",
     "publicado": true
   },
@@ -1008,7 +1039,8 @@
     "descripcion": "Samsung 32\" curvo VA 100Hz. Inmersión total para salas de reunión, trading y estaciones premium.",
     "precioDesde": 934000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "VG249QE5A",
@@ -1030,7 +1062,8 @@
     "descripcion": "Asus TUF Gaming 24\" IPS 146Hz. Ultra rápida para gaming competitivo y diseño con colores fieles.",
     "precioDesde": 629000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "KG270",
@@ -1052,7 +1085,8 @@
     "descripcion": "Acer Nitro 27\" IPS 180Hz. La fluidez máxima para gaming competitivo en un panel grande y preciso.",
     "precioDesde": 1037000,
     "segmento": "monitores",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "82YT00TKLM",
@@ -1074,7 +1108,8 @@
     "descripcion": "Lenovo V14 G4 con Ryzen 5 7520U y 16GB DDR5. Puerto RJ45 integrado para conexión cableada en oficina.",
     "precioDesde": 2122000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "G6P3X",
@@ -1096,7 +1131,8 @@
     "descripcion": "Dell Inspiron 15 3530 con i5 de 13.ª gen. Ubuntu preinstalado para empresas con infraestructura Linux.",
     "precioDesde": 2587000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "AG15-71P-55RT",
@@ -1118,7 +1154,8 @@
     "descripcion": "Acer Aspire 15 con i5 de 13.ª gen y DDR5. Opción económica sin OS para flotas con imagen propia.",
     "precioDesde": 2163000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "X1502ZA-EJ2539W",
@@ -1140,7 +1177,8 @@
     "descripcion": "Asus VivoBook 15 con i5-12500H y Windows 11 incluido. Listo para trabajar desde el primer día.",
     "precioDesde": 3737000,
     "segmento": "movilidad-premium",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "FX607VU",
@@ -1184,7 +1222,8 @@
     "descripcion": "PC de escritorio Ryzen 5 5600GT + monitor ASUS 22\". Solución completa para call center y oficina básica.",
     "precioDesde": 2454000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "PC-R7-5700G-24",
@@ -1206,7 +1245,8 @@
     "descripcion": "PC Ryzen 7 5700G + monitor Acer 24\" 144Hz. Potencia y fluidez visual para diseñadores y analistas.",
     "precioDesde": 2950000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "PC-R5-8600G-24",
@@ -1228,7 +1268,8 @@
     "descripcion": "PC Ryzen 5 8600G con DDR5 + monitor 24\" 144Hz. La actualización ideal para equipos de trabajo modernos.",
     "precioDesde": 3216000,
     "segmento": "productividad-oficina",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "R1000-JAL",
@@ -1331,7 +1372,7 @@
     "precioDesde": 104000,
     "descripcionUso": "",
     "destacado": false,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "accesorios",
     "publicado": true,
     "enAccesorios": true
@@ -1355,7 +1396,8 @@
     "descripcion": "MicroSD 256GB Class 10 con adaptador. Amplía almacenamiento de tablets y cámaras corporativas.",
     "precioDesde": 156000,
     "segmento": "accesorios",
-    "publicado": true
+    "publicado": true,
+    "enPromocion": true
   },
   {
     "referencia": "5035-AHD330-1T",
@@ -1380,7 +1422,7 @@
     "enAccesorios": true,
     "descripcionUso": "",
     "destacado": false,
-    "enPromocion": false
+    "enPromocion": true
   },
   {
     "referencia": "5004-KXS1000-1T",
@@ -1402,7 +1444,8 @@
     "precioDesde": 512000,
     "segmento": "accesorios",
     "publicado": true,
-    "enAccesorios": true
+    "enAccesorios": true,
+    "enPromocion": true
   },
   {
     "referencia": "6416-MK235",
@@ -1477,7 +1520,7 @@
     "enAccesorios": true,
     "descripcionUso": "",
     "destacado": false,
-    "enPromocion": false
+    "enPromocion": true
   },
   {
     "referencia": "PB-ADP10K-ADATA",
@@ -1499,7 +1542,7 @@
     "precioDesde": 184000,
     "descripcionUso": "",
     "destacado": false,
-    "enPromocion": false,
+    "enPromocion": true,
     "segmento": "accesorios",
     "publicado": true,
     "enAccesorios": true

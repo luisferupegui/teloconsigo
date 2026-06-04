@@ -266,7 +266,9 @@ function SeccionUso({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SolucionesPage() {
-  const allProducts = loadPublishedBusinessProducts();
+  // Solo muestra productos marcados como "En Promociones" desde el admin.
+  // El flag enPromocion controla qué aparece aquí.
+  const allProducts = loadPublishedBusinessProducts().filter((p) => p.enPromocion === true);
   const byUso = (uso: BusinessProduct["usoCaso"]) =>
     allProducts.filter((p) => p.usoCaso === uso);
 
