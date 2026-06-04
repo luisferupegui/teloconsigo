@@ -419,9 +419,9 @@ export function ProductManager({
             </span>
           </span>
           <span className="hidden w-44 shrink-0 md:block">Categoría</span>
-          <span className="w-28 shrink-0 text-right">Precio</span>
+          <span className="w-28 shrink-0">Precio</span>
           <span className="w-44 shrink-0">Estado</span>
-          <span className="w-[68px] shrink-0 text-right">Acción</span>
+          <span className="w-[68px] shrink-0">Acción</span>
         </div>
       </div>
 
