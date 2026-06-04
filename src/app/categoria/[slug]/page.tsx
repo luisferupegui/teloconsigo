@@ -1,17 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { existsSync, statSync } from "fs";
+import path from "path";
 import { categories, type Linea } from "@/lib/categories";
 import type React from "react";
 
-/* Cache-busting para imágenes de línea/categoría.
-   Las URLs del optimizador (/_next/image?url=…) son idénticas tras
-   reemplazar los archivos, así que los navegadores siguen sirviendo la
-   versión vieja en caché. Subir esta versión fuerza una URL nueva →
-   refetch garantizado de la imagen nítida, sin que el usuario limpie caché.
-   ▸ Súbela (v4, v5…) cada vez que reproceses las imágenes de /public/lineas. */
-const ASSET_V = "9";
-const withV = (src: string) => `${src}?v=${ASSET_V}`;
+// Cache-busting dinámico basado en mtime del archivo — cambia automáticamente
+// cada vez que se reprocesa una imagen, sin necesidad de subir ASSET_V manualmente.
+function withV(src: string): string {
+  const abs = path.join(process.cwd(), "public", src.replace(/^\//, "").split("?")[0]);
+  if (existsSync(abs)) return `${src.split("?")[0]}?v=${Math.floor(statSync(abs).mtimeMs)}`;
+  return src;
+}
 
 export async function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }));
@@ -60,7 +61,7 @@ function LineaCard({
             alt={`${linea.marca} ${linea.nombre}`}
             fill
             sizes="(max-width:640px) 45vw, (max-width:1024px) 28vw, 180px"
-            quality={100}
+            unoptimized
             loading="eager"
             className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.08]"
           />

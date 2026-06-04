@@ -24,6 +24,7 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [selectedCat, setSelectedCat] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const { count: cartCount } = useCart();
@@ -32,6 +33,7 @@ export function Navbar() {
   const prev = useRef(cartCount);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const catRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/products")
@@ -84,13 +86,23 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [catOpen]);
 
+  // Cerrar dropdown de contacto al clic fuera
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (contactRef.current && !contactRef.current.contains(e.target as Node)) {
+        setContactOpen(false);
+      }
+    };
+    if (contactOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [contactOpen]);
+
   const navLinks = [
     ["/", "Inicio"],
     ["/catalogo", "Productos"],
     ["/soluciones", "Promociones"],
     ["/armador", "Armador de PC"],
     ["/conseguir", "Te lo conseguimos"],
-    ["/contacto", "Contacto"],
   ] as const;
 
   const selectedCatData = categories.find((c) => c.slug === selectedCat);
@@ -141,6 +153,41 @@ export function Navbar() {
               {label}
             </Link>
           ))}
+
+          {/* Dropdown Contacto */}
+          <div ref={contactRef} className="relative">
+            <button
+              onClick={() => setContactOpen((v) => !v)}
+              className={`px-3.5 py-2 rounded transition-colors duration-200 ${
+                contactOpen ? "text-white" : "text-white/50 hover:text-white"
+              }`}
+            >
+              Contacto
+            </button>
+
+            {contactOpen && (
+              <div className="absolute left-0 top-full mt-1.5 w-48 rounded-xl border
+                              border-white/10 bg-[#0f1626] shadow-2xl shadow-black/60
+                              py-1 z-50">
+                <Link
+                  href="/contacto"
+                  onClick={() => setContactOpen(false)}
+                  className="block px-4 py-2.5 text-sm text-zinc-300
+                             hover:text-white hover:bg-white/5 transition"
+                >
+                  Contacto
+                </Link>
+                <Link
+                  href="/nosotros"
+                  onClick={() => setContactOpen(false)}
+                  className="block px-4 py-2.5 text-sm text-zinc-300
+                             hover:text-white hover:bg-white/5 transition"
+                >
+                  Sobre Nosotros
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* ── Acciones — fila 1, mismo nivel que el nav ───────────── */}
@@ -432,6 +479,23 @@ export function Navbar() {
               {label}
             </Link>
           ))}
+
+          <Link
+            href="/contacto"
+            className="block rounded px-3 py-2.5 text-sm font-medium text-zinc-300
+                       hover:bg-white/8 hover:text-white transition"
+            onClick={() => setOpen(false)}
+          >
+            Contacto
+          </Link>
+          <Link
+            href="/nosotros"
+            className="block rounded px-3 py-2.5 text-sm font-medium text-zinc-300
+                       hover:bg-white/8 hover:text-white transition"
+            onClick={() => setOpen(false)}
+          >
+            Sobre Nosotros
+          </Link>
 
           <Link
             href="/admin"

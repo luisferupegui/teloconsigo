@@ -24,6 +24,7 @@ export function SmartImage({
           alt={alt}
           fill
           sizes="(max-width:768px) 50vw, 300px"
+          unoptimized
           className="object-cover"
         />
       </div>

@@ -137,12 +137,10 @@ export default function NosotrosPage() {
               Misión
             </p>
             <h2 className="mt-1 font-display text-2xl font-bold text-zinc-900">
-              Hacer accesible la mejor tecnología
+              Hacer que encontrar la tecnología ideal sea más fácil, confiable y personalizada.
             </h2>
             <p className="mt-3 text-zinc-600 leading-relaxed">
-              Conectar a cada persona en Colombia con el hardware que necesita
-              — combinando catálogo curado, asesoría experta y la promesa de
-              conseguir incluso lo que parece imposible.
+              Conectamos personas, gamers, profesionales y empresas con equipos y soluciones tecnológicas que realmente se adaptan a sus necesidades, combinando asesoría experta, atención cercana y acceso a un catálogo moderno y especializado.
             </p>
           </div>
 
@@ -155,13 +153,10 @@ export default function NosotrosPage() {
               Visión
             </p>
             <h2 className="mt-1 font-display text-2xl font-bold text-zinc-900">
-              La primera opción tecnológica de Colombia
+              Convertirnos en la empresa tecnológica más confiable y cercana del País.
             </h2>
             <p className="mt-3 text-zinc-600 leading-relaxed">
-              Ser referente nacional en venta de tecnología con asesoría real
-              — donde armar un PC, equipar una empresa o conseguir un
-              componente raro sea siempre una experiencia confiable y
-              personalizada.
+              Queremos transformar la forma en que las personas compran tecnología, ofreciendo una experiencia simple, inteligente y personalizada donde encontrar el equipo ideal sea rápido, transparente y seguro.
             </p>
           </div>
         </div>

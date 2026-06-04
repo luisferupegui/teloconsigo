@@ -682,7 +682,10 @@
     "precioDesde": 1831000,
     "segmento": "movilidad-premium",
     "publicado": true,
-    "destacado": true
+    "destacado": true,
+    "descripcionUso": "",
+    "enAccesorios": false,
+    "enPromocion": false
   },
   {
     "referencia": "KLQ-00219",
@@ -705,7 +708,8 @@
     "publicado": true,
     "descripcionUso": "",
     "destacado": true,
-    "enPromocion": true
+    "enPromocion": true,
+    "enAccesorios": false
   },
   {
     "referencia": "FQC-10553",
@@ -871,7 +875,10 @@
     "precioDesde": 421000,
     "segmento": "monitores",
     "publicado": true,
-    "enAccesorios": true
+    "enAccesorios": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": true
   },
   {
     "referencia": "24U411A-B",
@@ -1370,7 +1377,10 @@
     "precioDesde": 396000,
     "segmento": "accesorios",
     "publicado": true,
-    "enAccesorios": true
+    "enAccesorios": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": false
   },
   {
     "referencia": "5004-KXS1000-1T",
@@ -1464,7 +1474,10 @@
     "precioDesde": 280000,
     "segmento": "accesorios",
     "publicado": true,
-    "enAccesorios": true
+    "enAccesorios": true,
+    "descripcionUso": "",
+    "destacado": false,
+    "enPromocion": false
   },
   {
     "referencia": "PB-ADP10K-ADATA",

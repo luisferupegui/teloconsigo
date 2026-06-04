@@ -1,13 +1,17 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { LogoutButton } from "../components/logout-button";
 
 export const metadata = { title: "Admin · Te lo Consigo" };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  if (cookieStore.get("admin_auth")?.value !== "yes") redirect("/admin/login");
   return (
     <div className="min-h-screen bg-zinc-100">
       <div className="border-b border-zinc-200 bg-white">

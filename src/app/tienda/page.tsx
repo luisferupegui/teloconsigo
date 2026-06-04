@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { existsSync, statSync } from "fs";
+import path from "path";
 import { categories, type Linea } from "@/lib/categories";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
@@ -15,16 +17,34 @@ export const metadata = {
 const ASSET_V = "9";
 const withV = (src: string) => `${src}?v=${ASSET_V}`;
 
+const EXTS = ["webp", "jpg", "jpeg", "png"] as const;
+
+function resolveLineImg(catSlug: string, linea: Linea): string | null {
+  // Slug-specific file (admin upload) takes priority over brand-level fallback
+  for (const ext of EXTS) {
+    const rel = `/lineas/${catSlug}/${linea.slug}.${ext}`;
+    const abs = path.join(process.cwd(), "public", rel);
+    if (existsSync(abs)) return `${rel}?v=${Math.floor(statSync(abs).mtimeMs)}`;
+  }
+  if (linea.imagen) {
+    const abs = path.join(process.cwd(), "public", linea.imagen.replace(/^\//, ""));
+    if (existsSync(abs)) return `${linea.imagen}?v=${Math.floor(statSync(abs).mtimeMs)}`;
+  }
+  return null;
+}
+
 // ─── Card de línea (igual que en /categoria/[slug]) ───────────────────────────
 
 function LineaCard({
   linea,
   catSlug,
   CatIcon,
+  imageUrl,
 }: {
   linea: Linea;
   catSlug: string;
   CatIcon: React.ComponentType<{ className?: string }>;
+  imageUrl: string | null;
 }) {
   const href = `/conseguir?cat=${catSlug}&marca=${encodeURIComponent(linea.marca)}&linea=${encodeURIComponent(linea.nombre)}`;
   return (
@@ -39,13 +59,13 @@ function LineaCard({
     >
       {/* Imagen */}
       <div className="relative flex items-center justify-center bg-white h-32 border-b border-zinc-100">
-        {linea.imagen ? (
+        {imageUrl ? (
           <Image
-            src={withV(linea.imagen)}
+            src={imageUrl}
             alt={`${linea.marca} ${linea.nombre}`}
             fill
             sizes="(max-width:640px) 45vw, (max-width:1024px) 28vw, 160px"
-            quality={95}
+            unoptimized
             loading="eager"
             className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.07]"
           />
@@ -204,6 +224,7 @@ export default async function TiendaPage({
                         linea={linea}
                         catSlug={catActiva.slug}
                         CatIcon={catActiva.Icon}
+                        imageUrl={resolveLineImg(catActiva.slug, linea)}
                       />
                     ))}
                   </div>
