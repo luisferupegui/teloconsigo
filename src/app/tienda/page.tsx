@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { existsSync, statSync } from "fs";
 import path from "path";
 import { categories, type Linea } from "@/lib/categories";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Search } from "lucide-react";
+import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
+import { resolveProductImage } from "@/lib/product-images";
 
 export const dynamic = "force-dynamic";
 
@@ -102,10 +104,119 @@ function LineaCard({
 export default async function TiendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categoria?: string }>;
+  searchParams: Promise<{ categoria?: string; q?: string }>;
 }) {
-  const { categoria } = await searchParams;
+  const { categoria, q } = await searchParams;
+  const query = q?.trim().toLowerCase() ?? "";
 
+  // ── Búsqueda por texto ──────────────────────────────────────────────────────
+  if (query) {
+    const todos = loadPublishedBusinessProducts();
+    const terms = query.split(/\s+/).filter(Boolean);
+
+    // Mapa de sinónimos en español → slug de categoría
+    const CAT_SYNONYMS: Record<string, string> = {
+      "memoria": "memoria-ram", "ram": "memoria-ram", "ddr": "memoria-ram", "ddr4": "memoria-ram", "ddr5": "memoria-ram",
+      "procesador": "procesador", "cpu": "procesador", "intel": "procesador", "ryzen": "procesador",
+      "monitor": "monitor", "pantalla": "monitor",
+      "disco": "almacenamiento", "ssd": "almacenamiento", "nvme": "almacenamiento", "hdd": "almacenamiento",
+      "grafica": "tarjeta-grafica", "gpu": "tarjeta-grafica", "rtx": "tarjeta-grafica", "gtx": "tarjeta-grafica",
+      "portatil": "portatil", "laptop": "portatil", "notebook": "portatil",
+      "teclado": "teclado", "mouse": "mouse", "audifonos": "auriculares", "auricular": "auriculares",
+      "impresora": "impresora", "router": "redes", "red": "redes", "wifi": "redes",
+      "fuente": "fuente-poder", "psu": "fuente-poder",
+      "placa": "motherboard", "board": "motherboard", "mainboard": "motherboard",
+    };
+
+    // Detectar si el query apunta a una categoría específica
+    const catMatch = terms.map(t => CAT_SYNONYMS[t]).find(Boolean);
+
+    const resultados = todos.filter((p) => {
+      const primary = `${p.nombre} ${p.marca} ${p.categoria}`.toLowerCase();
+      // Si detectamos categoría, filtrar por ella primero
+      if (catMatch && p.categoria !== catMatch) return false;
+      // Todos los términos deben aparecer en nombre+marca+categoría
+      return terms.every((t) => primary.includes(t) || (catMatch && CAT_SYNONYMS[t] === catMatch));
+    });
+
+    return (
+      <div className="min-h-screen bg-[#f8f9fb]">
+        <div className="border-b border-zinc-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+            <nav className="text-xs text-zinc-400 mb-3">
+              <Link href="/" className="hover:text-zinc-600 transition">Inicio</Link>
+              <span className="mx-2">/</span>
+              <Link href="/tienda" className="hover:text-zinc-600 transition">Catálogo</Link>
+              <span className="mx-2">/</span>
+              <span className="text-zinc-600">Búsqueda</span>
+            </nav>
+            <div className="flex items-center gap-3">
+              <Search className="h-5 w-5 text-zinc-400" />
+              <div>
+                <h1 className="text-2xl font-bold text-zinc-900">
+                  Resultados para &quot;{q}&quot;
+                </h1>
+                <p className="text-sm text-zinc-500 mt-0.5">
+                  {resultados.length} producto{resultados.length !== 1 ? "s" : ""} encontrado{resultados.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          {resultados.length === 0 ? (
+            <div className="py-20 text-center">
+              <p className="text-4xl mb-4">🔍</p>
+              <h2 className="text-xl font-bold text-zinc-900">Sin resultados</h2>
+              <p className="text-sm text-zinc-500 mt-2 mb-6">
+                No encontramos productos para &quot;{q}&quot;, pero podemos conseguírtelo.
+              </p>
+              <Link
+                href={`/conseguir?q=${encodeURIComponent(q ?? "")}`}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#1e6cff] px-6 py-3 text-sm font-bold text-white hover:bg-[#1858d6]"
+              >
+                ✨ Te lo conseguimos
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {resultados.map((p) => {
+                const imgUrl = resolveProductImage(p.referencia ?? "", "card");
+                const slug = p.slug ?? p.referencia ?? "";
+                return (
+                  <Link
+                    key={p.referencia ?? p.nombre}
+                    href={`/producto/${slug}`}
+                    className="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-[#1e6cff]/30 transition-all"
+                  >
+                    <div className="relative h-40 w-full mb-3 rounded-xl bg-zinc-50 overflow-hidden">
+                      {imgUrl ? (
+                        <Image src={imgUrl} alt={p.nombre} fill className="object-contain p-2" unoptimized />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-4xl">📦</div>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{p.marca}</p>
+                    <p className="mt-0.5 font-semibold text-zinc-900 text-sm leading-tight line-clamp-2 group-hover:text-[#1e6cff] transition">
+                      {p.nombre}
+                    </p>
+                    {p.precioDesde ? (
+                      <p className="mt-2 font-display font-bold text-[#1e6cff]">
+                        Desde {formatCOP(p.precioDesde)}
+                      </p>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Vista normal por categorías ─────────────────────────────────────────────
   const catActiva = categoria
     ? categories.find((c) => c.slug === categoria)
     : null;

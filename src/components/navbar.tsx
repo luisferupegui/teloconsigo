@@ -17,7 +17,7 @@ import { categories } from "@/lib/categories";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { SearchModal } from "./search-modal";
-import type { Product } from "@/lib/products-types";
+import { formatCOP, type Product } from "@/lib/products-types";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -27,6 +27,8 @@ export function Navbar() {
   const [contactOpen, setContactOpen] = useState(false);
   const [selectedCat, setSelectedCat] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [searchQ, setSearchQ] = useState("");
+  const [searchDDOpen, setSearchDDOpen] = useState(false);
   const { count: cartCount } = useCart();
   const { count: wishCount } = useWishlist();
   const badgeRef = useRef<HTMLSpanElement>(null);
@@ -34,11 +36,32 @@ export function Navbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const catRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/products")
+    // Solo productos PUBLICADOS aparecen en la búsqueda pública.
+    fetch("/api/business-products")
       .then((r) => r.json())
-      .then(setProducts)
+      .then((data: Array<Record<string, unknown>>) =>
+        setProducts(
+          data
+            .filter((p) => p.publicado !== false)
+            .map((p) => ({
+              id: (p.referencia ?? p.slug ?? p.nombre) as string,
+              slug: (p.slug ?? p.referencia ?? "") as string,
+              nombre: p.nombre as string,
+              marca: p.marca as string,
+              categoria: p.categoria as string,
+              precio: (p.precioDesde ?? p.precio ?? 0) as number,
+              imagen: (p.imageUrl ?? p.imagen ?? "") as string,
+              stock: 0,
+              rating: 0,
+              reviews: 0,
+              specs: {},
+              descripcion: "",
+            })),
+        ),
+      )
       .catch(() => {});
   }, []);
 
@@ -97,6 +120,17 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [contactOpen]);
 
+  // Cerrar el autocompletado de búsqueda al clic fuera
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchDDOpen(false);
+      }
+    };
+    if (searchDDOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [searchDDOpen]);
+
   const navLinks = [
     ["/", "Inicio"],
     ["/catalogo", "Productos"],
@@ -106,6 +140,14 @@ export function Navbar() {
   ] as const;
 
   const selectedCatData = categories.find((c) => c.slug === selectedCat);
+
+  const sq = searchQ.toLowerCase().trim();
+  const searchResults =
+    sq.length >= 1
+      ? products
+          .filter((p) => `${p.nombre} ${p.marca} ${p.categoria}`.toLowerCase().includes(sq))
+          .slice(0, 7)
+      : [];
 
   return (
     <header className="sticky top-0 z-50 bg-[#0b0f1c] border-b border-white/10">
@@ -273,8 +315,8 @@ export function Navbar() {
         </div>
 
         {/* ── Fila 2: Barra de búsqueda con categorías ────────────── */}
-        <div className="pt-1.5 pb-3 flex justify-center -translate-y-[2px]">
-          <form action="/catalogo" method="get" className="w-full max-w-[612px]">
+        <div ref={searchRef} className="pt-1.5 pb-3 flex justify-center -translate-y-[2px]">
+          <form action="/tienda" method="get" className="w-full max-w-[612px]">
             {selectedCat && (
               <input type="hidden" name="categoria" value={selectedCat} />
             )}
@@ -325,6 +367,10 @@ export function Navbar() {
                 <input
                   type="search"
                   name="q"
+                  value={searchQ}
+                  onChange={(e) => { setSearchQ(e.target.value); setSearchDDOpen(true); }}
+                  onFocus={() => setSearchDDOpen(true)}
+                  autoComplete="off"
                   placeholder="Buscar productos, marcas, componentes…"
                   className="flex-1 bg-transparent px-3 py-2.5 text-sm text-white
                              placeholder-zinc-500 focus:outline-none min-w-0"
@@ -376,6 +422,59 @@ export function Navbar() {
                       {cat.nombre}
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* Autocompletado de búsqueda en vivo (solo productos publicados) */}
+              {searchDDOpen && sq.length >= 1 && (
+                <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl border border-white/10 bg-[#0f1626] shadow-2xl shadow-black/60 py-2 z-50 max-h-[70vh] overflow-y-auto">
+                  {searchResults.length > 0 ? (
+                    <>
+                      {searchResults.map((p) => (
+                        <Link
+                          key={p.id}
+                          href={`/producto/${p.slug}`}
+                          onClick={() => setSearchDDOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition"
+                        >
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
+                            {p.imagen ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={p.imagen} alt="" className="h-full w-full object-contain" />
+                            ) : (
+                              <Search className="h-4 w-4 text-zinc-500" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[10px] uppercase tracking-wider text-zinc-500">{p.marca}</p>
+                            <p className="truncate text-sm text-white">{p.nombre}</p>
+                          </div>
+                          {p.precio > 0 && (
+                            <p className="shrink-0 text-sm font-bold text-[#4d8dff]">{formatCOP(p.precio)}</p>
+                          )}
+                        </Link>
+                      ))}
+                      <button
+                        type="submit"
+                        onClick={() => setSearchDDOpen(false)}
+                        className="mt-1 flex w-full items-center justify-between border-t border-white/10 px-4 py-2.5 text-sm font-semibold text-[#4d8dff] hover:bg-white/5"
+                      >
+                        Ver todos los resultados para “{searchQ}”
+                        <Search className="h-4 w-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm text-zinc-300">Sin resultados para “{searchQ}”.</p>
+                      <Link
+                        href="/conseguir"
+                        onClick={() => setSearchDDOpen(false)}
+                        className="mt-2 inline-flex rounded-full bg-[#1e6cff] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#1858d6]"
+                      >
+                        ✨ Te lo conseguimos
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -452,7 +551,7 @@ export function Navbar() {
       {/* ── Mobile menu desplegable ──────────────────────────────── */}
       {open && (
         <div className="lg:hidden border-t border-white/10 bg-[#080c14] px-4 py-4 space-y-1">
-          <form action="/catalogo" method="get" className="flex mb-4">
+          <form action="/tienda" method="get" className="flex mb-4">
             <input
               type="search"
               name="q"
