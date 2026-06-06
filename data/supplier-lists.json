@@ -1,0 +1,4918 @@
+[
+  {
+    "id": "lista-ledacom-1780698803370",
+    "nombre": "Lista Grupo Ledacom 01 de Junio 2026.pdf",
+    "proveedor": "ledacom",
+    "fecha": "2026-06-05T22:33:23.370Z",
+    "paginas": 46,
+    "caracteres": 211589,
+    "activa": true,
+    "productos": [
+      {
+        "nombre": "Xiaomi Redmi A7 Pro 4GB 64GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 383000,
+        "referencia": "6932554493479",
+        "specs": {
+          "procesador": "UNISOC T7250 12nm 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "64GB"
+        },
+        "id": "ledacom-6932554493479",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi A7 Pro 4GB 128GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 419000,
+        "referencia": "6932554493424",
+        "specs": {
+          "procesador": "UNISOC T7250 12nm 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-6932554493424",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi 15C 4GB 256GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 419900,
+        "referencia": "6932554444815",
+        "specs": {
+          "procesador": "MediaTek Helio G81-Ultra 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-6932554444815",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Note 15 Pro 5G 8GB 256GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 1115000,
+        "referencia": "6932554471217",
+        "specs": {
+          "procesador": "MediaTek Dimensity 7400-Ultra 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-6932554471217",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Note 15 Pro 8GB 256GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 929900,
+        "referencia": "6932554469764",
+        "specs": {
+          "procesador": "MediaTek Helio G200-Ultra 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-6932554469764",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Note 15 6GB 128GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 656000,
+        "referencia": "6932554476045",
+        "specs": {
+          "procesador": "MediaTek Helio G100-Ultra 8 núcleos",
+          "memoria_ram": "6GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-6932554476045",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Note 15 8GB 256GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 769000,
+        "referencia": "6932554476076",
+        "specs": {
+          "procesador": "MediaTek Helio G100-Ultra 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-6932554476076",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Note 15 8GB 512GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 855000,
+        "referencia": "6932554405397",
+        "specs": {
+          "procesador": "MediaTek Helio G100-Ultra 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB"
+        },
+        "id": "ledacom-6932554405397",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Note 14 5G 8GB 256GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 829000,
+        "referencia": "6932554404581",
+        "specs": {
+          "procesador": "Dimensity 7025-Ultra 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-6932554404581",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Samsung Galaxy A07 6GB 128GB",
+        "marca": "Samsung",
+        "categoria": "portatil",
+        "precio_costo": 409000,
+        "referencia": "SM-A075MLVHLTC",
+        "specs": {
+          "procesador": "MediaTek G99",
+          "memoria_ram": "6GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-SM-A075MLVHLTC",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Samsung Galaxy A07 4GB 64GB",
+        "marca": "Samsung",
+        "categoria": "portatil",
+        "precio_costo": 309000,
+        "referencia": "SM-A075MLVDLTC",
+        "specs": {
+          "procesador": "MediaTek G99",
+          "memoria_ram": "4GB",
+          "almacenamiento": "64GB"
+        },
+        "id": "ledacom-SM-A075MLVDLTC",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Tab One TB305FU 4GB 128GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 495000,
+        "referencia": "ZAF00124CO",
+        "specs": {
+          "procesador": "MediaTek Helio G85 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAF00124CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Tab One 4G LTE 4GB 128GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 579000,
+        "referencia": "ZAF10118CO",
+        "specs": {
+          "procesador": "MediaTek Helio G85 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAF10118CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Tab 10\" TB311FU 4GB 128GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 625000,
+        "referencia": "ZAEH0127CO",
+        "specs": {
+          "procesador": "MediaTek Helio G85 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAEH0127CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Tab LTE TB311XU 4GB 128GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 675000,
+        "referencia": "ZAEJ0134CO",
+        "specs": {
+          "procesador": "MediaTek Helio G85 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAEJ0134CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Tab Plus TB351FU 8GB 256GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 990000,
+        "referencia": "ZADX0170CO",
+        "specs": {
+          "procesador": "MediaTek Helio G99 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-ZADX0170CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Idea Tab LTE 5G TB336ZU 8GB 256GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1152000,
+        "referencia": "ZAFM0226CO",
+        "specs": {
+          "procesador": "Dimensity 6300 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-ZAFM0226CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Pad 2 4GB 128GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 599000,
+        "referencia": "6932554442309",
+        "specs": {
+          "procesador": "MediaTek Helio G100-Ultra 6nm",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-6932554442309",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Xiaomi Redmi Pad 2 8GB 256GB",
+        "marca": "Xiaomi",
+        "categoria": "portatil",
+        "precio_costo": 719000,
+        "referencia": "6932554433000",
+        "specs": {
+          "procesador": "MediaTek Helio G100-Ultra 6nm",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-6932554433000",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Samsung Galaxy Tab A11+ 6GB 128GB",
+        "marca": "Samsung",
+        "categoria": "portatil",
+        "precio_costo": 712000,
+        "referencia": "SM-X230NZAACOO",
+        "specs": {
+          "procesador": "Octa-Core 2.5GHz",
+          "memoria_ram": "6GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-SM-X230NZAACOO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Samsung Galaxy Tab A11+ 8GB 256GB",
+        "marca": "Samsung",
+        "categoria": "portatil",
+        "precio_costo": 789000,
+        "referencia": "SM-X230NZAECOO",
+        "specs": {
+          "procesador": "Octa-Core 2.5GHz",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB"
+        },
+        "id": "ledacom-SM-X230NZAECOO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Idea Tab TB336FU 8GB 128GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 899000,
+        "referencia": "ZAFR0210CO",
+        "specs": {
+          "procesador": "MediaTek Dimensity 6300 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAFR0210CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Idea Tab TB336FU 8GB 128GB Case",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 855000,
+        "referencia": "ZAFR0130CO",
+        "specs": {
+          "procesador": "MediaTek Dimensity 6300 8 núcleos",
+          "memoria_ram": "8GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAFR0130CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Tab One 4GB 128GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 495000,
+        "referencia": "ZAF00179CO",
+        "specs": {
+          "procesador": "MediaTek Helio G85 8 núcleos",
+          "memoria_ram": "4GB",
+          "almacenamiento": "128GB"
+        },
+        "id": "ledacom-ZAF00179CO",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Dell Pro 15 Essential Intel Core i5-1334U 8GB 512GB",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2449000,
+        "referencia": "PP70R",
+        "specs": {
+          "procesador": "Intel Core i5-1334U",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-PP70R",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Dell Pro 14 PC14255 AMD Ryzen 5 PRO 230 16GB 512GB",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 4079000,
+        "referencia": "6F1NR",
+        "specs": {
+          "procesador": "AMD Ryzen 5 PRO 230",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-6F1NR",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Dell Pro 14 PC14250 Intel Core Ultra 5 225U 16GB 512GB",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2259000,
+        "referencia": "7XNFP",
+        "specs": {
+          "procesador": "Intel Core Ultra 5 225U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-7XNFP",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Dell Pro 15 Essential PV15250 Intel Core i7-1355U 16GB 512GB",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2618700,
+        "referencia": "9KP97",
+        "specs": {
+          "procesador": "Intel Core i7-1355U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-9KP97",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Dell Inspiron 5000 5440 Intel Core 7 150U 16GB 512GB",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2849900,
+        "referencia": "VP6RM",
+        "specs": {
+          "procesador": "Intel Core 7 150U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-VP6RM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G5 IRL Intel Core 5 210H 8GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 4629000,
+        "referencia": "83GU0043LM",
+        "specs": {
+          "procesador": "Intel Core 5 210H",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-83GU0043LM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo ThinkPad E14 Gen 6 AMD Ryzen 5 7535U 16GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2330000,
+        "referencia": "21M30053LM",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7535U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-21M30053LM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus ExpertBook AMD Ryzen 7-350 AI 16GB 1TB",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2769000,
+        "referencia": "P3406CKANZ0441X",
+        "specs": {
+          "procesador": "AMD Ryzen AI 7-350",
+          "memoria_ram": "16GB",
+          "almacenamiento": "1TB SSD"
+        },
+        "id": "ledacom-P3406CKANZ0441X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Acer TMP214-55-586G-CO Intel Core i5-1335U 16GB 512GB",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2839000,
+        "referencia": "NX.B0YAL.007",
+        "specs": {
+          "procesador": "Intel Core i5-1335U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-NX.B0YAL.007",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Acer AV14-52P-72B2 Intel Core i7-1355U 16GB 512GB",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2579000,
+        "referencia": "NX.KJTAL.003",
+        "specs": {
+          "procesador": "Intel Core i7-1355U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-NX.KJTAL.003",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Acer TMP214-55-G2-59YG-CO Intel Core 5 120U 16GB 1TB",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2139000,
+        "referencia": "NX.B64AL.002",
+        "specs": {
+          "procesador": "Intel Core 5 120U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "1TB SSD"
+        },
+        "id": "ledacom-NX.B64AL.002",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus ExpertBook B3405CVALY0226X Intel Core i5-13420H 16GB 512GB",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 3539000,
+        "referencia": "B3405CVALY0226X",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-B3405CVALY0226X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus ExpertBook S65014X Intel Core i5-13420H 8GB 512GB",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2229000,
+        "referencia": "B1403CVAS65014X",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-B1403CVAS65014X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus ExpertBook B1403CVA Intel Core i7-13620H 16GB 1TB",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2799000,
+        "referencia": "B1403CVAS61429X",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "1TB SSD"
+        },
+        "id": "ledacom-B1403CVAS61429X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Acer AV14-52P-55EB-CO Intel Core i5-1335U 16GB 512GB",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2939000,
+        "referencia": "NX.KJTAL.002",
+        "specs": {
+          "procesador": "Intel Core i5-1335U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-NX.KJTAL.002",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Dell Pro QC24250 Intel Core Ultra 7 265 16GB 512GB",
+        "marca": "Dell",
+        "categoria": "escritorio",
+        "precio_costo": 5450000,
+        "referencia": "8N5DF",
+        "specs": {
+          "procesador": "Intel Core Ultra 7 265",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-8N5DF",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "PC Optiplex 7020 SFF Intel Core i5 14500 vPro 8GB 512GB",
+        "marca": "Dell",
+        "categoria": "escritorio",
+        "precio_costo": 2929000,
+        "referencia": "YJ9PX",
+        "specs": {
+          "procesador": "Intel Core i5 14500 vPro",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-YJ9PX",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "PC ThinkCentre neo 30s Gen 5 Intel Core i7-13620H 8GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 4159000,
+        "referencia": "13DG000TLD",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-13DG000TLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "PC ThinkCentre neo 50q Gen 5 Intel Core 5 210H 8GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2050000,
+        "referencia": "13C50026LD-E22",
+        "specs": {
+          "procesador": "Intel Core 5 210H",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-13C50026LD-E22",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AIO HP PROONE 240 G10 Intel Core Ultra 5-125U 8GB 512GB",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 3764000,
+        "referencia": "CQ1V4LT#ABM_E",
+        "specs": {
+          "procesador": "Intel Core Ultra 5-125U",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-CQ1V4LT#ABM_E",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AIO ThinkCenter neo 50a 24 Gen 5 Intel Core i5-13420H 16GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 1999000,
+        "referencia": "12SD002ALS",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-12SD002ALS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "PC ThinkCentre neo 50q Gen 5 Intel Core 7 240H 16GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 4409000,
+        "referencia": "13C50005LS",
+        "specs": {
+          "procesador": "Intel Core 7 240H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-13C50005LS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "PC ThinkCentre neo 50q Gen 5 Intel Core 5 210H 8GB 256GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 4509000,
+        "referencia": "13C50021LD_X",
+        "specs": {
+          "procesador": "Intel Core 5 210H",
+          "memoria_ram": "8GB",
+          "almacenamiento": "256GB SSD"
+        },
+        "id": "ledacom-13C50021LD_X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AIO ThinkCenter neo 50a 24 Gen 5 Intel Core i7-13620H 16GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 3250000,
+        "referencia": "12SD002BLS",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-12SD002BLS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AIO ThinkCenter neo 50a 27 Gen 5 Intel Core i7-13620H 16GB 512GB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2539000,
+        "referencia": "12SB0049LS",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-12SB0049LS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Servidor HPE ProLiant DL320 Gen11 Intel Xeon Silver 4510 64GB 1920GB",
+        "marca": "HPE",
+        "categoria": "escritorio",
+        "precio_costo": 27900000,
+        "referencia": "P81467-DM5",
+        "specs": {
+          "procesador": "Intel Xeon Silver 4510",
+          "memoria_ram": "64GB DDR5",
+          "almacenamiento": "2x960GB SSD"
+        },
+        "id": "ledacom-P81467-DM5",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Servidor Lenovo ThinkSystem ST45 V3 AMD EPYC 4124P 16GB 2TB",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 8199000,
+        "referencia": "7DH4A00GLA",
+        "specs": {
+          "procesador": "AMD EPYC 4124P",
+          "memoria_ram": "16GB DDR5",
+          "almacenamiento": "2TB 3.5\""
+        },
+        "id": "ledacom-7DH4A00GLA",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "NAS QNAP TS-433 4-Bay ARM Cortex-A55 4GB",
+        "marca": "QNAP",
+        "categoria": "almacenamiento",
+        "precio_costo": 2049000,
+        "referencia": "TS-433-4G-US",
+        "specs": {
+          "procesador": "ARM Cortex-A55 4-core 2.0GHz",
+          "memoria_ram": "4GB",
+          "puertos": "1x GbE, 1x 2.5GbE"
+        },
+        "id": "ledacom-TS-433-4G-US",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "NAS QNAP TS-233 2-Bay ARM Cortex-A55 2GB",
+        "marca": "QNAP",
+        "categoria": "almacenamiento",
+        "precio_costo": 1035000,
+        "referencia": "TS-233",
+        "specs": {
+          "procesador": "ARM Cortex-A55 4-core 2.0GHz",
+          "memoria_ram": "2GB",
+          "bahias": "2 HDD o SDD"
+        },
+        "id": "ledacom-TS-233",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Unidad DVD-RW Servidor Kingston 1920GB SEDC600M",
+        "marca": "Kingston",
+        "categoria": "almacenamiento",
+        "precio_costo": 50000,
+        "referencia": "726537-B21SEDC600M",
+        "specs": {
+          "tipo": "SSD Servidor",
+          "capacidad": "1920GB",
+          "conexion": "SATA"
+        },
+        "id": "ledacom-726537-B21SEDC600M",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus TUF Gaming A15 AMD Ryzen 5 7535HS/512GB SSD/Ram 8GB/RTX 3050 4GB/15.6\" FHD",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2649000,
+        "referencia": "FA506NC-HN006_I",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7535HS 3.3GHz",
+          "memoria_ram": "8GB DDR5 4800Mhz",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-FA506NC-HN006_I",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus TUF Gaming A15 AMD Ryzen 7 7445HS/512GB SSD/Ram 8GB/RTX 3050 4GB/15.6\" FHD/EndLess",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2849900,
+        "referencia": "FA506NCG-HN204",
+        "specs": {
+          "procesador": "AMD Ryzen 7 7445HS 3.2GHz",
+          "memoria_ram": "8GB DDR5-5600",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-FA506NCG-HN204",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus TUF Gaming Intel Core i5-210H/512GB SSD/Ram 8GB/RTX 3050 6GB/16\" FHD/EndLess OS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2839000,
+        "referencia": "FX607VJ-RL016-E",
+        "specs": {
+          "procesador": "Intel Core i5-210H 2.2GHz",
+          "memoria_ram": "8GB DDR4",
+          "almacenamiento": "512GB M.2 SSD"
+        },
+        "id": "ledacom-FX607VJ-RL016-E",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus TUF Gaming A16 AMD Ryzen 7-445HS/512GB SSD/Ram 16GB/RTX 4050 6GB GDDR6/16\" FHD+/OS NO",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 4450000,
+        "referencia": "FA607NUG-RL117",
+        "specs": {
+          "procesador": "AMD Ryzen 7-7445HS",
+          "memoria_ram": "16GB DDR5-5600",
+          "almacenamiento": "512GB PCIe 3.0 NVMe"
+        },
+        "id": "ledacom-FA607NUG-RL117",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Gaming ROG Strix G16 AMD Ryzen 9 8940HX/1TB SSD/Ram 32GB/RTX 5060 8GB GDDR7/16\" FHD+/Windows 11 Home",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 7899000,
+        "referencia": "G614PM-RV015W",
+        "specs": {
+          "procesador": "AMD Ryzen 9 8940HX 2.4GHz",
+          "memoria_ram": "32GB DDR5",
+          "almacenamiento": "1TB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-G614PM-RV015W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Portátil ASUS ROG Flow Z13 AMD Ryzen AI MAX+ 395/1TB M.2 SSD/Ram 32GB/13,4\" 2.5K/Windows 11 Home",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 9499000,
+        "referencia": "GZ302EA-RU083W",
+        "specs": {
+          "procesador": "AMD Ryzen AI MAX+ 395 3.0GHz",
+          "memoria_ram": "32GB LPDDR5X 8000",
+          "almacenamiento": "1TB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-GZ302EA-RU083W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Portátil ASUS ROG G16 Intel Core Ultra 9 275HX/1TB SSD/Ram 32GB/16\" 2.5K/Windows 11 Home",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 13990000,
+        "referencia": "G615LW-S5129W",
+        "specs": {
+          "procesador": "Intel Core Ultra 9 275HX hasta 5.4GHz",
+          "memoria_ram": "32GB DDR5",
+          "almacenamiento": "1TB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-G615LW-S5129W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Gaming Laptop HP Victus 15-fb3019la AMD Ryzen 7 7445H/512GB SSD/Ram 8GB DDR5 /RTX 3050 6GB/15.6\" FHD/FreeDOS",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 2618000,
+        "referencia": "BT4F6LA#ABM",
+        "specs": {
+          "procesador": "AMD Ryzen 7 7445H hasta 4.7GHz",
+          "memoria_ram": "8GB DDR5",
+          "almacenamiento": "512GB SSD PCIe Gen4 NVMe"
+        },
+        "id": "ledacom-BT4F6LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI CYBORG 17 + Morral Gaming MSI B2RWFKG Intel Core 7-240H/RAM 8GB*2/DDR5 5600 SSD 512GB/RTX 5060 GDDR7 8GB/17.3\" FHD/ FREEDOS",
+        "marca": "MSI",
+        "categoria": "portatil",
+        "precio_costo": 6549000,
+        "referencia": "CYBORG17B2-C7",
+        "specs": {
+          "procesador": "Intel Core 7 240H 2.5GHz",
+          "memoria_ram": "16GB DDR5 5600MHz",
+          "almacenamiento": "512GB NVMe PCIe SSD Gen4"
+        },
+        "id": "ledacom-CYBORG17B2-C7",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Legion 5 15AHP10 AMD Ryzen 7 260/RAM 16GB/SSD 1TB/ RTX 5060 8GB/15.1\" WQXGA/No OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 6739000,
+        "referencia": "83M0007ULM",
+        "specs": {
+          "procesador": "AMD Ryzen 7 260 3.8/5.1GHz",
+          "memoria_ram": "16GB DDR5-5600",
+          "almacenamiento": "1TB SSD PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83M0007ULM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo LOQ 15IAX9E Intel Core i7-12650HX/1TB SSD/Ram 16GB /RTX 4050 6GB/15.6\" FHD",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 3250000,
+        "referencia": "83LK00DELM_X",
+        "specs": {
+          "procesador": "Intel Core i7-12650HX 4.7GHz",
+          "memoria_ram": "16GB DDR5-4800",
+          "almacenamiento": "1TB SSD PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83LK00DELM_X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo LOQ 15AHP10 AMD Ryzen 7 250/512GB SSD/Ram 24GB DDR5 /RTX 5050 8GB/15.6\" FHD/Win 11 Home",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 5339000,
+        "referencia": "83JG0088LM",
+        "specs": {
+          "procesador": "AMD Ryzen 7 250 3.3/5.1GHz",
+          "memoria_ram": "24GB DDR5-5600",
+          "almacenamiento": "512GB SSD PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83JG0088LM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Zenbook A14 Copilot+ PC Snapdragon X X1 26 100/Ram 16GB/1TB SSD/14\" WUXGA/Windows 11 Home",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2900000,
+        "referencia": "UX3407QA-QD232",
+        "specs": {
+          "procesador": "Snapdragon X X1 26 100 2.97GHz",
+          "memoria_ram": "16GB LPDDR5X",
+          "almacenamiento": "1TB PCIe 4.0 SSD"
+        },
+        "id": "ledacom-UX3407QA-QD232",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "ASUS Zenbook S 16 OLED AMD Ryzen 7-350 AI/Ram 24GB/1TB SSD/16\" 3K/Windows 11 Home",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 5990000,
+        "referencia": "UM5606KA-RJ032W",
+        "specs": {
+          "procesador": "AMD Ryzen AI 7-350 2.0GHz",
+          "memoria_ram": "24GB LPDDR5X",
+          "almacenamiento": "1TB PCIe 4.0 SSD"
+        },
+        "id": "ledacom-UM5606KA-RJ032W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook S16 AMD Ryzen 9 270/Ram 16GB/512GB SSD/16\" WUXGA/NO OS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 3925000,
+        "referencia": "M3607HA-RP111",
+        "specs": {
+          "procesador": "AMD Ryzen 9 270 4.0GHz",
+          "memoria_ram": "16GB DDR5",
+          "almacenamiento": "512GB PCIe 4.0 SSD"
+        },
+        "id": "ledacom-M3607HA-RP111",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Zenbook 14 OLED AMD Ryzen AI 7-350/Ram 16GB|1TB SSD/14\" WUXGA",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 4699900,
+        "referencia": "UM3406KA-QD227",
+        "specs": {
+          "procesador": "AMD Ryzen AI 7-350 2.0GHz",
+          "memoria_ram": "16GB LPDDR5X",
+          "almacenamiento": "1TB PCIe 4.0 SSD"
+        },
+        "id": "ledacom-UM3406KA-QD227",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 Gen 4 IRU Intel Core i5-13420H/Ram 8GB/512GB SSD/14\"FHD",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1659000,
+        "referencia": "83A000CRLM",
+        "specs": {
+          "procesador": "Intel Core i5-13420H 4.6GHz",
+          "memoria_ram": "8GB DDR4-3200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83A000CRLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15IRU8 Intel Core i3-1315U/Ram 8GB/512GB SSD/15.6\"FHD/FreeDOS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1379000,
+        "referencia": "82X700FTLM",
+        "specs": {
+          "procesador": "Intel Core i3-1315U 4.5GHz",
+          "memoria_ram": "8GB LPDDR5-4800",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82X700FTLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G5 IRL Intel Core i5-13420H/Ram 8GB/512GB SSD/14\" FHD/Linux OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1889000,
+        "referencia": "83GU0051LD",
+        "specs": {
+          "procesador": "Intel Core i5-13420H 4.6GHz",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83GU0051LD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo ThinkBook 14 G8 IAL Intel Core Ultra 5 225U/Ram 16GB/512GB SSD/14\" WUXGA/Linux OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2349000,
+        "referencia": "21SJ00BBLD",
+        "specs": {
+          "procesador": "Intel Core Ultra 5 225U 4.8GHz",
+          "memoria_ram": "16GB DDR5-5600",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-21SJ00BBLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V15 G5 IRL Intel Core i5-13420H/Ram 16GB/512GB SSD/15.6\" FHD",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2379000,
+        "referencia": "83GW005JLD",
+        "specs": {
+          "procesador": "Intel Core i5-13420H 4.6GHz",
+          "memoria_ram": "16GB DDR5-5200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83GW005JLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15IAH8 Intel Core I5-1245H/Ram 16GB/512GB SSD/Win 11 Home/15.6\" FHD/Arctic Grey",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2450000,
+        "referencia": "83ER00CQLM",
+        "specs": {
+          "procesador": "Intel Core i5-12450H 4.4GHz",
+          "memoria_ram": "16GB LPDDR5-4800",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83ER00CQLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15IRH10 Intel Core i5-13420H/Ram 16GB/512GB SSD/15.3\"WUXGA/FreeDOS OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2120000,
+        "referencia": "83K100WKLM",
+        "specs": {
+          "procesador": "Intel Core i5-13420H 4.6GHz",
+          "memoria_ram": "16GB DDR5-4800",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83K100WKLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G5 IRL Intel Core i7-13620H/Ram 8GB/512GB SSD/14\" FHD/OS de prueba",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2050000,
+        "referencia": "83GU0052LD",
+        "specs": {
+          "procesador": "Intel Core i7-13620H 4.9GHz",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83GU0052LD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15IRH10 Intel Core i7-13620H/RAM 24GB/512GB SSD/15.3\" WUXGA/FreeDOS OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2618000,
+        "referencia": "83K100BRLM",
+        "specs": {
+          "procesador": "Intel Core i7-13620H 4.9GHz",
+          "memoria_ram": "24GB DDR5-4800",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83K100BRLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V15 G5 IRL Core i7-13620H/RAM 16GB/512GB SSD/15.6\" FHD",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2759000,
+        "referencia": "83GW005HLD",
+        "specs": {
+          "procesador": "Intel Core i7-13620H 4.9GHz",
+          "memoria_ram": "16GB DDR5-5200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83GW005HLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G5 IRL Intel Core 7 240H/RAM 8GB/512GB SSD/14\" FHD/FreeDOS OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2459000,
+        "referencia": "83GU008XLD",
+        "specs": {
+          "procesador": "Intel Core 7 240H 5.2GHz",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83GU008XLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G4 AMN AMD Ryzen 3 7320U/RAM 16GB/256GB SSD/14\" FHD/Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1390000,
+        "referencia": "82YT00TALM",
+        "specs": {
+          "procesador": "AMD Ryzen 3 7320U 4.1GHz",
+          "memoria_ram": "16GB LPDDR5-5500",
+          "almacenamiento": "256GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82YT00TALM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15IRH10 Intel Core i7-13620H/RAM 24GB/512GB SSD/15.3\" WUXGA/Linux OS/Gtia. 2 Años",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2919000,
+        "referencia": "83K100BRLM_IP3",
+        "specs": {
+          "procesador": "Intel Core i7-13620H 4.9GHz",
+          "memoria_ram": "24GB DDR5-4800",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83K100BRLM_IP3",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G6 ARP AMD Ryzen 7 170/Ram 16GB/512GB SSD/14\" FHD/Linux OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1799000,
+        "referencia": "83UT000NLD",
+        "specs": {
+          "procesador": "AMD Ryzen 7 170 3.2/4.75GHz",
+          "memoria_ram": "16GB DDR5-4800",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83UT000NLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G4 AMN AMD Ryzen 5 7520U/RAM 16GB/512GB SSD/14\" FHD/Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2449000,
+        "referencia": "82YT00TKLM",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7520U 4.3GHz",
+          "memoria_ram": "16GB LPDDR5-5500",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82YT00TKLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V15 G4 AMN AMD Ryzen 5 7520U/RAM 16GB/512GB SSD/15.6\" FHD/Linux OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1645000,
+        "referencia": "82YU00XXLM",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7520U 4.3GHz",
+          "memoria_ram": "16GB LPDDR5-5500",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82YU00XXLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15AMN8 AMD Ryzen 5 7520U/RAM 16GB/512GB SSD/15.6\" FHD/Win 11 Home/Gtia. 2 Años",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1899000,
+        "referencia": "82XQ000BLM",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7520U 4.3GHz",
+          "memoria_ram": "16GB LPDDR5-5500",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82XQ000BLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15AMN8 AMD Ryzen 3 30/RAM 16GB/512GB SSD/15.6\" FHD/NO OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1969000,
+        "referencia": "82XQ00YQLM",
+        "specs": {
+          "procesador": "AMD Ryzen 3 30 4.1GHz",
+          "memoria_ram": "16GB LPDDR5-5500",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82XQ00YQLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15AHP10 AMD Ryzen 5 8640HS/RAM 8GB/512GB SSD/15.3\" WUXGA",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1559000,
+        "referencia": "83KA003RLM",
+        "specs": {
+          "procesador": "AMD Ryzen 5 8640HS 4.9GHz",
+          "memoria_ram": "8GB DDR5-5600",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83KA003RLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Yoga Book 9 13IMU9 Intel Core Ultra 7 155U/Ram 16GB/1TB SSD/13.3\" 2.8K/Win 11 Home",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 6799900,
+        "referencia": "83FF001PLM",
+        "specs": {
+          "procesador": "Intel Core Ultra 7 155U 4.8GHz",
+          "memoria_ram": "16GB LPDDR5x-7467",
+          "almacenamiento": "1TB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-83FF001PLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo V14 G4 AMD Ryzen 7 7730U/Ram 8GB/512GB SSD/14\" FHD/Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1860000,
+        "referencia": "82YX003CLM",
+        "specs": {
+          "procesador": "AMD Ryzen 7 7730U 4.5GHz",
+          "memoria_ram": "8GB DDR4-3200",
+          "almacenamiento": "512GB PCIe 4.0 NVMe"
+        },
+        "id": "ledacom-82YX003CLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP 15-FC0256LA",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1533000,
+        "referencia": "B9TR3LA#ABM",
+        "specs": {
+          "procesador": "AMD Ryzen 7 7730U",
+          "memoria_ram": "16GB DDR4-3200",
+          "almacenamiento": "512GB SSD PCIe NVMe"
+        },
+        "id": "ledacom-B9TR3LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP 15-FC0256LA",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 2319000,
+        "referencia": "B9TP9LA#ABM",
+        "specs": {
+          "procesador": "AMD Ryzen 5-7520U",
+          "memoria_ram": "16GB LPDDR5",
+          "almacenamiento": "512GB PCIe NVMe"
+        },
+        "id": "ledacom-B9TP9LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP 15-FD0260LA",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1839000,
+        "referencia": "B9TX9LA#ABM",
+        "specs": {
+          "procesador": "Intel Core I5-1334U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-B9TX9LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP 240 G10",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1985000,
+        "referencia": "C27L7AT#ABM",
+        "specs": {
+          "procesador": "Intel Core I5-1334U",
+          "memoria_ram": "8GB DDR4",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-C27L7AT#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP 15-FD0354LA",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1519000,
+        "referencia": "D2LS2LA#ABM",
+        "specs": {
+          "procesador": "Intel Core 5-120U",
+          "memoria_ram": "24GB DDR5-5200",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-D2LS2LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2099000,
+        "referencia": "X1502VA-NJ929-E",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "16GB DDR4",
+          "almacenamiento": "512GB M.2 SSD"
+        },
+        "id": "ledacom-X1502VA-NJ929-E",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2569000,
+        "referencia": "B1403CVA-S67892",
+        "specs": {
+          "procesador": "Intel Core 5-210H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB"
+        },
+        "id": "ledacom-B1403CVA-S67892",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2239000,
+        "referencia": "X1605VA-MB2667",
+        "specs": {
+          "procesador": "Intel Core I5 13420H",
+          "memoria_ram": "16GB DDR4",
+          "almacenamiento": "1TB M.2"
+        },
+        "id": "ledacom-X1605VA-MB2667",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook Go 15 + Mouse USB y Backpack",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2349000,
+        "referencia": "X1504VA-BQ4555",
+        "specs": {
+          "procesador": "Intel Core i5-1334U",
+          "memoria_ram": "12GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-X1504VA-BQ4555",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook 15",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1869000,
+        "referencia": "X1502VA-BQ1201",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "16GB DDR4",
+          "almacenamiento": "1TB SSD"
+        },
+        "id": "ledacom-X1502VA-BQ1201",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook 15",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2039000,
+        "referencia": "X1504VA-E84556",
+        "specs": {
+          "procesador": "Intel Core 5 120U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-X1504VA-E84556",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2120000,
+        "referencia": "X1605VAPBFMB239",
+        "specs": {
+          "procesador": "Intel Core 9 270H",
+          "memoria_ram": "16GB DDR5",
+          "almacenamiento": "512GB SSD NVMe PCIe 4.0"
+        },
+        "id": "ledacom-X1605VAPBFMB239",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook Go 15 + Mouse USB",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1799000,
+        "referencia": "E1504FA-BQ2334",
+        "specs": {
+          "procesador": "AMD Ryzen 5-7520U",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-E1504FA-BQ2334",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook 15",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1375000,
+        "referencia": "X1504VA-BQ3882",
+        "specs": {
+          "procesador": "Intel Core i5-1334U",
+          "memoria_ram": "12GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-X1504VA-BQ3882",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook 15",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1449000,
+        "referencia": "X1504ZA-BQ1870",
+        "specs": {
+          "procesador": "Intel Core i3 1215U",
+          "memoria_ram": "8GB DDR4",
+          "almacenamiento": "512GB SSD M.2 NVMe PCIe 4.0"
+        },
+        "id": "ledacom-X1504ZA-BQ1870",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus Vivobook 15",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 5429000,
+        "referencia": "X1504VA-BQ4375",
+        "specs": {
+          "procesador": "Intel Core i3 1315U",
+          "memoria_ram": "8GB",
+          "almacenamiento": "1TB SSD"
+        },
+        "id": "ledacom-X1504VA-BQ4375",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo Yoga 7 2-in-1 14AKP10",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2459000,
+        "referencia": "83JR006YLM",
+        "specs": {
+          "procesador": "AMD Ryzen AI 7 350",
+          "memoria_ram": "32GB Soldered LPDDR5X-7500",
+          "almacenamiento": "1TB SSD M.2 2242 PCIe 4.0"
+        },
+        "id": "ledacom-83JR006YLM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo IdeaPad Slim 3 15ABR8",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1829000,
+        "referencia": "82XM00W0LM_X",
+        "specs": {
+          "procesador": "AMD Ryzen 7 5825U",
+          "memoria_ram": "16GB Soldered DDR4-3200",
+          "almacenamiento": "512GB SSD M.2 2242 PCIe 4.0"
+        },
+        "id": "ledacom-82XM00W0LM_X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO 24-CR0253LA",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 1940000,
+        "referencia": "BM7X4LA#ABM",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7520U",
+          "memoria_ram": "8GB LPDDR5-5500",
+          "almacenamiento": "512GB PCIe NVMe M.2 SSD"
+        },
+        "id": "ledacom-BM7X4LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO PROONE 240 G10",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 2259000,
+        "referencia": "D20X7LT#ABM",
+        "specs": {
+          "procesador": "Intel Core Ultra 5 125U",
+          "memoria_ram": "8GB DDR5-5600",
+          "almacenamiento": "512GB SSD PCIe NVMe"
+        },
+        "id": "ledacom-D20X7LT#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO PROONE 240 G10",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 2769000,
+        "referencia": "D20XKLT#ABM",
+        "specs": {
+          "procesador": "Intel Core Ultra 7 155U",
+          "memoria_ram": "8GB DDR5-5600",
+          "almacenamiento": "512GB SSD PCIe NVMe"
+        },
+        "id": "ledacom-D20XKLT#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO 24-CB1023LA",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 1689000,
+        "referencia": "A47BYLA#ABM",
+        "specs": {
+          "procesador": "Intel Core i3-1215U",
+          "memoria_ram": "8GB DDR4",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-A47BYLA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO 24-CR0351LA",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 1985000,
+        "referencia": "C34JTLA#ABM",
+        "specs": {
+          "procesador": "Intel Core i5-1334U",
+          "memoria_ram": "8GB DDR4",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-C34JTLA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO 24-CR0332LA",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 1669000,
+        "referencia": "C34JFLA#ABM",
+        "specs": {
+          "procesador": "Intel Core i3 N300",
+          "memoria_ram": "8GB DDR4",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-C34JFLA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO A100",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 1275000,
+        "referencia": "F0J6000CLD",
+        "specs": {
+          "procesador": "Intel N100",
+          "memoria_ram": "8GB DDR4-3200",
+          "almacenamiento": "512GB SSD M.2 PCIe NVMe"
+        },
+        "id": "ledacom-F0J6000CLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO A100",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 1299000,
+        "referencia": "F0J6002NLD",
+        "specs": {
+          "procesador": "Intel Core i3-N305",
+          "memoria_ram": "8GB DDR4-3200",
+          "almacenamiento": "512GB SSD M.2 PCIe NVMe"
+        },
+        "id": "ledacom-F0J6002NLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo ThinkCentre Neo 50a Gen 5",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 1629000,
+        "referencia": "12SC002MLD_X",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB SSD M.2 2280 PCIe 4.0"
+        },
+        "id": "ledacom-12SC002MLD_X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO IdeaCentre 3 24ALC6",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2169000,
+        "referencia": "F0G1014BLD",
+        "specs": {
+          "procesador": "AMD Ryzen 5 7430U",
+          "memoria_ram": "16GB DDR4-3200",
+          "almacenamiento": "512GB SSD M.2 2280 PCIe 4.0"
+        },
+        "id": "ledacom-F0G1014BLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO IdeaCentre 3 24ALC6",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2069000,
+        "referencia": "F0G1010KLD",
+        "specs": {
+          "procesador": "AMD Ryzen 7 7730U",
+          "memoria_ram": "8GB SO-DIMM DDR4-3200",
+          "almacenamiento": "512GB SSD M.2 2280 PCIe 4.0"
+        },
+        "id": "ledacom-F0G1010KLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO IdeaCentre 27IRH9",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2119000,
+        "referencia": "F0HM00FWLD",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB SSD M.2 2280 PCIe 4.0"
+        },
+        "id": "ledacom-F0HM00FWLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo ThinkCentre Neo 50a 24 Intel",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2399900,
+        "referencia": "12SC003JLD",
+        "specs": {
+          "procesador": "Intel Core I7-13620H",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB SSD PCIe"
+        },
+        "id": "ledacom-12SC003JLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO IdeaCentre 27IRH9",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2439000,
+        "referencia": "F0HM00DMLD",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "16GB DDR5-5200",
+          "almacenamiento": "512GB SSD M.2 2280 PCIe 4.0"
+        },
+        "id": "ledacom-F0HM00DMLD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "HP AIO 22-DG0205LA",
+        "marca": "HP",
+        "categoria": "escritorio",
+        "precio_costo": 2849000,
+        "referencia": "BM7X0LA#ABM",
+        "specs": {
+          "procesador": "Intel N100",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-BM7X0LA#ABM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lenovo AIO IC 27IRH9",
+        "marca": "Lenovo",
+        "categoria": "escritorio",
+        "precio_costo": 2969700,
+        "referencia": "F0HM0087LD_X",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "8GB DDR5-5200",
+          "almacenamiento": "512GB SSD M.2 2280 PCIe 4.0"
+        },
+        "id": "ledacom-F0HM0087LD_X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus AIO BPE0400",
+        "marca": "Asus",
+        "categoria": "escritorio",
+        "precio_costo": 2399000,
+        "referencia": "V470VAK-BPE0400",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-V470VAK-BPE0400",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus AIO WPE0700",
+        "marca": "Asus",
+        "categoria": "escritorio",
+        "precio_costo": 2549000,
+        "referencia": "V470VAK-WPE0700",
+        "specs": {
+          "procesador": "Intel Core i7-13620H",
+          "memoria_ram": "8GB DDR5",
+          "almacenamiento": "512GB SSD NVMe PCIe 4.0"
+        },
+        "id": "ledacom-V470VAK-WPE0700",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Acer AIO ASPIRE C24-2GL14",
+        "marca": "Acer",
+        "categoria": "escritorio",
+        "precio_costo": 1949000,
+        "referencia": "DQ.BR4AL.002",
+        "specs": {
+          "procesador": "AMD Ryzen 7 5825U",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-DQ.BR4AL.002",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Asus AIO WPE0650",
+        "marca": "Asus",
+        "categoria": "escritorio",
+        "precio_costo": 2059000,
+        "referencia": "V470VAK-WPE0650",
+        "specs": {
+          "procesador": "Intel Core i5-13420H",
+          "memoria_ram": "8GB DDR5",
+          "almacenamiento": "512GB SSD NVMe PCIe 4.0"
+        },
+        "id": "ledacom-V470VAK-WPE0650",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 5 POWER GROUP 22",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2245000,
+        "referencia": "R56162STRWE-V22",
+        "specs": {
+          "procesador": "AMD Ryzen 5-5600GT",
+          "memoria_ram": "16GB DDR4 3200MHz",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-R56162STRWE-V22",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 5 POWER GROUP 23.8",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2359000,
+        "referencia": "R56162STRWE-K24",
+        "specs": {
+          "procesador": "AMD Ryzen 5-5600GT",
+          "memoria_ram": "16GB DDR4 3200MHz",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-R56162STRWE-K24",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 7 POWER GROUP 22",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2579000,
+        "referencia": "R57162STRWE-V22",
+        "specs": {
+          "procesador": "AMD Ryzen 7-5700G",
+          "memoria_ram": "16GB DDR4 3200MHz",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-R57162STRWE-V22",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 7 POWER GROUP 24.5",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2618700,
+        "referencia": "R57162STRWE-V24",
+        "specs": {
+          "procesador": "AMD Ryzen 7-5700G",
+          "memoria_ram": "16GB DDR4 3200MHz",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-R57162STRWE-V24",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 5 GAMING",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2800000,
+        "referencia": "9057-900-0097",
+        "specs": {
+          "procesador": "AMD Ryzen 5-8500G",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9057-900-0097",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ryzen 5-8500G Con Tarjeta de Video RTX 3050 6G",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2380000,
+        "referencia": "9057-900-0097",
+        "specs": {
+          "procesador": "AMD Ryzen 5-8500G",
+          "memoria_ram": "16GB",
+          "tarjeta_grafica": "RTX 3050 6GB"
+        },
+        "id": "ledacom-9057-900-0097",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ryzen 7-8700F Con Tarjeta de Video RTX 3050 6G",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 3479000,
+        "referencia": "9057-900-0096",
+        "specs": {
+          "procesador": "AMD Ryzen 7-8700F",
+          "memoria_ram": "16GB DDR5",
+          "tarjeta_grafica": "RTX 3050 6GB"
+        },
+        "id": "ledacom-9057-900-0096",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 5 GAMING",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2320000,
+        "referencia": "9051-900-0499",
+        "specs": {
+          "procesador": "AMD Ryzen 5-5600GT",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9051-900-0499",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ryzen 5-5600GT Con Tarjeta de Video RTX 3050 6G",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2179000,
+        "referencia": "9051-900-0499",
+        "specs": {
+          "procesador": "AMD Ryzen 5-5600GT",
+          "memoria_ram": "16GB",
+          "tarjeta_grafica": "RTX 3050 6GB"
+        },
+        "id": "ledacom-9051-900-0499",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD Ryzen 5 GAMING",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2599000,
+        "referencia": "9051-900-0477",
+        "specs": {
+          "procesador": "AMD Ryzen 5-5600GT",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9051-900-0477",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "INTEL CORE I5 GAMING",
+        "marca": "Intel",
+        "categoria": "escritorio",
+        "precio_costo": 1625000,
+        "referencia": "9053-900-0042",
+        "specs": {
+          "procesador": "Intel Core i5-12400",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9053-900-0042",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "INTEL CORE I5 ESCRITORIO",
+        "marca": "Intel",
+        "categoria": "escritorio",
+        "precio_costo": 2618000,
+        "referencia": "1053-900-0120",
+        "specs": {
+          "procesador": "Intel Core I5-12400",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-1053-900-0120",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "INTEL CORE I7 ESCRITORIO",
+        "marca": "Intel",
+        "categoria": "escritorio",
+        "precio_costo": 2350000,
+        "referencia": "1053-900-0116",
+        "specs": {
+          "procesador": "Intel Core I7-12700",
+          "memoria_ram": "16GB DDR4",
+          "almacenamiento": "500GB SSD PCIe M.2"
+        },
+        "id": "ledacom-1053-900-0116",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "INTEL CORE I5 ESCRITORIO",
+        "marca": "Intel",
+        "categoria": "escritorio",
+        "precio_costo": 2253000,
+        "referencia": "1047-900-0187",
+        "specs": {
+          "procesador": "Intel Core I5-10400T",
+          "memoria_ram": "8GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-1047-900-0187",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD RYZEN 7 GAMING",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2759000,
+        "referencia": "9051-900-0483",
+        "specs": {
+          "procesador": "AMD Ryzen 7-5700G",
+          "memoria_ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        },
+        "id": "ledacom-9051-900-0483",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ryzen 7-5700G Con Tarjeta de Video RTX 3050 6G",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 2699000,
+        "referencia": "9051-900-0483",
+        "specs": {
+          "procesador": "AMD Ryzen 7-5700G",
+          "memoria_ram": "16GB",
+          "tarjeta_grafica": "RTX 3050 6GB"
+        },
+        "id": "ledacom-9051-900-0483",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD RYZEN 7 GAMING 32",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 3748000,
+        "referencia": "9051-900-0518",
+        "specs": {
+          "procesador": "AMD Ryzen 7-5700G",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9051-900-0518",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AMD RYZEN 7 GAMING",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 3930000,
+        "referencia": "9051-900-0531",
+        "specs": {
+          "procesador": "AMD Ryzen 7-5700G",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9051-900-0531",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "INTEL CORE I7 ESCRITORIO",
+        "marca": "Intel",
+        "categoria": "escritorio",
+        "precio_costo": 3749000,
+        "referencia": "9053-900-0040",
+        "specs": {
+          "procesador": "Intel Core I7-12700",
+          "memoria_ram": "16GB",
+          "almacenamiento": "500GB SSD"
+        },
+        "id": "ledacom-9053-900-0040",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI GeForce GT 1030 4G LP OC",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 559000,
+        "referencia": "912-V812-001",
+        "specs": {
+          "gpu": "NVIDIA GeForce GT 1030",
+          "memoria": "4GB GDDR5",
+          "consumo": "30W"
+        },
+        "id": "ledacom-912-V812-001",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI GeForce RTX 3050 VENTUS 2X 6G OC",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 1175000,
+        "referencia": "912-V812-223",
+        "specs": {
+          "gpu": "NVIDIA GeForce RTX 3050",
+          "memoria": "6GB GDDR6",
+          "consumo": "70W"
+        },
+        "id": "ledacom-912-V812-223",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI GeForce RTX 5060 8G VENTUS 3X OC",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 2019000,
+        "referencia": "912-V537-035",
+        "specs": {
+          "gpu": "NVIDIA GeForce RTX 5060",
+          "memoria": "8GB GDDR7",
+          "consumo": "145W"
+        },
+        "id": "ledacom-912-V537-035",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI GeForce RTX 5060 Ti 8G VENTUS 2X OC PLUS",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 2169000,
+        "referencia": "912-V536-023",
+        "specs": {
+          "gpu": "NVIDIA GeForce RTX 5060 Ti",
+          "memoria": "8GB GDDR7",
+          "consumo": "180W"
+        },
+        "id": "ledacom-912-V536-023",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI GeForce RTX 5070 12G GAMING TRIO OC",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 3649000,
+        "referencia": "912-V532-019",
+        "specs": {
+          "gpu": "NVIDIA GeForce RTX 5070",
+          "memoria": "12GB GDDR7",
+          "consumo": "250W"
+        },
+        "id": "ledacom-912-V532-019",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "MSI GeForce RTX 5050 8G VENTUS 2X OC",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 1689000,
+        "referencia": "912-V538-009",
+        "specs": {
+          "gpu": "NVIDIA GeForce RTX 5050",
+          "memoria": "8GB GDDR6",
+          "consumo": "130W"
+        },
+        "id": "ledacom-912-V538-009",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ensamblado GRMAMD002",
+        "marca": "AMD",
+        "categoria": "escritorio",
+        "precio_costo": 3395900,
+        "referencia": "GRMAMD002",
+        "specs": {
+          "procesador": "AMD Ryzen 5-5600",
+          "memoria_ram": "8GB DDR4",
+          "tarjeta_grafica": "RTX 3050 6GB"
+        },
+        "id": "ledacom-GRMAMD002",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Televisor Samsung 43\" Smart QLED 4K Q7F",
+        "marca": "Samsung",
+        "categoria": "monitor",
+        "precio_costo": 654000,
+        "referencia": "QN43Q7FAAKXZL",
+        "specs": {
+          "resolucion": "4K (3840x2160)",
+          "pantalla": "43 pulgadas",
+          "tecnologia": "QLED"
+        },
+        "id": "ledacom-QN43Q7FAAKXZL",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Televisor Samsung 58\" Smart Crystal 4K U8000F",
+        "marca": "Samsung",
+        "categoria": "monitor",
+        "precio_costo": 2100000,
+        "referencia": "UN58U8000FKXZL",
+        "specs": {
+          "resolucion": "4K (3840x2160)",
+          "pantalla": "58 pulgadas",
+          "conectividad": "HDMI, USB, Bluetooth 5.3, Wi-Fi 5"
+        },
+        "id": "ledacom-UN58U8000FKXZL",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Televisor Samsung 50\" Smart Crystal 4K U8000F",
+        "marca": "Samsung",
+        "categoria": "monitor",
+        "precio_costo": 1469000,
+        "referencia": "UN50U8000FKXZL",
+        "specs": {
+          "resolucion": "4K (3840x2160)",
+          "pantalla": "50 pulgadas",
+          "conectividad": "3x HDMI, USB, Bluetooth 5.3, Wi-Fi 5"
+        },
+        "id": "ledacom-UN50U8000FKXZL",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Epson multifuncional EcoTank L3210 T544",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 659000,
+        "referencia": "C11CJ68301",
+        "specs": {
+          "resolucion_impresion": "5760x1440 dpi",
+          "resolucion_escaneo": "600x1200 dpi",
+          "tecnologia": "Inyección de tinta Heat-Free Micro Piezo"
+        },
+        "id": "ledacom-C11CJ68301",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Inalámbrica EcoTank L1250",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 629000,
+        "referencia": "C11CJ71301",
+        "specs": {
+          "resolucion_impresion": "5760x1440 dpi",
+          "conectividad": "USB, Wi-Fi, Wi-Fi Direct",
+          "tecnologia": "Inyección de tinta Heat-Free Micro Piezo"
+        },
+        "id": "ledacom-C11CJ71301",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Epson multifuncional Inalámbrica EcoTank L3251",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 773000,
+        "referencia": "C11CJ67302",
+        "specs": {
+          "conectividad": "USB, Wi-Fi, Wi-Fi Direct",
+          "tecnologia": "Inyección de tinta Heat-Free MicroPiezo",
+          "funciones": "Impresión, Copia, Escaneo"
+        },
+        "id": "ledacom-C11CJ67302",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora HP LaserJet Pro MFP 4103fdw",
+        "marca": "HP",
+        "categoria": "impresora",
+        "precio_costo": 999000,
+        "referencia": "2Z629A#BGJ",
+        "specs": {
+          "tecnologia": "Láser",
+          "impresion_doble_cara": "Automática",
+          "funciones": "Impresión, copia, escaneado, fax"
+        },
+        "id": "ledacom-2Z629A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Multifunción HP Laser 137fnw",
+        "marca": "HP",
+        "categoria": "impresora",
+        "precio_costo": 1165000,
+        "referencia": "4ZB84A#BGJ",
+        "specs": {
+          "tecnologia": "Láser",
+          "tipo_impresion": "Monocromática",
+          "funciones": "Impresión, copia, escaneado, fax"
+        },
+        "id": "ledacom-4ZB84A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Multifuncional HP Laserjet Pro MFP 3103FDW",
+        "marca": "HP",
+        "categoria": "impresora",
+        "precio_costo": 3630000,
+        "referencia": "3G632A#BGJ",
+        "specs": {
+          "tipo_impresion": "Blanco y Negro",
+          "conectividad": "USB, Ethernet, Inalámbrico 802.11",
+          "funciones": "Impresión, copia, escaneado, fax"
+        },
+        "id": "ledacom-3G632A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Epson EcoTank L4360 Multifuncional a Color Wi-Fi y Dúplex",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 1139000,
+        "referencia": "C11CL41301",
+        "specs": {
+          "velocidad_impresion": "15 ppm negro, 8 ppm color",
+          "conectividad": "Wi-Fi dual band",
+          "funciones": "Impresión, escaneo, copia"
+        },
+        "id": "ledacom-C11CL41301",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Epson Multifuncional EcoTank L5590",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 4949000,
+        "referencia": "C11CK57301",
+        "specs": {
+          "adf": "30 páginas",
+          "conectividad": "USB, Wi-Fi 4, Wi-Fi Direct, Ethernet",
+          "funciones": "Impresión, Copia, Escaneo"
+        },
+        "id": "ledacom-C11CK57301",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Epson multifuncional EcoTank L14150",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 540000,
+        "referencia": "C11CH96301",
+        "specs": {
+          "formato": "A3+",
+          "conectividad": "Wi-Fi, Wi-Fi Direct, Ethernet",
+          "adf": "35 hojas A4/Carta/Oficio"
+        },
+        "id": "ledacom-C11CH96301",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Multifuncional Epson EcoTank L8180",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 1795000,
+        "referencia": "C11CJ21301",
+        "specs": {
+          "tecnologia": "Inyección de tinta MicroPiezo Heat Free 6 colores",
+          "velocidad_impresion": "32 ppm negro, 16 ppm color",
+          "resolucion_escaneo": "1200x4800 dpi"
+        },
+        "id": "ledacom-C11CJ21301",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Epson LX-350 Matriz De Punto",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 1110000,
+        "referencia": "C11CC24001",
+        "specs": {
+          "tecnologia": "9 pines",
+          "velocidad_impresion": "390 cps",
+          "conectividad": "USB"
+        },
+        "id": "ledacom-C11CC24001",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora HP LaserJet M111w",
+        "marca": "HP",
+        "categoria": "impresora",
+        "precio_costo": 1329000,
+        "referencia": "7MD68A#BGJ",
+        "specs": {
+          "tecnologia": "Láser",
+          "resolucion": "600x600 ppp",
+          "conectividad": "USB, Wi-Fi 802.11b/g/n, Bluetooth"
+        },
+        "id": "ledacom-7MD68A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Multifunción HP LaserJet M141w",
+        "marca": "HP",
+        "categoria": "impresora",
+        "precio_costo": 745000,
+        "referencia": "7MD74A#BGJ",
+        "specs": {
+          "tecnologia": "Láser",
+          "tipo": "Multifuncional",
+          "conectividad": "USB, Wi-Fi 802.11b/g/n"
+        },
+        "id": "ledacom-7MD74A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Multifuncional HP Laserjet MFP 432FDN Monocromatica",
+        "marca": "HP",
+        "categoria": "impresora",
+        "precio_costo": 1510000,
+        "referencia": "7UQ76A#BGJ",
+        "specs": {
+          "tecnologia": "Láser",
+          "funciones": "Impresión, copia, escaneado, fax",
+          "conectividad": "USB, Ethernet Gigabit"
+        },
+        "id": "ledacom-7UQ76A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora M 320F Multifunción Láser en blanco y negro + Toner",
+        "marca": "Canon",
+        "categoria": "impresora",
+        "precio_costo": 325000,
+        "referencia": "408535T",
+        "specs": {
+          "velocidad_impresion": "32 ppm A4, 34 ppm Carta",
+          "resolucion": "1200x1200 ppp",
+          "capacidad_papel": "250 hojas"
+        },
+        "id": "ledacom-408535T",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Multifuncional Canon PIXMA G2170",
+        "marca": "Canon",
+        "categoria": "impresora",
+        "precio_costo": 179000,
+        "referencia": "5804C004AA",
+        "specs": {
+          "tecnologia": "Inyección de tinta",
+          "pantalla": "3.0 cm LCD Segmentada",
+          "funciones": "Impresión, Copia, Escaneo"
+        },
+        "id": "ledacom-5804C004AA",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Escáner HP Scanjet Pro 2000 s2 con Alimentación de Hojas",
+        "marca": "HP",
+        "categoria": "accesorios",
+        "precio_costo": 380000,
+        "referencia": "6FW06A#BGJ",
+        "specs": {
+          "tipo": "Alimentador de hojas",
+          "resolucion": "600 dpi",
+          "velocidad": "35 ppm/70 ipm"
+        },
+        "id": "ledacom-6FW06A#BGJ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Escáner Epson de Documentos Dúplex a Color DS-530 II",
+        "marca": "Epson",
+        "categoria": "accesorios",
+        "precio_costo": 535000,
+        "referencia": "B11B261202",
+        "specs": {
+          "tipo": "Escáner dúplex a color",
+          "resolucion_optica": "600 dpi",
+          "velocidad": "35 ppm/70 ipm"
+        },
+        "id": "ledacom-B11B261202",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Monitor táctil capacitivo de 15ʺ sin Bisel",
+        "marca": "",
+        "categoria": "monitor",
+        "precio_costo": 89000,
+        "referencia": "TCM008VH",
+        "specs": {
+          "pantalla": "15 pulgadas",
+          "resolucion": "1024x768",
+          "brillo": "400 cd/m²"
+        },
+        "id": "ledacom-TCM008VH",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "AIO POS System BT",
+        "marca": "",
+        "categoria": "escritorio",
+        "precio_costo": 892000,
+        "referencia": "PTE0211W-8-240W",
+        "specs": {
+          "procesador": "Intel Core i5 11va gen",
+          "ram": "8GB DDR4",
+          "pantalla": "15.6 pulgadas capacitivo"
+        },
+        "id": "ledacom-PTE0211W-8-240W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "All-In-One 3-DP Core i5-1235U, Ram 16GB DDR4, SSD 500GB",
+        "marca": "3-DP",
+        "categoria": "escritorio",
+        "precio_costo": 4419000,
+        "referencia": "TSPI512-16-512W",
+        "specs": {
+          "procesador": "Intel Core i5-1235U",
+          "ram": "16GB DDR4",
+          "pantalla": "15.6 pulgadas táctil"
+        },
+        "id": "ledacom-TSPI512-16-512W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Computador Todo en Uno POS",
+        "marca": "3nStar",
+        "categoria": "escritorio",
+        "precio_costo": 138000,
+        "referencia": "PTE0120-8-240",
+        "specs": {
+          "procesador": "Celeron J6412",
+          "ram": "8GB",
+          "pantalla": "15.6 pulgadas táctil"
+        },
+        "id": "ledacom-PTE0120-8-240",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lector de Código de Barras Manos Libres Omni-direccional 2D",
+        "marca": "",
+        "categoria": "accesorios",
+        "precio_costo": 81000,
+        "referencia": "SC504",
+        "specs": {
+          "capacidad": "Escáneres 2D",
+          "conectividad": "Cable",
+          "resolucion": "1280x800 píxeles"
+        },
+        "id": "ledacom-SC504",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Escáner de código de barras de mano 1D/2D",
+        "marca": "",
+        "categoria": "accesorios",
+        "precio_costo": 409000,
+        "referencia": "SC415BT",
+        "specs": {
+          "capacidad": "Escáneres 1D/2D",
+          "conectividad": "Inalámbrico",
+          "resolucion": "640x480 px"
+        },
+        "id": "ledacom-SC415BT",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Escáner Manual de código de barras 1D",
+        "marca": "",
+        "categoria": "accesorios",
+        "precio_costo": 113000,
+        "referencia": "SC050",
+        "specs": {
+          "capacidad": "Escáneres 1D",
+          "conectividad": "Cable",
+          "resistencia": "Caídas hasta 1.5 m"
+        },
+        "id": "ledacom-SC050",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora térmica directa de recibos de 80MM",
+        "marca": "",
+        "categoria": "impresora",
+        "precio_costo": 499000,
+        "referencia": "RPT004",
+        "specs": {
+          "metodo_impresion": "Térmico Directo",
+          "ancho": "80mm",
+          "velocidad": "230mm/s"
+        },
+        "id": "ledacom-RPT004",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora de Etiquetas de Transferencia Térmica de 4\"",
+        "marca": "",
+        "categoria": "impresora",
+        "precio_costo": 235000,
+        "referencia": "LTT334",
+        "specs": {
+          "metodo_impresion": "Térmico Directo/Transferencia",
+          "ancho": "104 mm",
+          "velocidad": "127mm/s"
+        },
+        "id": "ledacom-LTT334",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora térmica de recibos TM-T20IIIL",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 210000,
+        "referencia": "C31CH26001",
+        "specs": {
+          "velocidad": "200 mm/segundo",
+          "ancho": "80/48MM",
+          "conectividad": "USB + Serial"
+        },
+        "id": "ledacom-C31CH26001",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora térmica directa de recibos de 58mm/80mm",
+        "marca": "",
+        "categoria": "impresora",
+        "precio_costo": 200000,
+        "referencia": "RPT015",
+        "specs": {
+          "metodo_impresion": "Térmico Directo",
+          "ancho": "58mm/80mm",
+          "velocidad": "300mm/s"
+        },
+        "id": "ledacom-RPT015",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Gaveta de Dinero Metálica 410x420mm",
+        "marca": "3nStar",
+        "categoria": "accesorios",
+        "precio_costo": 491000,
+        "referencia": "3NSTAR-CD350",
+        "specs": {
+          "dimensiones": "410x420mm",
+          "compartimientos": "5 billetes, 8 monedas",
+          "material": "Metal macizo"
+        },
+        "id": "ledacom-3NSTAR-CD350",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora térmica directa de recibos de 80MM",
+        "marca": "",
+        "categoria": "impresora",
+        "precio_costo": 529000,
+        "referencia": "RPT008",
+        "specs": {
+          "metodo_impresion": "Térmico Directo",
+          "ancho": "80mm",
+          "velocidad": "260mm/s"
+        },
+        "id": "ledacom-RPT008",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Escáner de código de barras de mano 1D",
+        "marca": "",
+        "categoria": "accesorios",
+        "precio_costo": 137000,
+        "referencia": "SC100",
+        "specs": {
+          "capacidad": "Escáneres 1D",
+          "conectividad": "Cable",
+          "velocidad": "300 escaneos por segundo"
+        },
+        "id": "ledacom-SC100",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Contador de billetes",
+        "marca": "",
+        "categoria": "accesorios",
+        "precio_costo": 263000,
+        "referencia": "BC1005",
+        "specs": {
+          "velocidad": "1000 billetes/min",
+          "capacidad_tolva": "300 pcs",
+          "capacidad_apilamiento": "200 pcs"
+        },
+        "id": "ledacom-BC1005",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Impresora Térmica TM-T20III USB + SERIAL",
+        "marca": "Epson",
+        "categoria": "impresora",
+        "precio_costo": 438000,
+        "referencia": "C31CH51001",
+        "specs": {
+          "velocidad": "250 mm/s",
+          "ancho": "80/58MM",
+          "conectividad": "USB + Serial"
+        },
+        "id": "ledacom-C31CH51001",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Lector de Código de Barras Manos Libres Omni-direccional 2D",
+        "marca": "",
+        "categoria": "accesorios",
+        "precio_costo": 329000,
+        "referencia": "SC506",
+        "specs": {
+          "capacidad": "Escáneres 2D",
+          "conectividad": "Cable",
+          "sistema_optico": "1280x800 píxeles"
+        },
+        "id": "ledacom-SC506",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Micrófono Inalámbrico De Solapa",
+        "marca": "Audio-Technica",
+        "categoria": "auriculares",
+        "precio_costo": 322000,
+        "referencia": "ATW-801/L-T2",
+        "specs": {
+          "tipo": "Inalámbrico",
+          "forma": "Solapa",
+          "marca": "Audio-Technica"
+        },
+        "id": "ledacom-ATW-801/L-T2",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Micrófono Inalámbrico De Oreja",
+        "marca": "Audio-Technica",
+        "categoria": "auriculares",
+        "precio_costo": 492000,
+        "referencia": "ATW-801/H92T2",
+        "specs": {
+          "tipo": "Inalámbrico",
+          "forma": "De oreja",
+          "marca": "Audio-Technica"
+        },
+        "id": "ledacom-ATW-801/H92T2",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Huawei eKitEngine Exterior AP761 DualBand",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 259000,
+        "referencia": "AP761",
+        "specs": {
+          "standard": "Wi-Fi 6 (802.11ax)",
+          "clasificacion": "IP68",
+          "tipo": "Exterior"
+        },
+        "id": "ledacom-AP761",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Huawei eKit Wi-Fi 7 de Alta Densidad",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 339000,
+        "referencia": "AP673",
+        "specs": {
+          "standard": "Wi-Fi 7",
+          "velocidad": "13.66 Gbps",
+          "bandas": "Tríbanda"
+        },
+        "id": "ledacom-AP673",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Huawei eKitEngine AP361 DualBand",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 419000,
+        "referencia": "AP361",
+        "specs": {
+          "standard": "Wi-Fi 6 (802.11ax)",
+          "velocidad": "1775 Gbps",
+          "puertos": "RJ45"
+        },
+        "id": "ledacom-AP361",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Huawei eKitEngine AP362E DualBand",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 959000,
+        "referencia": "AP362E",
+        "specs": {
+          "standard": "Wi-Fi 6 (802.11ax)",
+          "velocidad": "2975 Gbps",
+          "puertos": "RJ45"
+        },
+        "id": "ledacom-AP362E",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Huawei eKitEngine AP371 DualBand",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 682000,
+        "referencia": "AP371",
+        "specs": {
+          "standard": "Wi-Fi 7 (802.11be)",
+          "velocidad": "3.57 Gbps",
+          "puertos": "RJ45, USB"
+        },
+        "id": "ledacom-AP371",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router MR6350 Max-Stream Mesh Wifi 5 AC1300",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 110000,
+        "referencia": "MR6350",
+        "specs": {
+          "standard": "Wi-Fi AC1200",
+          "velocidad": "400 Mbps 2.4GHz, 867 Mbps 5GHz",
+          "puertos": "5 Gigabit Ethernet"
+        },
+        "id": "ledacom-MR6350",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Hydra Mesh Wifi 6 Doble Banda AX3000",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 179000,
+        "referencia": "MR20EC",
+        "specs": {
+          "standard": "Wi-Fi 6",
+          "frecuencia": "2.4 GHz y 5 GHz",
+          "puertos": "USB 3.0, Ethernet"
+        },
+        "id": "ledacom-MR20EC",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Huawei eKitEngine 48 Puertos 10/100/1000 BASE-T 380 W POE+",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 2950000,
+        "referencia": "S310-48P4S",
+        "specs": {
+          "puertos": "48 Gigabit",
+          "poe": "POE+ 380W",
+          "sfp": "4 puertos SFP"
+        },
+        "id": "ledacom-S310-48P4S",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Linksys 5 Puertos Gigabit",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 79000,
+        "referencia": "SE3005",
+        "specs": {
+          "puertos": "5 Gigabit",
+          "velocidad": "10/100/1000Mbps",
+          "estandar": "IEEE802.3ab"
+        },
+        "id": "ledacom-SE3005",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Huawei eKitEngine No Administrable 16 Puertos 10/100/1000 Mbps",
+        "marca": "Huawei",
+        "categoria": "redes",
+        "precio_costo": 321000,
+        "referencia": "S110-16T2S",
+        "specs": {
+          "puertos": "16 Gigabit",
+          "sfp": "2 puertos GE SFP",
+          "administrable": "No"
+        },
+        "id": "ledacom-S110-16T2S",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Gigabit PoE+ Administrado 24 Puertos con 4 Enlaces Ascendentes SFP De 10 G",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 2129000,
+        "referencia": "LGS-328MPC",
+        "specs": {
+          "puertos": "24 PoE+ Gigabit",
+          "sfp": "4 SFP+ 10 Gbps",
+          "capacidad_switch": "128 Gbps"
+        },
+        "id": "ledacom-LGS-328MPC",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema Velop Wi-Fi En Malla De Doble Banda AC3900 3 Und",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 445000,
+        "referencia": "WHW0103",
+        "specs": {
+          "tecnologia": "Mesh Wi-Fi",
+          "velocidad": "AC1300 por unidad",
+          "cantidad": "3 unidades"
+        },
+        "id": "ledacom-WHW0103",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema Velop MX2000 Atlas Mesh Dual-Band wifi 6, 2 Pack",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 650000,
+        "referencia": "MX2002",
+        "specs": {
+          "standard": "Wi-Fi 6 (802.11ax)",
+          "velocidad": "3Gbps",
+          "cantidad": "2 unidades"
+        },
+        "id": "ledacom-MX2002",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Escritorio 24 Puertos Gigabit Ethernet con 4 enlaces ascendentes SFP+ de 10 G",
+        "marca": "Linksys",
+        "categoria": "redes",
+        "precio_costo": 879000,
+        "referencia": "LGS328C",
+        "specs": {
+          "puertos": "24 Gigabit",
+          "sfp": "4 SFP+ 10 Gbps",
+          "administrable": "Sí"
+        },
+        "id": "ledacom-LGS328C",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Antena 360° Omnidireccional",
+        "marca": "Ubiquiti",
+        "categoria": "redes",
+        "precio_costo": 795000,
+        "referencia": "AMO-2G13",
+        "specs": {
+          "frecuencia": "2.4GHz",
+          "ganancia": "13 dBi",
+          "polaridad": "Doble"
+        },
+        "id": "ledacom-AMO-2G13",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "4G LTE Mobile WiFi Hotspot 150 Mbps",
+        "marca": "D-Link",
+        "categoria": "redes",
+        "precio_costo": 182000,
+        "referencia": "DWR-932C",
+        "specs": {
+          "conectividad": "4G LTE",
+          "velocidad": "150 Mbps descarga",
+          "bateria": "5 horas"
+        },
+        "id": "ledacom-DWR-932C",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router portátil Mi-Fi 4G LTE AX300 Wi-Fi 6",
+        "marca": "D-Link",
+        "categoria": "redes",
+        "precio_costo": 199000,
+        "referencia": "DWR-932W",
+        "specs": {
+          "standard": "Wi-Fi 6",
+          "conectividad": "4G LTE",
+          "bateria": "16 horas"
+        },
+        "id": "ledacom-DWR-932W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Wi-Fi 4G LTE N300",
+        "marca": "D-Link",
+        "categoria": "redes",
+        "precio_costo": 55000,
+        "referencia": "G403C",
+        "specs": {
+          "conectividad": "4G LTE Cat 4",
+          "velocidad_wifi": "300 Mbps",
+          "antenas": "5 dBi"
+        },
+        "id": "ledacom-G403C",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Groove 52 MIKROTIK 2.4GHz/5GHz",
+        "marca": "Mikrotik",
+        "categoria": "redes",
+        "precio_costo": 525000,
+        "referencia": "RBGROOVE52HPN",
+        "specs": {
+          "cpu": "600 MHz",
+          "ram": "64 MB",
+          "potencia": "6W máximo"
+        },
+        "id": "ledacom-RBGROOVE52HPN",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "LHG mount MIKROTIK",
+        "marca": "Mikrotik",
+        "categoria": "redes",
+        "precio_costo": 379000,
+        "referencia": "LHGMOUNT",
+        "specs": {
+          "tipo": "Adaptador de montaje en poste",
+          "material": "Metal",
+          "compatibilidad": "Serie LHG"
+        },
+        "id": "ledacom-LHGMOUNT",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router PowerBox Pro",
+        "marca": "Mikrotik",
+        "categoria": "redes",
+        "precio_costo": 184000,
+        "referencia": "RB960PGS-PB",
+        "specs": {
+          "puertos": "5 Gigabit Ethernet",
+          "cpu": "QCA9557 800 MHz",
+          "sfp": "1 puerto SFP"
+        },
+        "id": "ledacom-RB960PGS-PB",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "RADIOENLAC MIKROTIK RB912UAG-2HPnD",
+        "marca": "Mikrotik",
+        "categoria": "redes",
+        "precio_costo": 313000,
+        "referencia": "RB912UAG-2HPnD",
+        "specs": {
+          "cpu": "600MHz",
+          "ram": "64MB",
+          "conectividad": "1x Gigabit Ethernet, 2.4Ghz wireless"
+        },
+        "id": "ledacom-RB912UAG-2HPnD",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router inalámbrico N multimodo a 300Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 41500,
+        "referencia": "MW302R",
+        "specs": {
+          "standard": "IEEE 802.11b/g/n",
+          "frecuencia": "2.4 GHz",
+          "antenas": "2 antenas 5dBi"
+        },
+        "id": "ledacom-MW302R",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router inalámbrico N multimodo a 300 Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 45800,
+        "referencia": "MW306R",
+        "specs": {
+          "standard": "IEEE 802.11b/g/n",
+          "frecuencia": "2.4 GHz",
+          "antenas": "3 antenas fijas"
+        },
+        "id": "ledacom-MW306R",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Inalámbrico N Mejorado de 300Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 66000,
+        "referencia": "MW325R",
+        "specs": {
+          "velocidad": "300Mbps",
+          "antenas": "4 antenas 5dBi",
+          "cobertura": "500 m2"
+        },
+        "id": "ledacom-MW325R",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Inalámbrico 4G LTE de 300 Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 210000,
+        "referencia": "MB110-4G",
+        "specs": {
+          "conectividad": "4G/3G",
+          "velocidad": "300 Mbps",
+          "frecuencia": "2.4 GHz"
+        },
+        "id": "ledacom-MB110-4G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router inalámbrico de banda dual AC1200",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 75500,
+        "referencia": "AC10",
+        "specs": {
+          "standard": "IEEE 802.11ac/n/a",
+          "velocidad": "300 Mbps 2.4GHz, 867 Mbps 5GHz",
+          "antenas": "4 antenas 5dBi"
+        },
+        "id": "ledacom-AC10",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Gigabit Wireless de doble banda AC1200",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 19200,
+        "referencia": "MR30G",
+        "specs": {
+          "velocidad": "867 Mbps 5GHz, 300 Mbps 2.4GHz",
+          "puertos": "1 WAN Gigabit + 2 LAN Gigabit",
+          "antenas": "4 antenas 5dBi"
+        },
+        "id": "ledacom-MR30G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Gigabit Wireless Dual-Band AC1900",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 20600,
+        "referencia": "MR50G",
+        "specs": {
+          "velocidad": "600 Mbps 2.4GHz, 1300 Mbps 5GHz",
+          "puertos": "1 WAN Gigabit + 2 LAN Gigabit",
+          "antenas": "6 antenas omnidireccionales"
+        },
+        "id": "ledacom-MR50G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router WiFi 6 de banda dual AX1800",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 26000,
+        "referencia": "MR70X",
+        "specs": {
+          "standard": "Wi-Fi 802.11ax",
+          "velocidad": "1201 Mbps 5GHz, 574 Mbps 2.4GHz",
+          "puertos": "1 WAN Gigabit + 3 LAN Gigabit"
+        },
+        "id": "ledacom-MR70X",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Sobremesa 8-Puertos 10/100Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 77000,
+        "referencia": "MS108",
+        "specs": {
+          "puertos": "8 puertos 10/100Mbps",
+          "capacidad_switch": "1.6Gbps",
+          "plug_play": "Sí"
+        },
+        "id": "ledacom-MS108",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Sobremesa 5-Puertos 10/100Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 139500,
+        "referencia": "MS105",
+        "specs": {
+          "puertos": "5 puertos 10/100Mbps",
+          "capacidad_switch": "1Gbps",
+          "plug_play": "Sí"
+        },
+        "id": "ledacom-MS105",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de escritorio de 8 puertos a 10/100/1,000 Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 174000,
+        "referencia": "MS108G",
+        "specs": {
+          "puertos": "8 puertos Gigabit",
+          "capacidad_switch": "16 Gbps",
+          "verde": "Ahorra 82% energía"
+        },
+        "id": "ledacom-MS108G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de escritorio de 5 puertos a 10/100/1,000 Mbps",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 26500,
+        "referencia": "MS105G",
+        "specs": {
+          "puertos": "5 puertos Gigabit",
+          "capacidad_switch": "1.6Gbps",
+          "verde": "Ahorra 82% energía"
+        },
+        "id": "ledacom-MS105G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Mercusys inalámbrico Nano N150",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 20300,
+        "referencia": "MW150US",
+        "specs": {
+          "velocidad": "150 Mbps",
+          "tipo": "Nano",
+          "conectividad": "USB"
+        },
+        "id": "ledacom-MW150US",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Mercusys Nano N300 Wi-Fi",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 47700,
+        "referencia": "MA12N",
+        "specs": {
+          "velocidad": "300 Mbps",
+          "tipo": "Nano",
+          "conectividad": "USB"
+        },
+        "id": "ledacom-MA12N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Mercusys inalámbrico Mini USB",
+        "marca": "Mercusys",
+        "categoria": "redes",
+        "precio_costo": 29600,
+        "referencia": "MW300UM",
+        "specs": {
+          "tipo": "Mini USB",
+          "conectividad": "USB",
+          "forma": "Compacta"
+        },
+        "id": "ledacom-MW300UM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Inalámbrico N a 300Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 35300,
+        "referencia": "TL-WR840N",
+        "specs": {
+          "standard": "Wi-Fi 4 IEEE 802.11n",
+          "velocidad": "300 Mbps 2.4GHz",
+          "antenas": "2 antenas fijas"
+        },
+        "id": "ledacom-TL-WR840N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router inalámbrica N de 300 Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 245000,
+        "referencia": "TL-WR850N",
+        "specs": {
+          "standard": "IEEE 802.11n/g/b",
+          "velocidad": "300 Mbps",
+          "antenas": "2 antenas"
+        },
+        "id": "ledacom-TL-WR850N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Wi-Fi de doble banda AC1200",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 249000,
+        "referencia": "ARCHERC50",
+        "specs": {
+          "standard": "Wi-Fi 5 IEEE 802.11ac",
+          "velocidad": "867 Mbps 5GHz, 300 Mbps 2.4GHz",
+          "antenas": "4 antenas fijas"
+        },
+        "id": "ledacom-ARCHERC50",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Banda AC750",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 55900,
+        "referencia": "ARCHERC24TEM",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 5 AC750",
+          "velocidad_5ghz": "433 Mbps",
+          "puertos_ethernet": "1 WAN + 4 LAN 10/100 Mbps"
+        },
+        "id": "ledacom-ARCHERC24TEM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router WiFi MU-MIMO inalámbrico AC1200",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 55900,
+        "referencia": "ARCHERC64",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 5 AC1200",
+          "velocidad_5ghz": "867 Mbps",
+          "puertos_ethernet": "1 WAN + 4 LAN Gigabit"
+        },
+        "id": "ledacom-ARCHERC64",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router inalámbrico AC1900 MU-MIMO Wi-Fi",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 92600,
+        "referencia": "ARCHERC86",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 5 AC1900",
+          "velocidad_5ghz": "1300 Mbps",
+          "antenas": "6 antenas externas"
+        },
+        "id": "ledacom-ARCHERC86",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Gigabit MU-MIMO inalámbrico AC1200",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 75500,
+        "referencia": "ARCHERA6",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 5 AC1200",
+          "velocidad_5ghz": "867 Mbps",
+          "puertos_ethernet": "1 WAN + 4 LAN Gigabit"
+        },
+        "id": "ledacom-ARCHERA6",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Wi-Fi 6 Doble Banda AX1500",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 99900,
+        "referencia": "ARCHERAX12",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 6 AX1500",
+          "velocidad_5ghz": "1201 Mbps",
+          "puertos_ethernet": "1 WAN + 3 LAN Gigabit"
+        },
+        "id": "ledacom-ARCHERAX12",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Inalámbrico MU-MIMO Doble Banda AC1900",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 139500,
+        "referencia": "ARCHERC80",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 5 AC1900",
+          "velocidad_5ghz": "1300 Mbps",
+          "puertos_ethernet": "1 WAN + 4 LAN Gigabit"
+        },
+        "id": "ledacom-ARCHERC80",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Archer AX53 WiFi 6 Doble Banda Gigabit AX3000",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 160000,
+        "referencia": "ARCHERAX53",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 6 AX3000",
+          "velocidad_5ghz": "2402 Mbps",
+          "puertos_ethernet": "1 WAN + 4 LAN Gigabit"
+        },
+        "id": "ledacom-ARCHERAX53",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router Wi-Fi 6 de doble banda AX1800",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 121000,
+        "referencia": "ARCHERAX23",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 6 AX1800",
+          "velocidad_5ghz": "1201 Mbps",
+          "puertos_ethernet": "1 WAN + 4 LAN Gigabit"
+        },
+        "id": "ledacom-ARCHERAX23",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router AX5400 Gigabit Wi-Fi 6 Dual-Band",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 149300,
+        "referencia": "ARCHERAX72",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 6 AX5400",
+          "velocidad_total": "5400 Mbps",
+          "antenas": "6 antenas"
+        },
+        "id": "ledacom-ARCHERAX72",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Router VPN Gigabit Omada AX3000",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 215000,
+        "referencia": "TL-ER706W",
+        "specs": {
+          "estandar_wifi": "Wi-Fi 6 AX3000",
+          "puertos_ethernet": "6 puertos Gigabit + 1 SFP",
+          "vpn": "IPSec/SSL/Wireguard/PPTP/L2TP"
+        },
+        "id": "ledacom-TL-ER706W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de Escritorio de 5 Puertos 10/100Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 257000,
+        "referencia": "LS1005",
+        "specs": {
+          "puertos": "5 puertos 10/100 Mbps",
+          "tecnologia": "Green Ethernet",
+          "control_flujo": "802.3X"
+        },
+        "id": "ledacom-LS1005",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de Escritorio de 8 Puertos 10/100Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 524500,
+        "referencia": "LS1008",
+        "specs": {
+          "puertos": "8 puertos 10/100 Mbps",
+          "tecnologia": "Green Ethernet",
+          "diseño": "Sobremesa"
+        },
+        "id": "ledacom-LS1008",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de sobremesa 8 puertos a 10/100 Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 903000,
+        "referencia": "TL-SF1008D_I",
+        "specs": {
+          "puertos": "8 puertos RJ45 10/100 Mbps",
+          "ahorro_energia": "Hasta 60%",
+          "control_flujo": "IEEE 802.3x"
+        },
+        "id": "ledacom-TL-SF1008D_I",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de Escritorio de 5 Puertos 10/100/1000Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 23900,
+        "referencia": "LS1005G",
+        "specs": {
+          "puertos": "5 puertos 10/100/1000 Mbps",
+          "capacidad_conmutacion": "10 Gbps",
+          "tecnologia": "Green Ethernet"
+        },
+        "id": "ledacom-LS1005G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de Escritorio 5 puertos 10/100/1000Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 28500,
+        "referencia": "TL-SG105",
+        "specs": {
+          "puertos": "5 puertos RJ45 10/100/1000 Mbps",
+          "qos": "IEEE 802.1p/DSCP",
+          "igmp_snooping": "Soportado"
+        },
+        "id": "ledacom-TL-SG105",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de Escritorio de 8 Puertos 10/100/1000Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 29000,
+        "referencia": "LS1008G",
+        "specs": {
+          "puertos": "8 puertos RJ45 10/100/1000 Mbps",
+          "capacidad_conmutacion": "16 Gbps",
+          "control_flujo": "IEEE 802.3X"
+        },
+        "id": "ledacom-LS1008G",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de 16 puertos Gigabit para escritorio/montaje en rack",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 72500,
+        "referencia": "TL-SG1016D",
+        "specs": {
+          "puertos": "16 puertos RJ45 10/100/1000 Mbps",
+          "capacidad_conmutacion": "32 Gbps",
+          "diseño": "Escritorio/Rack"
+        },
+        "id": "ledacom-TL-SG1016D",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de 24 puertos Gigabit para escritorio/montaje en rack",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 253000,
+        "referencia": "TL-SG1024D",
+        "specs": {
+          "puertos": "24 puertos RJ45 10/100/1000 Mbps",
+          "capacidad_conmutacion": "48 Gbps",
+          "diseño": "Escritorio/Rack"
+        },
+        "id": "ledacom-TL-SG1024D",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch Gigabit de 48 puertos",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 244000,
+        "referencia": "TL-SG1048",
+        "specs": {
+          "puertos": "48 puertos RJ45 10/100/1000 Mbps",
+          "capacidad_conmutacion": "96 Gbps",
+          "ahorro_energia": "Hasta 70%"
+        },
+        "id": "ledacom-TL-SG1048",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Switch de 24 puertos PoE+ y 4 ranuras SFP",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 175000,
+        "referencia": "TL-SG2428P",
+        "specs": {
+          "puertos": "24 RJ45 + 4 SFP Gigabit",
+          "capacidad_conmutacion": "56 Gbps",
+          "poe_potencia": "250W"
+        },
+        "id": "ledacom-TL-SG2428P",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Extensor de Cobertura Wi-Fi a 300Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 260000,
+        "referencia": "TL-WA855RE",
+        "specs": {
+          "velocidad": "300 Mbps",
+          "antenas": "2 externas",
+          "modos": "Extensor/Punto acceso"
+        },
+        "id": "ledacom-TL-WA855RE",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "CPE de Exterior de 13dBi en 5GHz a 300Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 765000,
+        "referencia": "CPE510",
+        "specs": {
+          "frecuencia": "5.15-5.85 GHz",
+          "procesador": "Qualcomm Atheros AR9350B 560MHz",
+          "memoria": "RAM DDR2 64MB"
+        },
+        "id": "ledacom-CPE510",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Wi-Fi 4 de montaje en techo N300/300 Mbps",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 889000,
+        "referencia": "EAP110",
+        "specs": {
+          "velocidad": "300 Mbps",
+          "frecuencia": "2.4-2.4835 GHz",
+          "alimentacion": "PoE Pasivo 24VDC"
+        },
+        "id": "ledacom-EAP110",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Wi-Fi 5 de montaje en techo AC1350",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 43800,
+        "referencia": "EAP225",
+        "specs": {
+          "velocidad": "AC1350",
+          "banda": "Doble banda 2.4/5 GHz",
+          "roaming": "Sin interrupciones"
+        },
+        "id": "ledacom-EAP225",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Punto de acceso Gigabit Inalámbrico de Doble Banda AC1750 con Montaje de Techo",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 73000,
+        "referencia": "EAP245TE",
+        "specs": {
+          "velocidad": "AC1750",
+          "velocidad_5ghz": "1300 Mbps",
+          "puertos_ethernet": "2 Gigabit"
+        },
+        "id": "ledacom-EAP245TE",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema de Wi-Fi en malla AC1300 (3-pack)",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 68700,
+        "referencia": "DECOM5(3-PACK)",
+        "specs": {
+          "velocidad": "AC1300",
+          "banda": "Dual 2.4/5 GHz",
+          "puertos_ethernet": "2 Gigabit por unidad"
+        },
+        "id": "ledacom-DECOM5(3-PACK)",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema Wi-Fi 6 Mesh AI para toda la casa AX1800 (3-pack)",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 470000,
+        "referencia": "DECOX20(3PACK)",
+        "specs": {
+          "velocidad": "AX1800",
+          "seguridad": "WPA3 + HomeShield",
+          "tecnologia": "OFDMA y MU-MIMO"
+        },
+        "id": "ledacom-DECOX20(3PACK)",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema de Wi-Fi en malla AC1300 (2-pack)",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 520000,
+        "referencia": "DECOM5(2-PACK)",
+        "specs": {
+          "velocidad": "AC1300",
+          "banda": "Dual 2.4/5 GHz",
+          "puertos_ethernet": "2 Gigabit por unidad"
+        },
+        "id": "ledacom-DECOM5(2-PACK)",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema Wi-Fi Mesh para toda la Casa AC1200 (3-pack)",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 370200,
+        "referencia": "DECOM4(3-PACK)",
+        "specs": {
+          "velocidad": "AC1200",
+          "banda": "2.4/5 GHz",
+          "antenas_internas": "2 por unidad"
+        },
+        "id": "ledacom-DECOM4(3-PACK)",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sistema de Wi-Fi en malla AC1200 (2-pack)",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 273000,
+        "referencia": "DECOM4(2-PACK)",
+        "specs": {
+          "velocidad": "AC1200",
+          "banda": "2.4/5 GHz",
+          "tecnologia_mesh": "MU-MIMO"
+        },
+        "id": "ledacom-DECOM4(2-PACK)",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Tarjeta tp-link Inalámbrico PCI EXP TL-WN781ND",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 341000,
+        "referencia": "TL-WN781ND",
+        "specs": {
+          "interfaz": "PCI Express",
+          "tipo": "Inalámbrica",
+          "velocidad": "No especificada"
+        },
+        "id": "ledacom-TL-WN781ND",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Tarjeta tp-link Red 10/100/1000 PCI EXP TG-3468",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 721000,
+        "referencia": "TG-3468",
+        "specs": {
+          "interfaz": "PCI Express",
+          "velocidad": "10/100/1000 Mbps",
+          "tipo": "Ethernet"
+        },
+        "id": "ledacom-TG-3468",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Tarjeta tp-link Usb 300MB TL-WN8200ND",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 779000,
+        "referencia": "TL-WN8200ND",
+        "specs": {
+          "interfaz": "USB",
+          "velocidad": "300 Mbps",
+          "tipo": "Inalámbrica"
+        },
+        "id": "ledacom-TL-WN8200ND",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Usb Inalámbrico 300 Mbps TL-WN823N",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 30300,
+        "referencia": "TL-WN823N",
+        "specs": {
+          "interfaz": "USB",
+          "velocidad": "300 Mbps",
+          "tipo": "Inalámbrico"
+        },
+        "id": "ledacom-TL-WN823N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Tarjeta tp-link Inalámbrico TL-WN722N 150MBPS",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 45700,
+        "referencia": "TL-WN722N",
+        "specs": {
+          "velocidad": "150 Mbps",
+          "tipo": "Inalámbrica",
+          "interfaz": "USB"
+        },
+        "id": "ledacom-TL-WN722N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Nano Usb Inalámbrico TL-WN725N",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 53200,
+        "referencia": "TL-WN725N",
+        "specs": {
+          "interfaz": "USB Nano",
+          "tipo": "Inalámbrico",
+          "velocidad": "No especificada"
+        },
+        "id": "ledacom-TL-WN725N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Usb Inalámbrico 300 Mbps 2 Ant. Ext. TL-WN822N",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 62000,
+        "referencia": "TL-WN822N",
+        "specs": {
+          "velocidad": "300 Mbps",
+          "antenas": "2 externas",
+          "interfaz": "USB"
+        },
+        "id": "ledacom-TL-WN822N",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador TP-Link RED USB-C Giga UE300C",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 63600,
+        "referencia": "UE300C",
+        "specs": {
+          "interfaz": "USB-C",
+          "velocidad": "Gigabit",
+          "tipo": "Ethernet"
+        },
+        "id": "ledacom-UE300C",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Usb Inal. Alta Ganancia AC600 Dual Band ARCHERT2UPLUS",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 39300,
+        "referencia": "ARCHERT2UPLUS",
+        "specs": {
+          "velocidad": "AC600",
+          "banda": "Dual Band",
+          "tipo": "USB Inalámbrico"
+        },
+        "id": "ledacom-ARCHERT2UPLUS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Usb Inal. AC600 ARCHERT2U Dual Band",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 52700,
+        "referencia": "ARCHERT2UNAN",
+        "specs": {
+          "velocidad": "AC600",
+          "banda": "Dual Band",
+          "tipo": "USB Inalámbrico"
+        },
+        "id": "ledacom-ARCHERT2UNAN",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador tp-Link Red USB 3.O Giga UE300",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 67100,
+        "referencia": "UE300",
+        "specs": {
+          "interfaz": "USB 3.0",
+          "velocidad": "Gigabit",
+          "tipo": "Ethernet"
+        },
+        "id": "ledacom-UE300",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador tp-Link Red USB 3.O Giga UE306",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 32600,
+        "referencia": "UE306",
+        "specs": {
+          "interfaz": "USB 3.0",
+          "velocidad": "Gigabit",
+          "tipo": "Ethernet"
+        },
+        "id": "ledacom-UE306",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador PCI Express Tp-link Inal. Doble Banda AC600 ARCHERT2E",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 78000,
+        "referencia": "ARCHERT2E",
+        "specs": {
+          "interfaz": "PCI Express",
+          "velocidad": "AC600",
+          "banda": "Doble"
+        },
+        "id": "ledacom-ARCHERT2E",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador TP-Link Red USB 3.0 Giga UE330",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 69000,
+        "referencia": "UE330",
+        "specs": {
+          "interfaz": "USB 3.0",
+          "velocidad": "Gigabit",
+          "tipo": "Ethernet"
+        },
+        "id": "ledacom-UE330",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Adaptador Inyector PoE 1 Puerto GIGA 15.4W TL-POE150S",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 81200,
+        "referencia": "TL-POE150S",
+        "specs": {
+          "puertos": "1 Gigabit",
+          "potencia_poe": "15.4W",
+          "tipo": "PoE Inyector"
+        },
+        "id": "ledacom-TL-POE150S",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Tarjeta tp-link Usb Inalámbrico Doble Banda AC600 ARCHERT2U",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 93700,
+        "referencia": "ARCHERT2U",
+        "specs": {
+          "velocidad": "AC600",
+          "banda": "Doble",
+          "interfaz": "USB"
+        },
+        "id": "ledacom-ARCHERT2U",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "VIGI Cámara de red tipo torreta Wi-Fi Full color de 4 MP",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 96000,
+        "referencia": "VIGIC440-W",
+        "specs": {
+          "resolucion": "4 MP 2560x1440",
+          "infrarrojo": "30m",
+          "banda": "Wi-Fi Full Color"
+        },
+        "id": "ledacom-VIGIC440-W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "VIGI Cámara de red tipo bala con Wi-Fi Full Color para exteriores de 4 MP",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 66200,
+        "referencia": "VIGIC340-W",
+        "specs": {
+          "resolucion": "4 MP 2560x1440",
+          "ip_rating": "IP66",
+          "infrarrojo": "30m"
+        },
+        "id": "ledacom-VIGIC340-W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "VIGI Cámara de red Wi-Fi Full Color para exteriores de 4 MP",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 34700,
+        "referencia": "VIGIC540-W",
+        "specs": {
+          "resolucion": "4 MP 2560x1440",
+          "ip_rating": "IP66",
+          "zoom": "Digital"
+        },
+        "id": "ledacom-VIGIC540-W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de Vigilancia Wi-Fi para Exterior con Batería Recargable y Detección IA",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 169000,
+        "referencia": "TAPO-C410",
+        "specs": {
+          "resolucion": "2K 3MP",
+          "bateria_duracion": "180 días",
+          "ip_rating": "IP65"
+        },
+        "id": "ledacom-TAPO-C410",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Vigilancia WiFi interior Tapo-C100",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 175000,
+        "referencia": "Tapo-C100",
+        "specs": {
+          "resolucion": "1080p Full HD",
+          "infrarrojo": "30 pies",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-Tapo-C100",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Wi-Fi seguridad para el hogar Pan / Tilt TAPO-C200",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 309000,
+        "referencia": "TAPO-C200",
+        "specs": {
+          "resolucion": "1080p Full HD",
+          "rango_vista": "360° horizontal/114° vertical",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-TAPO-C200",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Exterior inteligente Wi-Fi vigilancia 360º TAPO-C500",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 68200,
+        "referencia": "TAPO-C500",
+        "specs": {
+          "resolucion": "1080p Full HD",
+          "rango_vista": "360°H/130°V",
+          "ip_rating": "IP65"
+        },
+        "id": "ledacom-TAPO-C500",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Wi-Fi seguridad para exteriores 4MP TAPO-C320WS",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 78000,
+        "referencia": "TAPO-C320WS",
+        "specs": {
+          "resolucion": "4 MP 2560x1440",
+          "infrarrojo": "30m",
+          "vision_nocturna": "Starlight a color"
+        },
+        "id": "ledacom-TAPO-C320WS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de Vigilancia Wi-Fi para Ext. con Visión Nocturna a Color y Detección IA Avanzada TAPOC520WS",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 263200,
+        "referencia": "TAPOC520WS",
+        "specs": {
+          "resolucion": "2K QHD 2560x1440",
+          "rango_vista": "360°H/130°V",
+          "ip_rating": "IP66"
+        },
+        "id": "ledacom-TAPOC520WS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Wi-Fi vigilancia inteligente interior TAPOC210",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 90000,
+        "referencia": "TAPOC210",
+        "specs": {
+          "resolucion": "3MP 2304x1296",
+          "rango_vista": "360°H/114°V",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-TAPOC210",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Wi-Fi seguridad para exteriores 3MP TAPOC310",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 164000,
+        "referencia": "TAPOC310",
+        "specs": {
+          "resolucion": "3MP 2304x1296",
+          "infrarrojo": "30m",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-TAPOC310",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de Vigilancia inteligente Wi-Fi de vigilancia 360º TAPOC510W",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 159600,
+        "referencia": "TAPOC510W",
+        "specs": {
+          "resolucion": "2K 2304x1296",
+          "rango_vista": "360°",
+          "ip_rating": "IP65"
+        },
+        "id": "ledacom-TAPOC510W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de Vigilancia Wi-Fi de 360 Grados con Vista 2K 3MP y Detección IA (2 Unidades) TAPO-C210P2",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 212000,
+        "referencia": "TAPO-C210P2",
+        "specs": {
+          "resolucion": "2K 3MP",
+          "rango_vista": "360°",
+          "cantidad": "2 unidades"
+        },
+        "id": "ledacom-TAPO-C210P2",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de Vigilancia HD de 360 Grados con Puerto Ethernet y Detección IA TAPO-C202",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 99900,
+        "referencia": "TAPO-C202",
+        "specs": {
+          "resolucion": "1080p",
+          "rango_vista": "360°H/114°V",
+          "puerto": "Ethernet"
+        },
+        "id": "ledacom-TAPO-C202",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de Vigilancia Wi-Fi 3MP con Detección de Movimiento TAPO-C110",
+        "marca": "TP-Link",
+        "categoria": "redes",
+        "precio_costo": 152000,
+        "referencia": "TAPO-C110",
+        "specs": {
+          "resolucion": "3MP 2304x1296",
+          "infrarrojo": "9m",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-TAPO-C110",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cruiser 2 3MP Wi-Fi 6 Para uso exterior",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 179000,
+        "referencia": "IPC-GS7EN-3M0W",
+        "specs": {
+          "resolucion": "3MP 2304x1296",
+          "infrarrojo": "30m",
+          "ip_rating": "IP66"
+        },
+        "id": "ledacom-IPC-GS7EN-3M0W",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ranger Dual 6MP Wi-Fi Para uso interior",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 188000,
+        "referencia": "IPC-S2XN-6M0WED",
+        "specs": {
+          "resolucion": "6MP dual lente",
+          "infrarrojo": "15m",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-IPC-S2XN-6M0WED",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Ranger Dual 10MP Wi-Fi Para uso interior",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 238000,
+        "referencia": "IPC-S2XN-10M0WE",
+        "specs": {
+          "resolucion": "10MP dual lente",
+          "infrarrojo": "15m",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-IPC-S2XN-10M0WE",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Kit de Cámara WiFi Cell PT LITE 3MP con panel solar",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 36057,
+        "referencia": "IPC-K9ECN-3T0WE",
+        "specs": {
+          "resolucion": "3MP",
+          "rotacion": "355°H/90°V",
+          "energia": "Panel solar"
+        },
+        "id": "ledacom-IPC-K9ECN-3T0WE",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cruiser Z 5MP Wi-Fi",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 39984,
+        "referencia": "IPC-S7DN-5M0WEZ",
+        "specs": {
+          "resolucion": "5MP",
+          "infrarrojo": "56m",
+          "rotacion": "355°H/90°V"
+        },
+        "id": "ledacom-IPC-S7DN-5M0WEZ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sensor de movimiento infrarrojo pasivo IVP 1000 PET",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 28900,
+        "referencia": "4541071",
+        "specs": {
+          "tipo": "PIR",
+          "rango": "12 metros",
+          "inmunidad_mascotas": "Si"
+        },
+        "id": "ledacom-4541071",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Sensor de apertura Magnético inalámbrico XAS SMART",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 39000,
+        "referencia": "4541052",
+        "specs": {
+          "aplicacion": "Puertas y ventanas",
+          "alcance": "100 metros",
+          "bateria": "Larga duración"
+        },
+        "id": "ledacom-4541052",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Batería Netion SLM 12VDC 5AH CCTV",
+        "marca": "Netion",
+        "categoria": "fuente-poder",
+        "precio_costo": 185000,
+        "referencia": "BATNE12-5CCTV",
+        "specs": {
+          "voltaje": "12V",
+          "capacidad": "5AH",
+          "aplicacion": "Alarmas CCTV"
+        },
+        "id": "ledacom-BATNE12-5CCTV",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Batería Netion SLM 12VDC 7.5AH CCTV",
+        "marca": "Netion",
+        "categoria": "fuente-poder",
+        "precio_costo": 290000,
+        "referencia": "BATNE12-7CCTV",
+        "specs": {
+          "voltaje": "12V",
+          "capacidad": "7.5AH",
+          "aplicacion": "Alarmas CCTV"
+        },
+        "id": "ledacom-BATNE12-7CCTV",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cruiser Dual 2 8MP Wi-Fi 6 P&T doble lente, para uso exterior",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 215000,
+        "referencia": "IPC-S7XEN-8M0WE",
+        "specs": {
+          "resolucion": "8MP dual lente",
+          "infrarrojo": "30m",
+          "ip_rating": "IP66"
+        },
+        "id": "ledacom-IPC-S7XEN-8M0WE",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Bala Ledacom inteligente Metalica-ir XS-3036",
+        "marca": "Ledacom",
+        "categoria": "redes",
+        "precio_costo": 439000,
+        "referencia": "XS-3036",
+        "specs": {
+          "resolucion": "1MP",
+          "lente": "3.6mm",
+          "tipo": "Bala"
+        },
+        "id": "ledacom-XS-3036",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabador de vídeo digital de 4 canales 2MP HDCVI Pentahibrido, 1 HDD XVR1B04H-I",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 255200,
+        "referencia": "XVR1B04H-I(V2.0",
+        "specs": {
+          "canales": "4 CH",
+          "resolucion": "2MP",
+          "compresion": "H.265+"
+        },
+        "id": "ledacom-XVR1B04H-I(V2.0",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabador de vídeo digital de 4 canales 2MP HDCVI Pentahibrido, 1 HDD DH-XVR5104HS-I3",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 119000,
+        "referencia": "DH-XVR5104HS-I3",
+        "specs": {
+          "canales": "4 CH",
+          "resolucion": "2MP",
+          "compresion": "H.265+"
+        },
+        "id": "ledacom-DH-XVR5104HS-I3",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabador de vídeo digital WizSense de 4 canales Penta-brid 1080N/720P Cooper 1U 1 HDD",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 35000,
+        "referencia": "DH-XVR1B04H-I",
+        "specs": {
+          "canales": "4 CH",
+          "compresion": "H.265+ IA",
+          "disco": "1 SATA"
+        },
+        "id": "ledacom-DH-XVR1B04H-I",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabador de vídeo digital de 4 canales 6MP IA Pentahibrido, Dual Stream",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 179400,
+        "referencia": "DH-XVR5104HS-5M",
+        "specs": {
+          "canales": "4 CH",
+          "resolucion": "6MP IA",
+          "compresion": "H.265+"
+        },
+        "id": "ledacom-DH-XVR5104HS-5M",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabador de vídeo digital WizSense de 8 canales 8 CH, 2 MP, 1080 P, 1 HDD y 1U",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 220000,
+        "referencia": "DH-XVR5108HS-I3",
+        "specs": {
+          "canales": "8 CH",
+          "resolucion": "2MP",
+          "compresion": "H.265+ IA"
+        },
+        "id": "ledacom-DH-XVR5108HS-I3",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabadora de vídeo 8CH 1U 2HDD 8 CH, 2 MP, 1080 P, 1 HDD y 1U",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 229553,
+        "referencia": "DHI-NVR4208-4KS",
+        "specs": {
+          "canales": "8 CH",
+          "discos": "2 HDD",
+          "resolucion_soportada": "Hasta 12MP"
+        },
+        "id": "ledacom-DHI-NVR4208-4KS",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Grabador de vídeo en red compacto de 4 canales 1 puerto SATA 2.0, Hasta 8TB",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 229000,
+        "referencia": "DHI-NVR1104HS-S",
+        "specs": {
+          "canales": "4 CH",
+          "resolucion": "1080p",
+          "sata_maximo": "8TB"
+        },
+        "id": "ledacom-DHI-NVR1104HS-S",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Dahua Bullet Full Color 5MP HAC-HFW1500RLN",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 104500,
+        "referencia": "HAC-HFW1500RLN",
+        "specs": {
+          "resolucion": "5MP",
+          "tipo": "Bullet",
+          "lente": "2.8mm"
+        },
+        "id": "ledacom-HAC-HFW1500RLN",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Hero Dual D1 de red Wi-Fi 6 Interior Doble Lente de 3+3MP",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 185000,
+        "referencia": "DH-H3D-3F-3.6MM",
+        "specs": {
+          "resolucion": "3MP dual lente",
+          "infrarrojo": "30m",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-DH-H3D-3F-3.6MM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Hero B1 de red Wi-Fi 6 de 5MP Focal fija para interiores",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 440000,
+        "referencia": "DH-H5B-3.6MM",
+        "specs": {
+          "resolucion": "5MP",
+          "infrarrojo": "10m IR",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-DH-H5B-3.6MM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara de red Wi-Fi de 3MP con movimiento horizontal y vertical para interiores y foco fijo",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 319800,
+        "referencia": "DH-H3B-3.6MM",
+        "specs": {
+          "resolucion": "3MP",
+          "movimiento": "360° Pan/Tilt",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-DH-H3B-3.6MM",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara 4 en 1 tipo domo semimetalica de 5 MP",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 341000,
+        "referencia": "HAC-HDW1509TLQ",
+        "specs": {
+          "resolucion": "5MP",
+          "tipo": "Domo",
+          "ip_rating": "IP67"
+        },
+        "id": "ledacom-HAC-HDW1509TLQ",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Domo con infrarrojos HDCVI en tiempo real 4K 8MP",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 721000,
+        "referencia": "DH-HAC-HDW1800T",
+        "specs": {
+          "resolucion": "8MP 4K",
+          "infrarrojo": "30m",
+          "tipo": "Domo"
+        },
+        "id": "ledacom-DH-HAC-HDW1800T",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Domo de foco fijo HDCVI 4K Full Color 8MP",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 779000,
+        "referencia": "HDW1801TLMN-A2",
+        "specs": {
+          "resolucion": "8MP 4K",
+          "iluminacion": "20m Full Color",
+          "tipo": "Domo"
+        },
+        "id": "ledacom-HDW1801TLMN-A2",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Domo HDCVI 4 en 1 de 8MP",
+        "marca": "Dahua",
+        "categoria": "redes",
+        "precio_costo": 341000,
+        "referencia": "HAC-HDW1800RN",
+        "specs": {
+          "resolucion": "8MP",
+          "infrarrojo": "30m",
+          "tipo": "Domo"
+        },
+        "id": "ledacom-HAC-HDW1800RN",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara IP Tipo Domo 2MP Full Color",
+        "marca": "Dahua",
+        "categoria": "accesorios",
+        "precio_costo": 155000,
+        "referencia": "IPC-HDW1239T1P",
+        "specs": {
+          "resolucion": "2MP@30FPS",
+          "alcance_ir": "30M",
+          "proteccion": "IP67"
+        },
+        "id": "ledacom-IPC-HDW1239T1P",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Tipo Domo 5MP Mic Integrado",
+        "marca": "Dahua",
+        "categoria": "accesorios",
+        "precio_costo": 144000,
+        "referencia": "HAC-HDW1500TQN",
+        "specs": {
+          "resolucion": "5MP",
+          "distancia_focal": "2.8mm",
+          "proteccion": "IP67"
+        },
+        "id": "ledacom-HAC-HDW1500TQN",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Domo infrarroja HDCVI 2MP",
+        "marca": "Dahua",
+        "categoria": "accesorios",
+        "precio_costo": 85000,
+        "referencia": "HAC-HDW1200EMN-A-0280B-S5",
+        "specs": {
+          "resolucion": "2MP",
+          "fps": "30fps@1080P",
+          "alcance_ir": "50m"
+        },
+        "id": "ledacom-HAC-HDW1200EMN-A-0280B-S5",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara Domo Análoga focal fija 2MP 1080P",
+        "marca": "Dahua",
+        "categoria": "accesorios",
+        "precio_costo": 45000,
+        "referencia": "HAC-T1A21N-U2.8",
+        "specs": {
+          "resolucion": "2MP",
+          "fps": "30fps@1080p",
+          "alcance_ir": "25m"
+        },
+        "id": "ledacom-HAC-T1A21N-U2.8",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      },
+      {
+        "nombre": "Cámara exterior Wi-Fi doble lente 3MP PT",
+        "marca": "Dahua",
+        "categoria": "accesorios",
+        "precio_costo": 235000,
+        "referencia": "DH-P3D-3F-PV2.8",
+        "specs": {
+          "resolucion": "3MP",
+          "proteccion": "IP66",
+          "audio": "Bidireccional"
+        },
+        "id": "ledacom-DH-P3D-3F-PV2.8",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-05T22:33:23.370Z"
+      }
+    ]
+  }
+]

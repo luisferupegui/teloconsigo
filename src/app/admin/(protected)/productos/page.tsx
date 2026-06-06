@@ -1,14 +1,14 @@
 import { loadBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
 import { ProductManager, type ManagedBusinessProduct } from "@/components/admin/product-manager";
-import { PdfImporter } from "@/components/admin/pdf-importer";
+import { SupplierListsManager } from "@/components/admin/supplier-lists-manager";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Productos · Admin" };
 
 const TABS = [
   { id: "productos", label: "📋 Gestionar productos" },
-  { id: "pdf",       label: "📄 Importar PDF"        },
+  { id: "pdf",       label: "📄 Listas de precios PDF" },
 ] as const;
 
 export default async function ProductosAdminPage({
@@ -62,7 +62,7 @@ export default async function ProductosAdminPage({
       </div>
 
       {activeTab === "productos" && <ProductManager products={products} initialFilter={filter} />}
-      {activeTab === "pdf"       && <PdfImporter />}
+      {activeTab === "pdf"       && <SupplierListsManager />}
     </div>
   );
 }

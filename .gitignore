@@ -48,3 +48,9 @@ next-env.d.ts
 
 # archivos temporales de proveedores
 data/suppliers/_tmp_download.pdf
+
+# ajustes del panel admin — contiene la clave API de Anthropic (secreto)
+data/settings.json
+
+# backups automáticos de datos (.bak)
+data/*.bak
