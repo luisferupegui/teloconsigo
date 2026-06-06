@@ -48,7 +48,7 @@ function TiktokIcon({ className = "" }: { className?: string }) {
   );
 }
 
-const EMAIL = "contacto@teloconsigo.com";
+const EMAIL = "contacto@teloconsigo.co";
 const TEL_DISPLAY = "+1 407 916 9299";
 const TEL_E164 = "+14079169299";
 const WHATSAPP = "+14079169299";

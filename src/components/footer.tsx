@@ -53,7 +53,7 @@ const PAYMENT_METHODS = ["Visa", "Mastercard", "PSE", "Bancolombia"];
 const TRUST_ITEMS = [
   { icon: ShieldCheck, label: "Productos originales", color: "text-[#4d8dff]" },
   { icon: Award,       label: "Garantía oficial",     color: "text-emerald-400" },
-  { icon: Truck,       label: "Envíos a Colombia",    color: "text-amber-400"   },
+  { icon: Truck,       label: "Envíos a todo el país", color: "text-amber-400"   },
   { icon: CreditCard,  label: "Pago seguro",          color: "text-violet-400"  },
 ];
 
@@ -100,7 +100,7 @@ export function Footer() {
             <ul className="mt-5 space-y-3 text-sm">
               {[
                 ["Catálogo completo", "/catalogo"],
-                ["Ofertas",           "/ofertas"],
+                ["Promociones",        "/soluciones"],
                 ["Armador de PC",     "/armador"],
                 ["Cotiza Ya Mismo",   "/conseguir"],
               ].map(([label, href]) => (
@@ -116,8 +116,7 @@ export function Footer() {
               {[
                 ["Sobre nosotros",  "/nosotros"],
                 ["Contacto",        "/contacto"],
-                ["Devoluciones",    "/devoluciones"],
-                ["Blog tech",       "/blog"],
+                ["Blog tech",       "/#cuidado-tips"],
               ].map(([label, href]) => (
                 <li key={label}><Link href={href} className="hover:text-[#4d8dff] transition">{label}</Link></li>
               ))}
@@ -129,6 +128,7 @@ export function Footer() {
             <h3 className="font-display text-[13px] font-bold uppercase tracking-widest text-[#4d8dff]">Ayuda</h3>
             <ul className="mt-5 space-y-3 text-sm">
               {[
+                ["Devoluciones",          "/devoluciones"],
                 ["Envíos",               "/envios"],
                 ["Garantía",             "/garantia"],
                 ["Preguntas frecuentes", "/faq"],
@@ -152,12 +152,21 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:contacto@teloconsigo.com" className="flex items-center gap-3 group">
+                <a href="mailto:contacto@teloconsigo.co" className="flex items-center gap-3 group">
                   <Mail
                     className="h-[18px] w-[18px] shrink-0 text-[#4d8dff] transition group-hover:text-blue-300"
                     style={{ filter: "drop-shadow(0 0 5px rgba(77,141,255,0.75))" }}
                   />
-                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">contacto@teloconsigo.com</span>
+                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">contacto@teloconsigo.co</span>
+                </a>
+              </li>
+              <li>
+                <a href="mailto:ventas@teloconsigo.co" className="flex items-center gap-3 group">
+                  <Mail
+                    className="h-[18px] w-[18px] shrink-0 text-[#4d8dff] transition group-hover:text-blue-300"
+                    style={{ filter: "drop-shadow(0 0 5px rgba(77,141,255,0.75))" }}
+                  />
+                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">ventas@teloconsigo.co</span>
                 </a>
               </li>
               <li className="flex items-center gap-3">

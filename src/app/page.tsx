@@ -7,6 +7,7 @@ import { BrandMarquee } from "@/components/brand-marquee";
 import { StatsSection } from "@/components/counter";
 import { loadPublishedBusinessProducts, pickHomeCards } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
+import { ScrollToHash } from "@/components/scroll-to-hash";
 import { BusinessFeaturedCard } from "@/components/business-featured-card";
 import {
   ChevronRight,
@@ -51,6 +52,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col bg-[#080d14]">
+      <ScrollToHash />
 
       {/* ══════════════════════════════════════════
           3. HERO SECTION — Slider automático

@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0510"/>
+      <stop offset="50%" stop-color="#130a05"/>
+      <stop offset="100%" stop-color="#050a18"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="70%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#ea580c" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="30%" cy="70%" r="40%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M50 0H0V50" fill="none" stroke="#ea580c" stroke-opacity="0.06" stroke-width="0.5"/>
+    </pattern>
+    <filter id="blur-sm">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <rect width="1200" height="800" fill="url(#glow1)"/>
+  <rect width="1200" height="800" fill="url(#glow2)"/>
+
+  <!-- Monitor / Screen principal -->
+  <rect x="220" y="140" width="580" height="370" rx="12" fill="#0f0a05" stroke="#ea580c" stroke-opacity="0.4" stroke-width="2"/>
+  <rect x="220" y="140" width="580" height="32" rx="12" fill="#1a0e06"/>
+  <rect x="220" y="160" width="580" height="12" fill="#1a0e06"/>
+  <!-- Window controls -->
+  <circle cx="245" cy="156" r="6" fill="#ef4444" fill-opacity="0.8"/>
+  <circle cx="265" cy="156" r="6" fill="#f59e0b" fill-opacity="0.8"/>
+  <circle cx="285" cy="156" r="6" fill="#22c55e" fill-opacity="0.8"/>
+
+  <!-- Screen content: timeline / video editor -->
+  <rect x="235" y="185" width="550" height="270" rx="4" fill="#08060a"/>
+  <!-- Preview area -->
+  <rect x="245" y="195" width="340" height="190" rx="4" fill="#120c18"/>
+  <rect x="245" y="195" width="340" height="190" rx="4" fill="none" stroke="#ea580c" stroke-opacity="0.2" stroke-width="1"/>
+  <!-- Video frame content (simplified play icon) -->
+  <circle cx="415" cy="290" r="35" fill="#ea580c" fill-opacity="0.15" stroke="#ea580c" stroke-opacity="0.4" stroke-width="1.5"/>
+  <polygon points="405,275 405,305 435,290" fill="#ea580c" fill-opacity="0.7"/>
+
+  <!-- Right panel: settings/properties -->
+  <rect x="600" y="195" width="175" height="50" rx="4" fill="#0f0a05"/>
+  <rect x="608" y="203" width="80" height="6" rx="3" fill="#ea580c" fill-opacity="0.6"/>
+  <rect x="608" y="215" width="120" height="4" rx="2" fill="#ffffff" fill-opacity="0.12"/>
+  <rect x="608" y="224" width="90" height="4" rx="2" fill="#ffffff" fill-opacity="0.08"/>
+  <rect x="600" y="252" width="175" height="50" rx="4" fill="#0f0a05"/>
+  <rect x="608" y="260" width="60" height="6" rx="3" fill="#7c3aed" fill-opacity="0.7"/>
+  <rect x="608" y="272" width="140" height="4" rx="2" fill="#ffffff" fill-opacity="0.12"/>
+  <rect x="608" y="281" width="100" height="4" rx="2" fill="#ffffff" fill-opacity="0.08"/>
+  <rect x="600" y="309" width="175" height="50" rx="4" fill="#0f0a05"/>
+  <rect x="608" y="317" width="70" height="6" rx="3" fill="#fb923c" fill-opacity="0.6"/>
+  <rect x="608" y="329" width="130" height="4" rx="2" fill="#ffffff" fill-opacity="0.12"/>
+  <rect x="608" y="338" width="80" height="4" rx="2" fill="#ffffff" fill-opacity="0.08"/>
+
+  <!-- Timeline -->
+  <rect x="245" y="398" width="550" height="48" rx="4" fill="#0c0809"/>
+  <rect x="245" y="408" width="550" height="2" fill="#ffffff" fill-opacity="0.05"/>
+  <!-- Timeline tracks -->
+  <rect x="260" y="413" width="180" height="10" rx="2" fill="#ea580c" fill-opacity="0.5"/>
+  <rect x="450" y="413" width="120" height="10" rx="2" fill="#ea580c" fill-opacity="0.3"/>
+  <rect x="580" y="413" width="200" height="10" rx="2" fill="#ea580c" fill-opacity="0.5"/>
+  <rect x="260" y="428" width="100" height="10" rx="2" fill="#7c3aed" fill-opacity="0.5"/>
+  <rect x="370" y="428" width="220" height="10" rx="2" fill="#7c3aed" fill-opacity="0.35"/>
+  <rect x="600" y="428" width="150" height="10" rx="2" fill="#7c3aed" fill-opacity="0.5"/>
+  <!-- Playhead -->
+  <line x1="470" y1="405" x2="470" y2="450" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.8"/>
+  <polygon points="464,405 476,405 470,413" fill="#ea580c" fill-opacity="0.9"/>
+
+  <!-- Monitor stand -->
+  <rect x="480" y="510" width="60" height="20" rx="4" fill="#1a0e06"/>
+  <rect x="440" y="528" width="140" height="8" rx="4" fill="#1a0e06"/>
+
+  <!-- Secondary monitor (right, smaller) -->
+  <rect x="840" y="220" width="260" height="170" rx="8" fill="#0f0a05" stroke="#fb923c" stroke-opacity="0.3" stroke-width="1.5"/>
+  <rect x="840" y="220" width="260" height="22" rx="8" fill="#1a0e06"/>
+  <rect x="840" y="230" width="260" height="12" fill="#1a0e06"/>
+  <circle cx="857" cy="231" r="4" fill="#ef4444" fill-opacity="0.6"/>
+  <circle cx="871" cy="231" r="4" fill="#f59e0b" fill-opacity="0.6"/>
+  <circle cx="885" cy="231" r="4" fill="#22c55e" fill-opacity="0.6"/>
+  <!-- Code on secondary monitor -->
+  <rect x="855" y="252" width="130" height="5" rx="2" fill="#fb923c" fill-opacity="0.5"/>
+  <rect x="866" y="263" width="100" height="4" rx="2" fill="#ffffff" fill-opacity="0.2"/>
+  <rect x="866" y="273" width="80" height="4" rx="2" fill="#7c3aed" fill-opacity="0.5"/>
+  <rect x="866" y="283" width="120" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="855" y="295" width="90" height="4" rx="2" fill="#fb923c" fill-opacity="0.4"/>
+  <rect x="866" y="305" width="110" height="4" rx="2" fill="#ffffff" fill-opacity="0.15"/>
+  <rect x="866" y="315" width="70" height="4" rx="2" fill="#22c55e" fill-opacity="0.4"/>
+  <rect x="855" y="327" width="100" height="4" rx="2" fill="#fb923c" fill-opacity="0.4"/>
+  <rect x="866" y="337" width="90" height="4" rx="2" fill="#ffffff" fill-opacity="0.12"/>
+  <rect x="866" y="347" width="130" height="4" rx="2" fill="#7c3aed" fill-opacity="0.4"/>
+  <rect x="855" y="357" width="75" height="4" rx="2" fill="#ffffff" fill-opacity="0.1"/>
+  <!-- Stand -->
+  <rect x="950" y="390" width="30" height="14" rx="3" fill="#1a0e06"/>
+  <rect x="930" y="402" width="70" height="6" rx="3" fill="#1a0e06"/>
+
+  <!-- Keyboard -->
+  <rect x="280" y="545" width="460" height="70" rx="8" fill="#0d0a0f" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+  <!-- Keys rows -->
+  <g fill="#1e1520" opacity="0.9">
+    <rect x="296" y="556" width="30" height="16" rx="3"/>
+    <rect x="332" y="556" width="30" height="16" rx="3"/>
+    <rect x="368" y="556" width="30" height="16" rx="3"/>
+    <rect x="404" y="556" width="30" height="16" rx="3"/>
+    <rect x="440" y="556" width="30" height="16" rx="3"/>
+    <rect x="476" y="556" width="30" height="16" rx="3"/>
+    <rect x="512" y="556" width="30" height="16" rx="3"/>
+    <rect x="548" y="556" width="30" height="16" rx="3"/>
+    <rect x="584" y="556" width="30" height="16" rx="3"/>
+    <rect x="620" y="556" width="30" height="16" rx="3"/>
+    <rect x="656" y="556" width="56" height="16" rx="3"/>
+    <!-- Row 2 -->
+    <rect x="296" y="578" width="46" height="16" rx="3"/>
+    <rect x="348" y="578" width="30" height="16" rx="3"/>
+    <rect x="384" y="578" width="30" height="16" rx="3"/>
+    <rect x="420" y="578" width="30" height="16" rx="3"/>
+    <rect x="456" y="578" width="30" height="16" rx="3"/>
+    <rect x="492" y="578" width="30" height="16" rx="3"/>
+    <rect x="528" y="578" width="30" height="16" rx="3"/>
+    <rect x="564" y="578" width="30" height="16" rx="3"/>
+    <rect x="600" y="578" width="30" height="16" rx="3"/>
+    <rect x="636" y="578" width="70" height="16" rx="3"/>
+  </g>
+  <!-- Accent keys (RGB glow) -->
+  <rect x="296" y="556" width="30" height="16" rx="3" fill="#ea580c" fill-opacity="0.25"/>
+  <rect x="368" y="578" width="30" height="16" rx="3" fill="#ea580c" fill-opacity="0.15"/>
+  <rect x="456" y="578" width="30" height="16" rx="3" fill="#7c3aed" fill-opacity="0.2"/>
+
+  <!-- Mouse -->
+  <rect x="780" y="555" width="60" height="80" rx="30" fill="#0d0a0f" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+  <line x1="810" y1="555" x2="810" y2="610" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+  <rect x="804" y="568" width="12" height="6" rx="3" fill="#ea580c" fill-opacity="0.5"/>
+
+  <!-- Floating particles / sparks -->
+  <g filter="url(#glow-filter)">
+    <circle cx="150" cy="200" r="3" fill="#ea580c" fill-opacity="0.8"/>
+    <circle cx="180" cy="350" r="2" fill="#fb923c" fill-opacity="0.6"/>
+    <circle cx="95"  cy="450" r="4" fill="#ea580c" fill-opacity="0.5"/>
+    <circle cx="1080" cy="180" r="3" fill="#ea580c" fill-opacity="0.7"/>
+    <circle cx="1100" cy="450" r="2" fill="#fb923c" fill-opacity="0.5"/>
+    <circle cx="1050" cy="620" r="4" fill="#ea580c" fill-opacity="0.4"/>
+    <circle cx="730" cy="120" r="3" fill="#7c3aed" fill-opacity="0.7"/>
+    <circle cx="820" cy="480" r="2" fill="#fb923c" fill-opacity="0.6"/>
+  </g>
+
+  <!-- Bottom bar / gradient fade -->
+  <rect x="0" y="680" width="1200" height="120" fill="url(#bg)" fill-opacity="0.7"/>
+</svg>
