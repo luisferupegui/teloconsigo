@@ -1,0 +1,20 @@
+{
+  "portatil": 0.28,
+  "procesador": 0.22,
+  "monitor": 0.25,
+  "memoria-ram": 0.35,
+  "almacenamiento": 0.35,
+  "tarjeta-grafica": 0.20,
+  "fuente-poder": 0.35,
+  "refrigeracion": 0.40,
+  "escritorio": 0.25,
+  "redes": 0.40,
+  "mouse": 0.45,
+  "auriculares": 0.40,
+  "streaming": 0.35,
+  "impresora": 0.20,
+  "accesorios": 0.45,
+  "teclado": 0.45,
+  "motherboard": 0.22,
+  "default": 0.35
+}
