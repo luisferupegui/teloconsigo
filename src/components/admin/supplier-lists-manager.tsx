@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import {
   Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
   Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ListChecks, ChevronDown,
-  Star, Tag, Globe, Plus, ExternalLink,
+  Star, Tag, Pencil,
 } from "lucide-react";
+import { ImageSlot } from "@/components/admin/image-slot";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -56,15 +57,6 @@ const mapCat = (c: string) => CAT_MAP[c] ?? { categoria: "accesorio", usoCaso: "
 function formatCOP(n: number) {
   return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 }
-// Formatea respetando la moneda real del precio (la búsqueda web puede traer USD, etc.).
-function formatMoney(n: number, moneda?: string) {
-  const cur = (moneda || "COP").toUpperCase();
-  try {
-    return new Intl.NumberFormat("es-CO", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(n);
-  } catch {
-    return `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(n)} ${cur}`;
-  }
-}
 function formatDate(iso: string) {
   try { return new Date(iso).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }); }
   catch { return iso; }
@@ -78,6 +70,30 @@ type PublishableProduct = {
   nombre: string; marca: string; categoria: string;
   referencia?: string; precio_final: number; specs?: Record<string, string>;
 };
+
+type EditorState = {
+  referencia: string;
+  nombre: string;
+  marca: string;
+  precio: number;
+  segmento: string;
+  descripcionUso: string;
+  destacado: boolean;
+  enPromocion: boolean;
+  imageUrl: string | null;
+};
+
+const SEGMENTOS: [string, string][] = [
+  ["productividad-oficina", "Productividad / Oficina"],
+  ["gaming-streaming",      "Gaming / Streaming"],
+  ["hogar-estudio",         "Hogar / Estudio"],
+  ["movilidad-premium",     "Movilidad Premium"],
+  ["redes-servidores",      "Redes / Servidores"],
+  ["creadores-produccion",  "Creadores / Producción"],
+  ["smart-home",            "Smart Home"],
+  ["monitores",             "Monitores"],
+  ["accesorios",            "Accesorios"],
+];
 
 // Publica un producto del proveedor al catálogo público (con margen ya aplicado).
 async function publishToStore(p: PublishableProduct, target: PublishTarget): Promise<{ ok: boolean; error?: string; referencia?: string }> {
@@ -113,7 +129,7 @@ const TARGET_LABEL: Record<PublishTarget, string> = {
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export function SupplierListsManager() {
-  const [tab, setTab] = useState<"cargar" | "listas" | "buscar" | "web">("cargar");
+  const [tab, setTab] = useState<"cargar" | "listas" | "buscar">("cargar");
   const [toast, setToast] = useState<Toast | null>(null);
   const flash = useCallback((ok: boolean, msg: string) => {
     setToast({ ok, msg });
@@ -151,7 +167,6 @@ export function SupplierListsManager() {
           ["cargar", Upload,     "Cargar PDF"],
           ["listas", ListChecks, `Listas cargadas${totals.listas ? ` (${totals.listas})` : ""}`],
           ["buscar", Search,     "Buscar productos"],
-          ["web",    Globe,      "Buscar en web"],
         ] as const).map(([id, Icon, label]) => (
           <button
             key={id}
@@ -177,9 +192,6 @@ export function SupplierListsManager() {
       )}
       {tab === "buscar" && (
         <BuscarTab totals={totals} flash={flash} />
-      )}
-      {tab === "web" && (
-        <WebTab flash={flash} />
       )}
 
       {toast && (
@@ -479,6 +491,129 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
   const [restoring, setRestoring] = useState(false);
   const [published, setPublished] = useState<Record<string, PublishTarget>>({});
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [editingRow, setEditingRow] = useState<string | null>(null);
+  const [editors, setEditors] = useState<Record<string, EditorState>>({});
+  // selectedProducts[listId] = Set de product.id seleccionados para descartar
+  const [selectedProducts, setSelectedProducts] = useState<Record<string, Set<string>>>({});
+  const [discarding, setDiscarding] = useState<string | null>(null); // listId en proceso
+
+  function toggleSelect(listId: string, productId: string) {
+    setSelectedProducts((prev) => {
+      const set = new Set(prev[listId] ?? []);
+      if (set.has(productId)) set.delete(productId); else set.add(productId);
+      return { ...prev, [listId]: set };
+    });
+  }
+
+  function toggleSelectAll(listId: string) {
+    const prods = prodCache[listId] ?? [];
+    const sel = selectedProducts[listId];
+    const allSel = prods.length > 0 && prods.every((p) => sel?.has(p.id));
+    setSelectedProducts((prev) => ({
+      ...prev,
+      [listId]: allSel ? new Set() : new Set(prods.map((p) => p.id)),
+    }));
+  }
+
+  async function discardSelected(listId: string) {
+    const ids = Array.from(selectedProducts[listId] ?? []);
+    if (ids.length === 0) return;
+    setDiscarding(listId);
+    try {
+      const res = await fetch("/api/admin/supplier-lists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteProducts", listId, productIds: ids }),
+      });
+      const data = await res.json();
+      if (!res.ok) { flash(false, data.error ?? "No se pudo descartar"); return; }
+      setProdCache((prev) => ({
+        ...prev,
+        [listId]: (prev[listId] ?? []).filter((p) => !ids.includes(p.id)),
+      }));
+      setSelectedProducts((prev) => ({ ...prev, [listId]: new Set() }));
+      flash(true, `${data.deleted} producto${data.deleted !== 1 ? "s" : ""} descartado${data.deleted !== 1 ? "s" : ""}`);
+      onRefresh();
+    } catch {
+      flash(false, "Error de red al descartar");
+    } finally {
+      setDiscarding(null);
+    }
+  }
+
+  function updateEditor(rowKey: string, updates: Partial<EditorState>) {
+    setEditors(prev => ({ ...prev, [rowKey]: { ...prev[rowKey], ...updates } }));
+  }
+
+  function openEditor(rowKey: string, p: ListProduct) {
+    if (!editors[rowKey]) {
+      // Reusar la referencia original del proveedor para que:
+      // 1. La imagen se guarde en /productos/{referencia}/card.png (ruta correcta)
+      // 2. "Publicar" actualice el producto si ya fue publicado antes (evita duplicados)
+      const ref = p.referencia.trim() || `pdf-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      setEditors(prev => ({
+        ...prev,
+        [rowKey]: {
+          referencia: ref,
+          nombre:      p.nombre,
+          marca:       p.marca,
+          precio:      p.precio_final,
+          segmento:    mapCat(p.categoria).segmento,
+          descripcionUso: "",
+          destacado:   false,
+          enPromocion: false,
+          imageUrl:    null,
+        },
+      }));
+    }
+    setEditingRow(prev => (prev === rowKey ? null : rowKey));
+  }
+
+  async function doPublishEditor(rowKey: string, data: EditorState, p: ListProduct) {
+    const map = mapCat(p.categoria);
+    // Siempre usar la referencia original del proveedor como clave canónica.
+    // Esto garantiza que el producto publicado se encuentre por su referencia real,
+    // independientemente de si el editor abrió con una referencia pdf-xxx vieja.
+    const effectiveRef = p.referencia.trim() || data.referencia;
+    const payload = {
+      nombre:         data.nombre,
+      marca:          data.marca,
+      precio:         data.precio,
+      precioDesde:    data.precio,
+      referencia:     effectiveRef,
+      categoria:      map.categoria,
+      usoCaso:        map.usoCaso,
+      segmento:       data.segmento,
+      publicado:      true,
+      destacado:      data.destacado,
+      enPromocion:    data.enPromocion,
+      descripcionUso: data.descripcionUso || "",
+    };
+
+    // POST crea el producto; si ya existe (409 conflicto), PATCH lo actualiza
+    let res = await fetch("/api/admin/product", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(payload),
+    });
+    if (res.status === 409) {
+      res = await fetch("/api/admin/product", {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload),
+      });
+    }
+
+    const result = await res.json();
+    if (!res.ok) { flash(false, result.error ?? "No se pudo guardar"); return; }
+    // Sincronizar referencia en el editor (por si era un pdf-xxx viejo)
+    if (data.referencia !== effectiveRef) {
+      updateEditor(rowKey, { referencia: effectiveRef });
+    }
+    setPublished(m => ({ ...m, [rowKey]: "catalogo" }));
+    setEditingRow(null);
+    flash(true, `"${data.nombre.slice(0, 40)}" guardado en el catálogo`);
+  }
 
   async function doPublish(p: ListProduct, target: PublishTarget, rowKey: string) {
     setPublishingId(rowKey);
@@ -646,9 +781,44 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                   <p className="px-4 py-6 text-center text-sm text-zinc-400">Esta lista no tiene productos.</p>
                 ) : (
                   <div className="max-h-[420px] overflow-y-auto">
+                    {/* Barra de selección — aparece solo cuando hay productos seleccionados */}
+                    {(selectedProducts[l.id]?.size ?? 0) > 0 && (
+                      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-4 py-2">
+                        <span className="text-xs font-semibold text-red-700">
+                          {selectedProducts[l.id].size} producto{selectedProducts[l.id].size !== 1 ? "s" : ""} seleccionado{selectedProducts[l.id].size !== 1 ? "s" : ""}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setSelectedProducts((prev) => ({ ...prev, [l.id]: new Set() }))}
+                            className="text-xs font-semibold text-red-500 underline hover:text-red-700"
+                          >
+                            Limpiar selección
+                          </button>
+                          <button
+                            onClick={() => discardSelected(l.id)}
+                            disabled={discarding === l.id}
+                            className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50 transition"
+                          >
+                            {discarding === l.id
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <Trash2 className="h-3.5 w-3.5" />}
+                            Descartar seleccionados
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <table className="w-full text-xs">
                       <thead className="sticky top-0 bg-zinc-50 text-zinc-500 uppercase tracking-wider border-b border-zinc-100">
                         <tr>
+                          <th className="px-3 py-2 text-center font-semibold w-8">
+                            <input
+                              type="checkbox"
+                              title="Seleccionar todos"
+                              checked={(prodCache[l.id]?.length ?? 0) > 0 && (prodCache[l.id] ?? []).every((p) => selectedProducts[l.id]?.has(p.id))}
+                              onChange={() => toggleSelectAll(l.id)}
+                              className="h-3.5 w-3.5 cursor-pointer rounded accent-red-600"
+                            />
+                          </th>
                           <th className="px-4 py-2 text-left font-semibold">Producto</th>
                           <th className="px-4 py-2 text-left font-semibold">Categoría</th>
                           <th className="px-4 py-2 text-right font-semibold">Costo</th>
@@ -659,53 +829,93 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                       <tbody className="divide-y divide-zinc-100">
                         {(prodCache[l.id] ?? []).map((p, idx) => {
                           const rowKey = `${l.id}-${idx}`;
+                          const isEditing = editingRow === rowKey;
                           return (
-                          <tr key={rowKey} className="hover:bg-zinc-50">
-                            <td className="px-4 py-2">
-                              <p className="font-semibold text-zinc-900 max-w-[300px] truncate">{p.nombre}</p>
-                              <p className="text-zinc-400">{p.marca}{p.referencia ? ` · ${p.referencia}` : ""}</p>
-                            </td>
-                            <td className="px-4 py-2">
-                              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">{p.categoria}</span>
-                            </td>
-                            <td className="px-4 py-2 text-right text-zinc-500">{formatCOP(p.precio_costo)}</td>
-                            <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{formatCOP(p.precio_final)}</td>
-                            <td className="px-4 py-2 text-right whitespace-nowrap">
-                              {published[rowKey] ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-                                  <CheckCircle2 className="h-3.5 w-3.5" /> En {TARGET_LABEL[published[rowKey]]}
-                                </span>
-                              ) : (
-                                <div className="inline-flex items-center gap-1">
-                                  <button
-                                    onClick={() => doPublish(p, "catalogo", rowKey)}
-                                    disabled={publishingId === rowKey}
-                                    title="Publicar al catálogo"
-                                    className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                                  >
-                                    {publishingId === rowKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Store className="h-3 w-3" />}
-                                    Publicar
-                                  </button>
-                                  <button
-                                    onClick={() => doPublish(p, "destacado", rowKey)}
-                                    disabled={publishingId === rowKey}
-                                    title="Publicar y marcar como Destacado"
-                                    className="rounded-md border border-amber-300 p-1 text-amber-500 hover:bg-amber-50 disabled:opacity-50 transition"
-                                  >
-                                    <Star className="h-3.5 w-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => doPublish(p, "promocion", rowKey)}
-                                    disabled={publishingId === rowKey}
-                                    title="Publicar y marcar como Promoción"
-                                    className="rounded-md border border-indigo-300 p-1 text-indigo-500 hover:bg-indigo-50 disabled:opacity-50 transition"
-                                  >
-                                    <Tag className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
+                          <Fragment key={rowKey}>
+                            <tr className={
+                              isEditing ? "bg-indigo-50/40"
+                              : selectedProducts[l.id]?.has(p.id) ? "bg-red-50/60"
+                              : "hover:bg-zinc-50"
+                            }>
+                              <td className="px-3 py-2 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedProducts[l.id]?.has(p.id) ?? false}
+                                  onChange={() => toggleSelect(l.id, p.id)}
+                                  className="h-3.5 w-3.5 cursor-pointer rounded accent-red-600"
+                                />
+                              </td>
+                              <td className="px-4 py-2">
+                                <p className="font-semibold text-zinc-900 max-w-[300px] truncate">{p.nombre}</p>
+                                <p className="text-zinc-400">{p.marca}{p.referencia ? ` · ${p.referencia}` : ""}</p>
+                              </td>
+                              <td className="px-4 py-2">
+                                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">{p.categoria}</span>
+                              </td>
+                              <td className="px-4 py-2 text-right text-zinc-500">{formatCOP(p.precio_costo)}</td>
+                              <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{formatCOP(p.precio_final)}</td>
+                              <td className="px-4 py-2 text-right whitespace-nowrap">
+                                {published[rowKey] ? (
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> En {TARGET_LABEL[published[rowKey]]}
+                                  </span>
+                                ) : (
+                                  <div className="inline-flex items-center gap-1">
+                                    {/* ✏️ Editar y publicar (panel inline) */}
+                                    <button
+                                      onClick={() => openEditor(rowKey, p)}
+                                      title="Editar antes de publicar"
+                                      className={`rounded-md border p-1 transition ${
+                                        isEditing
+                                          ? "border-indigo-400 bg-indigo-100 text-indigo-700"
+                                          : "border-zinc-300 text-zinc-400 hover:border-indigo-400 hover:text-indigo-600"
+                                      }`}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+                                    {/* Publicación rápida */}
+                                    <button
+                                      onClick={() => doPublish(p, "catalogo", rowKey)}
+                                      disabled={publishingId === rowKey}
+                                      title="Publicar rápido al catálogo"
+                                      className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                                    >
+                                      {publishingId === rowKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Store className="h-3 w-3" />}
+                                      Publicar
+                                    </button>
+                                    <button
+                                      onClick={() => doPublish(p, "destacado", rowKey)}
+                                      disabled={publishingId === rowKey}
+                                      title="Publicar y marcar como Destacado"
+                                      className="rounded-md border border-amber-300 p-1 text-amber-500 hover:bg-amber-50 disabled:opacity-50 transition"
+                                    >
+                                      <Star className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => doPublish(p, "promocion", rowKey)}
+                                      disabled={publishingId === rowKey}
+                                      title="Publicar y marcar como Promoción"
+                                      className="rounded-md border border-indigo-300 p-1 text-indigo-500 hover:bg-indigo-50 disabled:opacity-50 transition"
+                                    >
+                                      <Tag className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                            {isEditing && editors[rowKey] && (
+                              <tr>
+                                <td colSpan={6} className="p-0">
+                                  <InlineEditor
+                                    state={editors[rowKey]}
+                                    onChange={(u) => updateEditor(rowKey, u)}
+                                    onPublish={async () => { await doPublishEditor(rowKey, editors[rowKey], p); }}
+                                    onClose={() => setEditingRow(null)}
+                                  />
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
                           );
                         })}
                       </tbody>
@@ -731,6 +941,142 @@ function Stat({ label, value, tone = "zinc" }: { label: string; value: number; t
     <div className={`rounded-xl border px-4 py-2.5 ${colors}`}>
       <p className="text-2xl font-bold leading-none">{value}</p>
       <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider opacity-70">{label}</p>
+    </div>
+  );
+}
+
+// ─── Editor inline de producto (dentro de la tabla PDF) ───────────────────────
+
+function InlineEditor({
+  state,
+  onChange,
+  onPublish,
+  onClose,
+}: {
+  state: EditorState;
+  onChange: (u: Partial<EditorState>) => void;
+  onPublish: () => Promise<void>;
+  onClose: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+
+  async function handlePublish() {
+    setSaving(true);
+    try { await onPublish(); } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="border-t border-indigo-200 bg-indigo-50/30 px-4 py-4">
+      <div className="flex flex-wrap gap-5">
+
+        {/* ── Imagen ─────────────────────────────────── */}
+        <div className="w-40 shrink-0">
+          <ImageSlot
+            identifier={state.referencia}
+            tipo="card"
+            url={state.imageUrl}
+            onUrlChange={(u) => onChange({ imageUrl: u })}
+            label="Imagen del producto"
+          />
+        </div>
+
+        {/* ── Campos ─────────────────────────────────── */}
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+
+          {/* Nombre */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Nombre</span>
+            <input
+              value={state.nombre}
+              onChange={(e) => onChange({ nombre: e.target.value })}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+            />
+          </label>
+
+          {/* Precio + Segmento */}
+          <div className="flex flex-wrap gap-3">
+            <label className="flex flex-1 flex-col gap-1 min-w-[120px]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Precio cliente (COP)</span>
+              <input
+                type="number"
+                value={state.precio}
+                onChange={(e) => onChange({ precio: Number(e.target.value) })}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+              />
+            </label>
+            <label className="flex flex-1 flex-col gap-1 min-w-[160px]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Segmento web</span>
+              <select
+                value={state.segmento}
+                onChange={(e) => onChange({ segmento: e.target.value })}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+              >
+                {SEGMENTOS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </label>
+          </div>
+
+          {/* Descripción */}
+          <label className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              Descripción / especificaciones <span className="font-normal normal-case text-zinc-400">(opcional)</span>
+            </span>
+            <textarea
+              value={state.descripcionUso}
+              onChange={(e) => onChange({ descripcionUso: e.target.value })}
+              rows={2}
+              placeholder="Ej: Intel Core i5-1235U · 16 GB RAM DDR4 · SSD 512 GB NVMe"
+              className="resize-none rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+            />
+          </label>
+
+          {/* Flags + acciones */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => onChange({ destacado: !state.destacado })}
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
+                state.destacado
+                  ? "border-amber-400 bg-amber-50 text-amber-700"
+                  : "border-zinc-300 text-zinc-500 hover:border-amber-300 hover:text-amber-600"
+              }`}
+            >
+              <Star className="h-3.5 w-3.5" />
+              {state.destacado ? "Destacado ✓" : "Destacado"}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ enPromocion: !state.enPromocion })}
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
+                state.enPromocion
+                  ? "border-indigo-400 bg-indigo-50 text-indigo-700"
+                  : "border-zinc-300 text-zinc-500 hover:border-indigo-300 hover:text-indigo-600"
+              }`}
+            >
+              <Tag className="h-3.5 w-3.5" />
+              {state.enPromocion ? "Promoción ✓" : "Promoción"}
+            </button>
+
+            <div className="ml-auto flex gap-2">
+              <button
+                onClick={onClose}
+                className="rounded-xl border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-500 hover:text-zinc-700 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={saving || !state.nombre.trim()}
+                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+              >
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Store className="h-3.5 w-3.5" />}
+                Publicar al catálogo
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }
@@ -871,194 +1217,6 @@ function BuscarTab({ totals, flash }: { totals: Totals; flash: (ok: boolean, msg
             </table>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Tab: Buscar en web ────────────────────────────────────────────────────────
-
-type WebResult = { nombre: string; precio: number | null; moneda: string; sitio: string; url: string };
-
-function WebTab({ flash }: { flash: (ok: boolean, msg: string) => void }) {
-  const [sites, setSites] = useState<string[]>([]);
-  const [newSite, setNewSite] = useState("");
-  const [savingSites, setSavingSites] = useState(false);
-  const [query, setQuery] = useState("");
-  const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<WebResult[] | null>(null);
-  const [searchCount, setSearchCount] = useState(0);
-
-  useEffect(() => {
-    fetch("/api/admin/web-search").then((r) => r.json()).then((d) => setSites(d.sites ?? [])).catch(() => {});
-  }, []);
-
-  async function persistSites(next: string[]) {
-    setSavingSites(true);
-    try {
-      const res = await fetch("/api/admin/web-search", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sites: next }),
-      });
-      const d = await res.json();
-      if (!res.ok) { flash(false, d.error ?? "Error al guardar sitios"); return; }
-      setSites(d.sites ?? next);
-    } catch {
-      flash(false, "Error de red al guardar sitios");
-    } finally {
-      setSavingSites(false);
-    }
-  }
-
-  function addSite() {
-    const s = newSite.trim();
-    if (!s) return;
-    setNewSite("");
-    persistSites([...sites, s]);
-  }
-
-  async function runSearch() {
-    if (!query.trim()) return;
-    if (sites.length === 0) { flash(false, "Agrega al menos un sitio primero"); return; }
-    setSearching(true);
-    setResults(null);
-    try {
-      const res = await fetch("/api/admin/web-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim() }),
-      });
-      const d = await res.json();
-      if (!res.ok) { flash(false, d.error ?? "Error en la búsqueda web"); return; }
-      setResults(d.results ?? []);
-      setSearchCount(d.searchCount ?? 0);
-    } catch {
-      flash(false, "Error de red en la búsqueda");
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Sitios permitidos */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <p className="flex items-center gap-2 text-sm font-bold text-zinc-900">
-          <Globe className="h-4 w-4 text-indigo-600" /> Sitios donde buscar
-        </p>
-        <p className="mt-0.5 text-xs text-zinc-500">
-          El buscador SOLO mirará en estos sitios. Escribe el dominio (ej: mercadolibre.com.co, alkosto.com).
-        </p>
-
-        <div className="mt-3 flex gap-2">
-          <input
-            value={newSite}
-            onChange={(e) => setNewSite(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSite(); } }}
-            placeholder="ej: mercadolibre.com.co"
-            className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-          />
-          <button
-            onClick={addSite}
-            disabled={savingSites || !newSite.trim()}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-          >
-            {savingSites ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Agregar
-          </button>
-        </div>
-
-        {sites.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {sites.map((s) => (
-              <span key={s} className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
-                {s}
-                <button onClick={() => persistSites(sites.filter((x) => x !== s))} className="text-zinc-400 hover:text-red-500" title="Quitar">
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-3 text-xs text-amber-600">Aún no has agregado sitios. Agrega al menos uno para poder buscar.</p>
-        )}
-      </div>
-
-      {/* Búsqueda */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } }}
-              placeholder="¿Qué producto buscar? (ej: Ryzen 5 5600, monitor LG 27)"
-              className="w-full rounded-lg border border-zinc-300 py-2.5 pl-10 pr-4 text-sm focus:border-indigo-400 focus:outline-none"
-            />
-          </div>
-          <button
-            onClick={runSearch}
-            disabled={searching || sites.length === 0 || !query.trim()}
-            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 transition"
-          >
-            {searching ? <><Loader2 className="h-4 w-4 animate-spin" /> Buscando…</> : <><Globe className="h-4 w-4" /> Buscar en web</>}
-          </button>
-        </div>
-        <p className="mt-2 text-xs text-zinc-400">
-          Usa la IA con búsqueda web. Tarda ~15-30 s y consume créditos de tu cuenta (~$0,14 USD por búsqueda). Los precios son <strong>de referencia del mercado</strong>, no tu costo de proveedor.
-        </p>
-      </div>
-
-      {searching && (
-        <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800">
-          <Loader2 className="h-4 w-4 animate-spin" /> Buscando en {sites.length} sitio{sites.length !== 1 ? "s" : ""}… Claude está leyendo las páginas.
-        </div>
-      )}
-
-      {results && !searching && (
-        results.length === 0 ? (
-          <div className="rounded-xl border border-zinc-200 bg-white py-10 text-center text-sm text-zinc-500">
-            No se encontraron productos para “{query}” en los sitios configurados.
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-4 py-2.5">
-              <p className="text-xs font-semibold text-zinc-600">{results.length} resultado{results.length !== 1 ? "s" : ""} · {searchCount} búsqueda{searchCount !== 1 ? "s" : ""} web</p>
-              <p className="text-[11px] text-zinc-400">Precios de referencia — verifica en el sitio</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead className="border-b border-zinc-100 bg-white text-zinc-500 uppercase tracking-wider">
-                  <tr>
-                    <th className="px-4 py-2 text-left font-semibold">Producto</th>
-                    <th className="px-4 py-2 text-left font-semibold">Sitio</th>
-                    <th className="px-4 py-2 text-right font-semibold">Precio ref.</th>
-                    <th className="px-4 py-2 text-right font-semibold">Enlace</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {results.map((r, i) => (
-                    <tr key={i} className="hover:bg-zinc-50">
-                      <td className="px-4 py-2.5 font-semibold text-zinc-900 max-w-[340px]">{r.nombre}</td>
-                      <td className="px-4 py-2.5 text-zinc-500">{r.sitio}</td>
-                      <td className="px-4 py-2.5 text-right font-bold text-[#1e6cff]">
-                        {r.precio != null ? formatMoney(r.precio, r.moneda) : <span className="font-normal text-zinc-400">s/d</span>}
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        {r.url ? (
-                          <a href={r.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 hover:underline">
-                            Ver <ExternalLink className="h-3 w-3" />
-                          </a>
-                        ) : <span className="text-zinc-300">—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )
       )}
     </div>
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   Search,
   ShoppingCart,
@@ -11,30 +12,29 @@ import {
   UserCircle,
   LayoutDashboard,
   LogOut,
-  ChevronDown,
 } from "lucide-react";
 import { categories } from "@/lib/categories";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { SearchModal } from "./search-modal";
-import { formatCOP, type Product } from "@/lib/products-types";
+import { formatCOP } from "@/lib/products-types";
+import { ProductQuickView, type QuickViewProduct } from "./product-quick-view";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [catOpen, setCatOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
-  const [selectedCat, setSelectedCat] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<QuickViewProduct[]>([]);
   const [searchQ, setSearchQ] = useState("");
+  const [quickView, setQuickView] = useState<QuickViewProduct | null>(null);
   const [searchDDOpen, setSearchDDOpen] = useState(false);
+  const pathname = usePathname();
   const { count: cartCount } = useCart();
   const { count: wishCount } = useWishlist();
   const badgeRef = useRef<HTMLSpanElement>(null);
   const prev = useRef(cartCount);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const catRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -47,23 +47,26 @@ export function Navbar() {
           data
             .filter((p) => p.publicado !== false)
             .map((p) => ({
-              id: (p.referencia ?? p.slug ?? p.nombre) as string,
-              slug: (p.slug ?? p.referencia ?? "") as string,
-              nombre: p.nombre as string,
-              marca: p.marca as string,
-              categoria: p.categoria as string,
-              precio: (p.precioDesde ?? p.precio ?? 0) as number,
-              imagen: (p.imageUrl ?? p.imagen ?? "") as string,
-              stock: 0,
-              rating: 0,
-              reviews: 0,
-              specs: {},
-              descripcion: "",
+              id:            (p.referencia ?? p.slug ?? p.nombre) as string,
+              slug:          (p.slug ?? p.referencia ?? "") as string,
+              nombre:        p.nombre as string,
+              marca:         p.marca as string,
+              categoria:     p.categoria as string,
+              precio:        (p.precioDesde ?? p.precio ?? 0) as number,
+              imagen:        (p.imageUrl ?? p.imagen ?? "") as string,
+              referencia:    (p.referencia ?? "") as string,
+              descripcionUso:(p.descripcionUso ?? "") as string,
             })),
         ),
       )
       .catch(() => {});
   }, []);
+
+  // Limpiar buscador al navegar entre páginas
+  useEffect(() => {
+    setSearchQ("");
+    setSearchDDOpen(false);
+  }, [pathname]);
 
   // Cmd/Ctrl + K abre búsqueda
   useEffect(() => {
@@ -98,17 +101,6 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [userMenuOpen]);
 
-  // Cerrar dropdown de categorías al clic fuera
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (catRef.current && !catRef.current.contains(e.target as Node)) {
-        setCatOpen(false);
-      }
-    };
-    if (catOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [catOpen]);
-
   // Cerrar dropdown de contacto al clic fuera
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -139,8 +131,6 @@ export function Navbar() {
     ["/conseguir", "Te lo conseguimos"],
   ] as const;
 
-  const selectedCatData = categories.find((c) => c.slug === selectedCat);
-
   const sq = searchQ.toLowerCase().trim();
   const searchResults =
     sq.length >= 1
@@ -155,7 +145,9 @@ export function Navbar() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         products={products}
+        onSelectProduct={(p) => { setSearchOpen(false); setQuickView(p); }}
       />
+      <ProductQuickView product={quickView} onClose={() => setQuickView(null)} />
 
       {/* ══════════════════════════════════════════════════════════════
           DESKTOP — CSS Grid: logo y acciones abarcan las 2 filas.
@@ -314,51 +306,17 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* ── Fila 2: Barra de búsqueda con categorías ────────────── */}
+        {/* ── Fila 2: Barra de búsqueda ───────────────────────────── */}
         <div ref={searchRef} className="pt-1.5 pb-3 flex justify-center -translate-y-[2px]">
           <form action="/tienda" method="get" className="w-full max-w-[612px]">
-            {selectedCat && (
-              <input type="hidden" name="categoria" value={selectedCat} />
-            )}
 
-            {/*
-              catRef envuelve todo: trigger + dropdown.
-              El dropdown es hermano del pill (fuera de overflow-hidden)
-              → no sufre clipping.
-            */}
-            <div ref={catRef} className="relative">
+            <div className="relative">
 
               {/* Pill ─ overflow-hidden da forma de cápsula a sus hijos */}
               <div className="flex items-center rounded-full border border-white/10 bg-white/5
                               overflow-hidden hover:border-white/15
                               focus-within:border-[#1e6cff]/50 focus-within:bg-[#1e6cff]/5
                               transition-colors">
-
-                {/* Selector de categoría */}
-                <button
-                  type="button"
-                  onClick={() => setCatOpen((v) => !v)}
-                  className="flex items-center gap-1.5 pl-4 pr-3 py-2.5 text-sm text-zinc-300
-                             hover:text-white hover:bg-white/8 border-r border-white/10
-                             shrink-0 whitespace-nowrap transition-colors"
-                >
-                  {selectedCatData ? (
-                    <>
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full
-                                      border border-[#1e6cff]/40 bg-[#1e6cff]/10 shrink-0">
-                        <selectedCatData.Icon className="h-2.5 w-2.5 text-[#4d8dff]" />
-                      </div>
-                      <span className="max-w-[110px] truncate">{selectedCatData.nombre}</span>
-                    </>
-                  ) : (
-                    "Todas las categorías"
-                  )}
-                  <ChevronDown
-                    className={`h-3 w-3 text-zinc-500 ml-0.5 transition-transform duration-200 ${
-                      catOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
 
                 {/* Icono lupa */}
                 <Search className="ml-4 h-4 w-4 text-zinc-500 pointer-events-none shrink-0" />
@@ -387,55 +345,17 @@ export function Navbar() {
                 </button>
               </div>
 
-              {/* Dropdown de categorías ─ fuera del overflow-hidden */}
-              {catOpen && (
-                <div className="absolute left-0 top-full mt-1.5 w-60 rounded-xl border
-                                border-white/10 bg-[#0f1626] shadow-2xl shadow-black/60
-                                py-1 z-50 max-h-72 overflow-y-auto scrollbar-neon">
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedCat(""); setCatOpen(false); }}
-                    className={`w-full text-left px-4 py-2 text-sm transition ${
-                      !selectedCat
-                        ? "text-white bg-white/5"
-                        : "text-zinc-300 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    Todas las categorías
-                  </button>
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.slug}
-                      type="button"
-                      onClick={() => { setSelectedCat(cat.slug); setCatOpen(false); }}
-                      className={`w-full text-left flex items-center gap-2.5 px-4 py-2
-                                  text-sm transition ${
-                        selectedCat === cat.slug
-                          ? "text-white bg-white/5"
-                          : "text-zinc-300 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full
-                                      border border-[#1e6cff]/30 bg-[#1e6cff]/8 shrink-0">
-                        <cat.Icon className="h-3 w-3 text-[#4d8dff]" />
-                      </div>
-                      {cat.nombre}
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {/* Autocompletado de búsqueda en vivo (solo productos publicados) */}
               {searchDDOpen && sq.length >= 1 && (
                 <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl border border-white/10 bg-[#0f1626] shadow-2xl shadow-black/60 py-2 z-50 max-h-[70vh] overflow-y-auto">
                   {searchResults.length > 0 ? (
                     <>
                       {searchResults.map((p) => (
-                        <Link
+                        <button
                           key={p.id}
-                          href={`/producto/${p.slug}`}
-                          onClick={() => setSearchDDOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition"
+                          type="button"
+                          onClick={() => { setSearchDDOpen(false); setQuickView(p); }}
+                          className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition text-left"
                         >
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/5">
                             {p.imagen ? (
@@ -452,7 +372,7 @@ export function Navbar() {
                           {p.precio > 0 && (
                             <p className="shrink-0 text-sm font-bold text-[#4d8dff]">{formatCOP(p.precio)}</p>
                           )}
-                        </Link>
+                        </button>
                       ))}
                       <button
                         type="submit"

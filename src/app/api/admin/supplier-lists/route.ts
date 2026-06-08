@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadLists, setListActive, deleteList, loadMargins, applyMargin, restoreListsFromBackup } from "@/lib/supplier-catalog";
+import { loadLists, setListActive, deleteList, deleteProductsFromList, loadMargins, applyMargin, restoreListsFromBackup } from "@/lib/supplier-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -80,10 +80,14 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-// POST — acciones especiales.  body: { action: "restore" }
+// POST — acciones especiales.
+//   { action: "restore" }
+//   { action: "deleteProducts", listId, productIds: string[] }
 export async function POST(req: NextRequest) {
   try {
-    const { action } = (await req.json()) as { action?: string };
+    const body = (await req.json()) as { action?: string; listId?: string; productIds?: string[] };
+    const { action } = body;
+
     if (action === "restore") {
       const restored = restoreListsFromBackup();
       if (restored === null) {
@@ -91,6 +95,19 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ ok: true, restored });
     }
+
+    if (action === "deleteProducts") {
+      const { listId, productIds } = body;
+      if (!listId || !Array.isArray(productIds) || productIds.length === 0) {
+        return NextResponse.json({ error: "Faltan listId o productIds" }, { status: 400 });
+      }
+      const result = deleteProductsFromList(listId, productIds);
+      if (!result.found) {
+        return NextResponse.json({ error: "Lista no encontrada" }, { status: 404 });
+      }
+      return NextResponse.json({ ok: true, deleted: result.deleted });
+    }
+
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
   } catch {
     return NextResponse.json({ error: "Error en la acción" }, { status: 500 });

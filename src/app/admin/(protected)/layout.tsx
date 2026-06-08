@@ -43,6 +43,7 @@ export default async function AdminLayout({
             ["/admin/productos", "📋 Productos y Promociones"],
             ["/admin/nuevo", "➕ Nuevo"],
             ["/admin/importar", "📥 Importar CSV"],
+            ["/admin/usuarios", "👤 Usuarios"],
           ].map(([href, label]) => (
             <Link
               key={href}

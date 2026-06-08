@@ -54,5 +54,8 @@ data/suppliers/_tmp_download.pdf
 # ajustes del panel admin — contiene la clave API de Anthropic (secreto)
 data/settings.json
 
+# usuarios del panel admin — contienen hashes de contraseñas (secreto)
+data/admin-users.json
+
 # backups automáticos de datos (.bak)
 data/*.bak

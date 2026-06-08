@@ -102,6 +102,23 @@ export function setListActive(id: string, activa: boolean): boolean {
   return true;
 }
 
+/** Elimina productos específicos de una lista por sus IDs.
+ *  Devuelve { found, deleted } — found=false si la lista no existe. */
+export function deleteProductsFromList(
+  listId: string,
+  productIds: string[],
+): { found: boolean; deleted: number } {
+  const lists = loadLists();
+  const idx = lists.findIndex((l) => l.id === listId);
+  if (idx === -1) return { found: false, deleted: 0 };
+  const idsSet = new Set(productIds);
+  const before = lists[idx].productos.length;
+  lists[idx].productos = lists[idx].productos.filter((p) => !idsSet.has(p.id));
+  const deleted = before - lists[idx].productos.length;
+  saveLists(lists);
+  return { found: true, deleted };
+}
+
 /** Elimina una lista. Devuelve false si no existía. */
 export function deleteList(id: string): boolean {
   const lists = loadLists();

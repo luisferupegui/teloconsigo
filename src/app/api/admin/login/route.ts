@@ -1,24 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { verifyCredentials, hasAnyUser } from "@/lib/admin-users";
 
-// Credenciales del panel admin. Se leen del entorno (.env.local, gitignored) —
-// nunca deben estar hardcodeadas en el código fuente ni quedar en el repo.
-const USERNAME = process.env.ADMIN_USER;
-const PASSWORD = process.env.ADMIN_PASSWORD;
-
-// Comparación de tiempo constante e independiente de la longitud: comparamos los
-// hashes SHA-256 (siempre 32 bytes), así no se filtra ni el contenido ni el largo.
-function safeEqual(a: string, b: string): boolean {
-  const ah = createHash("sha256").update(a).digest();
-  const bh = createHash("sha256").update(b).digest();
-  return timingSafeEqual(ah, bh);
-}
+// Las credenciales viven en data/admin-users.json (hasheadas). El primer usuario
+// se siembra desde ADMIN_USER / ADMIN_PASSWORD del .env (ver src/lib/admin-users).
+// La gestión (alta/baja/cambio de clave) se hace desde /admin/usuarios.
 
 export async function POST(req: NextRequest) {
-  // Sin credenciales configuradas NO se permite ningún login. Esto evita un bypass
-  // con campos vacíos (undefined === undefined) cuando faltan las variables.
-  if (!USERNAME || !PASSWORD) {
-    console.error("[login] Falta configurar ADMIN_USER / ADMIN_PASSWORD en .env.local");
+  // Sin ningún usuario configurado (ni en el store ni sembrable desde .env) no se
+  // permite login. Evita un bypass con campos vacíos cuando falta todo.
+  if (!hasAnyUser()) {
+    console.error("[login] No hay usuarios configurados. Define ADMIN_USER / ADMIN_PASSWORD en .env.local o crea un usuario.");
     return NextResponse.json(
       { ok: false, error: "El login no está configurado en el servidor." },
       { status: 401 },
@@ -35,9 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Solicitud inválida" }, { status: 400 });
   }
 
-  const valid = safeEqual(username, USERNAME) && safeEqual(password, PASSWORD);
-
-  if (valid) {
+  if (verifyCredentials(username, password)) {
     const res = NextResponse.json({ ok: true });
     res.cookies.set("admin_auth", "yes", {
       httpOnly: true,

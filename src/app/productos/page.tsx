@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
+import { BusinessProductCard } from "@/components/business-product-card";
 import {
   Laptop,
   Monitor,
@@ -19,35 +20,7 @@ export const metadata = {
     "Equipos tecnológicos corporativos: portátiles ejecutivos, PCs empresariales, monitores, tablets, accesorios y licencias. Cotización rápida.",
 };
 
-// ─── Mapa de abreviaciones para labels de specs ───────────────────────────────
-
-const SPEC_LABEL: Record<string, string | null> = {
-  procesador:    "CPU",
-  ram:           "RAM",
-  almacenamiento:"SSD",
-  pantalla:      "Pantalla",
-  monitor:       "Monitor",
-  so:            "SO",
-  garantia:      "Garantía",
-  conectividad:  "Red",
-  bateria:       "Batería",
-  capacidad:     "Cap.",
-  interfaz:      "Puerto",
-  cobertura:     "Equipos",
-  duracion:      "Vigencia",
-  clase:         "Clase",
-  velocidad:     "Vel.",
-  frecuencia:    "Refresco",
-  tipo:          "Tipo",
-  entrega:       "Entrega",
-  incluye:       "Incluye",
-  version:       "Versión",
-  // omitidos
-  puertos:       null,
-  extra:         null,
-  angulo:        null,
-  brillo:        null,
-};
+// SPEC_LABEL movido a src/components/business-product-card.tsx
 
 // ─── Paleta de colores por categoría ─────────────────────────────────────────
 // Inspirada en el azul corporativo #1e6cff como ancla.
@@ -128,75 +101,7 @@ const SECCIONES = [
   },
 ] as const;
 
-// ─── Tarjeta de producto ──────────────────────────────────────────────────────
-
-function BusinessProductCard({ product }: { product: BusinessProduct }) {
-  const price = product.precioDesde ?? product.precio;
-
-  // Filtra y abrevia las specs, muestra máximo 3
-  const specRows = Object.entries(product.specs)
-    .map(([k, v]) => {
-      const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
-      return label ? { label, value: String(v) } : null;
-    })
-    .filter((x): x is { label: string; value: string } => x !== null)
-    .slice(0, 3);
-
-  return (
-    <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-      {/* Nombre + descripción */}
-      <h3 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
-        {product.nombre}
-      </h3>
-      <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2 min-h-[2rem]">
-        {product.descripcionUso}
-      </p>
-
-      {/* Specs — etiquetas abreviadas con ancho fijo */}
-      <div className="mt-3 space-y-1.5 flex-1">
-        {specRows.map(({ label, value }) => (
-          <div key={label} className="flex items-baseline gap-2 text-xs leading-4">
-            <span className="shrink-0 min-w-[48px] font-medium text-zinc-400 truncate">
-              {label}
-            </span>
-            <span className="flex-1 min-w-0 text-zinc-700 line-clamp-1">
-              {value}
-            </span>
-          </div>
-        ))}
-        {/* Relleno si hay menos de 3 specs para mantener altura uniforme */}
-        {specRows.length < 3 && (
-          <div className="h-[calc((3-var(--count))*1.25rem)]"
-               style={{ height: `${(3 - specRows.length) * 1.25}rem` }} />
-        )}
-      </div>
-
-      {/* Precio y CTA — siempre al fondo */}
-      <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
-        <div>
-          {price ? (
-            <>
-              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
-                Desde
-              </span>
-              <p className="text-base font-bold text-zinc-900 leading-tight mt-0.5">
-                {formatCOP(price)}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm font-medium text-zinc-400">Consultar precio</p>
-          )}
-        </div>
-        <Link
-          href={`/conseguir?ref=${product.referencia ?? product.slug}`}
-          className="shrink-0 rounded-full bg-[#1e6cff] px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
-        >
-          Cotizar
-        </Link>
-      </div>
-    </div>
-  );
-}
+// BusinessProductCard → src/components/business-product-card.tsx
 
 // ─── Sección de categoría ─────────────────────────────────────────────────────
 

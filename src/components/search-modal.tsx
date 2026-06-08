@@ -3,17 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, X, ArrowRight, TrendingUp } from "lucide-react";
-import { formatCOP, type Product } from "@/lib/products-types";
+import { formatCOP } from "@/lib/products-types";
 import { SmartImage } from "./smart-image";
+import type { QuickViewProduct } from "./product-quick-view";
 
 export function SearchModal({
   open,
   onClose,
   products,
+  onSelectProduct,
 }: {
   open: boolean;
   onClose: () => void;
-  products: Product[];
+  products: QuickViewProduct[];
+  onSelectProduct?: (p: QuickViewProduct) => void;
 }) {
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -126,10 +129,10 @@ export function SearchModal({
               <ul className="divide-y divide-zinc-100">
                 {catalogResults.map((p) => (
                   <li key={p.id}>
-                    <Link
-                      href={`/producto/${p.slug}`}
-                      onClick={onClose}
-                      className="flex items-center gap-4 px-5 py-3 hover:bg-blue-50"
+                    <button
+                      type="button"
+                      onClick={() => { onClose(); onSelectProduct?.(p); }}
+                      className="flex w-full items-center gap-4 px-5 py-3 hover:bg-blue-50 text-left transition"
                     >
                       <SmartImage
                         src={p.imagen}
@@ -144,7 +147,7 @@ export function SearchModal({
                         <p className="truncate font-semibold text-zinc-900">{p.nombre}</p>
                       </div>
                       <p className="font-display font-bold text-[#1e6cff]">{formatCOP(p.precio)}</p>
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>

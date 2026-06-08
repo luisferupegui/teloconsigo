@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
+import { BusinessProductCard } from "@/components/business-product-card";
 import {
   Laptop,
   Monitor,
@@ -20,35 +21,6 @@ export const metadata = {
   title: "Promociones | teloconsigo.co",
   description:
     "Soluciones tecnológicas para hogar, gaming, oficina, movilidad, redes, creadores y más. Cotización rápida con asesoría experta.",
-};
-
-// ─── Mapa de abreviaciones para labels de specs ───────────────────────────────
-
-const SPEC_LABEL: Record<string, string | null> = {
-  procesador:     "CPU",
-  ram:            "RAM",
-  almacenamiento: "SSD",
-  pantalla:       "Pantalla",
-  monitor:        "Monitor",
-  so:             "SO",
-  garantia:       "Garantía",
-  conectividad:   "Red",
-  bateria:        "Batería",
-  capacidad:      "Cap.",
-  interfaz:       "Puerto",
-  cobertura:      "Equipos",
-  duracion:       "Vigencia",
-  clase:          "Clase",
-  velocidad:      "Vel.",
-  frecuencia:     "Refresco",
-  tipo:           "Tipo",
-  entrega:        "Entrega",
-  incluye:        "Incluye",
-  version:        "Versión",
-  puertos:        null,
-  extra:          null,
-  angulo:         null,
-  brillo:         null,
 };
 
 // ─── Tipo de sección ──────────────────────────────────────────────────────────
@@ -219,71 +191,7 @@ const SECCIONES: SeccionDef[] = [
   },
 ];
 
-// ─── Tarjeta de producto ──────────────────────────────────────────────────────
-
-function BusinessProductCard({ product }: { product: BusinessProduct }) {
-  const price = product.precioDesde ?? product.precio;
-
-  const asesorUrl = `/asesor?producto=${encodeURIComponent(product.nombre)}&ref=${encodeURIComponent(product.referencia ?? product.slug)}&precio=${price ?? ""}`;
-
-  const specRows = Object.entries(product.specs)
-    .map(([k, v]) => {
-      const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
-      return label ? { label, value: String(v) } : null;
-    })
-    .filter((x): x is { label: string; value: string } => x !== null)
-    .slice(0, 3);
-
-  return (
-    <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-      <h3 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
-        {product.nombre}
-      </h3>
-      <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2 min-h-[2rem]">
-        {product.descripcionUso}
-      </p>
-
-      <div className="mt-3 space-y-1.5 flex-1">
-        {specRows.map(({ label, value }) => (
-          <div key={label} className="flex items-baseline gap-2 text-xs leading-4">
-            <span className="shrink-0 min-w-[48px] font-medium text-zinc-400 truncate">
-              {label}
-            </span>
-            <span className="flex-1 min-w-0 text-zinc-700 line-clamp-1">
-              {value}
-            </span>
-          </div>
-        ))}
-        {specRows.length < 3 && (
-          <div style={{ height: `${(3 - specRows.length) * 1.25}rem` }} />
-        )}
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
-        <div>
-          {price ? (
-            <>
-              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
-                Desde
-              </span>
-              <p className="text-base font-bold text-zinc-900 leading-tight mt-0.5">
-                {formatCOP(price)}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm font-medium text-zinc-400">Consultar precio</p>
-          )}
-        </div>
-        <Link
-          href={asesorUrl}
-          className="shrink-0 rounded-full bg-[#1e6cff] px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
-        >
-          Cotizar
-        </Link>
-      </div>
-    </div>
-  );
-}
+// BusinessProductCard → src/components/business-product-card.tsx (variant="asesor")
 
 // ─── Sección ──────────────────────────────────────────────────────────────────
 
@@ -334,7 +242,7 @@ function SeccionUso({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((p) => (
-            <BusinessProductCard key={p.id} product={p} />
+            <BusinessProductCard key={p.id} product={p} variant="asesor" />
           ))}
         </div>
       )}

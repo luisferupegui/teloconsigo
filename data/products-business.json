@@ -1616,5 +1616,25 @@
     "enPromocion": false,
     "id": "manual-1780590058013",
     "slug": "camara-web-usb-1080p-con-microfono-hd-ideal-para-streaming-juegos-y-videoconferencias"
+  },
+  {
+    "referencia": "726537-B21SEDC600M",
+    "nombre": "Unidad DVD-RW Externa Usb 3.0 Alta Velocidad",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": 68000,
+    "precioDesde": 79000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Unidad Lector Cd Dvd Externa Usb 3.0 Alta Velocidad Portátil Lector",
+    "destacado": false,
+    "enAccesorios": false,
+    "enPromocion": true,
+    "id": "726537-B21SEDC600M",
+    "slug": "unidad-dvd-rw-servidor-kingston-1920gb-sedc600m"
   }
 ]

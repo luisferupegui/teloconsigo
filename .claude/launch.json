@@ -5,7 +5,7 @@
       "name": "teloconsigo-dev",
       "runtimeExecutable": "C:\\Users\\AVIDEMO\\Desktop\\Proyecto web 1\\start-dev.cmd",
       "runtimeArgs": [],
-      "port": 3000
+      "autoPort": true
     }
   ]
 }

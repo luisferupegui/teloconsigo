@@ -5,8 +5,10 @@ import { existsSync, statSync } from "fs";
 import path from "path";
 import { categories, type Linea } from "@/lib/categories";
 import { ArrowLeft, ArrowRight, Search } from "lucide-react";
-import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
+import { loadPublishedBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
+import { TiendaSearchResults } from "@/components/tienda-search-results";
+import type { QuickViewProduct } from "@/components/product-quick-view";
 
 export const dynamic = "force-dynamic";
 
@@ -139,6 +141,19 @@ export default async function TiendaPage({
       return terms.every((t) => primary.includes(t) || (catMatch && CAT_SYNONYMS[t] === catMatch));
     });
 
+    // Mapear a QuickViewProduct (imagen ya resuelta aquí en el servidor)
+    const searchProducts: QuickViewProduct[] = resultados.map((p) => ({
+      id: p.id,
+      slug: p.slug ?? p.referencia ?? "",
+      nombre: p.nombre,
+      marca: p.marca,
+      categoria: p.categoria,
+      precio: p.precioDesde ?? p.precio ?? 0,
+      imagen: resolveProductImage(p.referencia ?? "", "card") ?? "",
+      referencia: p.referencia ?? "",
+      descripcionUso: p.descripcionUso ?? "",
+    }));
+
     return (
       <div className="min-h-screen bg-[#f8f9fb]">
         <div className="border-b border-zinc-200 bg-white">
@@ -165,52 +180,7 @@ export default async function TiendaPage({
         </div>
 
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {resultados.length === 0 ? (
-            <div className="py-20 text-center">
-              <p className="text-4xl mb-4">🔍</p>
-              <h2 className="text-xl font-bold text-zinc-900">Sin resultados</h2>
-              <p className="text-sm text-zinc-500 mt-2 mb-6">
-                No encontramos productos para &quot;{q}&quot;, pero podemos conseguírtelo.
-              </p>
-              <Link
-                href={`/conseguir?q=${encodeURIComponent(q ?? "")}`}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#1e6cff] px-6 py-3 text-sm font-bold text-white hover:bg-[#1858d6]"
-              >
-                ✨ Te lo conseguimos
-              </Link>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {resultados.map((p) => {
-                const imgUrl = resolveProductImage(p.referencia ?? "", "card");
-                const slug = p.slug ?? p.referencia ?? "";
-                return (
-                  <Link
-                    key={p.referencia ?? p.nombre}
-                    href={`/producto/${slug}`}
-                    className="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-[#1e6cff]/30 transition-all"
-                  >
-                    <div className="relative h-40 w-full mb-3 rounded-xl bg-zinc-50 overflow-hidden">
-                      {imgUrl ? (
-                        <Image src={imgUrl} alt={p.nombre} fill className="object-contain p-2" unoptimized />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-4xl">📦</div>
-                      )}
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{p.marca}</p>
-                    <p className="mt-0.5 font-semibold text-zinc-900 text-sm leading-tight line-clamp-2 group-hover:text-[#1e6cff] transition">
-                      {p.nombre}
-                    </p>
-                    {p.precioDesde ? (
-                      <p className="mt-2 font-display font-bold text-[#1e6cff]">
-                        Desde {formatCOP(p.precioDesde)}
-                      </p>
-                    ) : null}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          <TiendaSearchResults products={searchProducts} query={q ?? ""} />
         </div>
       </div>
     );

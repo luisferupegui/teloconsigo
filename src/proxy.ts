@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+// Endpoints del flujo de auth que DEBEN seguir accesibles sin sesión.
+const PUBLIC_API = new Set(["/api/admin/login", "/api/admin/logout"]);
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLoggedIn = request.cookies.get("admin_auth")?.value === "yes";
+
+  // ── Rutas API del panel admin ───────────────────────────────────────────────
+  // El matcher de páginas (/admin/*) NO cubría /api/admin/*, así que esas rutas
+  // quedaban sin autenticar. Aquí las cerramos: sin cookie → 401 JSON. No se
+  // redirige (una API no debe mandar a /admin/login); solo login/logout son
+  // públicas (el flujo de auth).
+  if (pathname.startsWith("/api/admin")) {
+    if (PUBLIC_API.has(pathname) || isLoggedIn) {
+      return NextResponse.next();
+    }
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  // ── Páginas del panel admin (/admin/*) ──────────────────────────────────────
   const isLoginPage = pathname === "/admin/login";
 
   let response: NextResponse;
@@ -22,5 +39,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
