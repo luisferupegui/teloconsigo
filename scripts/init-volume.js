@@ -3,21 +3,27 @@
  * scripts/init-volume.js
  *
  * Se ejecuta ANTES de `next start` en Railway (ver railway.toml).
- * Propósito: si el volumen persistente montado en /app/data está vacío
- * (primer deploy), copia los archivos JSON por defecto desde data-defaults/.
  *
- * En despliegues posteriores, los archivos ya existen en el volumen
- * y este script no hace nada (preserva los datos del admin panel).
+ * Propósito: inicializar los volúmenes persistentes en el PRIMER deploy.
+ *   - /app/data           ← catálogo JSON, usuarios, etc.
+ *   - /app/public/productos ← imágenes de productos subidas por el admin
+ *
+ * En despliegues posteriores los archivos ya existen → no hace nada.
  */
 
 const fs   = require("fs");
 const path = require("path");
 
-const ROOT     = path.resolve(__dirname, "..");
-const DEFAULTS = path.join(ROOT, "data-defaults");
-const DATA     = path.join(ROOT, "data");
+const ROOT = path.resolve(__dirname, "..");
 
-const FILES = [
+// ── 1. Inicializar archivos JSON de datos ─────────────────────────────────────
+
+const DATA_DEFAULTS = path.join(ROOT, "data-defaults");
+const DATA_DIR      = path.join(ROOT, "data");
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+
+const DATA_FILES = [
   "products-business.json",
   "products.json",
   "supplier-lists.json",
@@ -25,33 +31,57 @@ const FILES = [
   "supplier-catalog.json",
 ];
 
-// Asegura que el directorio data/ exista (necesario cuando el volumen es nuevo)
-if (!fs.existsSync(DATA)) {
-  fs.mkdirSync(DATA, { recursive: true });
-}
-
 let copiados = 0;
 
-for (const file of FILES) {
-  const dest = path.join(DATA, file);
-  const src  = path.join(DEFAULTS, file);
-
+for (const file of DATA_FILES) {
+  const dest = path.join(DATA_DIR, file);
   if (!fs.existsSync(dest)) {
+    const src = path.join(DATA_DEFAULTS, file);
     if (fs.existsSync(src)) {
       fs.copyFileSync(src, dest);
-      console.log(`[init-volume] ✓ data/${file}`);
-      copiados++;
     } else {
-      // Crea un archivo vacío para que la app no rompa
-      fs.writeFileSync(dest, file.includes("products-business") ? "[]" : "{}");
-      console.log(`[init-volume] ~ data/${file} (vacío, no había default)`);
-      copiados++;
+      // Fallback: archivo vacío para que la app no rompa
+      fs.writeFileSync(dest, file === "products-business.json" ? "[]" : "{}");
     }
+    console.log(`[init-volume] ✓ data/${file}`);
+    copiados++;
   }
 }
 
+// ── 2. Inicializar imágenes de productos ──────────────────────────────────────
+
+const IMG_DEFAULTS = path.join(ROOT, "public", "productos-defaults");
+const IMG_DIR      = path.join(ROOT, "public", "productos");
+
+if (fs.existsSync(IMG_DEFAULTS)) {
+  if (!fs.existsSync(IMG_DIR)) fs.mkdirSync(IMG_DIR, { recursive: true });
+
+  for (const ref of fs.readdirSync(IMG_DEFAULTS)) {
+    const srcDir  = path.join(IMG_DEFAULTS, ref);
+    const destDir = path.join(IMG_DIR, ref);
+
+    if (!fs.statSync(srcDir).isDirectory()) continue;
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    for (const file of fs.readdirSync(srcDir)) {
+      const dest = path.join(destDir, file);
+      if (!fs.existsSync(dest)) {
+        fs.copyFileSync(path.join(srcDir, file), dest);
+        copiados++;
+      }
+    }
+  }
+  if (copiados > 0) {
+    console.log(`[init-volume] ✓ imágenes de productos copiadas`);
+  }
+}
+
+// ── Resumen ───────────────────────────────────────────────────────────────────
+
 if (copiados > 0) {
-  console.log(`[init-volume] Volumen inicializado con ${copiados} archivo(s).`);
+  console.log(`[init-volume] Volumen inicializado (${copiados} elemento(s)).`);
 } else {
-  console.log("[init-volume] Datos ya existentes — no se copió nada.");
+  console.log("[init-volume] Datos ya existentes — sin cambios.");
 }
