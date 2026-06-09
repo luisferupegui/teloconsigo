@@ -229,7 +229,8 @@
       "Bash(PORT=3001 pnpm start)",
       "Bash(pnpm lint *)",
       "Skill(run)",
-      "Skill(run:*)"
+      "Skill(run:*)",
+      "Bash(git remote *)"
     ]
   }
 }
