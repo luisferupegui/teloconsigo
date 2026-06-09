@@ -39,6 +39,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://teloconsigo.co"),
   title: {
     default: "Te lo Consigo — Tecnología con atención personalizada",
     template: "%s | Te lo Consigo",
@@ -55,11 +56,27 @@ export const metadata: Metadata = {
     "teloconsigo",
   ],
   openGraph: {
-    title: "Te lo Consigo",
+    title: "Te lo Consigo — Tecnología con atención personalizada",
     description:
-      "Tecnología con atención personalizada. Te lo conseguimos.",
+      "Tecnología con atención personalizada. Componentes, periféricos y equipos para empresas. Si no lo encuentras, te lo conseguimos.",
     type: "website",
     locale: "es_CO",
+    url: "https://teloconsigo.co",
+    siteName: "Te lo Consigo",
+    images: [
+      {
+        url: "/hero-banner.png",
+        width: 1200,
+        height: 630,
+        alt: "Te lo Consigo — Tecnología con atención personalizada",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Te lo Consigo — Tecnología con atención personalizada",
+    description: "Tecnología con atención personalizada. Si no lo encuentras, te lo conseguimos.",
+    images: ["/hero-banner.png"],
   },
 };
 

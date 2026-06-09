@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import { X, Heart, MessageCircle, Tag } from "lucide-react";
+import { X, Heart, Tag } from "lucide-react";
 import { formatCOP } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
 

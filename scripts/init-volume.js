@@ -11,6 +11,7 @@
  * En despliegues posteriores los archivos ya existen → no hace nada.
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs   = require("fs");
 const path = require("path");
 

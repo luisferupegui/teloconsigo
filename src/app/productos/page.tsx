@@ -11,7 +11,6 @@ import {
   Key,
   Package,
   MessageCircle,
-  Zap,
 } from "lucide-react";
 
 export const metadata = {

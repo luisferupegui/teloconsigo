@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { CategoryCarousel } from "@/components/category-carousel";
 import { HeroSlider } from "@/components/hero-slider";

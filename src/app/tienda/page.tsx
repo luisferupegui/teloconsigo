@@ -18,9 +18,6 @@ export const metadata = {
     "Explora todas las líneas de productos: procesadores, portátiles, memorias, almacenamiento, impresoras y más.",
 };
 
-const ASSET_V = "9";
-const withV = (src: string) => `${src}?v=${ASSET_V}`;
-
 const EXTS = ["webp", "jpg", "jpeg", "png"] as const;
 
 function resolveLineImg(catSlug: string, linea: Linea): string | null {

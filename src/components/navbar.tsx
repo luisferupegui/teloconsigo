@@ -140,7 +140,10 @@ export function Navbar() {
       : [];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0b0f1c] border-b border-white/10">
+    <header
+      className="sticky top-0 z-50 bg-[#0b0f1c] border-b border-white/10"
+      style={{ willChange: "transform" }}
+    >
       <SearchModal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
@@ -458,86 +461,98 @@ export function Navbar() {
           </Link>
 
           <button
-            onClick={() => setOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-full
-                       border border-white/15 text-zinc-400 hover:text-white transition"
+            type="button"
+            onPointerDown={(e) => { e.preventDefault(); setOpen((v) => !v); }}
+            style={{ touchAction: "manipulation" }}
+            className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border transition select-none
+              ${open
+                ? "border-[#1e6cff]/60 bg-[#1e6cff]/20 text-[#4d8dff]"
+                : "border-white/30 bg-white/5 text-white hover:border-white/50"
+              }`}
             aria-label="Abrir menú"
           >
-            <Menu className="h-4 w-4" />
+            {open ? <span className="text-base leading-none">✕</span> : <Menu className="h-5 w-5" />}
           </button>
+        </div>
+      </div>
+
+      {/* ── Mobile nav pills — siempre visibles, scroll horizontal ── */}
+      <div className="lg:hidden border-t border-white/8 bg-[#060a12]">
+        <div
+          className="flex gap-1 px-3 py-2 overflow-x-auto
+                     [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {navLinks.map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className={`shrink-0 inline-flex items-center rounded-full px-4 py-1.5
+                          text-[13px] font-semibold transition whitespace-nowrap
+                          ${pathname === href
+                            ? "bg-[#1e6cff] text-white"
+                            : "text-zinc-400 hover:text-white hover:bg-white/8"
+                          }`}
+            >
+              {label}
+            </Link>
+          ))}
+          <Link
+            href="/contacto"
+            className={`shrink-0 inline-flex items-center rounded-full px-4 py-1.5
+                        text-[13px] font-semibold transition whitespace-nowrap
+                        ${pathname === "/contacto"
+                          ? "bg-[#1e6cff] text-white"
+                          : "text-zinc-400 hover:text-white hover:bg-white/8"
+                        }`}
+          >
+            Contacto
+          </Link>
         </div>
       </div>
 
       {/* ── Mobile menu desplegable ──────────────────────────────── */}
       {open && (
-        <div className="lg:hidden border-t border-white/10 bg-[#080c14] px-4 py-4 space-y-1">
-          <form action="/tienda" method="get" className="flex mb-4">
-            <input
-              type="search"
-              name="q"
-              placeholder="Buscar…"
-              className="w-full rounded-l-full border border-white/15 bg-white/5
-                         px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-r-full bg-[#1e6cff] px-4 text-white text-sm font-semibold"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          </form>
+        <div className="lg:hidden border-t border-white/10 bg-[#080c14] px-4 py-4">
 
-          {navLinks.map(([href, label]) => (
+          {/* Links secundarios (no están en las pills) */}
+          <div className="flex gap-2 mb-4">
             <Link
-              key={href}
-              href={href}
-              className="block rounded px-3 py-2.5 text-sm font-medium text-zinc-300
-                         hover:bg-white/8 hover:text-white transition"
+              href="/nosotros"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg
+                         border border-white/10 bg-white/5 px-3 py-2.5
+                         text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition"
               onClick={() => setOpen(false)}
             >
-              {label}
+              Sobre Nosotros
             </Link>
-          ))}
+            <Link
+              href="/admin"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg
+                         border border-[#1e6cff]/30 bg-[#1e6cff]/10 px-3 py-2.5
+                         text-sm font-medium text-[#4d8dff] hover:bg-[#1e6cff]/20 transition"
+              onClick={() => setOpen(false)}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Panel Admin
+            </Link>
+          </div>
 
-          <Link
-            href="/contacto"
-            className="block rounded px-3 py-2.5 text-sm font-medium text-zinc-300
-                       hover:bg-white/8 hover:text-white transition"
-            onClick={() => setOpen(false)}
-          >
-            Contacto
-          </Link>
-          <Link
-            href="/nosotros"
-            className="block rounded px-3 py-2.5 text-sm font-medium text-zinc-300
-                       hover:bg-white/8 hover:text-white transition"
-            onClick={() => setOpen(false)}
-          >
-            Sobre Nosotros
-          </Link>
-
-          <Link
-            href="/admin"
-            className="flex items-center gap-2 rounded px-3 py-2.5 text-sm font-medium
-                       text-[#4d8dff] hover:bg-white/8 transition"
-            onClick={() => setOpen(false)}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Panel Admin
-          </Link>
-
-          <div className="border-t border-white/10 pt-3 mt-2 grid grid-cols-2 gap-1">
+          {/* Categorías */}
+          <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
+            Categorías
+          </p>
+          <div className="grid grid-cols-2 gap-1">
             {categories.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/categoria/${cat.slug}`}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 rounded px-2 py-2 text-sm text-zinc-400
-                           hover:text-white hover:bg-white/5 transition"
+                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-zinc-300
+                           hover:text-white hover:bg-white/8 transition"
               >
-                <div className="flex h-5 w-5 items-center justify-center rounded-full
-                                border border-[#1e6cff]/30 bg-[#1e6cff]/8 shrink-0">
-                  <cat.Icon className="h-2.5 w-2.5 text-[#4d8dff]" />
+                <div className="flex h-6 w-6 items-center justify-center rounded-full
+                                border border-[#1e6cff]/30 bg-[#1e6cff]/10 shrink-0">
+                  <cat.Icon className="h-3 w-3 text-[#4d8dff]" />
                 </div>
                 {cat.nombre}
               </Link>

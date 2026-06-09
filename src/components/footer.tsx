@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import { ShieldCheck, Truck, CreditCard, Award, ArrowUp, Mail, Phone, MapPin } from "lucide-react";
+import { ShieldCheck, Truck, CreditCard, Award, ArrowUp, Mail, MapPin } from "lucide-react";
 
 function FacebookIcon({ className = "" }: { className?: string }) {
   return (

@@ -185,19 +185,23 @@ export function BusinessFeaturedCard({
         {/* Separador */}
         <div className="my-3 h-px bg-zinc-100" />
 
-        {/* Grid de specs */}
+        {/* Grid de specs — 2×2 en móvil para que quepan en la card estrecha */}
         {specs.length > 0 && (
-          <div className={`grid gap-0 divide-x divide-zinc-100
-            ${specs.length === 4 ? "grid-cols-4" : specs.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+          <div className={`grid gap-y-2
+            ${specs.length >= 4 ? "grid-cols-2" : specs.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
             {specs.map(({ Icon, main, sub }, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5 px-1.5 text-center first:pl-0 last:pr-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg
+              <div key={i}
+                className={`flex flex-col items-center gap-1 text-center px-1.5
+                  ${(specs.length >= 4 ? i % 2 === 0 : i < specs.length - 1)
+                    ? "border-r border-zinc-100" : ""}`}
+              >
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg
                                 border border-indigo-100 bg-indigo-50">
-                  <Icon className="h-4 w-4 text-indigo-600" strokeWidth={1.5} />
+                  <Icon className="h-3.5 w-3.5 text-indigo-600" strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold leading-tight text-zinc-900">{main}</p>
-                  <p className="text-[10px] leading-tight text-zinc-400">{sub}</p>
+                  <p className="text-[10px] font-bold leading-tight text-zinc-900 break-words w-full">{main}</p>
+                  <p className="text-[9px] leading-tight text-zinc-400">{sub}</p>
                 </div>
               </div>
             ))}

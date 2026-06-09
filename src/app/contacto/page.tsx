@@ -233,7 +233,7 @@ export default function ContactoPage() {
                     <select className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm focus:border-[#1e6cff] focus:outline-none">
                       <option>Consulta sobre un producto</option>
                       <option>Asesoría para armar PC</option>
-                      <option>Solicitud "Te lo conseguimos"</option>
+                      <option>Solicitud &quot;Te lo conseguimos&quot;</option>
                       <option>Soporte post-venta</option>
                       <option>Empresas / Cotización corporativa</option>
                       <option>Otro</option>
