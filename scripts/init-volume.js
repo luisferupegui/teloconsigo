@@ -24,6 +24,24 @@ const DATA_DIR      = path.join(ROOT, "data");
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
+// ── 0. Re-seed del admin (recuperación de acceso) ─────────────────────────────
+// admin-users.json NO se sube al repo (gitignored) ni se copia aquí: en Railway
+// el admin se siembra desde ADMIN_USER / ADMIN_PASSWORD, pero SOLO cuando el
+// store está vacío. Si el volumen quedó sembrado con otra clave, ya no se vuelve
+// a sembrar y se pierde el acceso. Con ADMIN_RESEED=1 borramos el archivo en el
+// arranque para que se re-siembre desde las variables en el próximo login.
+// ⚠️ Quita ADMIN_RESEED después de recuperar el acceso, o cada deploy borrará los
+//    usuarios/contraseñas que gestiones desde /admin/usuarios.
+if (process.env.ADMIN_RESEED === "1") {
+  const usersFile = path.join(DATA_DIR, "admin-users.json");
+  if (fs.existsSync(usersFile)) {
+    fs.rmSync(usersFile);
+    console.log("[init-volume] ⚠ ADMIN_RESEED=1 → admin-users.json borrado; se re-sembrará desde ADMIN_USER/ADMIN_PASSWORD en el próximo login.");
+  } else {
+    console.log("[init-volume] ADMIN_RESEED=1 → no había admin-users.json; se sembrará desde ADMIN_USER/ADMIN_PASSWORD en el próximo login.");
+  }
+}
+
 const DATA_FILES = [
   "products-business.json",
   "products.json",
