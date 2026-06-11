@@ -48,6 +48,20 @@ next-env.d.ts
 # carpeta de staging de imágenes nuevas
 /public/lineas-nuevas/
 
+# imágenes desplegadas pero SIN usar — originales/leftovers fuera del deploy.
+# Se conservan en disco local; se sacaron del repo para aligerar el build (~224MB).
+# (los logos servidos viven en /public/brands/v2-clean/ y SÍ se versionan)
+/public/products/
+/public/brands/v2/
+/public/brands/*.png
+/public/hero-pc.png
+/public/Sitio Web.png
+/public/Opciones de Logo Calro y Oscuro.png
+/public/logo-oscuro.png
+/public/Logo Oscuro Sin Slogan.png
+/public/Logo Claro Con Slogan.png
+/public/Logo Claro Sin Slogan.png
+
 # archivos temporales de proveedores
 data/suppliers/_tmp_download.pdf
 
