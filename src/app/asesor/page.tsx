@@ -1,247 +1,626 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef, Suspense } from "react";
+import Image from "next/image";
+import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  Send, Monitor, Laptop, Gamepad2, Building2, Headphones, Truck,
+  ShieldCheck, Award, Flame, ChevronRight, Cpu,
+} from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
+type InactivityState = "active" | "notified15" | "notified30" | "archived";
 
-// ─── Preguntas sugeridas ───────────────────────────────────────────────────────
+const AVATAR        = "/asesor/andrea.png";
+const SESSION_KEY   = "tlc-andrea-chat";
 
-const SEED_GENERAL = [
-  "¿Qué portátil recomiendas para una oficina de 5 personas?",
-  "Necesito equipar un consultorio médico",
-  "¿Cuáles son las formas de pago disponibles?",
-  "¿Cuánto tarda la entrega en Medellín?",
+// ─── Tiempos de inactividad ────────────────────────────────────────────────
+const T_15 = 15 * 60 * 1000;
+const T_30 = 30 * 60 * 1000;
+const T_60 = 60 * 60 * 1000;
+
+// ─── Mensajes automáticos de inactividad ──────────────────────────────────
+const MSG_15MIN =
+  "¿Sigues allí? 😊\n\nSi necesitas ayuda para elegir un producto o tienes alguna pregunta, estaré encantada de ayudarte.";
+const MSG_30MIN =
+  "Guardaré nuestra conversación para que puedas retomarla cuando quieras.\n\nCuando regreses, continuaré ayudándote donde quedamos. 🙌";
+const MSG_RETURN =
+  "¡Hola de nuevo! 😊 Veo que retomaste nuestra conversación. ¿En qué puedo ayudarte?";
+
+// ─── Botones de acceso rápido ──────────────────────────────────────────────
+const QUICK_GENERAL = [
+  { icon: Monitor,    label: "Necesito un computador de escritorio" },
+  { icon: Laptop,     label: "Busco un portátil" },
+  { icon: Gamepad2,   label: "Quiero una PC Gamer" },
+  { icon: Cpu,        label: "Componentes" },
+  { icon: Building2,  label: "Equipos para mi empresa" },
+  { icon: Headphones, label: "Accesorios y otros" },
+  { icon: Truck,      label: "Estado de mi pedido" },
 ];
 
-const SEED_PRODUCTO = (nombre: string) => [
-  `¿Cuál es el precio final de ${nombre}?`,
-  "¿Cuánto tarda la entrega?",
-  "¿Qué formas de pago aceptan?",
-  "¿Tiene garantía? ¿Qué cubre?",
+const QUICK_PRODUCTO = [
+  "¿Cuál es el precio?",
+  "¿En cuánto tiempo me llega?",
+  "¿Tiene garantía?",
 ];
 
-// ─── Intro cuando viene desde una card de producto ────────────────────────────
+// ─── Sidebar — beneficios ──────────────────────────────────────────────────
+const BENEFITS = [
+  { icon: ShieldCheck, title: "Productos originales",   desc: "Trabajamos con las mejores marcas del mercado." },
+  { icon: Award,       title: "Garantía nacional",      desc: "Todos nuestros productos cuentan con garantía." },
+  { icon: Truck,       title: "Envíos a toda Colombia", desc: "Entregas rápidas y seguras a donde estés." },
+];
 
-function buildProductoIntro(nombre: string, ref: string, precio: string): string {
-  const precioFmt = precio
-    ? `$${Number(precio).toLocaleString("es-CO")}`
-    : "precio a confirmar";
-  return `¡Hola! Veo que te interesa el **${nombre}**${ref ? ` (Ref: ${ref})` : ""}.\n\nEl precio de venta parte desde **${precioFmt}**.\n\nPuedo ayudarte con:\n• ✅ Confirmación de precio final y descuentos por volumen\n• 🚚 Tiempo de entrega según tu ciudad\n• 💳 Formas de pago (PSE, tarjeta, transferencia, crédito empresarial)\n• 📦 Disponibilidad en stock\n• 🛡️ Información de garantía\n\n¿Por dónde empezamos?`;
+// ─── Sidebar — productos más buscados ────────────────────────────────────────
+const TOP_PRODUCTS = [
+  { img: "/productos/P3406CKANZ0441X/card.png",   name: "Portátiles",            desc: "Para trabajo y estudio",          q: "Busco un portátil" },
+  { img: "/productos/LS27F320GANX/card.png",       name: "Monitores",             desc: "Más pantalla, más productividad", q: "Quiero un monitor" },
+  { img: "/productos/13C50021LD/card.png",         name: "Equipos de escritorio", desc: "Potencia para hogar y oficina",   q: "Necesito un equipo de escritorio" },
+  { img: "/lineas-orig/auriculares-audio/jbl.png", name: "Auriculares JBL",       desc: "Sonido premium gaming",           q: "Quiero unos auriculares JBL gaming" },
+  { img: "/lineas-orig/tarjetas-graficas/nvidia-rtx.png", name: "Componentes", desc: "GPU, RAM, procesadores y más", q: "Busco componentes: tarjeta de video, RAM o procesador" },
+  { img: "/lineas-orig/kits-streaming/elgato.png", name: "Stream Deck Elgato",    desc: "Crea contenido profesional",      q: "Necesito un kit de streaming Elgato" },
+];
+
+// ─── Saludos ───────────────────────────────────────────────────────────────
+const SALUDO_GENERAL =
+  "¡Hola! Soy **Andrea** 😊\n\nEstoy aquí para ayudarte a encontrar la mejor tecnología para tu hogar o empresa.\n\n¿Qué producto estás buscando?";
+
+const saludoProducto = (nombre: string) =>
+  `¡Hola! Soy **Andrea** 😊\n\nVi que te interesa el **${nombre}**. Con gusto te ayudo con el precio, la disponibilidad y la entrega.\n\n¿Qué te gustaría saber?`;
+
+// ─── Render markdown: negritas + listas ───────────────────────────────────
+function applyBold(line: string) {
+  return line.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") ? (
+      <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  );
 }
 
-// ─── Motor de respuestas (demo) ───────────────────────────────────────────────
-
-function pickAnswer(text: string, productoCtx?: string): string {
-  const t = text.toLowerCase();
-
-  if (t.includes("precio") || t.includes("final") || t.includes("descuento") || t.includes("cotiz")) {
-    if (productoCtx) {
-      return `El precio mostrado en catálogo ya incluye nuestro margen de servicio. Para **${productoCtx}** puedo solicitar confirmación al mayorista ahora mismo.\n\nSi compras 3 o más unidades aplicamos 3–5% de descuento adicional.\n\n¿Quieres que genere la cotización formal en PDF para tu empresa?`;
+function renderRich(text: string): ReactNode {
+  const lines = text.split("\n");
+  const nodes: ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^[-*]\s+\S/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^[-*]\s+/, ""));
+        i++;
+      }
+      nodes.push(
+        <ul key={`ul${i}`} className="my-1 space-y-1 pl-1">
+          {items.map((item, j) => (
+            <li key={j} className="flex items-start gap-2">
+              <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#1e6cff]" />
+              <span>{applyBold(item)}</span>
+            </li>
+          ))}
+        </ul>,
+      );
+    } else if (/^\d+\.\s+\S/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\.\s+/, ""));
+        i++;
+      }
+      nodes.push(
+        <ol key={`ol${i}`} className="my-1 space-y-1 pl-4 list-decimal">
+          {items.map((item, j) => (
+            <li key={j}>{applyBold(item)}</li>
+          ))}
+        </ol>,
+      );
+    } else if (line === "") {
+      nodes.push(<div key={`sp${i}`} className="h-1.5" />);
+      i++;
+    } else {
+      nodes.push(<p key={`p${i}`} className="leading-relaxed">{applyBold(line)}</p>);
+      i++;
     }
-    return "Claro, el precio varía según el equipo y la cantidad. Compras de 3+ unidades tienen descuento de 3–5%.\n\n¿Sobre qué producto necesitas la cotización?";
   }
-
-  if (t.includes("entrega") || t.includes("envío") || t.includes("demora") || t.includes("días") || t.includes("tiempo")) {
-    return "Tiempos estimados de entrega:\n\n• 📍 **Medellín y Bogotá:** 1–2 días hábiles\n• 📍 **Otras ciudades principales:** 2–3 días hábiles\n• 📍 **Municipios:** 3–5 días hábiles\n\nEquipos bajo pedido pueden tardar 3–5 días adicionales según disponibilidad del mayorista.\n\n¿Cuál es tu ciudad?";
-  }
-
-  if (t.includes("pago") || t.includes("cuota") || t.includes("crédito") || t.includes("factura") || t.includes("forma")) {
-    return "Formas de pago disponibles:\n\n• 💳 **Tarjeta crédito/débito** (hasta 24 cuotas con algunas entidades)\n• 🏦 **PSE / Transferencia bancaria**\n• 🏢 **Crédito empresarial** (sujeto a aprobación, cupo hasta $50M)\n• 📄 **Factura a 30 días** para empresas con contrato\n\n¿Cuál te conviene más?";
-  }
-
-  if (t.includes("garantía") || t.includes("garantia") || t.includes("soporte") || t.includes("falla")) {
-    return "Todos los equipos tienen garantía del fabricante (mínimo 1 año). Además:\n\n• 🛡️ **Garantía extendida** hasta 3 años disponible\n• 🔄 **Cambio por defecto de fábrica** en los primeros 30 días\n• 📞 **Soporte postventa** — te acompañamos con el proceso ante el fabricante\n\n¿Tienes una inquietud específica sobre garantía?";
-  }
-
-  if (t.includes("stock") || t.includes("disponib") || t.includes("hay") || t.includes("tienen")) {
-    return "Trabajamos bajo pedido con múltiples mayoristas, lo que nos permite confirmar disponibilidad en tiempo real. La mayoría de equipos corporativos tienen stock para entrega inmediata.\n\n¿Quieres que verifique disponibilidad del equipo específico que te interesa?";
-  }
-
-  if (t.includes("consultorio") || t.includes("clínica") || t.includes("médico") || t.includes("salud")) {
-    return "Para consultorio médico te recomendaría:\n\n• 💻 **PC AIO o portátil** — historia clínica y gestión de citas\n• 🖥️ **Monitor 24\"** — lectura de imágenes diagnósticas\n• 🖨️ **Impresora láser** — recetas y reportes\n• 📱 **Tablet** — movilidad dentro del consultorio\n\nSetup básico para 1 médico desde **$4.500.000** aprox.\n\n¿Cuántos puestos necesitas?";
-  }
-
-  if (t.includes("oficina") || t.includes("empresa") || t.includes("personas") || t.includes("equip")) {
-    return "Para equipar una oficina te recomiendo:\n\n• 💼 **Portátiles corporativos** (Lenovo V14, Dell Pro 15 o similar)\n• 🖥️ **Monitores 24\"** para mayor productividad\n• ⌨️ **Combos teclado + mouse inalámbrico**\n• 🔑 **Licencias Windows 11 Pro + Microsoft 365**\n\nSetup completo desde **~$4.600.000 por puesto** (portátil + monitor + accesorios + licencias).\n\n¿Cuántos puestos necesitas?";
-  }
-
-  if (productoCtx) {
-    return `Entendido. Para **${productoCtx}** voy a consultar disponibilidad y confirmar el precio exacto con el mayorista.\n\nEn producción, esta respuesta llega en segundos con datos en tiempo real. ¿Necesitas algo más sobre este equipo?`;
-  }
-
-  return "Entendido. ¿Puedes darme más detalles? Por ejemplo:\n\n• Tipo de uso (oficina, diseño, ventas en campo…)\n• Presupuesto aproximado\n• Cantidad de equipos\n\nCon eso te armo una propuesta concreta.";
+  return <>{nodes}</>;
 }
 
-// ─── Componente interno con useSearchParams ────────────────────────────────────
+// ─── Avatar circular ───────────────────────────────────────────────────────
+function ChatAvatar({ size }: { size: number }) {
+  return (
+    <Image
+      src={AVATAR}
+      alt="Andrea"
+      width={size}
+      height={size}
+      className="rounded-full object-cover object-top ring-2 ring-white shadow-sm shrink-0"
+      style={{ width: size, height: size }}
+      priority
+    />
+  );
+}
 
+// ─── Indicador de escritura ────────────────────────────────────────────────
+function TypingIndicator() {
+  return (
+    <span className="flex items-center gap-2 py-0.5">
+      <span className="flex gap-1">
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]" />
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]" />
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" />
+      </span>
+      <span className="text-xs italic text-zinc-400">Andrea está escribiendo...</span>
+    </span>
+  );
+}
+
+// ─── Contenido principal ───────────────────────────────────────────────────
 function AsesorContent() {
   const searchParams = useSearchParams();
-  const producto = searchParams.get("producto") ?? "";
-  const ref      = searchParams.get("ref") ?? "";
-  const precio   = searchParams.get("precio") ?? "";
+  const producto    = searchParams.get("producto") ?? "";
+  const ref         = searchParams.get("ref") ?? "";
+  const precio      = searchParams.get("precio") ?? "";
   const hasProducto = producto.length > 0;
 
-  const [messages, setMessages] = useState<Msg[]>(() => [
-    {
-      role: "assistant",
-      content: hasProducto
-        ? buildProductoIntro(producto, ref, precio)
-        : "¡Hola! Soy el Asesor IA de teloconsigo.co.\n\nEstoy aquí para ayudarte a cotizar equipos corporativos, confirmar precios, tiempos de entrega y formas de pago.\n\n¿Qué necesitas hoy?",
-    },
-  ]);
+  const initialMsg: Msg = {
+    role: "assistant",
+    content: hasProducto ? saludoProducto(producto) : SALUDO_GENERAL,
+  };
 
-  const [input, setInput]   = useState("");
-  const bottomRef            = useRef<HTMLDivElement>(null);
-  const seedQuestions        = hasProducto ? SEED_PRODUCTO(producto) : SEED_GENERAL;
+  const [messages,   setMessages]   = useState<Msg[]>([initialMsg]);
+  const [input,      setInput]      = useState("");
+  const [loading,    setLoading]    = useState(false);
+  const [isTyping,   setIsTyping]   = useState(false);
+  const [lastActivity, setLastActivity] = useState<number>(() => Date.now());
+  const [inactivity, setInactivity] = useState<InactivityState>("active");
+  const [showChoice, setShowChoice] = useState(false);
+  const scrollRef                   = useRef<HTMLDivElement>(null);
+  const restoredRef                 = useRef(false);
+  const savedDataRef                = useRef<{ msgs: Msg[]; la: number; is: InactivityState } | null>(null);
 
-  const send = (text: string) => {
-    if (!text.trim()) return;
-    const answer = pickAnswer(text, hasProducto ? producto : undefined);
-    setMessages((m) => [
-      ...m,
-      { role: "user",      content: text   },
-      { role: "assistant", content: answer },
-    ]);
+  // ── Detectar conversación guardada al montar ──────────────────────────────
+  useEffect(() => {
+    if (restoredRef.current) return;
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (!saved) { restoredRef.current = true; return; }
+      const parsed = JSON.parse(saved);
+      const msgs: Msg[]         = Array.isArray(parsed) ? parsed : (parsed?.messages ?? []);
+      const la:   number        = parsed?.lastActivity   ?? Date.now();
+      const is:   InactivityState = parsed?.inactivityState ?? "active";
+      const hasUser = msgs.some((m: Msg) => m.role === "user");
+      if (!hasUser || msgs.length < 1) { restoredRef.current = true; return; }
+      savedDataRef.current = { msgs, la, is };
+      setShowChoice(true);
+    } catch { restoredRef.current = true; }
+  }, []);
+
+  const handleContinue = () => {
+    const data = savedDataRef.current;
+    if (!data) { setShowChoice(false); restoredRef.current = true; return; }
+    let { msgs, la, is } = data;
+    const elapsed    = Date.now() - la;
+    const extraMsgs: Msg[] = [];
+    if (is !== "archived") {
+      if (is === "active" && elapsed >= T_15) {
+        is = "notified15";
+        extraMsgs.push({ role: "assistant", content: MSG_15MIN });
+      }
+      if (is === "notified15" && elapsed >= T_30) {
+        is = "notified30";
+        extraMsgs.push({ role: "assistant", content: MSG_30MIN });
+      }
+      if (is === "notified30" && elapsed >= T_60) is = "archived";
+    }
+    setMessages([...msgs, ...extraMsgs]);
+    setLastActivity(la);
+    setInactivity(is);
+    setShowChoice(false);
+    restoredRef.current = true;
+  };
+
+  const handleNewChat = () => {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch {}
+    window.dispatchEvent(new CustomEvent("tlc-chat-cleared"));
+    setMessages([initialMsg]);
+    setShowChoice(false);
+    restoredRef.current = true;
+  };
+
+  // ── Guardar conversación y estado en cada cambio ──────────────────────────
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        messages, lastActivity, inactivityState: inactivity,
+      }));
+    } catch { /* */ }
+  }, [messages, lastActivity, inactivity]);
+
+  // ── Timer de inactividad ──────────────────────────────────────────────────
+  useEffect(() => {
+    const hasUserMsg = messages.some((m) => m.role === "user");
+    if (!hasUserMsg || inactivity === "archived") return;
+
+    const id = setInterval(() => {
+      const elapsed = Date.now() - lastActivity;
+      if (inactivity === "active" && elapsed >= T_15) {
+        setInactivity("notified15");
+        setMessages((prev) => [...prev, { role: "assistant", content: MSG_15MIN }]);
+      } else if (inactivity === "notified15" && elapsed >= T_30) {
+        setInactivity("notified30");
+        setMessages((prev) => [...prev, { role: "assistant", content: MSG_30MIN }]);
+      } else if (inactivity === "notified30" && elapsed >= T_60) {
+        setInactivity("archived");
+      }
+    }, 60_000);
+
+    return () => clearInterval(id);
+  }, [lastActivity, inactivity, messages]);
+
+  const hasUserMsg = messages.some((m) => m.role === "user");
+
+  const send = async (text: string) => {
+    const t = text.trim();
+    if (!t || loading) return;
     setInput("");
+
+    // Reiniciar contador de inactividad
+    const now = Date.now();
+    setLastActivity(now);
+    setInactivity("active");
+
+    // Si retorna desde estado archivado, insertar saludo de bienvenida
+    const base = inactivity === "archived"
+      ? [...messages, { role: "assistant" as const, content: MSG_RETURN }]
+      : messages;
+
+    const withUser: Msg[] = [...base, { role: "user", content: t }];
+    setMessages(withUser);
+    setLoading(true);
+    setIsTyping(true);
+
+    const appendAssistant = (content: string) =>
+      setMessages((prev) => [...prev, { role: "assistant", content }]);
+
+    const updateLast = (content: string) =>
+      setMessages((prev) => {
+        const copy = [...prev];
+        copy[copy.length - 1] = { role: "assistant", content };
+        return copy;
+      });
+
+    try {
+      const res = await fetch("/api/asesor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: withUser,
+          contexto: hasProducto ? { producto, ref, precio } : undefined,
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        let msg = "Uf, no pude responderte en este momento. ¿Lo intentamos de nuevo?";
+        try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* */ }
+        setIsTyping(false);
+        appendAssistant(msg);
+        return;
+      }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc     = "";
+      let started = false;
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        if (!started && acc.length > 0) {
+          // Primer carácter recibido: oculta el indicador y crea el mensaje
+          started = true;
+          setIsTyping(false);
+          appendAssistant(acc);
+        } else if (started) {
+          updateLast(acc);
+        }
+      }
+
+      const fallback = "Uf, no me llegó la respuesta. ¿Lo intentamos de nuevo? 😊";
+      if (!started) {
+        setIsTyping(false);
+        appendAssistant(fallback);
+      } else if (!acc.trim()) {
+        updateLast(fallback);
+      }
+    } catch {
+      setIsTyping(false);
+      appendAssistant("Parece que se cayó la conexión. ¿Lo intentamos de nuevo?");
+    } finally {
+      setLoading(false);
+      setIsTyping(false);
+    }
   };
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const el = scrollRef.current;
+    if (!el) return;
+    // rAF garantiza que el DOM ya pintó el nuevo contenido antes de leer scrollHeight
+    const id = requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
+    return () => cancelAnimationFrame(id);
+  }, [messages, isTyping, inactivity]);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="py-6">
+      <div className="mx-auto max-w-6xl px-4">
 
-      {/* Breadcrumb */}
-      <nav className="text-xs text-zinc-500 mb-4">
-        <Link href="/" className="hover:underline">Inicio</Link>
-        <span className="mx-2">/</span>
-        {hasProducto && (
-          <>
-            <Link href="/soluciones" className="hover:underline">
-              Soluciones Tecnológicas
-            </Link>
-            <span className="mx-2">/</span>
-          </>
-        )}
-        <span>Asesor IA</span>
-      </nav>
+        {/* Breadcrumb */}
+        <nav className="mb-4 text-xs text-zinc-400">
+          <Link href="/" className="hover:text-zinc-600">Inicio</Link>
+          <span className="mx-1.5">/</span>
+          <span className="text-zinc-500">Andrea</span>
+        </nav>
 
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-5">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1e6cff] text-2xl text-white shadow-md shadow-blue-200">
-          🤖
-        </span>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-zinc-900">Asesor IA</h1>
-          <p className="text-sm text-zinc-500 truncate">
-            {hasProducto
-              ? `Cotizando: ${producto}`
-              : "Cotizaciones · Precios · Entregas · Formas de pago"}
-          </p>
-        </div>
-        {hasProducto && (
-          <Link
-            href="/soluciones"
-            className="shrink-0 text-xs font-medium text-[#1e6cff] hover:underline"
-          >
-            ← Ver más productos
-          </Link>
-        )}
-      </div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
 
-      {/* Banner del producto si viene desde una card */}
-      {hasProducto && (
-        <div className="mb-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-          <span className="text-base mt-0.5">📋</span>
-          <div className="text-xs text-blue-800 leading-relaxed">
-            <span className="font-semibold">Producto seleccionado: </span>
-            {producto}
-            {ref   && <span className="text-blue-600 ml-2">· Ref: {ref}</span>}
-            {precio && (
-              <span className="font-semibold ml-2">
-                · Desde ${Number(precio).toLocaleString("es-CO")}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
+          {/* ── Columna chat (2/3) ────────────────────────────────────── */}
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm lg:col-span-2">
 
-      {/* Ventana de chat */}
-      <div className="flex flex-col rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+            {/* Encabezado de Andrea */}
+            <div className="relative flex items-center gap-4 overflow-hidden border-b border-zinc-100 px-6 py-5">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#1e6cff]/[0.05] via-[#1e6cff]/[0.02] to-transparent" />
 
-        {/* Mensajes */}
-        <div className="flex flex-col gap-3 overflow-y-auto p-6 min-h-[400px] max-h-[480px]">
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                m.role === "user"
-                  ? "ml-auto rounded-tr-sm bg-[#1e6cff] text-white"
-                  : "mr-auto rounded-tl-sm bg-zinc-100 text-zinc-900"
-              }`}
-            >
-              {m.content}
+              <div className="relative z-10 shrink-0">
+                <Image
+                  src={AVATAR}
+                  alt="Andrea — Especialista en Tecnología"
+                  width={90}
+                  height={90}
+                  className="rounded-full object-cover object-top shadow-md ring-4 ring-[#1e6cff]/10"
+                  style={{ width: 90, height: 90 }}
+                  priority
+                />
+                <span className={`absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full ring-2 ring-white transition-colors duration-500 ${
+                  inactivity === "archived"   ? "bg-zinc-400" :
+                  inactivity === "notified30" ? "bg-amber-400" :
+                  "bg-emerald-500"
+                }`} />
+              </div>
+
+              <div className="z-10 min-w-0">
+                <h1 className="text-xl font-bold leading-tight text-zinc-900">Andrea</h1>
+                <p className="text-sm font-semibold text-[#1e6cff]">Especialista en Tecnología</p>
+                <p className="mt-1 text-xs text-zinc-400">
+                  {inactivity === "archived"   ? "💤 Conversación archivada" :
+                   inactivity === "notified30" ? "💾 Conversación guardada" :
+                   "⚡ Respuesta en menos de 1 minuto"}
+                </p>
+              </div>
+
+              <div className="z-10 ml-auto hidden sm:flex items-center self-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/asesor/logo-slogan.png"
+                  alt="Te lo Consigo"
+                  style={{ height: 76, width: "auto" }}
+                />
+              </div>
             </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
 
-        {/* Sugerencias + campo de texto */}
-        <div className="border-t border-zinc-200 p-4 space-y-3 bg-zinc-50/50">
-          <div className="flex flex-wrap gap-2">
-            {seedQuestions.map((q) => (
-              <button
-                key={q}
-                onClick={() => send(q)}
-                className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 hover:border-[#1e6cff] hover:bg-blue-50 hover:text-blue-700 transition"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-          <form
-            onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="flex gap-2"
-          >
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                hasProducto
-                  ? `Pregunta sobre ${producto}…`
-                  : "¿Qué necesitas cotizar?"
-              }
-              className="flex-1 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e6cff]"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-[#1e6cff] px-6 py-2.5 text-sm font-bold text-white hover:bg-blue-700 transition"
+            {/* Mensajes */}
+            <div
+              ref={scrollRef}
+              className="flex flex-col gap-4 overflow-y-auto bg-slate-50/60 px-5 py-5 min-h-[280px] max-h-[400px]"
             >
-              Enviar
-            </button>
-          </form>
-        </div>
-      </div>
+              {/* ── Pantalla de elección: continuar o nuevo chat ────────── */}
+              {showChoice && (
+                <div className="flex flex-1 flex-col items-center justify-center gap-5 min-h-[220px] py-4 animate-fade-in-up" style={{ animationDuration: "0.25s" }}>
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <ChatAvatar size={56} />
+                    <p className="font-semibold text-zinc-900">¡Hola de nuevo!</p>
+                    <p className="text-sm text-zinc-500 max-w-[260px] leading-relaxed">
+                      Andrea guardó tu conversación anterior.<br />¿Qué prefieres hacer?
+                    </p>
+                  </div>
+                  <div className="flex flex-col w-full max-w-[260px] gap-2.5">
+                    <button
+                      onClick={handleContinue}
+                      className="flex items-center justify-between rounded-xl bg-[#1e6cff] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1858d6]"
+                    >
+                      <span>Continuar conversación</span>
+                      <ChevronRight className="h-4 w-4 opacity-70" />
+                    </button>
+                    <button
+                      onClick={handleNewChat}
+                      className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 hover:border-zinc-300"
+                    >
+                      Empezar un chat nuevo
+                    </button>
+                  </div>
+                </div>
+              )}
 
-      <p className="mt-4 text-xs text-zinc-400 text-center leading-relaxed">
-        ⚠️ Demo. En producción el Asesor IA consulta precios y disponibilidad
-        en tiempo real con nuestros mayoristas.
-      </p>
+              {!showChoice && messages.map((m, i) => {
+                if (m.role === "user") {
+                  return (
+                    <div
+                      key={i}
+                      className="ml-auto max-w-[82%] animate-fade-in-up"
+                      style={{ animationDuration: "0.2s" }}
+                    >
+                      <div className="whitespace-pre-line rounded-2xl rounded-br-sm bg-[#1e6cff] px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm">
+                        {m.content}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={i}
+                    className="flex max-w-[88%] items-end gap-2.5 animate-fade-in-up"
+                    style={{ animationDuration: "0.2s" }}
+                  >
+                    <ChatAvatar size={32} />
+                    <div className="rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-800 shadow-sm">
+                      {renderRich(m.content)}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Indicador de escritura — independiente del array de mensajes */}
+              {!showChoice && isTyping && (
+                <div
+                  className="flex max-w-[88%] items-end gap-2.5 animate-fade-in-up"
+                  style={{ animationDuration: "0.15s" }}
+                >
+                  <ChatAvatar size={32} />
+                  <div className="rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+                    <TypingIndicator />
+                  </div>
+                </div>
+              )}
+
+              {/* Banner de conversación archivada */}
+              {!showChoice && inactivity === "archived" && (
+                <div className="flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-xs text-zinc-500 animate-fade-in-up">
+                  <span>💤</span>
+                  <span>Conversación archivada · Escribe para continuar desde donde quedamos</span>
+                </div>
+              )}
+            </div>
+
+            {/* Accesos rápidos + input */}
+            <div className="space-y-3 border-t border-zinc-100 px-5 py-4">
+
+              {!hasProducto && !hasUserMsg && !showChoice && (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {QUICK_GENERAL.map(({ icon: Icon, label }) => (
+                    <button
+                      key={label}
+                      onClick={() => send(label)}
+                      disabled={loading}
+                      className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-xs font-medium text-zinc-700 shadow-sm transition hover:border-[#1e6cff]/40 hover:bg-[#1e6cff]/5 hover:text-[#1e6cff] disabled:opacity-50 last:col-span-full"
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-[#1e6cff]" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {hasProducto && !hasUserMsg && !showChoice && (
+                <div className="flex flex-wrap gap-1.5">
+                  {QUICK_PRODUCTO.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => send(q)}
+                      disabled={loading}
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 transition hover:border-[#1e6cff]/40 hover:bg-[#1e6cff]/5 hover:text-[#1e6cff] disabled:opacity-50"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <form
+                onSubmit={(e) => { e.preventDefault(); send(input); }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={loading}
+                  placeholder="Escríbele a Andrea…"
+                  className="flex-1 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-800 placeholder-zinc-400 focus:border-[#1e6cff]/50 focus:outline-none focus:ring-2 focus:ring-[#1e6cff]/15 disabled:bg-zinc-100"
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !input.trim()}
+                  aria-label="Enviar"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1e6cff] text-white shadow-sm transition hover:bg-[#1858d6] disabled:opacity-40"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* ── Sidebar (1/3) ─────────────────────────────────────────── */}
+          <div className="flex flex-col gap-4 lg:col-span-1">
+
+            {/* Sellos de confianza */}
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <div className="space-y-4">
+                {BENEFITS.map(({ icon: Icon, title, desc }) => (
+                  <div key={title} className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1e6cff]/10">
+                      <Icon className="h-5 w-5 text-[#1e6cff]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-900">{title}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-zinc-500">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Productos más buscados */}
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-zinc-900">
+                <Flame className="h-4 w-4 text-orange-500" />
+                Productos más buscados
+              </h2>
+
+              <div className="space-y-0.5">
+                {TOP_PRODUCTS.map(({ img, name, desc, q }) => (
+                  <button
+                    key={name}
+                    onClick={() => send(q)}
+                    className="group flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-slate-50"
+                  >
+                    {/* Thumbnail de alta definición */}
+                    <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-zinc-100 transition group-hover:ring-[#1e6cff]/30">
+                      <Image
+                        src={img}
+                        alt={name}
+                        width={60}
+                        height={60}
+                        className="h-[58px] w-[58px] object-contain"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-zinc-900 group-hover:text-[#1e6cff] transition-colors">{name}</p>
+                      <p className="truncate text-xs text-zinc-500">{desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <p className="mt-4 text-center text-[11px] text-zinc-400">
+          Atención personalizada de teloconsigo.co
+        </p>
+      </div>
     </div>
   );
 }
 
-// ─── Page — Suspense requerido por useSearchParams ────────────────────────────
-
+// ─── Page ─────────────────────────────────────────────────────────────────
 export default function AsesorPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-4xl px-4 py-20 text-center text-zinc-400">
-          Cargando asesor…
+        <div className="mx-auto max-w-6xl px-4 py-20 text-center text-zinc-400">
+          Cargando…
         </div>
       }
     >

@@ -102,7 +102,7 @@ export function Footer() {
                 ["Catálogo completo", "/catalogo"],
                 ["Promociones",        "/soluciones"],
                 ["Armador de PC",     "/armador"],
-                ["Cotiza Ya Mismo",   "/conseguir"],
+                ["Cotiza Ya Mismo",   "/asesor"],
               ].map(([label, href]) => (
                 <li key={label}><Link href={href} className="hover:text-[#4d8dff] transition">{label}</Link></li>
               ))}

@@ -221,9 +221,9 @@ export default function Home() {
               </div>
             </Link>
 
-            {/* Te lo conseguimos */}
+            {/* Te lo conseguimos → Asesor IA (busca en catálogo y, si no está, lo cotiza importado) */}
             <Link
-              href="/conseguir"
+              href="/asesor"
               className="group relative overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900/60 p-8 transition hover:border-emerald-500/60 hover:bg-zinc-900"
             >
               <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-emerald-500/5 blur-3xl group-hover:bg-emerald-500/15 transition-colors pointer-events-none" />
@@ -529,7 +529,7 @@ export default function Home() {
                 conseguirte lo que necesitas a precio justo.
               </p>
               <Link
-                href="/conseguir"
+                href="/asesor"
                 className="mt-6 flex items-center justify-center gap-2 rounded-none bg-[#1e6cff] px-6 py-3.5 text-sm font-black text-white uppercase tracking-wider transition hover:bg-[#1858d6]"
               >
                 TE LO CONSEGUIMOS <ArrowRight className="h-4 w-4" />

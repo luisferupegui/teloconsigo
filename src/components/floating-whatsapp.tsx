@@ -1,65 +1,149 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MessageCircle, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { X, ChevronRight } from "lucide-react";
+
+const AVATAR      = "/asesor/andrea.png";
+const SESSION_KEY = "tlc-andrea-chat";
 
 export function FloatingWhatsApp() {
-  const [open, setOpen] = useState(false);
-  const [show, setShow] = useState(false);
+  const pathname = usePathname();
+  const [mounted,         setMounted]         = useState(false);
+  const [showCard,        setShowCard]        = useState(false);
+  const [cardDismissed,   setCardDismissed]   = useState(false);
+  const [hasConversation, setHasConversation] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setShow(true), 1500);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setMounted(true),          1200);
+    const t2 = setTimeout(() => setShowCard(true),         5000);
+    const t3 = setTimeout(() => setCardDismissed(true), 5000 + 28000);
+
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const msgs = Array.isArray(parsed) ? parsed : (parsed?.messages ?? []);
+        if (msgs.some((m: { role: string }) => m.role === "user")) {
+          setHasConversation(true);
+        }
+      }
+    } catch { /* sessionStorage no disponible */ }
+
+    const onCleared = () => setHasConversation(false);
+    window.addEventListener("tlc-chat-cleared", onCleared);
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      window.removeEventListener("tlc-chat-cleared", onCleared);
+    };
   }, []);
 
-  if (!show) return null;
+  if (!mounted || pathname.startsWith("/asesor")) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
-      {open && (
-        <div className="animate-slide-in-right w-72 rounded-2xl bg-white shadow-2xl border border-zinc-200 overflow-hidden">
-          <div className="flex items-center gap-3 bg-emerald-500 p-4 text-white">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-              <MessageCircle className="h-5 w-5" />
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2.5">
+
+      {/* ── Tarjeta popup ─────────────────────────────────────────────────── */}
+      {showCard && !cardDismissed && (
+        <div
+          className="animate-fade-in-up w-[276px] overflow-hidden rounded-2xl bg-white shadow-2xl shadow-black/[0.10] ring-1 ring-black/[0.06]"
+          style={{ animationDuration: "0.35s" }}
+        >
+          <div className="h-[3px] w-full bg-gradient-to-r from-[#1e6cff] via-[#4f8aff] to-[#7c5aff]" />
+
+          <div className="p-4">
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <div className="relative shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={AVATAR}
+                  alt="Andrea"
+                  style={{ width: 44, height: 44 }}
+                  className="rounded-full object-cover object-top shadow-sm ring-2 ring-[#1e6cff]/15"
+                />
+                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-zinc-900">Andrea</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-xs font-medium text-emerald-600">En línea ahora</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setCardDismissed(true)}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+                aria-label="Cerrar"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-display text-sm font-bold">
-                Te lo Consigo
-              </p>
-              <p className="text-xs text-emerald-50">
-                ¡Hola! Estamos en línea
-              </p>
+
+            {/* Burbuja de mensaje — cambia si hay conversación guardada */}
+            <div className="mt-3.5 rounded-2xl rounded-tl-sm bg-slate-50 px-4 py-3 text-sm leading-relaxed text-zinc-700 ring-1 ring-black/[0.04]">
+              {hasConversation ? (
+                <>
+                  👋 ¡Bienvenido de nuevo! 😊<br />
+                  Tienes una conversación guardada. ¿Continuamos donde quedamos?
+                </>
+              ) : (
+                <>
+                  👋 Hola, soy <strong className="font-semibold text-zinc-900">Andrea</strong> 😊<br />
+                  Especialista en tecnología. ¿En qué te puedo ayudar hoy?
+                </>
+              )}
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-white/80 hover:text-white"
+
+            {/* CTA */}
+            <Link
+              href="/asesor"
+              className="mt-3 flex items-center justify-between rounded-xl bg-gradient-to-r from-[#1e6cff] to-[#4f8aff] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#1e6cff]/25 transition hover:brightness-105 hover:shadow-[#1e6cff]/40"
             >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="p-4 text-sm">
-            <div className="rounded-lg rounded-tl-sm bg-zinc-100 px-3 py-2 text-zinc-700">
-              👋 ¡Hola! ¿En qué te podemos ayudar hoy?
-            </div>
-            <a
-              href="https://wa.me/14079169299?text=Hola,%20vengo%20de%20teloconsigo.co"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 transition"
-            >
-              <MessageCircle className="h-4 w-4" /> Abrir WhatsApp
-            </a>
+              <span>{hasConversation ? "Retomar conversación" : "Hablar con Andrea"}</span>
+              <ChevronRight className="h-4 w-4 opacity-80" />
+            </Link>
           </div>
         </div>
       )}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-500/40 transition hover:scale-110 hover:bg-emerald-600"
-        aria-label="WhatsApp"
-      >
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-        <MessageCircle className="relative h-6 w-6" />
-      </button>
+
+      {/* ── Fila inferior: badge (hover) + botón avatar ──────────────────── */}
+      <div className="group flex items-center gap-2.5">
+
+        {/* Badge — solo visible al hacer hover */}
+        <div className="pointer-events-none translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
+          <div className="flex items-center gap-2 rounded-full border border-zinc-100 bg-white px-3.5 py-1.5 shadow-lg shadow-black/[0.08] whitespace-nowrap">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            <span className="text-xs font-semibold text-zinc-800">
+              {hasConversation ? "Retomar conversación" : "Andrea en línea"}
+            </span>
+          </div>
+        </div>
+
+        {/* Botón avatar */}
+        <Link
+          href="/asesor"
+          aria-label="Hablar con Andrea"
+          className="relative flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full shadow-2xl shadow-black/20 ring-[3px] ring-white transition duration-200 hover:scale-105"
+        >
+          {/* anillo de pulso — azul si hay conversación activa, verde si no */}
+          <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-20 ${hasConversation ? "bg-[#1e6cff]" : "bg-emerald-400"}`} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={AVATAR}
+            alt="Andrea"
+            className="relative h-full w-full rounded-full object-cover object-top"
+          />
+          {/* punto verde online (siempre) */}
+          <span className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+          {/* punto azul de notificación (conversación guardada) */}
+          {hasConversation && (
+            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white bg-[#1e6cff] shadow-sm" />
+          )}
+        </Link>
+      </div>
+
     </div>
   );
 }
