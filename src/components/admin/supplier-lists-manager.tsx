@@ -155,8 +155,6 @@ export function SupplierListsManager() {
   }, []);
   useEffect(() => { refreshLists(); }, [refreshLists]);
 
-  const hasKey = keyStatus?.hasKey ?? false;
-
   return (
     <div className="space-y-5">
       <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
@@ -164,7 +162,7 @@ export function SupplierListsManager() {
       {/* Sub-tabs */}
       <div className="flex flex-wrap gap-1 rounded-xl border border-zinc-200 bg-white p-1 w-fit shadow-sm">
         {([
-          ["cargar", Upload,     "Cargar PDF"],
+          ["cargar", Upload,     "Cargar lista"],
           ["listas", ListChecks, `Listas cargadas${totals.listas ? ` (${totals.listas})` : ""}`],
           ["buscar", Search,     "Buscar productos"],
         ] as const).map(([id, Icon, label]) => (
@@ -182,7 +180,6 @@ export function SupplierListsManager() {
 
       {tab === "cargar" && (
         <CargarTab
-          hasKey={hasKey}
           onImported={(n) => { flash(true, `${n} productos importados como nueva lista`); refreshLists(); setTab("listas"); }}
           flash={flash}
         />
@@ -311,100 +308,76 @@ function ApiKeyPanel({ status, onChange, flash }: {
   );
 }
 
-// ─── Tab: Cargar PDF ───────────────────────────────────────────────────────────
+// ─── Tab: Cargar lista (Word / Excel) ──────────────────────────────────────────
 
-function CargarTab({ hasKey, onImported, flash }: {
-  hasKey: boolean; onImported: (n: number) => void; flash: (ok: boolean, msg: string) => void;
+function CargarTab({ onImported, flash }: {
+  onImported: (n: number) => void; flash: (ok: boolean, msg: string) => void;
 }) {
-  const [pdfName, setPdfName] = useState("");
-  const [pdfPages, setPdfPages] = useState(0);
-  const [uploading, setUploading] = useState(false);
+  const [fileName, setFileName] = useState("");
   const [proveedor, setProveedor] = useState("ledacom");
-  const [modo, setModo] = useState<"rapido" | "preciso">("preciso");
-  const [extracting, setExtracting] = useState(false);
+  const [importing, setImporting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fileRef = useRef<File | null>(null); // el PDF se envía nativo a la IA
+  const fileRef = useRef<File | null>(null);
 
-  async function handlePdf(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    if (inputRef.current) inputRef.current.value = "";
     if (!file) return;
-    fileRef.current = file;
-    setUploading(true);
-    try {
-      // pdf-extract solo confirma que es legible y trae el número de páginas
-      // para la vista previa; la extracción real usa el PDF nativo (visión).
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/admin/pdf-extract", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error al procesar el PDF");
-      setPdfName(data.name ?? file.name);
-      setPdfPages(data.pages ?? 0);
-    } catch (err) {
-      flash(false, err instanceof Error ? err.message : "Error al leer el PDF");
-    } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".docx") && !lower.endsWith(".xlsx")) {
+      flash(false, "Solo se aceptan Word (.docx) o Excel (.xlsx)");
+      return;
     }
+    fileRef.current = file;
+    setFileName(file.name);
   }
 
-  function resetPdf() {
+  function reset() {
     fileRef.current = null;
-    setPdfName(""); setPdfPages(0);
+    setFileName("");
   }
 
-  async function handleExtract() {
+  async function handleImport() {
     if (!fileRef.current) return;
-    if (!hasKey) { flash(false, "Configura primero la clave API arriba"); return; }
-    setExtracting(true);
+    setImporting(true);
     try {
-      // Enviamos el PDF NATIVO: Claude lee el layout visual (columnas, tablas
-      // lado a lado) en vez de texto plano revuelto. Esto extrae todos los productos.
+      // Extracción determinista en el servidor: lee las celdas de la tabla.
+      // No usa IA ni clave API — es gratis e instantáneo.
       const fd = new FormData();
       fd.append("file", fileRef.current);
       fd.append("proveedor", proveedor);
-      fd.append("nombre", pdfName);
-      fd.append("paginas", String(pdfPages));
-      fd.append("modo", modo);
-      const res = await fetch("/api/admin/import-pdf-catalog", { method: "POST", body: fd });
+      fd.append("nombre", fileName);
+      const res = await fetch("/api/admin/import-doc-catalog", { method: "POST", body: fd });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error con la IA");
-      if (data.truncado) {
-        flash(true, `${data.count} productos importados (lista muy larga: puede faltar el final, divídela si notas faltantes)`);
-      }
+      if (!res.ok) throw new Error(data.error ?? "Error al importar");
       onImported(data.count ?? 0);
-      resetPdf();
+      reset();
     } catch (err) {
-      flash(false, err instanceof Error ? err.message : "Error con la IA");
+      flash(false, err instanceof Error ? err.message : "Error al importar");
     } finally {
-      setExtracting(false);
+      setImporting(false);
     }
   }
 
-  if (!pdfName) {
+  const isExcel = fileName.toLowerCase().endsWith(".xlsx");
+
+  if (!fileName) {
     return (
       <div
         onClick={() => inputRef.current?.click()}
         className="flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 py-16 transition hover:border-indigo-400 hover:bg-indigo-50/30"
       >
-        {uploading ? (
-          <>
-            <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
-            <p className="text-sm font-semibold text-zinc-500">Procesando PDF…</p>
-          </>
-        ) : (
-          <>
-            <FileText className="h-12 w-12 text-zinc-300" />
-            <div className="text-center">
-              <p className="text-sm font-bold text-zinc-700">Subir lista de precios PDF</p>
-              <p className="mt-1 text-xs text-zinc-400">Cada PDF se guarda como una lista que puedes activar o desactivar · Máx. 20 MB</p>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-              <Upload className="h-4 w-4" /> Seleccionar PDF
-            </div>
-          </>
-        )}
-        <input ref={inputRef} type="file" accept="application/pdf" className="hidden" onChange={handlePdf} />
+        <FileText className="h-12 w-12 text-zinc-300" />
+        <div className="text-center">
+          <p className="text-sm font-bold text-zinc-700">Subir lista de precios — Word o Excel</p>
+          <p className="mt-1 text-xs text-zinc-400">
+            Se lee la tabla directamente (gratis, sin IA) · archivos <strong>.docx</strong> o <strong>.xlsx</strong> · Máx. 20 MB
+          </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
+          <Upload className="h-4 w-4" /> Seleccionar archivo
+        </div>
+        <input ref={inputRef} type="file" accept=".docx,.xlsx" className="hidden" onChange={handleFile} />
       </div>
     );
   }
@@ -413,13 +386,13 @@ function CargarTab({ hasKey, onImported, flash }: {
     <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-zinc-900">📄 {pdfName}</p>
+          <p className="text-sm font-bold text-zinc-900">{isExcel ? "📊" : "📄"} {fileName}</p>
           <p className="text-xs text-zinc-400">
-            {pdfPages} página{pdfPages !== 1 ? "s" : ""} · listo para lectura visual con IA
+            {isExcel ? "Excel" : "Word"} · se extraerán los productos de la tabla (gratis, sin IA)
           </p>
         </div>
         <button
-          onClick={resetPdf}
+          onClick={reset}
           className="flex items-center gap-1 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:border-red-300 hover:text-red-500 transition"
         >
           <X className="h-3.5 w-3.5" /> Cargar otro
@@ -438,53 +411,21 @@ function CargarTab({ hasKey, onImported, flash }: {
           </select>
         </label>
 
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Modo</span>
-          <div className="flex rounded-lg border border-zinc-300 p-0.5">
-            {([["rapido", "⚡ Rápido"], ["preciso", "🎯 Preciso"]] as const).map(([val, label]) => (
-              <button
-                key={val}
-                type="button"
-                onClick={() => setModo(val)}
-                title={val === "rapido" ? "Haiku: más rápido y barato (listas simples)" : "Sonnet: lee mejor el layout de columnas (recomendado)"}
-                className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${
-                  modo === val ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-700"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <button
-          onClick={handleExtract}
-          disabled={extracting || !hasKey}
-          title={!hasKey ? "Configura primero la clave API" : undefined}
+          onClick={handleImport}
+          disabled={importing}
           className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-60 transition"
         >
-          {extracting
-            ? <><Loader2 className="h-4 w-4 animate-spin" /> Extrayendo con IA…</>
-            : <><Sparkles className="h-4 w-4" /> Extraer TODO con IA</>}
+          {importing
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> Importando…</>
+            : <><Sparkles className="h-4 w-4" /> Importar lista</>}
         </button>
       </div>
 
-      {!hasKey && (
-        <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-amber-600">
-          <AlertCircle className="h-3.5 w-3.5" /> Configura la clave API arriba para poder extraer.
-        </p>
-      )}
-
-      {extracting && (
-        <div className="mt-3 rounded-lg bg-violet-50 border border-violet-200 px-4 py-3">
-          <p className="text-xs font-semibold text-violet-800">
-            Claude está leyendo el PDF completo (todas las columnas) · modo {modo === "rapido" ? "rápido (Haiku)" : "preciso (Sonnet)"}…
-          </p>
-          <p className="text-xs text-violet-600 mt-1">
-            En listas densas suele tomar <strong>1 a 4 minutos</strong>. No cierres esta ventana.
-          </p>
-        </div>
-      )}
+      <p className="mt-3 text-xs text-zinc-400">
+        Consejo: si un producto queda con la categoría equivocada, puedes ajustarla al publicarlo.
+        La lista más confiable es un Excel/Word con columnas <strong>Producto · Precio · Código</strong>.
+      </p>
     </div>
   );
 }
@@ -707,7 +648,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
       <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 py-16 text-center">
         <Package className="mx-auto h-10 w-10 text-zinc-300" />
         <p className="mt-3 text-sm font-semibold text-zinc-600">Aún no has cargado ninguna lista</p>
-        <p className="text-xs text-zinc-400">Sube un PDF en la pestaña “Cargar PDF” para empezar.</p>
+        <p className="text-xs text-zinc-400">Sube un Word (.docx) o Excel (.xlsx) en la pestaña “Cargar lista” para empezar.</p>
         <button
           onClick={restore}
           disabled={restoring}
