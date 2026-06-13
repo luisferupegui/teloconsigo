@@ -8,7 +8,7 @@ export const metadata = { title: "Productos · Admin" };
 
 const TABS = [
   { id: "productos", label: "📋 Gestionar productos" },
-  { id: "pdf",       label: "📄 Listas de precios PDF" },
+  { id: "pdf",       label: "📄 Listas de precios (Word/Excel)" },
 ] as const;
 
 export default async function ProductosAdminPage({
@@ -39,7 +39,7 @@ export default async function ProductosAdminPage({
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">📋 Gestión de Productos</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Edita info, imágenes y visibilidad · Importa productos desde listas de precios PDF.
+            Edita info, imágenes y visibilidad · Importa productos desde listas de precios en Word o Excel.
           </p>
         </div>
       </div>

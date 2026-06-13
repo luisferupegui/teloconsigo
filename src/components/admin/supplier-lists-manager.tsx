@@ -896,7 +896,7 @@ function Stat({ label, value, tone = "zinc" }: { label: string; value: number; t
   );
 }
 
-// ─── Editor inline de producto (dentro de la tabla PDF) ───────────────────────
+// ─── Editor inline de producto (dentro de la tabla de la lista) ───────────────
 
 function InlineEditor({
   state,
