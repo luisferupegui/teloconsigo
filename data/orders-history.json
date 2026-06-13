@@ -1,0 +1,44 @@
+[
+  {
+    "cliente": {
+      "nombre": "Carlos Botero",
+      "cedula": "23.455.789",
+      "direccion": "Carrera 3 No 55 - 12",
+      "ciudad": "Bucaramanga",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Creative Sound Blaster Audigy FX V2",
+      "modelo": "Audigy FX V2",
+      "cantidad": 1,
+      "precioCOP": 366000,
+      "proveedor": "eeuu"
+    },
+    "id": "7823f030-e5fd-49ec-8ad4-a0be737b7306",
+    "fecha": "2026-06-12T03:28:22.677Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-13T17:37:43.102Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Carlos Botero",
+      "cedula": "23.455.789",
+      "direccion": "Carrera 3 No 55 - 12",
+      "ciudad": "Bucaramanga",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Creative Sound Blaster Audigy FX V2",
+      "modelo": "Audigy FX V2",
+      "cantidad": 1,
+      "precioCOP": 366000,
+      "proveedor": "eeuu"
+    },
+    "id": "0dbeced7-ddc2-47fe-9a98-2dfb211d0d82",
+    "fecha": "2026-06-12T03:28:50.217Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-13T16:34:11.207Z"
+  }
+]

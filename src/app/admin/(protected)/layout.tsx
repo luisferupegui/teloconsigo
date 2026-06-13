@@ -44,6 +44,7 @@ export default async function AdminLayout({
             ["/admin/nuevo", "➕ Nuevo"],
             ["/admin/importar", "📥 Importar CSV"],
             ["/admin/pedidos", "🛍️ Pedidos"],
+            ["/admin/historial", "📜 Historial"],
             ["/admin/usuarios", "👤 Usuarios"],
           ].map(([href, label]) => (
             <Link

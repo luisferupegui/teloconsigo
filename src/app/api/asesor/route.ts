@@ -2,12 +2,43 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicApiKey } from "@/lib/settings";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
-import { cotizarImportacion, cotizarLocal, type ShippingTier, type LocalCategoria } from "@/lib/importacion";
+import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
 import { saveOrder } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
 export const runtime = "nodejs";
+
+// ── Caché de comparaciones de mercado local (servidor → no pasa por Andrea) ──
+// Los precios locales (MercadoLibre, Alkosto…) se calculan en el servidor
+// mientras Andrea busca en EE.UU. y se inyectan al pedido al registrarlo.
+// Andrea NUNCA ve estos precios para evitar que los use con el cliente.
+type LocalComparacion = {
+  ts:                 number;
+  precioMercadoLocal: number;
+  fuenteLocal:        string;
+  cantidadListados:   number;
+  siteLocal:          string;
+};
+const _localCache = new Map<string, LocalComparacion>();
+
+function _cacheKey(str: string) {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+function _setLocalCache(consulta: string, data: Omit<LocalComparacion, "ts">) {
+  for (const [k, v] of _localCache) {
+    if (Date.now() - v.ts > 30 * 60 * 1000) _localCache.delete(k);
+  }
+  _localCache.set(_cacheKey(consulta), { ts: Date.now(), ...data });
+}
+function _getLocalCache(nombre: string, modelo?: string): LocalComparacion | null {
+  const now = Date.now();
+  for (const key of modelo ? [`${nombre} ${modelo}`, nombre] : [nombre]) {
+    const e = _localCache.get(_cacheKey(key));
+    if (e && now - e.ts < 30 * 60 * 1000) return e;
+  }
+  return null;
+}
 
 // ── Modelos ─────────────────────────────────────────────────────────────────
 const MODEL = "claude-opus-4-8";       // conversación (Andrea)
@@ -67,6 +98,17 @@ const tools: Anthropic.Tool[] = [
             proveedor: { type: "string", enum: ["colombia", "eeuu"] },
           },
           required: ["nombre", "cantidad", "precioCOP", "proveedor"],
+        },
+        proveedorDetalle: {
+          type: "object",
+          description: "Datos INTERNOS del proveedor para el admin. NUNCA los menciones al cliente. " +
+            "Para productos EE.UU.: incluye urlCompra (campo fuente del resultado de cotizar_web) y costoUSD. " +
+            "Para productos catálogo local: incluye proveedorLocal.",
+          properties: {
+            urlCompra:      { type: "string", description: "URL Amazon/Newegg/BH donde comprar el producto" },
+            costoUSD:       { type: "number", description: "Precio en USD en origen (importados EE.UU.)" },
+            proveedorLocal: { type: "string", enum: ["ledacom", "infoshop", "manual"] },
+          },
         },
       },
       required: ["cliente", "producto"],
@@ -133,51 +175,83 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 }
 
 // ── Búsqueda web AISLADA (interna): sub-llamada solo con web_search ─────────────
+//
+// FLUJO DE PRECIOS:
+//   1. buscar_productos (catálogo PDF local) → precio al cliente si está disponible
+//   2. cotizar_web → solo cuando NO está en catálogo:
+//      a) Busca en EE.UU. → precio al cliente (fórmula importación)
+//      b) Busca en Colombia local (MercadoLibre/Alkosto/Falabella) → SOLO comparación
+//         interna en el admin; el cliente nunca ve estos precios
+//
 const SITIOS_US    = ["amazon.com", "newegg.com", "bhphotovideo.com", "bestbuy.com", "ebay.com"];
-const SITIOS_LOCAL = ["mercadolibre.com.co", "alkosto.com", "falabella.com.co"];
+const SITIOS_LOCAL = ["mercadolibre.com.co", "alkosto.com", "falabella.com.co", "exito.com"];
 
 const SUB_SYSTEM = `Eres un buscador de precios para una tienda de tecnología en Colombia.
 
-BÚSQUEDA — busca SIEMPRE en ambos grupos de sitios:
+Busca en DOS grupos SEPARADOS y devuelve resultados de AMBOS:
 
-GRUPO US (${SITIOS_US.join(", ")}):
-- Orden de preferencia: amazon.com y newegg.com primero; bhphotovideo.com y bestbuy.com después; ebay.com solo si no hay resultado en los anteriores.
-- En eBay: solo artículos NUEVOS. Suma el flete interno de EE.UU. al precio del producto para obtener el USD correcto.
-- Otros sitios US: usa solo el precio del producto (envío dentro de EE.UU. suele ser gratis).
+═══════════════════════════════════════════
+GRUPO 1 — EE.UU. (${SITIOS_US.join(", ")}):
+═══════════════════════════════════════════
+- Prioridad: amazon.com y newegg.com primero; bhphotovideo.com y bestbuy.com después; ebay.com solo si no hay nada en los anteriores.
 - Traduce la consulta al inglés.
-- Usa source="us" y el campo usd (precio en dólares, incluyendo flete interno si aplica).
+- Solo artículos NUEVOS. En eBay: suma el flete interno de EE.UU. al precio.
+- Si el mismo modelo aparece en varios sitios US, devuelve SOLO el de menor precio.
+- Campos: source="us", usd (precio en dólares, sin envío internacional), tier, fuente (URL directa al producto).
 
-GRUPO LOCAL (${SITIOS_LOCAL.join(", ")}):
-- Solo productos NUEVOS. Usa el precio en COP tal como aparece en el sitio (sin envío).
-- Busca en español.
-- Usa source="local" y el campo copLocal (precio en pesos colombianos).
+═══════════════════════════════════════════
+GRUPO 2 — COLOMBIA LOCAL (${SITIOS_LOCAL.join(", ")}):
+═══════════════════════════════════════════
+- Busca en español. Solo artículos NUEVOS.
+- Objetivo: recoger HASTA 5 PRECIOS DISTINTOS del mismo producto en diferentes vendedores/listados para calcular un promedio de mercado.
+- Verifica que el producto esté DISPONIBLE (no "Agotado", no "Pausado", no vendedor inactivo). Solo incluye los disponibles.
+- Campos: source="local", copLocal (precio en COP, sin envío), fuente (URL del listing), disponible: true/false.
 
-REGLAS:
-- Busca en AMBOS grupos — no pares solo porque encontraste precio en uno de ellos.
-- Si el mismo producto aparece en varios sitios del mismo grupo, devuelve el de MENOR precio.
-- Máximo 6 búsquedas en total.
-- NUNCA incluyas el envío internacional que muestran los sitios (se calcula aparte).
+REGLAS GENERALES:
+- Busca en AMBOS grupos aunque ya hayas encontrado en uno de ellos.
+- Máximo 6 búsquedas en total (distribuye entre los dos grupos).
+- NUNCA incluyas el envío internacional de EE.UU. en el campo usd.
+- Solo productos NUEVOS.
 
-VARIEDAD: devuelve hasta 5 opciones con diversidad — incluye la más económica, la de mejor rendimiento y la de mejor relación precio/calidad. No devuelvas solo las más baratas si hay opciones de mayor calidad disponibles.
+VARIEDAD (solo para GRUPO 1): hasta 5 opciones distintas — la más económica, la de mejor rendimiento y la de mejor relación precio/calidad.
 
-Devuelve EXCLUSIVAMENTE un objeto JSON válido (sin texto, sin markdown, sin \`\`\`):
+Devuelve EXCLUSIVAMENTE JSON válido (sin texto, sin markdown, sin \`\`\`):
 {"productos":[
-  {"nombre":"...","marca":"...","modelo":"...","specs":"descripción breve (ej: NVMe Gen4 alta velocidad)","source":"us","usd":0.00,"tier":"component","fuente":"<url>"},
-  {"nombre":"...","marca":"...","modelo":"...","specs":"descripción breve (ej: SATA económico, buena relación precio/calidad)","source":"local","copLocal":0,"localCategoria":"accesorio","fuente":"<url>"}
+  {"nombre":"...","marca":"...","modelo":"...","specs":"descripción breve","source":"us","usd":0.00,"tier":"component","fuente":"<url directa>"},
+  {"nombre":"...","marca":"...","modelo":"...","source":"local","copLocal":0,"fuente":"<url del listing>","disponible":true}
 ]}
 
-"specs": 3–8 palabras en español que describan el perfil del producto (rendimiento, uso ideal, nivel de gama).
+"specs": 3–8 palabras en español (solo para source="us").
 "tier" (solo source="us"): "laptop" | "desktop" | "component"
-"localCategoria" (solo source="local"): tablet | portatil | all_in_one | equipo_corporativo | servidor | nas | tarjeta_grafica | procesador | accesorio | licencia | antivirus
 
-Si no encuentras precios reales en ningún sitio: {"productos":[]}.`;
+Si no encuentras nada: {"productos":[]}.`;
 
 type WebProducto = {
   nombre?: string; marca?: string; modelo?: string; specs?: string;
-  usd?: number; copLocal?: number;
-  tier?: ShippingTier; localCategoria?: LocalCategoria;
-  source?: "us" | "local"; fuente?: string;
+  source?: "us" | "local";
+  // EE.UU.
+  usd?: number; tier?: ShippingTier; fuente?: string;
+  // Colombia local
+  copLocal?: number; disponible?: boolean;
 };
+
+/** Promedia los 3 precios más cercanos a la mediana (descarta outliers). */
+function promediarPrecios(precios: number[]): number {
+  if (precios.length === 0) return 0;
+  const sorted = [...precios].sort((a, b) => a - b);
+  let toAvg: number[];
+  if (sorted.length <= 3) {
+    toAvg = sorted;
+  } else {
+    const median = sorted[Math.floor(sorted.length / 2)];
+    toAvg = sorted
+      .map((p) => ({ p, dist: Math.abs(p - median) }))
+      .sort((a, b) => a.dist - b.dist)
+      .slice(0, 3)
+      .map((x) => x.p);
+  }
+  return Math.round(toAvg.reduce((s, v) => s + v, 0) / toAvg.length / 1000) * 1000;
+}
 
 async function cotizarWeb(anthropic: Anthropic, consulta: string) {
   let parsed: WebProducto[] = [];
@@ -185,12 +259,12 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
     const sub = await anthropic.messages.create(
       {
         model: MODEL_WEB,
-        max_tokens: 2000,
+        max_tokens: 2500,
         system: SUB_SYSTEM,
         tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
         messages: [{ role: "user", content: consulta }],
       },
-      { timeout: 45000, maxRetries: 0 },
+      { timeout: 60000, maxRetries: 0 },
     );
     const text = sub.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("\n");
     const m = text.match(/\{[\s\S]*\}/);
@@ -199,70 +273,126 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
     /* fallo/timeout → sin resultados */
   }
 
-  const VALID_TIERS      = new Set<ShippingTier>(["component", "laptop", "desktop"]);
-  const VALID_LOCAL_CATS = new Set<string>([
-    "tablet", "portatil", "all_in_one", "equipo_corporativo", "servidor", "nas",
-    "tarjeta_grafica", "procesador", "accesorio", "licencia", "antivirus",
-  ]);
+  const VALID_TIERS = new Set<ShippingTier>(["component", "laptop", "desktop"]);
 
-  type Resultado = { nombre?: string; marca?: string; modelo?: string; specs?: string; precioCOP: number; entrega: "us" | "local" };
+  // ── GRUPO 1: EE.UU. → precio al cliente ──────────────────────────
+  type ResultadoUS = {
+    nombre?: string; marca?: string; modelo?: string; specs?: string;
+    precioCOP: number; costoUSD: number; fuente: string;
+  };
 
-  const mapeados: Resultado[] = parsed
-    .filter((p) => {
-      if (p.source === "local") return typeof p.copLocal === "number" && (p.copLocal as number) > 0;
-      return typeof p.usd === "number" && (p.usd as number) > 0;
-    })
-    .map((p): Resultado => {
-      if (p.source === "local") {
-        const cat: LocalCategoria = VALID_LOCAL_CATS.has(p.localCategoria as string)
-          ? (p.localCategoria as LocalCategoria)
-          : "accesorio";
-        const c = cotizarLocal(p.copLocal as number, cat);
-        return { nombre: p.nombre, marca: p.marca, modelo: p.modelo, specs: p.specs, precioCOP: c.precioFinal, entrega: "local" };
-      }
-      const tier: ShippingTier = VALID_TIERS.has(p.tier as ShippingTier) ? (p.tier as ShippingTier) : "component";
-      const c = cotizarImportacion(p.usd as number, tier);
-      return { nombre: p.nombre, marca: p.marca, modelo: p.modelo, specs: p.specs, precioCOP: c.copEstimado, entrega: "us" };
-    });
-
-  const totalEncontradas = mapeados.length;
-
-  // Si el mismo modelo aparece en US y local, conservar el más barato
-  const seen = new Map<string, Resultado>();
-  for (const r of mapeados) {
-    const key = (r.modelo ?? r.nombre ?? "").toLowerCase().replace(/\s+/g, "");
-    const prev = seen.get(key);
-    if (!prev || r.precioCOP < prev.precioCOP) seen.set(key, r);
+  const seenUS = new Map<string, ResultadoUS>();
+  for (const p of parsed) {
+    if (p.source !== "us" && p.source !== undefined) continue; // skip local
+    if (typeof p.usd !== "number" || p.usd <= 0) continue;
+    const tier: ShippingTier = VALID_TIERS.has(p.tier as ShippingTier) ? (p.tier as ShippingTier) : "component";
+    const c = cotizarImportacion(p.usd, tier);
+    const key = (p.modelo ?? p.nombre ?? "").toLowerCase().replace(/\s+/g, "");
+    const prev = seenUS.get(key);
+    if (!prev || p.usd < prev.costoUSD) {
+      seenUS.set(key, {
+        nombre: p.nombre, marca: p.marca, modelo: p.modelo, specs: p.specs,
+        precioCOP: c.copEstimado, // precio firme al cliente (incluye margen + envío + TRM)
+        costoUSD:  p.usd,         // costo origen (solo admin)
+        fuente:    p.fuente ?? "",
+      });
+    }
   }
-  const productos = [...seen.values()].sort((a, b) => a.precioCOP - b.precioCOP).slice(0, 5);
+  const productosUS = [...seenUS.values()].sort((a, b) => a.precioCOP - b.precioCOP).slice(0, 5);
 
-  const notaEntrega = productos.every(p => p.entrega === "local")
-    ? "preséntalo como DISPONIBLE localmente con entrega en 3 a 5 días hábiles."
-    : productos.every(p => p.entrega === "us")
-    ? "preséntalo como DISPONIBLE en nuestra bodega de EE.UU. con entrega de 6 a 10 días hábiles."
-    : 'Para cada producto: si entrega="local" di "disponible localmente, entrega 3–5 días hábiles"; si entrega="us" di "disponible en nuestra bodega de EE.UU., entrega 6–10 días hábiles".';
+  // ── GRUPO 2: Colombia local → caché servidor (Andrea NUNCA lo ve) ───
+  // Los precios locales se almacenan server-side. Si Andrea los viera,
+  // podría usarlos como precio al cliente (bug confirmado). El caché los
+  // inyecta silenciosamente al pedido cuando Andrea llama registrar_pedido.
+  const locales = parsed.filter(
+    (p) => p.source === "local" && typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false,
+  );
+  if (locales.length > 0) {
+    const preciosLocales = locales.map((p) => p.copLocal as number);
+    const precioAvg  = promediarPrecios(preciosLocales);
+    const fuenteRef  = locales.find((p) => p.fuente)?.fuente ?? "";
+    const siteNombre = fuenteRef.includes("mercadolibre") ? "MercadoLibre"
+      : fuenteRef.includes("alkosto")   ? "Alkosto"
+      : fuenteRef.includes("falabella") ? "Falabella"
+      : fuenteRef.includes("exito")     ? "Éxito"
+      : "Sitio local";
+    _setLocalCache(consulta, {
+      precioMercadoLocal: precioAvg,
+      fuenteLocal:        fuenteRef,
+      cantidadListados:   preciosLocales.length,
+      siteLocal:          siteNombre,
+    });
+  }
 
-  return productos.length
-    ? {
-        encontrados: productos.length,
-        totalEncontradas,
-        productos,
-        nota: `INTERNO (no repitas esto literal): encontraste ${totalEncontradas} opciones en total — menciona ese número al cliente antes de recomendar las mejores (ej: "Encontré ${totalEncontradas} opciones compatibles. Te recomiendo estas por su relación precio/rendimiento 🙌"). ${notaEntrega} Da el precio en COP como valor firme. NO menciones búsqueda, importación, estimado ni cotización.`,
-      }
-    : {
-        encontrados: 0,
-        productos: [],
-        nota: "INTERNO: no se obtuvo el precio. Pídele al cliente, de forma natural y amable, la marca o el modelo específico (sin decir que buscaste ni que no lo tienes).",
-      };
+  if (productosUS.length === 0) {
+    return {
+      encontrados: 0,
+      productos: [],
+      nota: "INTERNO: no se obtuvo precio en EE.UU. Pídele al cliente la marca o modelo específico sin decir que buscaste.",
+    };
+  }
+
+  return {
+    encontrados: productosUS.length,
+    productos:   productosUS,
+    // Andrea solo ve precios US. Los precios locales van al caché del servidor.
+    nota: `INTERNO (no repitas esto literal): encontraste ${productosUS.length} opciones disponibles en nuestra bodega de EE.UU. DEBES presentar al cliente AL MENOS 3 opciones distintas (modelo, precio, specs). Si hay menos de 3, agrupa por gama: económica, rendimiento, relación precio/calidad. El precio en COP de cada opción está en el campo precioCOP — úsalo EXACTAMENTE tal como aparece, sin redondearlo ni cambiarlo. Preséntalo como precio firme. Entrega: 6 a 10 días hábiles. Al registrar el pedido usa: proveedor="eeuu", costoUSD=costoUSD del producto elegido, urlCompra=fuente. NO menciones búsqueda, importación, estimado ni cotización.`,
+  };
 }
 
 async function registrarPedido(input: unknown): Promise<unknown> {
-  const { cliente, producto } = input as {
+  const { cliente, producto: rawProducto, proveedorDetalle: pd } = input as {
     cliente: { nombre: string; cedula: string; direccion: string; ciudad: string; telefono: string; email: string };
     producto: { nombre: string; modelo?: string; cantidad: number; precioCOP: number; proveedor: "colombia" | "eeuu" };
+    proveedorDetalle?: {
+      urlCompra?: string; costoUSD?: number; proveedorLocal?: "ledacom" | "infoshop" | "manual";
+    };
   };
+
+  // ── PRICE OVERRIDE (crítico): para productos EE.UU., SIEMPRE recalcular
+  // precioCOP desde la fórmula de importación — no confiar en lo que manda
+  // Andrea (podría estar usando el precio local por error).
+  const producto = { ...rawProducto };
+  let costoTotalCOP: number | undefined;
+  let margenCOP: number | undefined;
+  if (producto.proveedor === "eeuu" && pd?.costoUSD) {
+    const c = cotizarImportacion(pd.costoUSD);
+    // costoTotalCOP = lo que realmente pagamos (producto + envío × TRM, sin el markup del /0.7)
+    costoTotalCOP      = Math.round((pd.costoUSD + c.usdEnvio) * c.trm / 1000) * 1000;
+    // copEstimado = precio al cliente = (USD/0.7 + envío) × TRM — ya incluye el markup
+    producto.precioCOP = c.copEstimado;
+    margenCOP          = c.copEstimado - costoTotalCOP;
+  }
+
+  // ── COMPARACIÓN DE MERCADO LOCAL (desde caché servidor — Andrea nunca lo vio) ──
+  let precioMercadoLocal: number | undefined;
+  let fuenteLocal: string | undefined;
+  let comparacionMercado: string | undefined;
+  const cached = _getLocalCache(producto.nombre, producto.modelo);
+  if (cached) {
+    precioMercadoLocal = cached.precioMercadoLocal;
+    fuenteLocal        = cached.fuenteLocal;
+    const fmt = (n: number) => "$" + n.toLocaleString("es-CO");
+    comparacionMercado = cached.precioMercadoLocal < producto.precioCOP
+      ? `${cached.siteLocal} más económico: ${fmt(cached.precioMercadoLocal)} (${cached.cantidadListados} listados) vs ${fmt(producto.precioCOP)} (US importado)`
+      : cached.precioMercadoLocal > producto.precioCOP
+      ? `${cached.siteLocal} más caro: ${fmt(cached.precioMercadoLocal)} (${cached.cantidadListados} listados) vs ${fmt(producto.precioCOP)} (US importado)`
+      : `${cached.siteLocal} precio similar: ${fmt(cached.precioMercadoLocal)}`;
+  }
+
+  const proveedorDetalle = (pd || costoTotalCOP !== undefined || comparacionMercado) ? {
+    urlCompra:           pd?.urlCompra,
+    costoUSD:            pd?.costoUSD,
+    costoTotalCOP,
+    margenCOP,
+    proveedorLocal:      pd?.proveedorLocal,
+    precioMercadoLocal,
+    fuenteLocal,
+    comparacionMercado,
+  } : undefined;
+
   try {
-    const order = saveOrder({ cliente, producto });
+    const order = saveOrder({ cliente, producto, proveedorDetalle });
     // Enviar emails en paralelo (fallos silenciosos — el pedido ya quedó guardado)
     await Promise.allSettled([
       sendOrderNotification(order),
@@ -300,11 +430,11 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
 - VARIANTES: cuando identifiques varias versiones del mismo producto (ej: Audigy FX, Audigy RX, Audigy GS), inclúyelas TODAS en una sola consulta a cotizar_web. NUNCA le pidas al cliente que elija una variante antes de tener los precios — busca todas y presenta los precios directamente para que el cliente decida.
 - Cuando tengamos el producto, dilo con seguridad y calidez: "¡Sí, tenemos varias opciones disponibles! 🙌", luego presenta las opciones con sus specs clave y precio firme en COP. NO digas "estimado" ni "sujeto a cotización".
-- TRES OPCIONES: cuando tengas 2 o más alternativas, preséntalas con estas etiquetas según el perfil de cada una:
+- TRES OPCIONES (REGLA OBLIGATORIA): SIEMPRE debes presentar AL MENOS 3 alternativas distintas al cliente, nunca menos. Usa estas etiquetas según el perfil:
   ⭐ **Mejor precio** — [modelo] — $XXX.000 COP
   ⚡ **Mejor rendimiento** — [modelo] — $XXX.000 COP
   🏆 **Recomendado** — [modelo] — $XXX.000 COP (mejor relación precio/rendimiento)
-  Usa solo las etiquetas que correspondan a lo que encontraste. No inventes opciones.
+  Si cotizar_web devuelve menos de 3 productos, amplía la búsqueda: varía la marca, el tier (gama entrada/media/alta) o los specs. NUNCA presentes menos de 3 opciones con precio al cliente.
 - CREDIBILIDAD: cuando presentes opciones, menciona primero cuántas encontraste. Ejemplo: "Encontré 6 opciones compatibles. Te recomiendo estas 3 por su relación precio/rendimiento 🙌". La mayoría de clientes decide mejor cuando compara.
 - ENTREGA: si el producto viene de nuestra bodega en Estados Unidos, dile con naturalidad que **lo tenemos disponible y te llega en 6 a 10 días hábiles**. Si es de disponibilidad local, usa tiempos locales (Medellín/Bogotá 1–2 días hábiles, otras capitales 2–3, municipios 3–5).
 - Si no logras confirmar el producto o su precio, NO digas que "no lo tienes" ni que "buscaste": pide con naturalidad el dato que falte ("¿Tienes alguna marca o modelo en mente? Así te confirmo el valor exacto 😊").
