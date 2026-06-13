@@ -118,7 +118,7 @@ const tools: Anthropic.Tool[] = [
             modelo:    { type: "string" },
             cantidad:  { type: "integer" },
             precioCOP: { type: "number" },
-            proveedor: { type: "string", enum: ["colombia", "eeuu"] },
+            proveedor: { type: "string", enum: ["colombia", "eeuu"], description: 'Origen de la opción elegida: "colombia" si vino de buscar_productos (disponibilidad local), "eeuu" si vino de cotizar_web.' },
           },
           required: ["nombre", "cantidad", "precioCOP", "proveedor"],
         },
@@ -228,9 +228,9 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   if (productos.length === 0) {
     nota = "INTERNO: no hay disponibilidad local. Consíguelo con cotizar_web (EE.UU., entrega 6 a 10 días hábiles) y ofrece al menos 3 opciones.";
   } else if (productos.length >= 3) {
-    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 con su precio firme y resalta la entrega rápida. NO uses cotizar_web (ya hay suficientes locales).`;
+    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 con su precio firme y resalta la entrega rápida. NO uses cotizar_web (ya hay suficientes locales). Al registrar el pedido de cualquiera de estas opciones usa proveedor="colombia" (el costo y margen se completan solos).`;
   } else {
-    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles). Preséntala(s) Y completa hasta 3 opciones llamando cotizar_web; esas son de EE.UU. (entrega 6 a 10 días hábiles). Indica el tiempo de entrega de CADA opción por separado.`;
+    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles). Preséntala(s) Y completa hasta 3 opciones llamando cotizar_web; esas son de EE.UU. (entrega 6 a 10 días hábiles). Indica el tiempo de entrega de CADA opción por separado. Al registrar: las opciones LOCALES van con proveedor="colombia", las de EE.UU. con proveedor="eeuu".`;
   }
 
   return { encontrados: productos.length, totalCompatibles: deduped.length, localDisponibles: productos.length, productos, nota };
@@ -413,6 +413,41 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
   };
 }
 
+/** Busca el costo de un producto en las listas de proveedor ACTIVAS. Si hay
+ *  varias coincidencias, elige aquella cuyo precio al cliente (costo + margen de
+ *  categoría) más se acerque al precio cotizado — así el costo/margen corresponden
+ *  exactamente a la opción que Andrea le ofreció al cliente. */
+function buscarCostoLocal(
+  nombre: string,
+  modelo: string | undefined,
+  precioCliente: number,
+): { precioCosto: number; proveedor: string; lista: string } | null {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const target = norm(nombre);
+  const targetModelo = modelo ? norm(modelo) : "";
+  if (target.length < 4) return null;
+
+  const candidatos = loadActiveProducts().filter((p) => {
+    const n = norm(p.nombre);
+    if (!n) return false;
+    if (n === target) return true;
+    if (n.length >= 6 && (n.includes(target) || target.includes(n))) return true;
+    if (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false))) return true;
+    return false;
+  });
+  if (candidatos.length === 0) return null;
+
+  const margins = loadMargins();
+  let best = candidatos[0];
+  let bestDiff = Infinity;
+  for (const c of candidatos) {
+    const precioCli = applyMargin(c.precio_costo, c.categoria, margins);
+    const diff = Math.abs(precioCli - precioCliente);
+    if (diff < bestDiff) { bestDiff = diff; best = c; }
+  }
+  return { precioCosto: best.precio_costo, proveedor: best.proveedor, lista: best.listaNombre };
+}
+
 async function registrarPedido(input: unknown): Promise<unknown> {
   const { cliente, producto: rawProducto, proveedorDetalle: pd } = input as {
     cliente: { nombre: string; cedula: string; direccion: string; ciudad: string; telefono: string; email: string };
@@ -433,6 +468,7 @@ async function registrarPedido(input: unknown): Promise<unknown> {
   let costoTotalCOP: number | undefined;
   let margenCOP: number | undefined;
   let urlCompra: string | undefined = pd?.urlCompra;
+  let proveedorLocal: "ledacom" | "infoshop" | "manual" | undefined = pd?.proveedorLocal;
   let precioMercadoLocal: number | undefined;
   let fuenteLocal: string | undefined;
   let comparacionMercado: string | undefined;
@@ -452,6 +488,17 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       costoTotalCOP      = Math.round((pd.costoUSD + c.usdEnvio) * c.trm / 1000) * 1000;
     }
     if (costoTotalCOP != null) margenCOP = producto.precioCOP - costoTotalCOP;
+  } else {
+    // Producto LOCAL → recuperamos el costo de la lista de proveedor para el margen.
+    const local = buscarCostoLocal(producto.nombre, producto.modelo, producto.precioCOP);
+    if (local) {
+      costoTotalCOP  = local.precioCosto;
+      margenCOP      = producto.precioCOP - local.precioCosto;
+      const prov     = local.proveedor.toLowerCase();
+      proveedorLocal = prov.includes("ledacom") ? "ledacom"
+        : prov.includes("infoshop") ? "infoshop"
+        : (proveedorLocal ?? "manual");
+    }
   }
 
   // Comparación de mercado local (solo admin) — desde el caché del servidor
@@ -469,13 +516,13 @@ async function registrarPedido(input: unknown): Promise<unknown> {
   }
 
   const proveedorDetalle =
-    (urlCompra || costoUSD != null || costoTotalCOP != null || pd?.proveedorLocal || comparacionMercado)
+    (urlCompra || costoUSD != null || costoTotalCOP != null || proveedorLocal || comparacionMercado)
       ? {
           urlCompra,
           costoUSD,
           costoTotalCOP,
           margenCOP,
-          proveedorLocal: pd?.proveedorLocal,
+          proveedorLocal,
           precioMercadoLocal,
           fuenteLocal,
           comparacionMercado,
