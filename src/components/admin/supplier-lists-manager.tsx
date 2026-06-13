@@ -316,26 +316,30 @@ function ApiKeyPanel({ status, onChange, flash }: {
 function CargarTab({ hasKey, onImported, flash }: {
   hasKey: boolean; onImported: (n: number) => void; flash: (ok: boolean, msg: string) => void;
 }) {
-  const [pdfText, setPdfText] = useState<string | null>(null);
   const [pdfName, setPdfName] = useState("");
   const [pdfPages, setPdfPages] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [proveedor, setProveedor] = useState("ledacom");
-  const [modo, setModo] = useState<"rapido" | "preciso">("rapido");
+  const [modo, setModo] = useState<"rapido" | "preciso">("preciso");
   const [extracting, setExtracting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<File | null>(null); // el PDF se envía nativo a la IA
 
   async function handlePdf(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    fileRef.current = file;
     setUploading(true);
     try {
+      // pdf-extract solo confirma que es legible y trae el número de páginas
+      // para la vista previa; la extracción real usa el PDF nativo (visión).
       const fd = new FormData();
       fd.append("file", file);
       const res = await fetch("/api/admin/pdf-extract", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al procesar el PDF");
-      setPdfText(data.text); setPdfName(data.name); setPdfPages(data.pages);
+      setPdfName(data.name ?? file.name);
+      setPdfPages(data.pages ?? 0);
     } catch (err) {
       flash(false, err instanceof Error ? err.message : "Error al leer el PDF");
     } finally {
@@ -344,20 +348,32 @@ function CargarTab({ hasKey, onImported, flash }: {
     }
   }
 
+  function resetPdf() {
+    fileRef.current = null;
+    setPdfName(""); setPdfPages(0);
+  }
+
   async function handleExtract() {
-    if (!pdfText) return;
+    if (!fileRef.current) return;
     if (!hasKey) { flash(false, "Configura primero la clave API arriba"); return; }
     setExtracting(true);
     try {
-      const res = await fetch("/api/admin/extract-text-catalog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: pdfText, proveedor, nombre: pdfName, paginas: pdfPages, modo }),
-      });
+      // Enviamos el PDF NATIVO: Claude lee el layout visual (columnas, tablas
+      // lado a lado) en vez de texto plano revuelto. Esto extrae todos los productos.
+      const fd = new FormData();
+      fd.append("file", fileRef.current);
+      fd.append("proveedor", proveedor);
+      fd.append("nombre", pdfName);
+      fd.append("paginas", String(pdfPages));
+      fd.append("modo", modo);
+      const res = await fetch("/api/admin/import-pdf-catalog", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error con la IA");
+      if (data.truncado) {
+        flash(true, `${data.count} productos importados (lista muy larga: puede faltar el final, divídela si notas faltantes)`);
+      }
       onImported(data.count ?? 0);
-      setPdfText(null); setPdfName(""); setPdfPages(0);
+      resetPdf();
     } catch (err) {
       flash(false, err instanceof Error ? err.message : "Error con la IA");
     } finally {
@@ -365,13 +381,7 @@ function CargarTab({ hasKey, onImported, flash }: {
     }
   }
 
-  const chunks = pdfText ? Math.ceil(pdfText.length / 35000) : 0;
-  const conc = modo === "rapido" ? 4 : 2;
-  const waves = Math.max(1, Math.ceil(chunks / conc));
-  const estLo = waves * (modo === "rapido" ? 8 : 20);
-  const estHi = waves * (modo === "rapido" ? 15 : 40);
-
-  if (!pdfText) {
+  if (!pdfName) {
     return (
       <div
         onClick={() => inputRef.current?.click()}
@@ -405,11 +415,11 @@ function CargarTab({ hasKey, onImported, flash }: {
         <div>
           <p className="text-sm font-bold text-zinc-900">📄 {pdfName}</p>
           <p className="text-xs text-zinc-400">
-            {pdfPages} página{pdfPages !== 1 ? "s" : ""} · {pdfText.length.toLocaleString()} caracteres extraídos
+            {pdfPages} página{pdfPages !== 1 ? "s" : ""} · listo para lectura visual con IA
           </p>
         </div>
         <button
-          onClick={() => { setPdfText(null); setPdfName(""); setPdfPages(0); }}
+          onClick={resetPdf}
           className="flex items-center gap-1 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:border-red-300 hover:text-red-500 transition"
         >
           <X className="h-3.5 w-3.5" /> Cargar otro
@@ -436,7 +446,7 @@ function CargarTab({ hasKey, onImported, flash }: {
                 key={val}
                 type="button"
                 onClick={() => setModo(val)}
-                title={val === "rapido" ? "Modelo Haiku: más veloz y barato" : "Modelo Sonnet: más exacto en listas enredadas"}
+                title={val === "rapido" ? "Haiku: más rápido y barato (listas simples)" : "Sonnet: lee mejor el layout de columnas (recomendado)"}
                 className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${
                   modo === val ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-700"
                 }`}
@@ -468,10 +478,10 @@ function CargarTab({ hasKey, onImported, flash }: {
       {extracting && (
         <div className="mt-3 rounded-lg bg-violet-50 border border-violet-200 px-4 py-3">
           <p className="text-xs font-semibold text-violet-800">
-            Procesando el PDF en {chunks} fragmento{chunks !== 1 ? "s" : ""} en paralelo · modo {modo === "rapido" ? "rápido (Haiku)" : "preciso (Sonnet)"}…
+            Claude está leyendo el PDF completo (todas las columnas) · modo {modo === "rapido" ? "rápido (Haiku)" : "preciso (Sonnet)"}…
           </p>
           <p className="text-xs text-violet-600 mt-1">
-            Suele tomar <strong>{estLo}–{estHi} segundos</strong>. En cuentas de Anthropic nuevas puede tardar más por el límite de velocidad (sube solo con el uso). No cierres esta ventana.
+            En listas densas suele tomar <strong>1 a 4 minutos</strong>. No cierres esta ventana.
           </p>
         </div>
       )}
