@@ -9,33 +9,55 @@ import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
 export const runtime = "nodejs";
 
-// ── Caché de comparaciones de mercado local (servidor → no pasa por Andrea) ──
-// Los precios locales (MercadoLibre, Alkosto…) se calculan en el servidor
-// mientras Andrea busca en EE.UU. y se inyectan al pedido al registrarlo.
-// Andrea NUNCA ve estos precios para evitar que los use con el cliente.
-type LocalComparacion = {
-  ts:                 number;
-  precioMercadoLocal: number;
-  fuenteLocal:        string;
-  cantidadListados:   number;
-  siteLocal:          string;
+// ── Caché de cotizaciones web (servidor → no pasa por Andrea) ──────────────
+// Cuando cotizar_web encuentra un producto guardamos aquí su costo US, la URL
+// de compra, el precio final al cliente y la comparación con el mercado local.
+// Al registrar el pedido lo recuperamos por nombre/modelo: así el precio y el
+// margen NUNCA dependen de lo que mande Andrea, y la comparación local (que
+// Andrea jamás ve) queda adjunta al pedido para el admin.
+type WebQuote = {
+  ts:                  number;
+  costoUSD:            number;   // costo origen USD
+  urlCompra:           string;   // dónde comprar (Amazon/Newegg/BH…)
+  precioCOP:           number;   // precio firme al cliente (fórmula importación)
+  costoTotalCOP:       number;   // costo real puesto en Colombia
+  // comparación de mercado local (opcional — solo admin)
+  precioMercadoLocal?: number;
+  fuenteLocal?:        string;
+  cantidadListados?:   number;
+  siteLocal?:          string;
 };
-const _localCache = new Map<string, LocalComparacion>();
+const _webCache = new Map<string, WebQuote>();
+const _CACHE_TTL = 60 * 60 * 1000; // 1 hora
 
 function _cacheKey(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
-function _setLocalCache(consulta: string, data: Omit<LocalComparacion, "ts">) {
-  for (const [k, v] of _localCache) {
-    if (Date.now() - v.ts > 30 * 60 * 1000) _localCache.delete(k);
+function _setWebQuote(keys: (string | undefined)[], data: Omit<WebQuote, "ts">) {
+  for (const [k, v] of _webCache) {
+    if (Date.now() - v.ts > _CACHE_TTL) _webCache.delete(k);
   }
-  _localCache.set(_cacheKey(consulta), { ts: Date.now(), ...data });
+  const entry: WebQuote = { ts: Date.now(), ...data };
+  for (const key of keys) {
+    const norm = key ? _cacheKey(key) : "";
+    if (norm.length >= 3) _webCache.set(norm, entry);
+  }
 }
-function _getLocalCache(nombre: string, modelo?: string): LocalComparacion | null {
+function _getWebQuote(nombre: string, modelo?: string): WebQuote | null {
   const now = Date.now();
-  for (const key of modelo ? [`${nombre} ${modelo}`, nombre] : [nombre]) {
-    const e = _localCache.get(_cacheKey(key));
-    if (e && now - e.ts < 30 * 60 * 1000) return e;
+  // 1) coincidencia exacta por modelo o nombre normalizado
+  for (const key of [modelo, nombre]) {
+    const norm = key ? _cacheKey(key) : "";
+    const e = norm ? _webCache.get(norm) : undefined;
+    if (e && now - e.ts < _CACHE_TTL) return e;
+  }
+  // 2) coincidencia parcial (uno contiene al otro) para nombres extendidos
+  const target = _cacheKey(nombre);
+  if (target.length >= 6) {
+    for (const [k, e] of _webCache) {
+      if (now - e.ts > _CACHE_TTL) continue;
+      if (k.length >= 6 && (target.includes(k) || k.includes(target))) return e;
+    }
   }
   return null;
 }
@@ -278,7 +300,7 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
   // ── GRUPO 1: EE.UU. → precio al cliente ──────────────────────────
   type ResultadoUS = {
     nombre?: string; marca?: string; modelo?: string; specs?: string;
-    precioCOP: number; costoUSD: number; fuente: string;
+    precioCOP: number; costoUSD: number; costoTotalCOP: number; fuente: string;
   };
 
   const seenUS = new Map<string, ResultadoUS>();
@@ -292,35 +314,46 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
     if (!prev || p.usd < prev.costoUSD) {
       seenUS.set(key, {
         nombre: p.nombre, marca: p.marca, modelo: p.modelo, specs: p.specs,
-        precioCOP: c.copEstimado, // precio firme al cliente (incluye margen + envío + TRM)
-        costoUSD:  p.usd,         // costo origen (solo admin)
-        fuente:    p.fuente ?? "",
+        precioCOP:     c.copEstimado, // precio firme al cliente (markup + envío + TRM)
+        costoUSD:      p.usd,         // costo origen USD (solo admin)
+        costoTotalCOP: Math.round((p.usd + c.usdEnvio) * c.trm / 1000) * 1000, // costo real puesto en CO
+        fuente:        p.fuente ?? "",
       });
     }
   }
   const productosUS = [...seenUS.values()].sort((a, b) => a.precioCOP - b.precioCOP).slice(0, 5);
 
-  // ── GRUPO 2: Colombia local → caché servidor (Andrea NUNCA lo ve) ───
-  // Los precios locales se almacenan server-side. Si Andrea los viera,
-  // podría usarlos como precio al cliente (bug confirmado). El caché los
-  // inyecta silenciosamente al pedido cuando Andrea llama registrar_pedido.
+  // ── GRUPO 2: Colombia local → comparación de mercado (solo admin) ───
+  // Promedio de los listados locales disponibles. NO se devuelve a Andrea:
+  // se adjunta a la cotización en caché y aparece en el pedido para el admin.
+  let localData: Partial<Pick<WebQuote, "precioMercadoLocal" | "fuenteLocal" | "cantidadListados" | "siteLocal">> = {};
   const locales = parsed.filter(
     (p) => p.source === "local" && typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false,
   );
   if (locales.length > 0) {
     const preciosLocales = locales.map((p) => p.copLocal as number);
-    const precioAvg  = promediarPrecios(preciosLocales);
-    const fuenteRef  = locales.find((p) => p.fuente)?.fuente ?? "";
-    const siteNombre = fuenteRef.includes("mercadolibre") ? "MercadoLibre"
-      : fuenteRef.includes("alkosto")   ? "Alkosto"
-      : fuenteRef.includes("falabella") ? "Falabella"
-      : fuenteRef.includes("exito")     ? "Éxito"
-      : "Sitio local";
-    _setLocalCache(consulta, {
-      precioMercadoLocal: precioAvg,
+    const fuenteRef = locales.find((p) => p.fuente)?.fuente ?? "";
+    localData = {
+      precioMercadoLocal: promediarPrecios(preciosLocales),
       fuenteLocal:        fuenteRef,
       cantidadListados:   preciosLocales.length,
-      siteLocal:          siteNombre,
+      siteLocal:          fuenteRef.includes("mercadolibre") ? "MercadoLibre"
+        : fuenteRef.includes("alkosto")   ? "Alkosto"
+        : fuenteRef.includes("falabella") ? "Falabella"
+        : fuenteRef.includes("exito")     ? "Éxito"
+        : "Sitio local",
+    };
+  }
+
+  // Cachear cada opción US (costo + url + precio) junto con la comparación
+  // local compartida, indexada por modelo y nombre para recuperarla al pedir.
+  for (const prod of productosUS) {
+    _setWebQuote([prod.modelo, prod.nombre], {
+      costoUSD:      prod.costoUSD,
+      urlCompra:     prod.fuente,
+      precioCOP:     prod.precioCOP,
+      costoTotalCOP: prod.costoTotalCOP,
+      ...localData,
     });
   }
 
@@ -349,47 +382,65 @@ async function registrarPedido(input: unknown): Promise<unknown> {
     };
   };
 
-  // ── PRICE OVERRIDE (crítico): para productos EE.UU., SIEMPRE recalcular
-  // precioCOP desde la fórmula de importación — no confiar en lo que manda
-  // Andrea (podría estar usando el precio local por error).
   const producto = { ...rawProducto };
+
+  // Recuperamos del caché del servidor la cotización US + comparación local que
+  // generó cotizar_web (indexada por nombre/modelo). Es la fuente de verdad: el
+  // precio y el costo NUNCA dependen de lo que mande Andrea.
+  const quote = _getWebQuote(producto.nombre, producto.modelo);
+
+  let costoUSD: number | undefined;
   let costoTotalCOP: number | undefined;
   let margenCOP: number | undefined;
-  if (producto.proveedor === "eeuu" && pd?.costoUSD) {
-    const c = cotizarImportacion(pd.costoUSD);
-    // costoTotalCOP = lo que realmente pagamos (producto + envío × TRM, sin el markup del /0.7)
-    costoTotalCOP      = Math.round((pd.costoUSD + c.usdEnvio) * c.trm / 1000) * 1000;
-    // copEstimado = precio al cliente = (USD/0.7 + envío) × TRM — ya incluye el markup
-    producto.precioCOP = c.copEstimado;
-    margenCOP          = c.copEstimado - costoTotalCOP;
-  }
-
-  // ── COMPARACIÓN DE MERCADO LOCAL (desde caché servidor — Andrea nunca lo vio) ──
+  let urlCompra: string | undefined = pd?.urlCompra;
   let precioMercadoLocal: number | undefined;
   let fuenteLocal: string | undefined;
   let comparacionMercado: string | undefined;
-  const cached = _getLocalCache(producto.nombre, producto.modelo);
-  if (cached) {
-    precioMercadoLocal = cached.precioMercadoLocal;
-    fuenteLocal        = cached.fuenteLocal;
-    const fmt = (n: number) => "$" + n.toLocaleString("es-CO");
-    comparacionMercado = cached.precioMercadoLocal < producto.precioCOP
-      ? `${cached.siteLocal} más económico: ${fmt(cached.precioMercadoLocal)} (${cached.cantidadListados} listados) vs ${fmt(producto.precioCOP)} (US importado)`
-      : cached.precioMercadoLocal > producto.precioCOP
-      ? `${cached.siteLocal} más caro: ${fmt(cached.precioMercadoLocal)} (${cached.cantidadListados} listados) vs ${fmt(producto.precioCOP)} (US importado)`
-      : `${cached.siteLocal} precio similar: ${fmt(cached.precioMercadoLocal)}`;
+
+  if (producto.proveedor === "eeuu") {
+    if (quote) {
+      // Caché disponible → datos autoritativos
+      costoUSD           = quote.costoUSD;
+      producto.precioCOP = quote.precioCOP;     // ← precio correcto al cliente
+      costoTotalCOP      = quote.costoTotalCOP;
+      urlCompra          = quote.urlCompra || urlCompra;
+    } else if (pd?.costoUSD) {
+      // Sin caché → recalcular desde la fórmula (override: nunca el precio de Andrea)
+      const c = cotizarImportacion(pd.costoUSD);
+      costoUSD           = pd.costoUSD;
+      producto.precioCOP = c.copEstimado;
+      costoTotalCOP      = Math.round((pd.costoUSD + c.usdEnvio) * c.trm / 1000) * 1000;
+    }
+    if (costoTotalCOP != null) margenCOP = producto.precioCOP - costoTotalCOP;
   }
 
-  const proveedorDetalle = (pd || costoTotalCOP !== undefined || comparacionMercado) ? {
-    urlCompra:           pd?.urlCompra,
-    costoUSD:            pd?.costoUSD,
-    costoTotalCOP,
-    margenCOP,
-    proveedorLocal:      pd?.proveedorLocal,
-    precioMercadoLocal,
-    fuenteLocal,
-    comparacionMercado,
-  } : undefined;
+  // Comparación de mercado local (solo admin) — desde el caché del servidor
+  if (quote?.precioMercadoLocal && quote.precioMercadoLocal > 0) {
+    precioMercadoLocal = quote.precioMercadoLocal;
+    fuenteLocal        = quote.fuenteLocal;
+    const site = quote.siteLocal ?? "Sitio local";
+    const n    = quote.cantidadListados ?? 0;
+    const fmt  = (v: number) => "$" + v.toLocaleString("es-CO");
+    comparacionMercado = precioMercadoLocal < producto.precioCOP
+      ? `${site} más económico: ${fmt(precioMercadoLocal)}${n ? ` (${n} listados)` : ""} vs ${fmt(producto.precioCOP)} (US importado)`
+      : precioMercadoLocal > producto.precioCOP
+      ? `${site} más caro: ${fmt(precioMercadoLocal)}${n ? ` (${n} listados)` : ""} vs ${fmt(producto.precioCOP)} (US importado)`
+      : `${site} precio similar: ${fmt(precioMercadoLocal)}`;
+  }
+
+  const proveedorDetalle =
+    (urlCompra || costoUSD != null || costoTotalCOP != null || pd?.proveedorLocal || comparacionMercado)
+      ? {
+          urlCompra,
+          costoUSD,
+          costoTotalCOP,
+          margenCOP,
+          proveedorLocal: pd?.proveedorLocal,
+          precioMercadoLocal,
+          fuenteLocal,
+          comparacionMercado,
+        }
+      : undefined;
 
   try {
     const order = saveOrder({ cliente, producto, proveedorDetalle });

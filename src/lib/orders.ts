@@ -4,6 +4,7 @@ import path from "path";
 
 const ORDERS_PATH   = path.join(process.cwd(), "data", "orders.json");
 const HISTORY_PATH  = path.join(process.cwd(), "data", "orders-history.json");
+const COUNTER_PATH  = path.join(process.cwd(), "data", "order-counter.json");
 
 export type OrderEstado = "pendiente" | "confirmado" | "enviado" | "entregado";
 
@@ -64,13 +65,33 @@ export function getOrders(): Order[] {
   return readJSON<Order[]>(ORDERS_PATH, []);
 }
 
-function generateOrderNumber(existingOrders: Order[]): string {
+/**
+ * Consecutivo MONOTÓNICO persistido en disco (100–999, con wrap).
+ * No depende de cuántos pedidos activos haya: archivar/borrar pedidos NO
+ * reduce el contador, así que nunca se repite un número de orden.
+ * Se auto-inicializa desde el máximo consecutivo existente (activos + historial).
+ */
+function nextConsecutive(): number {
+  const stored = readJSON<{ value: number }>(COUNTER_PATH, { value: 0 });
+  let value = stored.value;
+  if (value < 100) {
+    const all = [...getOrders(), ...getHistory()];
+    value = all.reduce((max, o) => {
+      const c = Number(String(o.orderNumber ?? "").slice(-3));
+      return Number.isFinite(c) && c > max ? c : max;
+    }, 99); // 99 → el primero será 100
+  }
+  value = value >= 999 ? 100 : value + 1;
+  writeJSON(COUNTER_PATH, { value });
+  return value;
+}
+
+function generateOrderNumber(): string {
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Bogota" }));
   const dd = String(now.getDate()).padStart(2, "0");
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const yy = String(now.getFullYear()).slice(2);
-  const consecutive = 100 + ((existingOrders.length + 1) % 900);
-  return `${dd}${mm}${yy}${consecutive}`;
+  return `${dd}${mm}${yy}${nextConsecutive()}`;
 }
 
 export function saveOrder(
@@ -80,7 +101,7 @@ export function saveOrder(
   const newOrder: Order = {
     ...order,
     id:          crypto.randomUUID(),
-    orderNumber: generateOrderNumber(orders),
+    orderNumber: generateOrderNumber(),
     fecha:       new Date().toISOString(),
     estado:      "pendiente",
   };
