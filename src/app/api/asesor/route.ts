@@ -5,6 +5,7 @@ import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
 import { saveOrder } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
+import { loadActiveProducts, loadMargins, applyMargin } from "@/lib/supplier-catalog";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
 export const runtime = "nodejs";
@@ -139,9 +140,10 @@ const tools: Anthropic.Tool[] = [
   {
     name: "cotizar_web",
     description:
-      "Consigue un producto que no tenemos a la mano localmente y devuelve opciones con su precio en pesos " +
-      "colombianos (COP) y disponibilidad. Úsala INTERNAMENTE cuando buscar_productos no lo encontró. Tarda " +
-      "unos segundos. El cliente NO debe enterarse de que usaste esta herramienta ni de cómo se consigue.",
+      "Consigue desde EE.UU. opciones con su precio en pesos colombianos (COP). Entrega 6 a 10 días. " +
+      "Úsala INTERNAMENTE SOLO para COMPLETAR hasta 3 opciones cuando buscar_productos devolvió menos de 3 " +
+      "(o ninguna) disponibilidad local. Si buscar_productos ya dio 3 o más, NO la uses. Tarda unos segundos. " +
+      "El cliente NO debe enterarse de que usaste esta herramienta ni de cómo se consigue.",
     input_schema: {
       type: "object",
       properties: {
@@ -162,38 +164,76 @@ type CustomerProduct = {
   specs: Record<string, string>; descripcion: string; url: string;
 };
 
-function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; productos: CustomerProduct[]; nota?: string } {
+function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; localDisponibles: number; productos: CustomerProduct[]; nota: string } {
   const consulta = String(input?.consulta ?? "").toLowerCase().trim();
   const segmento = input?.segmento as Segmento | undefined;
   const precioMax = typeof input?.precioMax === "number" ? input.precioMax : null;
   const limite = Math.min(Math.max(Number(input?.limite) || 10, 1), 15);
   const terms = consulta.split(/\s+/).filter((t) => t.length > 1);
+  const score = (haystack: string) => (terms.length === 0 ? 1 : terms.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0));
 
-  const scored = loadPublishedBusinessProducts()
-    .map((p) => {
-      const precio = p.precioDesde ?? p.precio;
-      const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" ")].join(" ").toLowerCase();
-      const score = terms.length === 0 ? 1 : terms.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0);
-      return { p, precio, score };
-    })
+  // prioridad 0 = listas de proveedor (disponibilidad local), 1 = catálogo publicado
+  type Row = { score: number; precio: number | null; prioridad: number; prod: CustomerProduct };
+
+  // 1) LISTAS DE PROVEEDOR ACTIVAS — disponibilidad local, precio = costo + margen de categoría.
+  const margins = loadMargins();
+  const locales: Row[] = loadActiveProducts().map((p) => {
+    const precio = applyMargin(p.precio_costo, p.categoria, margins);
+    const haystack = [p.nombre, p.marca, p.categoria, Object.values(p.specs ?? {}).join(" ")].join(" ").toLowerCase();
+    return {
+      score: score(haystack), precio, prioridad: 0,
+      prod: {
+        referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
+        segmento: null, precioDesde: precio, precioIvaIncluido: false,
+        specs: p.specs ?? {}, descripcion: "", url: "",
+      },
+    };
+  });
+
+  // 2) CATÁLOGO PUBLICADO — también disponibilidad local.
+  const catalogo: Row[] = loadPublishedBusinessProducts().map((p) => {
+    const precio = p.precioDesde ?? p.precio;
+    const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" ")].join(" ").toLowerCase();
+    return {
+      score: score(haystack), precio, prioridad: 1,
+      prod: {
+        referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
+        segmento: p.segmento ? SEGMENTO_LABEL[p.segmento] : null, precioDesde: precio,
+        precioIvaIncluido: p.precioIvaIncluido ?? false, specs: p.specs ?? {}, descripcion: p.descripcionUso,
+        url: `/conseguir?ref=${encodeURIComponent(p.referencia ?? p.slug)}`,
+      },
+    };
+  });
+
+  const combinados = [...locales, ...catalogo]
     .filter((x) => x.score > 0)
-    .filter((x) => (segmento ? x.p.segmento === segmento : true))
     .filter((x) => (precioMax !== null ? x.precio !== null && x.precio <= precioMax : true))
-    .sort((a, b) => b.score - a.score || (a.precio ?? Infinity) - (b.precio ?? Infinity));
+    // el filtro por segmento solo aplica al catálogo (las listas de proveedor no traen segmento)
+    .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true));
 
-  const productos: CustomerProduct[] = scored.slice(0, limite).map(({ p, precio }) => ({
-    referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
-    segmento: p.segmento ? SEGMENTO_LABEL[p.segmento] : null, precioDesde: precio,
-    precioIvaIncluido: p.precioIvaIncluido ?? false, specs: p.specs ?? {}, descripcion: p.descripcionUso,
-    url: `/conseguir?ref=${encodeURIComponent(p.referencia ?? p.slug)}`,
-  }));
+  // Orden: primero local, luego por relevancia y precio. Dedupe por referencia/nombre
+  // conservando la primera (la versión local con prioridad).
+  combinados.sort((a, b) => a.prioridad - b.prioridad || b.score - a.score || (a.precio ?? Infinity) - (b.precio ?? Infinity));
+  const seen = new Set<string>();
+  const deduped = combinados.filter((x) => {
+    const key = x.prod.nombre.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!key || seen.has(key)) return key ? false : true;
+    seen.add(key);
+    return true;
+  });
 
-  return {
-    encontrados: productos.length,
-    totalCompatibles: scored.length,
-    productos,
-    ...(productos.length === 0 ? { nota: "INTERNO: no disponible localmente. Si el cliente lo quiere, consíguelo con cotizar_web." } : {}),
-  };
+  const productos = deduped.slice(0, limite).map((x) => x.prod);
+
+  let nota: string;
+  if (productos.length === 0) {
+    nota = "INTERNO: no hay disponibilidad local. Consíguelo con cotizar_web (EE.UU., entrega 6 a 10 días hábiles) y ofrece al menos 3 opciones.";
+  } else if (productos.length >= 3) {
+    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 con su precio firme y resalta la entrega rápida. NO uses cotizar_web (ya hay suficientes locales).`;
+  } else {
+    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles). Preséntala(s) Y completa hasta 3 opciones llamando cotizar_web; esas son de EE.UU. (entrega 6 a 10 días hábiles). Indica el tiempo de entrega de CADA opción por separado.`;
+  }
+
+  return { encontrados: productos.length, totalCompatibles: deduped.length, localDisponibles: productos.length, productos, nota };
 }
 
 // ── Búsqueda web AISLADA (interna): sub-llamada solo con web_search ─────────────
@@ -481,13 +521,20 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
 - VARIANTES: cuando identifiques varias versiones del mismo producto (ej: Audigy FX, Audigy RX, Audigy GS), inclúyelas TODAS en una sola consulta a cotizar_web. NUNCA le pidas al cliente que elija una variante antes de tener los precios — busca todas y presenta los precios directamente para que el cliente decida.
 - Cuando tengamos el producto, dilo con seguridad y calidez: "¡Sí, tenemos varias opciones disponibles! 🙌", luego presenta las opciones con sus specs clave y precio firme en COP. NO digas "estimado" ni "sujeto a cotización".
-- TRES OPCIONES (REGLA OBLIGATORIA): SIEMPRE debes presentar AL MENOS 3 alternativas distintas al cliente, nunca menos. Usa estas etiquetas según el perfil:
+- PRIORIDAD LOCAL (REGLA CLAVE): usa SIEMPRE buscar_productos PRIMERO. Lo que devuelve está DISPONIBLE LOCALMENTE — es tu primera opción y la presentas con entrega rápida (1 a 3 días hábiles). Guíate por el campo "nota" del resultado:
+  • Si buscar_productos devuelve 3 o más → presenta 3 opciones LOCALES y NO uses cotizar_web.
+  • Si devuelve 1 o 2 → preséntalas como locales (1 a 3 días) y COMPLETA hasta 3 opciones con cotizar_web; esas son de EE.UU. (6 a 10 días hábiles).
+  • Si devuelve 0 → usa cotizar_web para las 3 opciones (EE.UU., 6 a 10 días).
+- TRES OPCIONES (REGLA OBLIGATORIA): SIEMPRE presenta AL MENOS 3 alternativas distintas, nunca menos, combinando locales + EE.UU. según lo anterior. Usa estas etiquetas según el perfil:
   ⭐ **Mejor precio** — [modelo] — $XXX.000 COP
   ⚡ **Mejor rendimiento** — [modelo] — $XXX.000 COP
   🏆 **Recomendado** — [modelo] — $XXX.000 COP (mejor relación precio/rendimiento)
-  Si cotizar_web devuelve menos de 3 productos, amplía la búsqueda: varía la marca, el tier (gama entrada/media/alta) o los specs. NUNCA presentes menos de 3 opciones con precio al cliente.
+  Junto a cada opción indica su entrega (ej: "🚚 1 a 3 días" local, o "🚚 6 a 10 días" si viene de EE.UU.). Si cotizar_web devuelve pocas, amplía la búsqueda (marca, gama, specs). NUNCA presentes menos de 3 opciones con precio.
 - CREDIBILIDAD: cuando presentes opciones, menciona primero cuántas encontraste. Ejemplo: "Encontré 6 opciones compatibles. Te recomiendo estas 3 por su relación precio/rendimiento 🙌". La mayoría de clientes decide mejor cuando compara.
-- ENTREGA: si el producto viene de nuestra bodega en Estados Unidos, dile con naturalidad que **lo tenemos disponible y te llega en 6 a 10 días hábiles**. Si es de disponibilidad local, usa tiempos locales (Medellín/Bogotá 1–2 días hábiles, otras capitales 2–3, municipios 3–5).
+- ENTREGA (dilo SIEMPRE, por separado para CADA opción):
+  • Opción de buscar_productos = disponibilidad LOCAL → "te llega en 1 a 3 días hábiles".
+  • Opción de cotizar_web = nuestra bodega de EE.UU. → "te llega en 6 a 10 días hábiles".
+  Si en un mismo mensaje mezclas opciones locales y de EE.UU., cada una lleva su propio tiempo de entrega — no los unifiques.
 - Si no logras confirmar el producto o su precio, NO digas que "no lo tienes" ni que "buscaste": pide con naturalidad el dato que falte ("¿Tienes alguna marca o modelo en mente? Así te confirmo el valor exacto 😊").
 
 OBJETIVO: entender qué necesita el cliente, ofrecerle la mejor opción y acompañarlo hacia la compra. Una pregunta a la vez, sin interrogar.
