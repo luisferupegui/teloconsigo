@@ -308,14 +308,18 @@ async function fetchViaAnthropic(anthropic: Anthropic, consulta: string): Promis
   }
 }
 
-// Estructura resultados crudos de Serper con Haiku (barato) — solo cuando el
-// parseo determinista no logró sacar opciones US claras.
+// Filtra y estructura resultados crudos de Serper con Haiku (barato). Los
+// resultados de Google Shopping vienen sucios (mezclan el producto con PCs
+// completos y lotes); Haiku se queda SOLO con el producto exacto que pidió el cliente.
 async function estructurarConHaiku(anthropic: Anthropic, consulta: string, usRaw: unknown, coRaw: unknown): Promise<WebProducto[]> {
   const sys =
-    `Extrae productos de tecnología NUEVOS de estos resultados de Google Shopping. ` +
+    `Eres un filtro de resultados de Google Shopping para una tienda de tecnología. ` +
+    `El cliente busca EXACTAMENTE: «${consulta}». De los resultados, devuelve SOLO los que sean ESE producto específico y NUEVO. ` +
+    `DESCARTA SIEMPRE: computadores/PC/torres/desktops armados que INCLUYEN el producto (si pidió un procesador, un "Gaming PC con ese CPU" NO sirve), lotes/combos/bundles de varios modelos, productos usados/reacondicionados, y accesorios que no son lo pedido. ` +
     `EE.UU. (source="us"): usd = precio en dólares (número), tier = "component"|"laptop"|"desktop", fuente = enlace. ` +
     `Colombia (source="local"): copLocal = precio en pesos (entero), fuente = enlace. ` +
-    `Devuelve SOLO JSON: {"productos":[{"nombre","marca","modelo","source","usd","tier","copLocal","fuente"}]}.`;
+    `Máximo 5 de cada grupo, las opciones más representativas por precio. ` +
+    `Devuelve SOLO JSON: {"productos":[{"nombre","marca","modelo","source","usd","tier","copLocal","fuente"}]}. Si nada coincide, {"productos":[]}.`;
   const msg = await anthropic.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 3000,
@@ -327,41 +331,48 @@ async function estructurarConHaiku(anthropic: Anthropic, consulta: string, usRaw
   return m ? ((JSON.parse(m[0]).productos ?? []) as WebProducto[]) : [];
 }
 
-// Búsqueda con Serper: Shopping en EE.UU. + Colombia, parseo determinista y, si
-// no salen opciones US claras, una pasada con Haiku.
+// Ruido típico de Google Shopping: PCs/torres completos y lotes que NO son el
+// producto pedido. Se usa solo en el respaldo determinista (Haiku ya filtra mejor).
+const SERPER_NOISE = /\b(gaming pc|gaming desktop|desktop pc|pc with|torre|computador|tower|barebone|bundle|combo|lote|pre-?built|prebuilt)\b/i;
+
+function parseSerperDeterminista(consulta: string, usRaw: SerperShoppingItem[], coRaw: SerperShoppingItem[]): WebProducto[] {
+  const us: WebProducto[] = [];
+  for (const it of usRaw) {
+    const usd = parseUsdPrice(it.price);
+    if (!usd) continue;
+    if (SERPER_NOISE.test(it.title ?? "")) continue;            // descarta PCs/lotes
+    const haystack = `${it.link ?? ""} ${it.source ?? ""}`.toLowerCase();
+    if (!US_HOSTS.some((h) => haystack.includes(h))) continue;  // solo vendedores de confianza
+    us.push({ source: "us", nombre: it.title, usd, tier: inferTierFrom(`${it.title ?? ""} ${consulta}`), fuente: it.link ?? "" });
+  }
+  const local: WebProducto[] = [];
+  for (const it of coRaw) {
+    const cop = parseCopPrice(it.price);
+    if (!cop) continue;
+    if (SERPER_NOISE.test(it.title ?? "")) continue;
+    local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true });
+  }
+  return [...us, ...local];
+}
+
+// Búsqueda con Serper: Shopping en EE.UU. + Colombia. Los resultados vienen sucios
+// (mezclan el producto con PCs completos y lotes), así que Haiku los FILTRA y deja
+// solo el producto exacto. Si Haiku falla, respaldo determinista con filtro de ruido.
 async function fetchViaSerper(consulta: string, apiKey: string, anthropic: Anthropic): Promise<WebProducto[]> {
   const [usRaw, coRaw] = await Promise.all([
     serperShopping(consulta, "us", apiKey).catch((): SerperShoppingItem[] => []),
     serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []),
   ]);
+  if (usRaw.length === 0 && coRaw.length === 0) return [];
 
-  const us: WebProducto[] = [];
-  for (const it of usRaw) {
-    const usd = parseUsdPrice(it.price);
-    if (!usd) continue;
-    const haystack = `${it.link ?? ""} ${it.source ?? ""}`.toLowerCase();
-    if (!US_HOSTS.some((h) => haystack.includes(h))) continue; // solo vendedores de confianza
-    us.push({ source: "us", nombre: it.title, usd, tier: inferTierFrom(`${it.title ?? ""} ${consulta}`), fuente: it.link ?? "" });
-  }
-
-  const local: WebProducto[] = [];
-  for (const it of coRaw) {
-    const cop = parseCopPrice(it.price);
-    if (!cop) continue;
-    local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true });
-  }
-
-  // Atajo determinista: si ya hay opciones US claras, no llamamos a la IA.
-  if (us.length >= 1) return [...us, ...local];
-
-  // Fallback: estructurar con Haiku los resultados crudos.
+  // Haiku filtra/estructura (corre solo en miss de caché → casi gratis).
   try {
     const structured = await estructurarConHaiku(anthropic, consulta, usRaw, coRaw);
     if (structured.length) return structured;
   } catch {
-    /* nos quedamos con lo determinista */
+    /* respaldo determinista abajo */
   }
-  return [...us, ...local];
+  return parseSerperDeterminista(consulta, usRaw, coRaw);
 }
 
 // Respuesta estándar de cotizar_web hacia Andrea.

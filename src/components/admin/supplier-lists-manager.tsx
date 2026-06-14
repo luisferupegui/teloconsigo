@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import {
   Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
   Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ListChecks, ChevronDown,
-  Star, Tag, Pencil,
+  Star, Tag, Pencil, RefreshCw,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";
 
@@ -162,6 +162,7 @@ export function SupplierListsManager() {
     <div className="space-y-5">
       <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
       <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
+      <WebCachePanel flash={flash} />
 
       {/* Sub-tabs */}
       <div className="flex flex-wrap gap-1 rounded-xl border border-zinc-200 bg-white p-1 w-fit shadow-sm">
@@ -402,6 +403,72 @@ function SerperKeyPanel({ status, onChange, flash }: {
         className="text-xs font-semibold text-emerald-700 underline hover:text-emerald-900">
         Cambiar
       </button>
+    </div>
+  );
+}
+
+// ─── Panel: actualizar precios cacheados de EE.UU. ──────────────────────────────
+
+function WebCachePanel({ flash }: { flash: (ok: boolean, msg: string) => void }) {
+  const [term, setTerm] = useState("");
+  const [busy, setBusy] = useState<"one" | "all" | null>(null);
+
+  async function refresh(all: boolean) {
+    setBusy(all ? "all" : "one");
+    try {
+      const res = await fetch("/api/admin/web-cache", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(all ? {} : { term: term.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { flash(false, data.error ?? "No se pudo actualizar"); return; }
+      flash(true, all
+        ? `Caché de precios EE.UU. vaciado (${data.removed}). Se re-cotizará al consultar.`
+        : `Listo: “${term.trim()}” se re-cotizará con precio fresco en la próxima consulta.`);
+      if (!all) setTerm("");
+    } catch {
+      flash(false, "Error de red");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="flex items-start gap-3">
+        <RefreshCw className="h-5 w-5 shrink-0 mt-0.5 text-zinc-500" />
+        <div className="flex-1">
+          <p className="text-sm font-bold text-zinc-900">Actualizar precios de EE.UU.</p>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            Los precios de EE.UU. se guardan 7 días para no recotizar (ahorra costo). Si sabes que un
+            precio cambió, fuérzalo aquí: se re-cotiza en la próxima consulta.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder="Producto a actualizar (ej: Ryzen 7 5700G)"
+              className="flex-1 min-w-[240px] rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+            />
+            <button
+              onClick={() => refresh(false)}
+              disabled={busy !== null || term.trim() === ""}
+              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+            >
+              {busy === "one" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Actualizar precio
+            </button>
+          </div>
+          <button
+            onClick={() => refresh(true)}
+            disabled={busy !== null}
+            className="mt-2 text-xs font-semibold text-zinc-400 underline hover:text-red-500 disabled:opacity-50 transition"
+          >
+            {busy === "all" ? "Vaciando…" : "Vaciar todo el caché de precios EE.UU."}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
