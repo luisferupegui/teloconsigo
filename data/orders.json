@@ -1,42 +1,57 @@
 [
   {
     "cliente": {
-      "nombre": "Carlos Botero",
-      "cedula": "23.455.789",
-      "direccion": "Carrera 3 No 55 - 12",
-      "ciudad": "Bucaramanga",
+      "nombre": "Pedro Palacios",
+      "cedula": "1023456786",
+      "direccion": "Cra 67 No 53 - 12 Bloque 4 Apto 101",
+      "ciudad": "Cali",
       "telefono": "3102878194",
       "email": "luisferupegui@veas.tv"
     },
     "producto": {
-      "nombre": "Creative Sound Blaster Audigy FX V2",
-      "modelo": "Audigy FX V2",
+      "nombre": "AMD Ryzen 7 5700G",
       "cantidad": 1,
-      "precioCOP": 366000,
-      "proveedor": "eeuu"
+      "precioCOP": 1083000,
+      "proveedor": "colombia"
     },
-    "id": "0dbeced7-ddc2-47fe-9a98-2dfb211d0d82",
-    "fecha": "2026-06-12T03:28:50.217Z",
+    "proveedorDetalle": {
+      "costoTotalCOP": 887000,
+      "margenCOP": 196000,
+      "proveedorLocal": "infoshop"
+    },
+    "id": "c20de8ed-254f-4905-b1e5-4d2c522612a2",
+    "orderNumber": "130626105",
+    "fecha": "2026-06-13T23:13:05.132Z",
     "estado": "pendiente"
   },
   {
     "cliente": {
-      "nombre": "Carlos Botero",
-      "cedula": "23.455.789",
-      "direccion": "Carrera 3 No 55 - 12",
-      "ciudad": "Bucaramanga",
+      "nombre": "Carlos Perez",
+      "cedula": "1023567894",
+      "direccion": "Calle 34 No 56 - 68",
+      "ciudad": "Neiva",
       "telefono": "3102878194",
       "email": "luisferupegui@veas.tv"
     },
     "producto": {
-      "nombre": "Creative Sound Blaster Audigy FX V2",
-      "modelo": "Audigy FX V2",
+      "nombre": "Seagate BarraCuda 2TB",
+      "modelo": "ST2000DM008",
       "cantidad": 1,
-      "precioCOP": 366000,
+      "precioCOP": 394000,
       "proveedor": "eeuu"
     },
-    "id": "7823f030-e5fd-49ec-8ad4-a0be737b7306",
-    "fecha": "2026-06-12T03:28:22.677Z",
+    "proveedorDetalle": {
+      "urlCompra": "https://www.newegg.com/seagate-barracuda-st2000dm008-2tb-for-daily-computing-7200-rpm/p/N82E16822184773",
+      "costoUSD": 54.99,
+      "costoTotalCOP": 304000,
+      "margenCOP": 90000,
+      "precioMercadoLocal": 413000,
+      "fuenteLocal": "https://www.mercadolibre.com.co/disco-duro-interno-seagate-barracuda-st2000dm008-2tb-plata/p/MCO18103083",
+      "comparacionMercado": "MercadoLibre más caro: $413.000 (3 listados) vs $394.000 (US importado)"
+    },
+    "id": "ba45debc-7c8c-4130-8530-61f23115e052",
+    "orderNumber": "130626104",
+    "fecha": "2026-06-13T18:21:51.656Z",
     "estado": "pendiente"
   }
 ]

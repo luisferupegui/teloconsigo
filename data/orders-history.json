@@ -1,6 +1,83 @@
 [
   {
     "cliente": {
+      "nombre": "Pedro Malvano",
+      "cedula": "1034567894",
+      "direccion": "Cra 35 No 89 Sur - 43 Bloque 4 Apto 502",
+      "ciudad": "Bogotá",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Seagate BarraCuda 2TB SATA 3.5\" Interno",
+      "cantidad": 1,
+      "precioCOP": 328000,
+      "proveedor": "eeuu"
+    },
+    "id": "2b4bf4e8-9612-463b-9300-8a7836843339",
+    "orderNumber": "130626103",
+    "fecha": "2026-06-13T18:02:30.625Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-13T18:24:29.485Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Miguel Perez",
+      "cedula": "1020345678",
+      "direccion": "Carrera 45 No 67 - 13 Apto 301",
+      "ciudad": "Cali",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "WD Blue 2TB (WD20EZBX) - Disco duro interno 3.5\" SATA",
+      "modelo": "WD20EZBX",
+      "cantidad": 1,
+      "precioCOP": 339000,
+      "proveedor": "eeuu"
+    },
+    "proveedorDetalle": {
+      "urlCompra": "https://www.amazon.com/dp/B07X5RV14Y",
+      "costoUSD": 59.99,
+      "costoTotalCOP": 421000,
+      "margenCOP": -82000
+    },
+    "id": "a7f8df82-d85f-4f30-a5b9-e53af110dfd2",
+    "orderNumber": "130626103",
+    "fecha": "2026-06-13T17:37:05.209Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-13T18:24:26.630Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Carlos Botero",
+      "cedula": "1020678914",
+      "direccion": "Calle 3 No 5 - 45",
+      "ciudad": "Neiva",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Sound Blaster Audigy FX V2 (SB1870)",
+      "modelo": "SB1870",
+      "cantidad": 1,
+      "precioCOP": 415000,
+      "proveedor": "eeuu"
+    },
+    "proveedorDetalle": {
+      "urlCompra": "https://www.amazon.com/Creative-Sound-Blaster-Audigy-FX/dp/B0CKQK6F8L",
+      "costoUSD": 79.99,
+      "costoTotalCOP": 529000,
+      "margenCOP": -114000
+    },
+    "id": "e08b3119-a2ac-4ee2-af20-a0d72f01f607",
+    "orderNumber": "130626102",
+    "fecha": "2026-06-13T16:40:26.276Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-13T18:24:23.711Z"
+  },
+  {
+    "cliente": {
       "nombre": "Carlos Botero",
       "cedula": "23.455.789",
       "direccion": "Carrera 3 No 55 - 12",
