@@ -7,6 +7,8 @@ import path from "path";
 
 export type Settings = {
   anthropicApiKey?: string;
+  // Key de Serper (serper.dev) para la búsqueda de productos en EE.UU.
+  serperApiKey?: string;
   // Dominios donde el buscador web tiene permitido buscar (ej: "mercadolibre.com.co").
   webSearchSites?: string[];
 };
@@ -53,6 +55,21 @@ export function getAnthropicApiKey(): string | null {
 export function getKeySource(): "panel" | "env" | null {
   if (isRealKey(loadSettings().anthropicApiKey)) return "panel";
   if (isRealKey(process.env.ANTHROPIC_API_KEY)) return "env";
+  return null;
+}
+
+/** Key de Serper: primero la del panel, si no la del entorno (SERPER_API_KEY). */
+export function getSerperApiKey(): string | null {
+  const fromPanel = loadSettings().serperApiKey;
+  if (isRealKey(fromPanel)) return fromPanel.trim();
+  const fromEnv = process.env.SERPER_API_KEY;
+  if (isRealKey(fromEnv)) return fromEnv.trim();
+  return null;
+}
+
+export function getSerperKeySource(): "panel" | "env" | null {
+  if (isRealKey(loadSettings().serperApiKey)) return "panel";
+  if (isRealKey(process.env.SERPER_API_KEY)) return "env";
   return null;
 }
 

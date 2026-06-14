@@ -5,8 +5,11 @@ import {
   saveSettings,
   getAnthropicApiKey,
   getKeySource,
+  getSerperApiKey,
+  getSerperKeySource,
   maskKey,
 } from "@/lib/settings";
+import { validateSerperKey } from "@/lib/serper";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +30,14 @@ async function validateKey(key: string): Promise<{ valid: boolean; error?: strin
 
 function status() {
   const key = getAnthropicApiKey();
+  const serper = getSerperApiKey();
   return {
     hasKey: !!key,
     masked: key ? maskKey(key) : null,
     source: getKeySource(),
+    hasSerperKey: !!serper,
+    serperMasked: serper ? maskKey(serper) : null,
+    serperSource: getSerperKeySource(),
   };
 }
 
@@ -40,9 +47,26 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { apiKey?: string };
-    const incoming = (body.apiKey ?? "").trim();
+    const body = (await req.json()) as { apiKey?: string; serperApiKey?: string };
 
+    // ── Key de Serper ──
+    if (body.serperApiKey !== undefined) {
+      const incoming = body.serperApiKey.trim();
+      const settings = loadSettings();
+      if (incoming === "") delete settings.serperApiKey;
+      else settings.serperApiKey = incoming;
+      saveSettings(settings);
+
+      const effective = getSerperApiKey();
+      if (!effective) {
+        return NextResponse.json({ ...status(), ok: true, valid: false, error: "No hay key de Serper configurada." });
+      }
+      const { valid, error } = await validateSerperKey(effective);
+      return NextResponse.json({ ...status(), ok: true, valid, error });
+    }
+
+    // ── Key de Anthropic ──
+    const incoming = (body.apiKey ?? "").trim();
     const settings = loadSettings();
     if (incoming === "") {
       // Cadena vacía = borrar la clave del panel (volverá a usar la del entorno si existe).

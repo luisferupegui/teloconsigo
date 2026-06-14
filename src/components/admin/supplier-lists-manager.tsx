@@ -10,7 +10,10 @@ import { ImageSlot } from "@/components/admin/image-slot";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
-type KeyStatus = { hasKey: boolean; masked: string | null; source: "panel" | "env" | null };
+type KeyStatus = {
+  hasKey: boolean; masked: string | null; source: "panel" | "env" | null;
+  hasSerperKey?: boolean; serperMasked?: string | null; serperSource?: "panel" | "env" | null;
+};
 
 type ListMeta = {
   id: string; nombre: string; proveedor: string; fecha: string;
@@ -158,6 +161,7 @@ export function SupplierListsManager() {
   return (
     <div className="space-y-5">
       <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
+      <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
 
       {/* Sub-tabs */}
       <div className="flex flex-wrap gap-1 rounded-xl border border-zinc-200 bg-white p-1 w-fit shadow-sm">
@@ -299,6 +303,100 @@ function ApiKeyPanel({ status, onChange, flash }: {
         <span className="font-semibold text-emerald-900">Clave API configurada</span>
         <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs text-emerald-800">{status?.masked}</code>
         <span className="text-xs text-emerald-700">· fuente: {status?.source === "panel" ? "panel" : ".env.local"}</span>
+      </div>
+      <button onClick={() => setEditing(true)}
+        className="text-xs font-semibold text-emerald-700 underline hover:text-emerald-900">
+        Cambiar
+      </button>
+    </div>
+  );
+}
+
+// ─── Panel de la key de Serper (búsqueda EE.UU., opcional) ──────────────────────
+
+function SerperKeyPanel({ status, onChange, flash }: {
+  status: KeyStatus | null; onChange: () => void; flash: (ok: boolean, msg: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState("");
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serperApiKey: value.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { flash(false, data.error ?? "Error al guardar la key"); return; }
+      if (data.valid) { flash(true, "Key de Serper válida y guardada ✓"); setEditing(false); setValue(""); }
+      else { flash(false, data.error ?? "La key no es válida"); }
+      onChange();
+    } catch {
+      flash(false, "Error de red al guardar la key");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const configured = status?.hasSerperKey ?? false;
+
+  if (!configured || editing) {
+    return (
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+        <div className="flex items-start gap-3">
+          <KeyRound className="h-5 w-5 shrink-0 mt-0.5 text-zinc-500" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-zinc-900">
+              Búsqueda en EE.UU. con Serper <span className="font-normal text-zinc-400">(opcional, más barata)</span>
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500">
+              Abarata la cotización de productos en EE.UU. Consíguela gratis en{" "}
+              <a href="https://serper.dev" target="_blank" rel="noreferrer" className="font-semibold underline">serper.dev</a>{" "}
+              (2.500 búsquedas sin tarjeta). Sin esta key, el sistema usa la búsqueda de Anthropic.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[260px]">
+                <input
+                  type={show ? "text" : "password"}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  placeholder="Tu API key de Serper"
+                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 pr-9 text-sm font-mono focus:border-indigo-400 focus:outline-none"
+                />
+                <button type="button" onClick={() => setShow((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
+                  {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <button onClick={save} disabled={saving || value.trim() === ""}
+                className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                Guardar y probar
+              </button>
+              {configured && (
+                <button onClick={() => { setEditing(false); setValue(""); }}
+                  className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-500 hover:text-zinc-700">
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
+      <div className="flex items-center gap-2 text-sm">
+        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+        <span className="font-semibold text-emerald-900">Serper conectado</span>
+        <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs text-emerald-800">{status?.serperMasked}</code>
+        <span className="text-xs text-emerald-700">· fuente: {status?.serperSource === "panel" ? "panel" : ".env"}</span>
       </div>
       <button onClick={() => setEditing(true)}
         className="text-xs font-semibold text-emerald-700 underline hover:text-emerald-900">

@@ -73,3 +73,6 @@ data/admin-users.json
 
 # backups automáticos de datos (.bak)
 data/*.bak
+
+# caché efímero de cotizaciones web (Serper/IA) — se regenera solo
+data/web-cache.json

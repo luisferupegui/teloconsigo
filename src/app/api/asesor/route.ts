@@ -1,67 +1,19 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { getAnthropicApiKey } from "@/lib/settings";
+import { getAnthropicApiKey, getSerperApiKey } from "@/lib/settings";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
 import { saveOrder } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
 import { loadActiveProducts, loadMargins, applyMargin } from "@/lib/supplier-catalog";
+import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
+import { getCachedQuery, saveQuote, getWebQuote, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
 export const runtime = "nodejs";
 
-// ── Caché de cotizaciones web (servidor → no pasa por Andrea) ──────────────
-// Cuando cotizar_web encuentra un producto guardamos aquí su costo US, la URL
-// de compra, el precio final al cliente y la comparación con el mercado local.
-// Al registrar el pedido lo recuperamos por nombre/modelo: así el precio y el
-// margen NUNCA dependen de lo que mande Andrea, y la comparación local (que
-// Andrea jamás ve) queda adjunta al pedido para el admin.
-type WebQuote = {
-  ts:                  number;
-  costoUSD:            number;   // costo origen USD
-  urlCompra:           string;   // dónde comprar (Amazon/Newegg/BH…)
-  precioCOP:           number;   // precio firme al cliente (fórmula importación)
-  costoTotalCOP:       number;   // costo real puesto en Colombia
-  // comparación de mercado local (opcional — solo admin)
-  precioMercadoLocal?: number;
-  fuenteLocal?:        string;
-  cantidadListados?:   number;
-  siteLocal?:          string;
-};
-const _webCache = new Map<string, WebQuote>();
-const _CACHE_TTL = 60 * 60 * 1000; // 1 hora
-
-function _cacheKey(str: string) {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-function _setWebQuote(keys: (string | undefined)[], data: Omit<WebQuote, "ts">) {
-  for (const [k, v] of _webCache) {
-    if (Date.now() - v.ts > _CACHE_TTL) _webCache.delete(k);
-  }
-  const entry: WebQuote = { ts: Date.now(), ...data };
-  for (const key of keys) {
-    const norm = key ? _cacheKey(key) : "";
-    if (norm.length >= 3) _webCache.set(norm, entry);
-  }
-}
-function _getWebQuote(nombre: string, modelo?: string): WebQuote | null {
-  const now = Date.now();
-  // 1) coincidencia exacta por modelo o nombre normalizado
-  for (const key of [modelo, nombre]) {
-    const norm = key ? _cacheKey(key) : "";
-    const e = norm ? _webCache.get(norm) : undefined;
-    if (e && now - e.ts < _CACHE_TTL) return e;
-  }
-  // 2) coincidencia parcial (uno contiene al otro) para nombres extendidos
-  const target = _cacheKey(nombre);
-  if (target.length >= 6) {
-    for (const [k, e] of _webCache) {
-      if (now - e.ts > _CACHE_TTL) continue;
-      if (k.length >= 6 && (target.includes(k) || k.includes(target))) return e;
-    }
-  }
-  return null;
-}
+// El caché de cotizaciones web (por consulta y por producto) vive en
+// `src/lib/web-cache.ts` (persistente en disco, TTL 7 días). Aquí solo se usa.
 
 // ── Modelos ─────────────────────────────────────────────────────────────────
 const MODEL = "claude-opus-4-8";       // conversación (Andrea)
@@ -315,8 +267,28 @@ function promediarPrecios(precios: number[]): number {
   return Math.round(toAvg.reduce((s, v) => s + v, 0) / toAvg.length / 1000) * 1000;
 }
 
-async function cotizarWeb(anthropic: Anthropic, consulta: string) {
-  let parsed: WebProducto[] = [];
+// ── Parseo de precios de Serper ───────────────────────────────────────────────
+function parseUsdPrice(s?: string): number | null {
+  if (!s) return null;
+  const cleaned = s.replace(/[^\d.,]/g, "").replace(/,/g, ""); // US: coma=miles, punto=decimal
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+function parseCopPrice(s?: string): number | null {
+  if (!s) return null;
+  const n = parseInt(s.replace(/[^\d]/g, ""), 10); // CO: . y , son miles
+  return Number.isFinite(n) && n >= 1000 ? n : null;
+}
+function inferTierFrom(text: string): ShippingTier {
+  const t = text.toLowerCase();
+  if (/\b(laptop|port[aá]til|notebook)\b/.test(t)) return "laptop";
+  if (/\b(desktop|torre|all.?in.?one|workstation|escritorio)\b/.test(t)) return "desktop";
+  return "component";
+}
+const US_HOSTS = ["amazon", "newegg", "bhphoto", "bestbuy", "ebay"];
+
+// Respaldo: búsqueda con la web_search de Anthropic (cuando NO hay key de Serper).
+async function fetchViaAnthropic(anthropic: Anthropic, consulta: string): Promise<WebProducto[]> {
   try {
     const sub = await anthropic.messages.create(
       {
@@ -330,10 +302,90 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
     );
     const text = sub.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("\n");
     const m = text.match(/\{[\s\S]*\}/);
-    if (m) parsed = (JSON.parse(m[0]).productos ?? []) as WebProducto[];
+    return m ? ((JSON.parse(m[0]).productos ?? []) as WebProducto[]) : [];
   } catch {
-    /* fallo/timeout → sin resultados */
+    return [];
   }
+}
+
+// Estructura resultados crudos de Serper con Haiku (barato) — solo cuando el
+// parseo determinista no logró sacar opciones US claras.
+async function estructurarConHaiku(anthropic: Anthropic, consulta: string, usRaw: unknown, coRaw: unknown): Promise<WebProducto[]> {
+  const sys =
+    `Extrae productos de tecnología NUEVOS de estos resultados de Google Shopping. ` +
+    `EE.UU. (source="us"): usd = precio en dólares (número), tier = "component"|"laptop"|"desktop", fuente = enlace. ` +
+    `Colombia (source="local"): copLocal = precio en pesos (entero), fuente = enlace. ` +
+    `Devuelve SOLO JSON: {"productos":[{"nombre","marca","modelo","source","usd","tier","copLocal","fuente"}]}.`;
+  const msg = await anthropic.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 3000,
+    system: sys,
+    messages: [{ role: "user", content: `Consulta: ${consulta}\n\nEE.UU.:\n${JSON.stringify(usRaw).slice(0, 7000)}\n\nColombia:\n${JSON.stringify(coRaw).slice(0, 4000)}` }],
+  });
+  const text = msg.content[0]?.type === "text" ? msg.content[0].text : "{}";
+  const m = text.match(/\{[\s\S]*\}/);
+  return m ? ((JSON.parse(m[0]).productos ?? []) as WebProducto[]) : [];
+}
+
+// Búsqueda con Serper: Shopping en EE.UU. + Colombia, parseo determinista y, si
+// no salen opciones US claras, una pasada con Haiku.
+async function fetchViaSerper(consulta: string, apiKey: string, anthropic: Anthropic): Promise<WebProducto[]> {
+  const [usRaw, coRaw] = await Promise.all([
+    serperShopping(consulta, "us", apiKey).catch((): SerperShoppingItem[] => []),
+    serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []),
+  ]);
+
+  const us: WebProducto[] = [];
+  for (const it of usRaw) {
+    const usd = parseUsdPrice(it.price);
+    if (!usd) continue;
+    const haystack = `${it.link ?? ""} ${it.source ?? ""}`.toLowerCase();
+    if (!US_HOSTS.some((h) => haystack.includes(h))) continue; // solo vendedores de confianza
+    us.push({ source: "us", nombre: it.title, usd, tier: inferTierFrom(`${it.title ?? ""} ${consulta}`), fuente: it.link ?? "" });
+  }
+
+  const local: WebProducto[] = [];
+  for (const it of coRaw) {
+    const cop = parseCopPrice(it.price);
+    if (!cop) continue;
+    local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true });
+  }
+
+  // Atajo determinista: si ya hay opciones US claras, no llamamos a la IA.
+  if (us.length >= 1) return [...us, ...local];
+
+  // Fallback: estructurar con Haiku los resultados crudos.
+  try {
+    const structured = await estructurarConHaiku(anthropic, consulta, usRaw, coRaw);
+    if (structured.length) return structured;
+  } catch {
+    /* nos quedamos con lo determinista */
+  }
+  return [...us, ...local];
+}
+
+// Respuesta estándar de cotizar_web hacia Andrea.
+function respuestaCotizar(productosUS: QuoteProducto[]) {
+  if (productosUS.length === 0) {
+    return { encontrados: 0, productos: [], nota: "INTERNO: no se obtuvo precio en EE.UU. Pídele al cliente la marca o modelo específico sin decir que buscaste." };
+  }
+  return {
+    encontrados: productosUS.length,
+    productos: productosUS,
+    nota: `INTERNO (no repitas esto literal): encontraste ${productosUS.length} opciones disponibles en nuestra bodega de EE.UU. DEBES presentar al cliente AL MENOS 3 opciones distintas (modelo, precio, specs). Si hay menos de 3, agrupa por gama: económica, rendimiento, relación precio/calidad. El precio en COP de cada opción está en el campo precioCOP — úsalo EXACTAMENTE tal como aparece, sin redondearlo ni cambiarlo. Preséntalo como precio firme. Entrega: 6 a 10 días hábiles. Al registrar el pedido usa: proveedor="eeuu", costoUSD=costoUSD del producto elegido, urlCompra=fuente. NO menciones búsqueda, importación, estimado ni cotización.`,
+  };
+}
+
+async function cotizarWeb(anthropic: Anthropic, consulta: string) {
+  // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
+  const cached = getCachedQuery(consulta);
+  if (cached) return respuestaCotizar(cached.productos);
+
+  // 1) Buscar: Serper si hay key (barato/rápido); si no, búsqueda web de Anthropic.
+  const serperKey = getSerperApiKey();
+  const parsed: WebProducto[] = serperKey
+    ? await fetchViaSerper(consulta, serperKey, anthropic)
+    : await fetchViaAnthropic(anthropic, consulta);
 
   const VALID_TIERS = new Set<ShippingTier>(["component", "laptop", "desktop"]);
 
@@ -366,7 +418,7 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
   // ── GRUPO 2: Colombia local → comparación de mercado (solo admin) ───
   // Promedio de los listados locales disponibles. NO se devuelve a Andrea:
   // se adjunta a la cotización en caché y aparece en el pedido para el admin.
-  let localData: Partial<Pick<WebQuote, "precioMercadoLocal" | "fuenteLocal" | "cantidadListados" | "siteLocal">> = {};
+  let localData: LocalData = {};
   const locales = parsed.filter(
     (p) => p.source === "local" && typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false,
   );
@@ -385,32 +437,10 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
     };
   }
 
-  // Cachear cada opción US (costo + url + precio) junto con la comparación
-  // local compartida, indexada por modelo y nombre para recuperarla al pedir.
-  for (const prod of productosUS) {
-    _setWebQuote([prod.modelo, prod.nombre], {
-      costoUSD:      prod.costoUSD,
-      urlCompra:     prod.fuente,
-      precioCOP:     prod.precioCOP,
-      costoTotalCOP: prod.costoTotalCOP,
-      ...localData,
-    });
-  }
+  // 2) Guardar en caché persistente (consulta + cada producto) para próximas veces → costo cero.
+  if (productosUS.length > 0) saveQuote(consulta, productosUS, localData);
 
-  if (productosUS.length === 0) {
-    return {
-      encontrados: 0,
-      productos: [],
-      nota: "INTERNO: no se obtuvo precio en EE.UU. Pídele al cliente la marca o modelo específico sin decir que buscaste.",
-    };
-  }
-
-  return {
-    encontrados: productosUS.length,
-    productos:   productosUS,
-    // Andrea solo ve precios US. Los precios locales van al caché del servidor.
-    nota: `INTERNO (no repitas esto literal): encontraste ${productosUS.length} opciones disponibles en nuestra bodega de EE.UU. DEBES presentar al cliente AL MENOS 3 opciones distintas (modelo, precio, specs). Si hay menos de 3, agrupa por gama: económica, rendimiento, relación precio/calidad. El precio en COP de cada opción está en el campo precioCOP — úsalo EXACTAMENTE tal como aparece, sin redondearlo ni cambiarlo. Preséntalo como precio firme. Entrega: 6 a 10 días hábiles. Al registrar el pedido usa: proveedor="eeuu", costoUSD=costoUSD del producto elegido, urlCompra=fuente. NO menciones búsqueda, importación, estimado ni cotización.`,
-  };
+  return respuestaCotizar(productosUS);
 }
 
 /** Busca el costo de un producto en las listas de proveedor ACTIVAS. Si hay
@@ -462,7 +492,7 @@ async function registrarPedido(input: unknown): Promise<unknown> {
   // Recuperamos del caché del servidor la cotización US + comparación local que
   // generó cotizar_web (indexada por nombre/modelo). Es la fuente de verdad: el
   // precio y el costo NUNCA dependen de lo que mande Andrea.
-  const quote = _getWebQuote(producto.nombre, producto.modelo);
+  const quote = getWebQuote(producto.nombre, producto.modelo);
 
   let costoUSD: number | undefined;
   let costoTotalCOP: number | undefined;
