@@ -197,46 +197,36 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 //      b) Busca en Colombia local (MercadoLibre/Alkosto/Falabella) → SOLO comparación
 //         interna en el admin; el cliente nunca ve estos precios
 //
-const SITIOS_US    = ["amazon.com", "newegg.com", "bhphotovideo.com", "bestbuy.com", "ebay.com"];
+// Tiendas de EE.UU. PRIORIZADAS para B2B/empresarial (el orden es la prioridad).
+// El precio de EE.UU. lo busca Anthropic (lee la página y da el precio real;
+// Serper no puede con estos sitios). La comparación local sí va por Serper.
+const SITIOS_US = [
+  "cdw.com", "serversupply.com", "provantage.com", "insight.com", "connection.com", // infraestructura empresarial
+  "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com",               // general
+  "amazon.com", "ebay.com",                                                          // último recurso
+];
 const SITIOS_LOCAL = ["mercadolibre.com.co", "alkosto.com", "falabella.com.co", "exito.com"];
 
-const SUB_SYSTEM = `Eres un buscador de precios para una tienda de tecnología en Colombia.
+const SUB_SYSTEM = `Eres un buscador de precios de tecnología en EE.UU. para una tienda colombiana B2B (atiende empresas).
 
-Busca en DOS grupos SEPARADOS y devuelve resultados de AMBOS:
+Traduce la consulta al inglés. Solo artículos NUEVOS. El precio va en dólares, SIN el envío internacional a Colombia.
 
-═══════════════════════════════════════════
-GRUPO 1 — EE.UU. (${SITIOS_US.join(", ")}):
-═══════════════════════════════════════════
-- Prioridad: amazon.com y newegg.com primero; bhphotovideo.com y bestbuy.com después; ebay.com solo si no hay nada en los anteriores.
-- Traduce la consulta al inglés.
-- Solo artículos NUEVOS. En eBay: suma el flete interno de EE.UU. al precio.
-- Si el mismo modelo aparece en varios sitios US, devuelve SOLO el de menor precio.
-- Campos: source="us", usd (precio en dólares, sin envío internacional), tier, fuente (URL directa al producto).
+PRIORIZA estas tiendas en este ORDEN (muchas las ignoran otros buscadores, pero para equipo empresarial son clave):
+1. INFRAESTRUCTURA EMPRESARIAL — switches, routers, access points, servidores, storage/NAS, y marcas Cisco, Ubiquiti/UniFi, Dell, HPE, Synology, Aruba, Fortinet: **cdw.com, serversupply.com, provantage.com, insight.com, connection.com**
+2. GENERAL — laptops, componentes, monitores, impresoras, periféricos: **newegg.com, bhphotovideo.com, bestbuy.com, microcenter.com**
+3. ÚLTIMO RECURSO (solo si no hay en las anteriores): amazon.com, ebay.com (en eBay suma el flete interno de EE.UU.)
 
-═══════════════════════════════════════════
-GRUPO 2 — COLOMBIA LOCAL (${SITIOS_LOCAL.join(", ")}):
-═══════════════════════════════════════════
-- Busca en español. Solo artículos NUEVOS.
-- Objetivo: recoger HASTA 5 PRECIOS DISTINTOS del mismo producto en diferentes vendedores/listados para calcular un promedio de mercado.
-- Verifica que el producto esté DISPONIBLE (no "Agotado", no "Pausado", no vendedor inactivo). Solo incluye los disponibles.
-- Campos: source="local", copLocal (precio en COP, sin envío), fuente (URL del listing), disponible: true/false.
-
-REGLAS GENERALES:
-- Busca en AMBOS grupos aunque ya hayas encontrado en uno de ellos.
-- Máximo 6 búsquedas en total (distribuye entre los dos grupos).
-- NUNCA incluyas el envío internacional de EE.UU. en el campo usd.
-- Solo productos NUEVOS.
-
-VARIEDAD (solo para GRUPO 1): hasta 5 opciones distintas — la más económica, la de mejor rendimiento y la de mejor relación precio/calidad.
+Reglas:
+- Si el cliente busca red/servidores/storage/equipo empresarial, EMPIEZA por el grupo 1.
+- Si el mismo modelo aparece en varias tiendas, devuelve el de MENOR precio.
+- Devuelve HASTA 5 opciones distintas (económica, rendimiento, relación precio/calidad). Máximo 6 búsquedas.
 
 Devuelve EXCLUSIVAMENTE JSON válido (sin texto, sin markdown, sin \`\`\`):
 {"productos":[
-  {"nombre":"...","marca":"...","modelo":"...","specs":"descripción breve","source":"us","usd":0.00,"tier":"component","fuente":"<url directa>"},
-  {"nombre":"...","marca":"...","modelo":"...","source":"local","copLocal":0,"fuente":"<url del listing>","disponible":true}
+  {"nombre":"...","marca":"...","modelo":"...","specs":"descripción breve en español","source":"us","usd":0.00,"tier":"component","fuente":"<url directa>"}
 ]}
 
-"specs": 3–8 palabras en español (solo para source="us").
-"tier" (solo source="us"): "laptop" | "desktop" | "component"
+"specs": 3–8 palabras en español. "tier": "laptop" | "desktop" | "component" (servidores/torres/all-in-one = "desktop"; switches/APs/accesorios = "component").
 
 Si no encuentras nada: {"productos":[]}.`;
 
@@ -267,28 +257,20 @@ function promediarPrecios(precios: number[]): number {
   return Math.round(toAvg.reduce((s, v) => s + v, 0) / toAvg.length / 1000) * 1000;
 }
 
-// ── Parseo de precios de Serper ───────────────────────────────────────────────
-function parseUsdPrice(s?: string): number | null {
-  if (!s) return null;
-  const cleaned = s.replace(/[^\d.,]/g, "").replace(/,/g, ""); // US: coma=miles, punto=decimal
-  const n = parseFloat(cleaned);
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
+// Precio local (Colombia) desde Serper Shopping: . y , son separadores de miles.
 function parseCopPrice(s?: string): number | null {
   if (!s) return null;
-  const n = parseInt(s.replace(/[^\d]/g, ""), 10); // CO: . y , son miles
+  const n = parseInt(s.replace(/[^\d]/g, ""), 10);
   return Number.isFinite(n) && n >= 1000 ? n : null;
 }
-function inferTierFrom(text: string): ShippingTier {
-  const t = text.toLowerCase();
-  if (/\b(laptop|port[aá]til|notebook)\b/.test(t)) return "laptop";
-  if (/\b(desktop|torre|all.?in.?one|workstation|escritorio)\b/.test(t)) return "desktop";
-  return "component";
-}
-const US_HOSTS = ["amazon", "newegg", "bhphoto", "bestbuy", "ebay"];
 
-// Respaldo: búsqueda con la web_search de Anthropic (cuando NO hay key de Serper).
-async function fetchViaAnthropic(anthropic: Anthropic, consulta: string): Promise<WebProducto[]> {
+// Ruido típico de Shopping: PCs/torres completos y lotes que NO son el producto pedido.
+const SERPER_NOISE = /\b(gaming pc|gaming desktop|desktop pc|pc with|torre|computador|tower|barebone|bundle|combo|lote|pre-?built|prebuilt)\b/i;
+
+// PRECIO EE.UU. (lo que paga el cliente) → búsqueda web de Anthropic: es lo único
+// que lee la página y da el precio REAL (Serper no puede con estos sitios). Las
+// tiendas B2B priorizadas viven en SUB_SYSTEM.
+async function fetchUsViaAnthropic(anthropic: Anthropic, consulta: string): Promise<WebProducto[]> {
   try {
     const sub = await anthropic.messages.create(
       {
@@ -308,71 +290,18 @@ async function fetchViaAnthropic(anthropic: Anthropic, consulta: string): Promis
   }
 }
 
-// Filtra y estructura resultados crudos de Serper con Haiku (barato). Los
-// resultados de Google Shopping vienen sucios (mezclan el producto con PCs
-// completos y lotes); Haiku se queda SOLO con el producto exacto que pidió el cliente.
-async function estructurarConHaiku(anthropic: Anthropic, consulta: string, usRaw: unknown, coRaw: unknown): Promise<WebProducto[]> {
-  const sys =
-    `Eres un filtro de resultados de Google Shopping para una tienda de tecnología. ` +
-    `El cliente busca EXACTAMENTE: «${consulta}». De los resultados, devuelve SOLO los que sean ESE producto específico y NUEVO. ` +
-    `DESCARTA SIEMPRE: computadores/PC/torres/desktops armados que INCLUYEN el producto (si pidió un procesador, un "Gaming PC con ese CPU" NO sirve), lotes/combos/bundles de varios modelos, productos usados/reacondicionados, y accesorios que no son lo pedido. ` +
-    `EE.UU. (source="us"): usd = precio en dólares (número), tier = "component"|"laptop"|"desktop", fuente = enlace. ` +
-    `Colombia (source="local"): copLocal = precio en pesos (entero), fuente = enlace. ` +
-    `Máximo 5 de cada grupo, las opciones más representativas por precio. ` +
-    `Devuelve SOLO JSON: {"productos":[{"nombre","marca","modelo","source","usd","tier","copLocal","fuente"}]}. Si nada coincide, {"productos":[]}.`;
-  const msg = await anthropic.messages.create({
-    model: "claude-haiku-4-5",
-    max_tokens: 3000,
-    system: sys,
-    messages: [{ role: "user", content: `Consulta: ${consulta}\n\nEE.UU.:\n${JSON.stringify(usRaw).slice(0, 7000)}\n\nColombia:\n${JSON.stringify(coRaw).slice(0, 4000)}` }],
-  });
-  const text = msg.content[0]?.type === "text" ? msg.content[0].text : "{}";
-  const m = text.match(/\{[\s\S]*\}/);
-  return m ? ((JSON.parse(m[0]).productos ?? []) as WebProducto[]) : [];
-}
-
-// Ruido típico de Google Shopping: PCs/torres completos y lotes que NO son el
-// producto pedido. Se usa solo en el respaldo determinista (Haiku ya filtra mejor).
-const SERPER_NOISE = /\b(gaming pc|gaming desktop|desktop pc|pc with|torre|computador|tower|barebone|bundle|combo|lote|pre-?built|prebuilt)\b/i;
-
-function parseSerperDeterminista(consulta: string, usRaw: SerperShoppingItem[], coRaw: SerperShoppingItem[]): WebProducto[] {
-  const us: WebProducto[] = [];
-  for (const it of usRaw) {
-    const usd = parseUsdPrice(it.price);
-    if (!usd) continue;
-    if (SERPER_NOISE.test(it.title ?? "")) continue;            // descarta PCs/lotes
-    const haystack = `${it.link ?? ""} ${it.source ?? ""}`.toLowerCase();
-    if (!US_HOSTS.some((h) => haystack.includes(h))) continue;  // solo vendedores de confianza
-    us.push({ source: "us", nombre: it.title, usd, tier: inferTierFrom(`${it.title ?? ""} ${consulta}`), fuente: it.link ?? "" });
-  }
+// COMPARACIÓN LOCAL (solo admin) → Serper Shopping gl=co: aquí el precio SÍ viene
+// limpio en el resultado (MercadoLibre/Alkosto/Falabella/Éxito). Barato y determinista.
+async function fetchLocalViaSerper(consulta: string, apiKey: string): Promise<WebProducto[]> {
+  const raw = await serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []);
   const local: WebProducto[] = [];
-  for (const it of coRaw) {
+  for (const it of raw) {
     const cop = parseCopPrice(it.price);
     if (!cop) continue;
-    if (SERPER_NOISE.test(it.title ?? "")) continue;
+    if (SERPER_NOISE.test(it.title ?? "")) continue; // descarta PCs/lotes
     local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true });
   }
-  return [...us, ...local];
-}
-
-// Búsqueda con Serper: Shopping en EE.UU. + Colombia. Los resultados vienen sucios
-// (mezclan el producto con PCs completos y lotes), así que Haiku los FILTRA y deja
-// solo el producto exacto. Si Haiku falla, respaldo determinista con filtro de ruido.
-async function fetchViaSerper(consulta: string, apiKey: string, anthropic: Anthropic): Promise<WebProducto[]> {
-  const [usRaw, coRaw] = await Promise.all([
-    serperShopping(consulta, "us", apiKey).catch((): SerperShoppingItem[] => []),
-    serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []),
-  ]);
-  if (usRaw.length === 0 && coRaw.length === 0) return [];
-
-  // Haiku filtra/estructura (corre solo en miss de caché → casi gratis).
-  try {
-    const structured = await estructurarConHaiku(anthropic, consulta, usRaw, coRaw);
-    if (structured.length) return structured;
-  } catch {
-    /* respaldo determinista abajo */
-  }
-  return parseSerperDeterminista(consulta, usRaw, coRaw);
+  return local;
 }
 
 // Respuesta estándar de cotizar_web hacia Andrea.
@@ -392,11 +321,14 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
   const cached = getCachedQuery(consulta);
   if (cached) return respuestaCotizar(cached.productos);
 
-  // 1) Buscar: Serper si hay key (barato/rápido); si no, búsqueda web de Anthropic.
+  // 1) Precio EE.UU. SIEMPRE por Anthropic (preciso, lee la página). La comparación
+  //    local va por Serper (barato, solo si hay key). Ambas en paralelo.
   const serperKey = getSerperApiKey();
-  const parsed: WebProducto[] = serperKey
-    ? await fetchViaSerper(consulta, serperKey, anthropic)
-    : await fetchViaAnthropic(anthropic, consulta);
+  const [usParsed, localParsed] = await Promise.all([
+    fetchUsViaAnthropic(anthropic, consulta),
+    serperKey ? fetchLocalViaSerper(consulta, serperKey) : Promise.resolve<WebProducto[]>([]),
+  ]);
+  const parsed: WebProducto[] = [...usParsed, ...localParsed];
 
   const VALID_TIERS = new Set<ShippingTier>(["component", "laptop", "desktop"]);
 
