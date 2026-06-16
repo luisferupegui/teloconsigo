@@ -1,0 +1,9 @@
+{
+  "divisor": 0.7,
+  "trm": 3800,
+  "shipping": {
+    "component": 25,
+    "laptop": 60,
+    "desktop": 100
+  }
+}

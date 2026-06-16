@@ -49,9 +49,9 @@ function TiktokIcon({ className = "" }: { className?: string }) {
 }
 
 const EMAIL = "contacto@teloconsigo.co";
-const TEL_DISPLAY = "+1 407 916 9299";
-const TEL_E164 = "+14079169299";
-const WHATSAPP = "+14079169299";
+const TEL_DISPLAY = "+57 310 2878194";
+const TEL_E164 = "+573102878194";
+const WHATSAPP = "+573102878194";
 
 export default function ContactoPage() {
   const [sent, setSent] = useState(false);

@@ -132,12 +132,16 @@ function HistorialRow({ order: o }: { order: HistoryOrder }) {
         ) : (
           <span className="text-zinc-300">—</span>
         )}
-        {pd?.comparacionMercado && (
+        {pd?.comparacionProveedores && pd.comparacionProveedores.length > 0 ? (
+          <p className="text-xs mt-0.5 text-emerald-600" title="Fuente más barata para conseguirlo">
+            💡 {pd.comparacionProveedores[0].fuente}: {formatCOP(pd.comparacionProveedores[0].costoCOP)}
+          </p>
+        ) : pd?.comparacionMercado ? (
           <p className={`text-xs mt-0.5 ${pd.comparacionMercado.includes("más económico") ? "text-emerald-600" : "text-amber-600"}`}>
             {pd.comparacionMercado.includes("más económico") ? "📉 " : "📈 "}
             {pd.comparacionMercado.split(":")[0].replace("MercadoLibre","ML").replace("Falabella","Falla")}
           </p>
-        )}
+        ) : null}
       </td>
       <td className="px-4 py-3">
         <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${

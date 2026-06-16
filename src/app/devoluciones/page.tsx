@@ -162,7 +162,7 @@ export default function DevolucionesPage() {
             ¿Tienes dudas antes de radicar tu solicitud? Escríbenos directamente a{" "}
             <a href="mailto:soporte@teloconsigo.co" className="text-[#1e6cff] font-semibold hover:underline">soporte@teloconsigo.co</a>{" "}
             o por WhatsApp al{" "}
-            <a href="https://wa.me/14079169299" className="text-[#1e6cff] font-semibold hover:underline">+1 407 916 9299</a>.
+            <a href="https://wa.me/573102878194" className="text-[#1e6cff] font-semibold hover:underline">+57 310 2878194</a>.
           </p>
         </div>
       </section>

@@ -1,5 +1,2136 @@
 [
   {
+    "id": "lista-ledacom-1781542011376",
+    "nombre": "Lista de Precios Ledacom 15 Junio 2026.docx",
+    "proveedor": "ledacom",
+    "fecha": "2026-06-15T16:46:51.375Z",
+    "paginas": 0,
+    "caracteres": 0,
+    "activa": true,
+    "productos": [
+      {
+        "nombre": "Tab One TB305FU (4GB/128GB) + Estuche/Cargador",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 495000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tab-one-tb305fu-4gb-128gb-estu-1781542011375"
+      },
+      {
+        "nombre": "Tab One 4G LTE (4GB/128GB) Helio G85",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 579000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tab-one-4g-lte-4gb-128gb-helio-1781542011375"
+      },
+      {
+        "nombre": "Tab 10” TB311FU (4GB/128GB) + Combo Case/Audífonos",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 625000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tab-10-tb311fu-4gb-128gb-combo-1781542011375"
+      },
+      {
+        "nombre": "Tab LTE TB311XU (4GB/128GB) + Estuche Tipo Libro",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 675000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tab-lte-tb311xu-4gb-128gb-estu-1781542011375"
+      },
+      {
+        "nombre": "Idea Tab TB336FU (8GB/128GB) + Case/Lápiz 2.5K",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 855000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-idea-tab-tb336fu-8gb-128gb-cas-1781542011375"
+      },
+      {
+        "nombre": "Idea Tab TB336FU (8GB/128GB) + Teclado Folio/Pen Plus",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 899000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-idea-tab-tb336fu-8gb-128gb-tec-1781542011375"
+      },
+      {
+        "nombre": "Tab Plus TB351FU (8GB/256GB) 2K 90Hz",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 990000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tab-plus-tb351fu-8gb-256gb-2k--1781542011375"
+      },
+      {
+        "nombre": "Idea Tab LTE 5G TB336ZU (8GB/256GB) Dimensity 6300",
+        "marca": "Lenovo",
+        "categoria": "tableta",
+        "precio_costo": 1152000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-idea-tab-lte-5g-tb336zu-8gb-25-1781542011375"
+      },
+      {
+        "nombre": "Redmi Pad 2 (4GB/128GB) 11\" 2.5K 90Hz",
+        "marca": "Xiaomi",
+        "categoria": "tableta",
+        "precio_costo": 599000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-redmi-pad-2-4gb-128gb-11-2-5k--1781542011375"
+      },
+      {
+        "nombre": "Redmi Pad 2 (8GB/256GB) 11\" 2.5K 90Hz",
+        "marca": "Xiaomi",
+        "categoria": "tableta",
+        "precio_costo": 719000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-redmi-pad-2-8gb-256gb-11-2-5k--1781542011375"
+      },
+      {
+        "nombre": "Galaxy Tab A11+ (6GB/128GB) SM-X230 WUXGA",
+        "marca": "Samsung",
+        "categoria": "tableta",
+        "precio_costo": 712000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-galaxy-tab-a11-6gb-128gb-sm-x2-1781542011375"
+      },
+      {
+        "nombre": "Galaxy Tab A11+ (8GB/256GB) SM-X230 WUXGA",
+        "marca": "Samsung",
+        "categoria": "tableta",
+        "precio_costo": 789000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-galaxy-tab-a11-8gb-256gb-sm-x2-1781542011375"
+      },
+      {
+        "nombre": "ThinkPad E14 Gen 6 Core 5 210H (8/512) Win 11 Pro Onsite",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2449000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkpad-e14-gen-6-core-5-210h-1781542011375"
+      },
+      {
+        "nombre": "ThinkPad E14 Gen 6 Ryzen 5 7535U (16/512) Win 11 Pro",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 4079000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkpad-e14-gen-6-ryzen-5-753-1781542011375"
+      },
+      {
+        "nombre": "ThinkBook 14 G8 Core Ultra 5 225U (16/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2349000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkbook-14-g8-core-ultra-5-2-1781542011375"
+      },
+      {
+        "nombre": "V14 Gen 4 IRU i5-13420H (8/512) FHD No Vpro",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1659000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-gen-4-iru-i5-13420h-8-512--1781542011375"
+      },
+      {
+        "nombre": "V14 G5 IRL i5-13420H (8/512) DDR5 Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1889000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g5-irl-i5-13420h-8-512-ddr-1781542011375"
+      },
+      {
+        "nombre": "V14 G5 IRL i7-13620H (8/512) Carry-In",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2050000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g5-irl-i7-13620h-8-512-car-1781542011375"
+      },
+      {
+        "nombre": "V14 G5 IRL Core 7 240H (8/512) FreeDOS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2459000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g5-irl-core-7-240h-8-512-f-1781542011375"
+      },
+      {
+        "nombre": "V14 G4 AMN Ryzen 3 7320U (16/256) Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1390000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g4-amn-ryzen-3-7320u-16-25-1781542011375"
+      },
+      {
+        "nombre": "V14 G4 AMN Ryzen 5 7520U (16/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1645000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g4-amn-ryzen-5-7520u-16-51-1781542011375"
+      },
+      {
+        "nombre": "V14 G4 ARP Ryzen 7 7730U (8/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1799000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g4-arp-ryzen-7-7730u-8-512-1781542011375"
+      },
+      {
+        "nombre": "V14 G6 ARP Ryzen 7 170 (16/512) DDR5 Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2449000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v14-g6-arp-ryzen-7-170-16-512--1781542011375"
+      },
+      {
+        "nombre": "V15 G5 IRL i5-13420H (16/512) FHD",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2379000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v15-g5-irl-i5-13420h-16-512-fh-1781542011375"
+      },
+      {
+        "nombre": "V15 G5 IRL i7-13620H (16/512) + Servicio Técnico",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2759000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v15-g5-irl-i7-13620h-16-512-se-1781542011375"
+      },
+      {
+        "nombre": "V15 G4 AMN Ryzen 5 7520U (16/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1559000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-v15-g4-amn-ryzen-5-7520u-16-51-1781542011375"
+      },
+      {
+        "nombre": "Pro 15 Essential i5-1334U (8/512) Win 11 Pro",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2259000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-pro-15-essential-i5-1334u-8-51-1781542011375"
+      },
+      {
+        "nombre": "Pro 14 PC14255 Ryzen 5 PRO 230 NPU 16TOPS (16/512)",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2618700,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-pro-14-pc14255-ryzen-5-pro-230-1781542011375"
+      },
+      {
+        "nombre": "Pro 14 PC14250 Core Ultra 5 225U (16/512) + Servicio",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2849900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-pro-14-pc14250-core-ultra-5-22-1781542011375"
+      },
+      {
+        "nombre": "Pro 15 Essential PV15250 i7-1355U (16/512) + Servicio",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2799000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-pro-15-essential-pv15250-i7-13-1781542011375"
+      },
+      {
+        "nombre": "Inspiron 5000 5440 Core 7 150U (16/512) + Servicio",
+        "marca": "Dell",
+        "categoria": "portatil",
+        "precio_costo": 2939000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-inspiron-5000-5440-core-7-150u-1781542011375"
+      },
+      {
+        "nombre": "ExpertBook S65014X i5-13420H (8/512) Puerto RJ45",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2139000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-expertbook-s65014x-i5-13420h-8-1781542011375"
+      },
+      {
+        "nombre": "ExpertBook B3405CVA i5-13420H (16/512) DDR5",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2579000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-expertbook-b3405cva-i5-13420h--1781542011375"
+      },
+      {
+        "nombre": "ExpertBook B1403CVA i7-13620H (16/1TB) Win 11 Pro",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 3539000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-expertbook-b1403cva-i7-13620h--1781542011375"
+      },
+      {
+        "nombre": "ExpertBook P3406CKA Ryzen 7-350 NPU 50TOPS (16/1TB)",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 4629000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-expertbook-p3406cka-ryzen-7-35-1781542011375"
+      },
+      {
+        "nombre": "AV14-52P-55EB i5-1335U (16/512) Win 11 Pro",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2229000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-av14-52p-55eb-i5-1335u-16-512--1781542011375"
+      },
+      {
+        "nombre": "TMP214-55-586G i5-1335U (16/512) Win 11 Pro",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2330000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tmp214-55-586g-i5-1335u-16-512-1781542011375"
+      },
+      {
+        "nombre": "TMP214-55-G2 Core 5 120U (16/1TB) + Servicio Técnico",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2839000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tmp214-55-g2-core-5-120u-16-1t-1781542011375"
+      },
+      {
+        "nombre": "AV14-52P-72B2 i7-1355U (16/512) + Mouse AMR100",
+        "marca": "Acer",
+        "categoria": "portatil",
+        "precio_costo": 2769000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-av14-52p-72b2-i7-1355u-16-512--1781542011375"
+      },
+      {
+        "nombre": "Vivobook S16 Ryzen 9 270 NPU 16TOPS (16/512) + Servicio",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2900000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-s16-ryzen-9-270-npu-1-1781542011375"
+      },
+      {
+        "nombre": "Zenbook 14 OLED Ryzen AI 7-350 NPU 50TOPS (16/1TB)",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 3925000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-zenbook-14-oled-ryzen-ai-7-350-1781542011375"
+      },
+      {
+        "nombre": "Zenbook S 16 OLED Ryzen AI 7-350 NPU 50TOPS (24/1TB)",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 5990000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-zenbook-s-16-oled-ryzen-ai-7-3-1781542011375"
+      },
+      {
+        "nombre": "Zenbook A14 Copilot+ Snapdragon X NPU 45TOPS (16/1TB)",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 4699900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-zenbook-a14-copilot-snapdragon-1781542011375"
+      },
+      {
+        "nombre": "Vivobook 15 X1504ZA i3-1215U (8/512) No OS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1375000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-15-x1504za-i3-1215u-8-1781542011375"
+      },
+      {
+        "nombre": "Vivobook 15 X1504VA i3-1315U (8/1TB) No OS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1449000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-15-x1504va-i3-1315u-8-1781542011375"
+      },
+      {
+        "nombre": "Vivobook 15 X1504VA i5-1334U (12/512) No OS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1799000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-15-x1504va-i5-1334u-1-1781542011375"
+      },
+      {
+        "nombre": "Vivobook Go 15 i5-1334U (12/512) + Mouse/Backpack",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1869000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-go-15-i5-1334u-12-512-1781542011375"
+      },
+      {
+        "nombre": "Vivobook 15 X1502VA i5-13420H (16/1TB) EndLess",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2039000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-15-x1502va-i5-13420h--1781542011375"
+      },
+      {
+        "nombre": "Vivobook 15 X1504VA Core 5 120U (16/512) Touch",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2120000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-15-x1504va-core-5-120-1781542011375"
+      },
+      {
+        "nombre": "Vivobook B1403CVA Core 5-210H (16/512) EndLess",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2239000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-b1403cva-core-5-210h--1781542011375"
+      },
+      {
+        "nombre": "Vivobook X1605VA i5-13420H (16/1TB) 16\"",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2349000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-x1605va-i5-13420h-16--1781542011375"
+      },
+      {
+        "nombre": "Vivobook X1502VA i7-13620H (16/512) EndLess",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2569000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-x1502va-i7-13620h-16--1781542011375"
+      },
+      {
+        "nombre": "Vivobook X1605VAP Core 9 270H (16/512) + Servicio",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2969000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-x1605vap-core-9-270h--1781542011375"
+      },
+      {
+        "nombre": "Vivobook Go 15 Ryzen 5-7520U (16/512) + Mouse 1Y Carry In",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 1829000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-vivobook-go-15-ryzen-5-7520u-1-1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15IRH8 i3-1315U (8/512) FreeDOS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1379000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15irh8-i3-1315u-1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15IRH10 i5-13420H (16/512) Touch",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2120000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15irh10-i5-1342-1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15IAH8 i5-12450H (16/512) Touch",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2450000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15iah8-i5-12450-1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15IRH10 i7-13620H (24/512) FreeDOS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2618000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15irh10-i7-1362-1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15IRH10 i7-13620H (24/512) Linux + Servicio",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2919000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15irh10-i7-1362-1781542011375-2"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15AMN8 Ryzen 3 30 (16/512) No OS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1899000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15amn8-ryzen-3--1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15AHP10 Ryzen 5 8640HS NPU 16TOPS (8/512)",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1860000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15ahp10-ryzen-5-1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15ABR8 Ryzen 5 7520U (16/512) 2 Años Gtia",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 1969000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15abr8-ryzen-5--1781542011375"
+      },
+      {
+        "nombre": "IdeaPad Slim 3 15ABR8 Ryzen 7 5825U (16/512) 2 Años Gtia",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 2459000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideapad-slim-3-15abr8-ryzen-7--1781542011375"
+      },
+      {
+        "nombre": "Yoga Book 9 13IMU9 Core Ultra 7 155U NPU 11TOPS (16/1TB)",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 6799900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-yoga-book-9-13imu9-core-ultra--1781542011375"
+      },
+      {
+        "nombre": "Yoga 7 2-in-1 14AKP10 Ryzen AI 7 350 (32/1TB) OLED 120Hz",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 5429000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-yoga-7-2-in-1-14akp10-ryzen-ai-1781542011375"
+      },
+      {
+        "nombre": "240 G10 i5-1334U (8/512) FreeDOS",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1519000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-240-g10-i5-1334u-8-512-freedos-1781542011375"
+      },
+      {
+        "nombre": "15-FD0260LA i5-1334U (16/512) Linux",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1985000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-15-fd0260la-i5-1334u-16-512-li-1781542011375"
+      },
+      {
+        "nombre": "15-FD0354LA Core 5-120U (24/512) Linux",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 2099000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-15-fd0354la-core-5-120u-24-512-1781542011375"
+      },
+      {
+        "nombre": "255 G10 Ryzen 3 7320U (16/512) Linux",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1533000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-255-g10-ryzen-3-7320u-16-512-l-1781542011375"
+      },
+      {
+        "nombre": "15-FC0256LA Ryzen 5-7520U (16/512) FreeDOS",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 1839000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-15-fc0256la-ryzen-5-7520u-16-5-1781542011375"
+      },
+      {
+        "nombre": "15-FC0275LA Ryzen 7 7730U (16/512) FreeDOS",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 2319000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-15-fc0275la-ryzen-7-7730u-16-5-1781542011375"
+      },
+      {
+        "nombre": "TUF Gaming A15 Ryzen 5 7535HS RTX 3050 4GB No OS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2649000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tuf-gaming-a15-ryzen-5-7535hs--1781542011375"
+      },
+      {
+        "nombre": "TUF Gaming A15 Ryzen 7 7445HS RTX 3050 4GB + Servicio",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2849900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tuf-gaming-a15-ryzen-7-7445hs--1781542011375"
+      },
+      {
+        "nombre": "TUF Gaming FX607VJ i5-210H RTX 3050 6GB EndLess",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 2839000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tuf-gaming-fx607vj-i5-210h-rtx-1781542011375"
+      },
+      {
+        "nombre": "TUF Gaming FA607NUG Ryzen 7 RTX 4050 6GB 194 AI TOPS",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 4450000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-tuf-gaming-fa607nug-ryzen-7-rt-1781542011375"
+      },
+      {
+        "nombre": "ROG Strix G16 Ryzen 9 8940HX RTX 5060 8GB GDDR7",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 7899000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-rog-strix-g16-ryzen-9-8940hx-r-1781542011375"
+      },
+      {
+        "nombre": "ROG Flow Z13 Ryzen AI MAX+ 395 NPU 50TOPS (32/1TB)",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 9499000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-rog-flow-z13-ryzen-ai-max-395--1781542011375"
+      },
+      {
+        "nombre": "ROG G16 Core Ultra 9 275HX RTX 5080 (32/1TB)",
+        "marca": "Asus",
+        "categoria": "portatil",
+        "precio_costo": 13990000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-rog-g16-core-ultra-9-275hx-rtx-1781542011375"
+      },
+      {
+        "nombre": "$3.250.000 Excluido de IVA",
+        "marca": "Gaming",
+        "categoria": "accesorios",
+        "precio_costo": 3250000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom--3-250-000-excluido-de-iva-1781542011375"
+      },
+      {
+        "nombre": "LOQ 15AHP10 Ryzen 7 250 RTX 5050 8GB 440 AI TOPS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 5339000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-loq-15ahp10-ryzen-7-250-rtx-50-1781542011375"
+      },
+      {
+        "nombre": "Legion 5 15AHP10 Ryzen 7 260 RTX 5060 8GB 572 AI TOPS",
+        "marca": "Lenovo",
+        "categoria": "portatil",
+        "precio_costo": 6739000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-legion-5-15ahp10-ryzen-7-260-r-1781542011375"
+      },
+      {
+        "nombre": "Victus 15-@3019la Ryzen 7 7445H RTX 3050 6GB",
+        "marca": "HP",
+        "categoria": "portatil",
+        "precio_costo": 2618000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-victus-15-3019la-ryzen-7-7445h-1781542011375"
+      },
+      {
+        "nombre": "Cyborg 17 B2 Core 7-240H RTX 5060 8GB GDDR7",
+        "marca": "MSI",
+        "categoria": "portatil",
+        "precio_costo": 6549000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-cyborg-17-b2-core-7-240h-rtx-5-1781542011375"
+      },
+      {
+        "nombre": "ProOne 240 G10 Core Ultra 5-125U (8/512) + Servicio",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 2929000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-proone-240-g10-core-ultra-5-12-1781542011375"
+      },
+      {
+        "nombre": "ProOne 240 G10 Core Ultra 5-125U (8/512) 23.8\" FHD",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 2259000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-proone-240-g10-core-ultra-5-12-1781542011375-2"
+      },
+      {
+        "nombre": "ProOne 240 G10 Core Ultra 7-155U (8/512) + Servicio",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 2769000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-proone-240-g10-core-ultra-7-15-1781542011375"
+      },
+      {
+        "nombre": "22-DG0205LA Intel N100 (8/512) 21.5\" Linux",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 1275000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-22-dg0205la-intel-n100-8-512-2-1781542011375"
+      },
+      {
+        "nombre": "24-CR0332LA i3 N300 (8/512) 23.8\" FreeDOS",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 1669000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-24-cr0332la-i3-n300-8-512-23-8-1781542011375"
+      },
+      {
+        "nombre": "24-CB1023LA i3-1215U (8/512) 23.8\" Win 11 Home",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 1689000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-24-cb1023la-i3-1215u-8-512-23--1781542011375"
+      },
+      {
+        "nombre": "24-CK0257LA Ryzen 5 7520U (8/512) 23.8\" Linux",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 1940000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-24-ck0257la-ryzen-5-7520u-8-51-1781542011375"
+      },
+      {
+        "nombre": "24-CK0001LA Ryzen 5 7520U (16/512) 23.8\" Linux",
+        "marca": "HP",
+        "categoria": "all-in-one",
+        "precio_costo": 1985000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-24-ck0001la-ryzen-5-7520u-16-5-1781542011375"
+      },
+      {
+        "nombre": "ThinkCenter neo 50a 24 i5-13420H (16/512) 23.8\" FHD",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 4159000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcenter-neo-50a-24-i5-1342-1781542011375"
+      },
+      {
+        "nombre": "ThinkCenter neo 50a 24 i7-13620H (16/512) 23.8\" FHD",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 4409000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcenter-neo-50a-24-i7-1362-1781542011375"
+      },
+      {
+        "nombre": "ThinkCenter neo 50a 27 i7-13620H (16/512) 27\" FHD",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 4509000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcenter-neo-50a-27-i7-1362-1781542011375"
+      },
+      {
+        "nombre": "A100 Intel N100 (8/512) 23.8\" Linux Gris",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 1299000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-a100-intel-n100-8-512-23-8-lin-1781542011375"
+      },
+      {
+        "nombre": "A100 Intel i3-N305 (8/512) 23.8\" Linux Gris",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 1629000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-a100-intel-i3-n305-8-512-23-8--1781542011375"
+      },
+      {
+        "nombre": "ThinkCenter Neo 50a 24 i5-13420H (8/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2169000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcenter-neo-50a-24-i5-1342-1781542011375-2"
+      },
+      {
+        "nombre": "IdeaCentre 27IRH9 i5-13420H (8/512) 27\" Win 11 Home",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2399900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideacentre-27irh9-i5-13420h-8--1781542011375"
+      },
+      {
+        "nombre": "IdeaCentre 27IRH9 i5-13420H (16/512) 27\" + Servicio",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2849000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideacentre-27irh9-i5-13420h-16-1781542011375"
+      },
+      {
+        "nombre": "ThinkCenter Neo 50a 24 i7-13620H (8/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2439000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcenter-neo-50a-24-i7-1362-1781542011375-2"
+      },
+      {
+        "nombre": "IdeaCentre 27IRH9 i7-13620H (8/512) 27\" + Servicio",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2969700,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideacentre-27irh9-i7-13620h-8--1781542011375"
+      },
+      {
+        "nombre": "IdeaCentre 3 24ALC6 Ryzen 5 7430U (16/512) Linux",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2069000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideacentre-3-24alc6-ryzen-5-74-1781542011375"
+      },
+      {
+        "nombre": "IdeaCentre 3 24ALC6 Ryzen 7 7730U (8/512) No OS",
+        "marca": "Lenovo",
+        "categoria": "all-in-one",
+        "precio_costo": 2119000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ideacentre-3-24alc6-ryzen-7-77-1781542011376"
+      },
+      {
+        "nombre": "Pro QC24250 Core Ultra 7 265 (16/512) 23.8\" FHD",
+        "marca": "Dell",
+        "categoria": "all-in-one",
+        "precio_costo": 5450000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-pro-qc24250-core-ultra-7-265-1-1781542011376"
+      },
+      {
+        "nombre": "AIO V470VAK i5-13420H (8/512) 27\" FHD",
+        "marca": "Asus",
+        "categoria": "all-in-one",
+        "precio_costo": 2059000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-aio-v470vak-i5-13420h-8-512-27-1781542011376"
+      },
+      {
+        "nombre": "AIO V470VAK i5-13420H (16/512) EndLess",
+        "marca": "Asus",
+        "categoria": "all-in-one",
+        "precio_costo": 2399000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-aio-v470vak-i5-13420h-16-512-e-1781542011376"
+      },
+      {
+        "nombre": "AIO V470VAK i7-13620H (8/512) 27\" FHD",
+        "marca": "Asus",
+        "categoria": "all-in-one",
+        "precio_costo": 2549000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-aio-v470vak-i7-13620h-8-512-27-1781542011376"
+      },
+      {
+        "nombre": "AIO Ryzen 7 5825U (8/512) 23.8\" Linux",
+        "marca": "Acer",
+        "categoria": "all-in-one",
+        "precio_costo": 1949000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-aio-ryzen-7-5825u-8-512-23-8-l-1781542011376"
+      },
+      {
+        "nombre": "Optiplex 7020 SFF i5 14500 vPro (8/512) + Monitor 23.8\"",
+        "marca": "Dell",
+        "categoria": "pc-equipos-de-marca",
+        "precio_costo": 3250000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-optiplex-7020-sff-i5-14500-vpr-1781542011376"
+      },
+      {
+        "nombre": "ThinkCentre neo 30s i7-13620H (8/512) + Monitor 23.8\"",
+        "marca": "Lenovo",
+        "categoria": "pc-equipos-de-marca",
+        "precio_costo": 2539000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcentre-neo-30s-i7-13620h--1781542011376"
+      },
+      {
+        "nombre": "ThinkCentre neo 50q i5 210H (8/256) + Monitor 23.8\"",
+        "marca": "Lenovo",
+        "categoria": "pc-equipos-de-marca",
+        "precio_costo": 1999000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcentre-neo-50q-i5-210h-8--1781542011376"
+      },
+      {
+        "nombre": "ThinkCentre neo 50q i5 210H (8/512) + Monitor 21.5\"",
+        "marca": "Lenovo",
+        "categoria": "pc-equipos-de-marca",
+        "precio_costo": 2050000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcentre-neo-50q-i5-210h-8--1781542011376-2"
+      },
+      {
+        "nombre": "ThinkCentre neo 50q i7 240H (16/512) + Monitor 19.5\"",
+        "marca": "Lenovo",
+        "categoria": "pc-equipos-de-marca",
+        "precio_costo": 3764000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinkcentre-neo-50q-i7-240h-16-1781542011376"
+      },
+      {
+        "nombre": "AMD Ryzen 5-5600GT (16/512) + Monitor ASUS 22\" 100Hz",
+        "marca": "Power Group",
+        "categoria": "escritorio",
+        "precio_costo": 2245000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-amd-ryzen-5-5600gt-16-512-moni-1781542011376"
+      },
+      {
+        "nombre": "AMD Ryzen 5-5600GT (16/512) + Monitor ACER 23.8\"",
+        "marca": "Power Group",
+        "categoria": "escritorio",
+        "precio_costo": 2359000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-amd-ryzen-5-5600gt-16-512-moni-1781542011376-2"
+      },
+      {
+        "nombre": "AMD Ryzen 7-5700G (16/512) + Monitor ASUS 22\"",
+        "marca": "Power Group",
+        "categoria": "escritorio",
+        "precio_costo": 2579000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-amd-ryzen-7-5700g-16-512-monit-1781542011376"
+      },
+      {
+        "nombre": "AMD Ryzen 7-5700G (16/512) + Monitor ASUS 24.5\"",
+        "marca": "Power Group",
+        "categoria": "escritorio",
+        "precio_costo": 2618700,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-amd-ryzen-7-5700g-16-512-monit-1781542011376-2"
+      },
+      {
+        "nombre": "i5-10400T (8/512) SFF Gigabyte + Monitor 23.8\" CMX",
+        "marca": "Intel Core",
+        "categoria": "escritorio",
+        "precio_costo": 1625000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-i5-10400t-8-512-sff-gigabyte-m-1781542011376"
+      },
+      {
+        "nombre": "i5-12400 (16/500) Gigabyte + Monitor 23.8\" CMX",
+        "marca": "Intel Core",
+        "categoria": "escritorio",
+        "precio_costo": 2179000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-i5-12400-16-500-gigabyte-monit-1781542011376"
+      },
+      {
+        "nombre": "i5-12400 (16/500) Gaming + Monitor LG 24\" 120Hz",
+        "marca": "Intel Core",
+        "categoria": "escritorio",
+        "precio_costo": 2320000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-i5-12400-16-500-gaming-monitor-1781542011376"
+      },
+      {
+        "nombre": "i7-12700 (16/500) SFF Gigabyte + Monitor 23.8\" 120Hz",
+        "marca": "Intel Core",
+        "categoria": "escritorio",
+        "precio_costo": 2253000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-i7-12700-16-500-sff-gigabyte-m-1781542011376"
+      },
+      {
+        "nombre": "i7-12700 (16/500) ASUS H610M + Monitor 23.8\" 144Hz",
+        "marca": "Intel Core",
+        "categoria": "escritorio",
+        "precio_costo": 2599000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-i7-12700-16-500-asus-h610m-mon-1781542011376"
+      },
+      {
+        "nombre": "5-5600GT Gaming (16/500) Gigabyte + Monitor 23.8\"",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 2759000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-5-5600gt-gaming-16-500-gigabyt-1781542011376"
+      },
+      {
+        "nombre": "5-5600GT Gaming (16/500) A520M-k-v2 + Monitor 23.8\"",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 2380000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-5-5600gt-gaming-16-500-a520m-k-1781542011376"
+      },
+      {
+        "nombre": "5-8500G Gaming (16/500) A620M-K + Monitor 23.8\"",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 2800000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-5-8500g-gaming-16-500-a620m-k--1781542011376"
+      },
+      {
+        "nombre": "7-5700G Gaming (16/500) A520M-K + Monitor 23.8\" 120Hz",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 2350000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-7-5700g-gaming-16-500-a520m-k--1781542011376"
+      },
+      {
+        "nombre": "5-5600GT (16/500) + RTX 3050 6GB + Monitor 23.8\"",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 3479000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-5-5600gt-16-500-rtx-3050-6gb-m-1781542011376"
+      },
+      {
+        "nombre": "5-8500G (16/500) + RTX 3050 6GB + Monitor 23.8\"",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 3930000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-5-8500g-16-500-rtx-3050-6gb-mo-1781542011376"
+      },
+      {
+        "nombre": "7-5700G Gaming (16/500) + Monitor 32\" Curved 165Hz",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 2618000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-7-5700g-gaming-16-500-monitor--1781542011376"
+      },
+      {
+        "nombre": "7-5700G (16/512) + Monitor 23.8\" + Servicio Técnico",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 2699000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-7-5700g-16-512-monitor-23-8-se-1781542011376"
+      },
+      {
+        "nombre": "7-8700F (16/500) + RTX 3050 6GB + Monitor 23.8\" 144Hz",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 3749000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-7-8700f-16-500-rtx-3050-6gb-mo-1781542011376"
+      },
+      {
+        "nombre": "7-5700G (16/512) + RTX 3050 6GB + Monitor 23.8\"",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 3748000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-7-5700g-16-512-rtx-3050-6gb-mo-1781542011376"
+      },
+      {
+        "nombre": "5-5600 Gaming Setup + RTX 3050 + Periféricos T-Dagger",
+        "marca": "AMD Ryzen",
+        "categoria": "escritorio",
+        "precio_costo": 3395900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-5-5600-gaming-setup-rtx-3050-p-1781542011376"
+      },
+      {
+        "nombre": "ProLiant DL320 Gen11 Xeon Silver 4510 64GB RAM 1.9TB",
+        "marca": "HPE",
+        "categoria": "servidor",
+        "precio_costo": 27900000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-proliant-dl320-gen11-xeon-silv-1781542011376"
+      },
+      {
+        "nombre": "ThinkSystem ST45 V3 AMD EPYC 4124P 16GB 2TB",
+        "marca": "Lenovo",
+        "categoria": "servidor",
+        "precio_costo": 8199000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-thinksystem-st45-v3-amd-epyc-4-1781542011376"
+      },
+      {
+        "nombre": "NAS 2-bay TS-233 ARM Cortex A55 2GB RAM",
+        "marca": "QNAP",
+        "categoria": "servidor",
+        "precio_costo": 1035000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-nas-2-bay-ts-233-arm-cortex-a5-1781542011376"
+      },
+      {
+        "nombre": "NAS 4-bay TS-433-4G-US ARM 4-core 4GB RAM",
+        "marca": "QNAP",
+        "categoria": "servidor",
+        "precio_costo": 2049000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-nas-4-bay-ts-433-4g-us-arm-4-c-1781542011376"
+      },
+      {
+        "nombre": "SSD 1920GB SEDC600M Enterprise Server",
+        "marca": "Kingston",
+        "categoria": "servidor",
+        "precio_costo": 2549000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-ssd-1920gb-sedc600m-enterprise-1781542011376"
+      },
+      {
+        "nombre": "Unidad Óptica 9.5mm SATA DVD-RW Gen 9 Server",
+        "marca": "HPE",
+        "categoria": "servidor",
+        "precio_costo": 50000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-unidad-ptica-9-5mm-sata-dvd-rw-1781542011376"
+      },
+      {
+        "nombre": "Microsoft 365 Standard ESD Empresarial (Anual)",
+        "marca": "Microsoft",
+        "categoria": "software",
+        "precio_costo": 406000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-microsoft-365-standard-esd-emp-1781542011376"
+      },
+      {
+        "nombre": "Windows 11 Pro OEM 64B FQC-10553",
+        "marca": "Microsoft",
+        "categoria": "software",
+        "precio_costo": 580000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-windows-11-pro-oem-64b-fqc-105-1781542011376"
+      },
+      {
+        "nombre": "Office Hogar y Empresas 2024 ESD",
+        "marca": "Microsoft",
+        "categoria": "software",
+        "precio_costo": 765000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-office-hogar-y-empresas-2024-e-1781542011376"
+      },
+      {
+        "nombre": "Windows Pro 11 64-BIT ALL LNG PK FQC-10572",
+        "marca": "Microsoft",
+        "categoria": "software",
+        "precio_costo": 815000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-windows-pro-11-64-bit-all-lng--1781542011376"
+      },
+      {
+        "nombre": "Windows Server Standard 2025 64Bit Spanish",
+        "marca": "Microsoft",
+        "categoria": "software",
+        "precio_costo": 4439000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-windows-server-standard-2025-6-1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 5 EQ 1 Año ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 369000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-5-eq-1-1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 10 EQ 1 Año ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 595000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-10-eq--1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 15 EQ 1 Año ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 769000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-15-eq--1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 20 EQ 1 Año ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 889000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-20-eq--1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 25 EQ 1 Año ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 1049000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-25-eq--1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 5 EQ 2 Años ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 992300,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-5-eq-2-1781542011376"
+      },
+      {
+        "nombre": "Small Business Security 10 EQ 2 Años ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 1620500,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-10-eq--1781542011376-2"
+      },
+      {
+        "nombre": "Small Business Security 15 EQ 2 Años ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 2085200,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-15-eq--1781542011376-2"
+      },
+      {
+        "nombre": "Small Business Security 20 EQ 2 Años ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 2644300,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-20-eq--1781542011376-2"
+      },
+      {
+        "nombre": "Small Business Security 25 EQ 2 Años ESD",
+        "marca": "ESET",
+        "categoria": "software",
+        "precio_costo": 3104500,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-business-security-25-eq--1781542011376-2"
+      },
+      {
+        "nombre": "Small Office Security 5 Users 1 Año (Electrónica)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 269000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-office-security-5-users--1781542011376"
+      },
+      {
+        "nombre": "Small Office Security 10 Users 1 Año (Electrónica)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 495000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-office-security-10-users-1781542011376"
+      },
+      {
+        "nombre": "Small Office Security 15 Users 1 Año (Electrónica)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 699000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-office-security-15-users-1781542011376"
+      },
+      {
+        "nombre": "Small Office Security 20 Users 1 Año (Electrónica)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 918900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-office-security-20-users-1781542011376"
+      },
+      {
+        "nombre": "Small Office Security 25 Users 1 Año (Electrónica)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 1018600,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-office-security-25-users-1781542011376"
+      },
+      {
+        "nombre": "Small Office Security 50 Users 1 Año (Electrónica)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 1969400,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-small-office-security-50-users-1781542011376"
+      },
+      {
+        "nombre": "Premium 1 Disp. 1 Año (Base)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 55000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-premium-1-disp-1-a-o-base--1781542011376"
+      },
+      {
+        "nombre": "Plus 3 Disp. 1 Año (Base)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 110000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-plus-3-disp-1-a-o-base--1781542011376"
+      },
+      {
+        "nombre": "Standard 5 Disp. 1 Año (Base)",
+        "marca": "Kaspersky",
+        "categoria": "software",
+        "precio_costo": 95000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-standard-5-disp-1-a-o-base--1781542011376"
+      },
+      {
+        "nombre": "GeForce GT 1030 2G LP OC GP 108-300",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 559000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-geforce-gt-1030-2g-lp-oc-gp-10-1781542011376"
+      },
+      {
+        "nombre": "GeForce RTX 3050 VENTUS 2X 6G OC 96-bit",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 1175000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-geforce-rtx-3050-ventus-2x-6g--1781542011376"
+      },
+      {
+        "nombre": "GeForce RTX 5050 8G VENTUS 2X OC GDDR6",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 1689000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-geforce-rtx-5050-8g-ventus-2x--1781542011376"
+      },
+      {
+        "nombre": "GeForce RTX 5060 8G VENTUS 2X OC GDDR7 28Gbps",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 2019000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-geforce-rtx-5060-8g-ventus-2x--1781542011376"
+      },
+      {
+        "nombre": "GeForce RTX 5060 Ti 8G VENTUS 2X OC PLUS GDDR7",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 2169000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-geforce-rtx-5060-ti-8g-ventus--1781542011376"
+      },
+      {
+        "nombre": "GeForce RTX 5070 12G GAMING TRIO OC 192-bit",
+        "marca": "MSI",
+        "categoria": "tarjeta-grafica",
+        "precio_costo": 3649000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-geforce-rtx-5070-12g-gaming-tr-1781542011376"
+      },
+      {
+        "nombre": "Mouse G203 Gaming RGB 8.000 DPI",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 81000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-mouse-g203-gaming-rgb-8-000-dp-1781542011376"
+      },
+      {
+        "nombre": "Mouse G305 LIGHTSPEED 12.000 DPI",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 154000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-mouse-g305-lightspeed-12-000-d-1781542011376"
+      },
+      {
+        "nombre": "Mouse G502 HERO LIGHTSYNC 25.600 DPI",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 177000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-mouse-g502-hero-lightsync-25-6-1781542011376"
+      },
+      {
+        "nombre": "Mouse G502 X LIGHTFORCE Híbrido",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 328000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-mouse-g502-x-lightforce-h-brid-1781542011376"
+      },
+      {
+        "nombre": "Diadema G335 Alámbrica 3.5mm",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 182000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-diadema-g335-al-mbrica-3-5mm-1781542011376"
+      },
+      {
+        "nombre": "Diadema G325 Inalámbrica LIGHTSPEED/BT",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 329000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-diadema-g325-inal-mbrica-light-1781542011376"
+      },
+      {
+        "nombre": "Teclado G213 PRODIGY RGB Mech-Dome",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 211000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-g213-prodigy-rgb-mech--1781542011376"
+      },
+      {
+        "nombre": "Teclado G413 TKL SE Mecánico",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 370000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-g413-tkl-se-mec-nico-1781542011376"
+      },
+      {
+        "nombre": "Teclado G413 SE Mecánico Full Size",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 393000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-g413-se-mec-nico-full--1781542011376"
+      },
+      {
+        "nombre": "Teclado BORA RAINBOW Mecánico TKL",
+        "marca": "T-Dagger",
+        "categoria": "perifericos",
+        "precio_costo": 143800,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-bora-rainbow-mec-nico--1781542011376"
+      },
+      {
+        "nombre": "Teclado BORA RGB Mecánico TKL",
+        "marca": "T-Dagger",
+        "categoria": "perifericos",
+        "precio_costo": 164300,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-bora-rgb-mec-nico-tkl-1781542011376"
+      },
+      {
+        "nombre": "Teclado ARENA RGB Compacto 60%",
+        "marca": "T-Dagger",
+        "categoria": "perifericos",
+        "precio_costo": 165000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-arena-rgb-compacto-60--1781542011376"
+      },
+      {
+        "nombre": "Control Aries T-TGP802 PS4/PC Bluetooth",
+        "marca": "T-Dagger",
+        "categoria": "accesorios",
+        "precio_costo": 155300,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-control-aries-t-tgp802-ps4-pc--1781542011376"
+      },
+      {
+        "nombre": "Teclado FIZZ PRO K616 RGB BT/2.4GHz",
+        "marca": "Redragon",
+        "categoria": "perifericos",
+        "precio_costo": 239700,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-fizz-pro-k616-rgb-bt-2-1781542011376"
+      },
+      {
+        "nombre": "Teclado Smart KB-100 USB",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 24000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-smart-kb-100-usb-1781542011376"
+      },
+      {
+        "nombre": "Teclado USB KB-116",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 24800,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-usb-kb-116-1781542011376"
+      },
+      {
+        "nombre": "Teclado USB KB-118",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 24500,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-usb-kb-118-1781542011376"
+      },
+      {
+        "nombre": "Teclado KB-7200 Inalámbrico",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 35000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-teclado-kb-7200-inal-mbrico-1781542011376"
+      },
+      {
+        "nombre": "Combo Teclado y Mouse KM-100SE USB",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 32000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-combo-teclado-y-mouse-km-100se-1781542011376"
+      },
+      {
+        "nombre": "Combo Teclado y Mouse KM-160 Alámbrico",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 36000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-combo-teclado-y-mouse-km-160-a-1781542011376"
+      },
+      {
+        "nombre": "Combo SCORPION KM-GX3 Gaming",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 56000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-combo-scorpion-km-gx3-gaming-1781542011376"
+      },
+      {
+        "nombre": "Combo Inalámbrico KM-8101",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 56000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-combo-inal-mbrico-km-8101-1781542011376"
+      },
+      {
+        "nombre": "Combo Inalámbrico KM-8206S Silent",
+        "marca": "Genius",
+        "categoria": "perifericos",
+        "precio_costo": 60000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-combo-inal-mbrico-km-8206s-sil-1781542011376"
+      },
+      {
+        "nombre": "Cámara Web FaceCam 1000X 720P HD",
+        "marca": "Genius",
+        "categoria": "camara",
+        "precio_costo": 65000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-c-mara-web-facecam-1000x-720p--1781542011376"
+      },
+      {
+        "nombre": "Cámara C270 HD 720P 3MP",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 69000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-c-mara-c270-hd-720p-3mp-1781542011376"
+      },
+      {
+        "nombre": "Cámara C920S Full HD USB",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 290000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-c-mara-c920s-full-hd-usb-1781542011376"
+      },
+      {
+        "nombre": "Cámara Brio 4K Ultra HD 13MP",
+        "marca": "Logitech",
+        "categoria": "perifericos",
+        "precio_costo": 639000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-c-mara-brio-4k-ultra-hd-13mp-1781542011376"
+      },
+      {
+        "nombre": "Cámara Seguridad Para Carro CAR DVR",
+        "marca": "GTS",
+        "categoria": "camara",
+        "precio_costo": 82000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-c-mara-seguridad-para-carro-ca-1781542011376"
+      },
+      {
+        "nombre": "Electric Scooter 4 Lite (2nd Gen) 15 Millas",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 1229000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-electric-scooter-4-lite-2nd-ge-1781542011376"
+      },
+      {
+        "nombre": "Smart Band 9 Active 1.47\" 18 días bat.",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 90000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-smart-band-9-active-1-47-18-d--1781542011376"
+      },
+      {
+        "nombre": "Redmi Watch 5 Lite Bluetooth AMOLED 1.96\"",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 183000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-redmi-watch-5-lite-bluetooth-a-1781542011376"
+      },
+      {
+        "nombre": "Redmi Buds 8 Lite In-Ear BT 5.4",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 82000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-redmi-buds-8-lite-in-ear-bt-5--1781542011376"
+      },
+      {
+        "nombre": "Redmi Buds 6 Play In-Ear BT 5.4",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 38000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-redmi-buds-6-play-in-ear-bt-5--1781542011376"
+      },
+      {
+        "nombre": "Redmi Buds 6 Active BT 5.4 Dual Mic",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 60000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-redmi-buds-6-active-bt-5-4-dua-1781542011376"
+      },
+      {
+        "nombre": "Audífonos Type-C Plug-and-play IP54",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 19000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-aud-fonos-type-c-plug-and-play-1781542011376"
+      },
+      {
+        "nombre": "Robot Vacuum S20 5000Pa LDS Laser",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 609000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-robot-vacuum-s20-5000pa-lds-la-1781542011376"
+      },
+      {
+        "nombre": "Robot Vacuum S20+ 6000Pa Mopa Giratoria",
+        "marca": "Xiaomi",
+        "categoria": "accesorios",
+        "precio_costo": 999000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-robot-vacuum-s20-6000pa-mopa-g-1781542011376"
+      },
+      {
+        "nombre": "Caja Para Disco 2.5” HDD USB",
+        "marca": "GTS",
+        "categoria": "accesorios",
+        "precio_costo": 21000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-caja-para-disco-2-5-hdd-usb-1781542011376"
+      },
+      {
+        "nombre": "Dron DJI Tello Bluetooth",
+        "marca": "DJI",
+        "categoria": "accesorios",
+        "precio_costo": 499000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-dron-dji-tello-bluetooth-1781542011376"
+      },
+      {
+        "nombre": "Caja de paso 10x10 Plástico Blanca",
+        "marca": "N/A",
+        "categoria": "redes",
+        "precio_costo": 2900,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-caja-de-paso-10x10-pl-stico-bl-1781542011376"
+      },
+      {
+        "nombre": "Cable De Alarma 6 Hilos",
+        "marca": "N/A",
+        "categoria": "redes",
+        "precio_costo": 10000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-cable-de-alarma-6-hilos-1781542011376"
+      },
+      {
+        "nombre": "Soporte TV Pared Fijo HD602BOQ",
+        "marca": "N/A",
+        "categoria": "accesorios",
+        "precio_costo": 30000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-soporte-tv-pared-fijo-hd602boq-1781542011376"
+      },
+      {
+        "nombre": "Cargador 35W USB-C/USB-A + Cable 100W",
+        "marca": "Adata",
+        "categoria": "accesorios",
+        "precio_costo": 42000,
+        "referencia": "",
+        "proveedor": "ledacom",
+        "importedAt": "2026-06-15T16:46:51.375Z",
+        "id": "ledacom-cargador-35w-usb-c-usb-a-cable-1781542011376"
+      }
+    ]
+  },
+  {
     "id": "lista-infoshopcorp-1781390455357",
     "nombre": "Lista Infoshop Jun 12 2026.docx",
     "proveedor": "infoshopcorp",

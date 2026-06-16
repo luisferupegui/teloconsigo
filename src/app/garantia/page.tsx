@@ -82,7 +82,7 @@ export default function GarantiaPage() {
               </div>
 
               <div className="mt-4 flex flex-col gap-2">
-                <a href="https://wa.me/14079169299"
+                <a href="https://wa.me/573102878194"
                   target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 transition">
                   <MessageCircle className="h-4 w-4" />
@@ -156,12 +156,12 @@ export default function GarantiaPage() {
 
         {/* Canales */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <a href="https://wa.me/14079169299" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/573102878194" target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-4 rounded-2xl bg-emerald-500 p-5 text-white hover:bg-emerald-600 transition">
             <MessageCircle className="h-10 w-10 shrink-0" strokeWidth={1.5} />
             <div>
               <p className="font-display font-bold">WhatsApp</p>
-              <p className="text-xs text-emerald-50">Respuesta inmediata · +1 407 916 9299</p>
+              <p className="text-xs text-emerald-50">Respuesta inmediata · +57 310 2878194</p>
             </div>
           </a>
           <a href="mailto:soporte@teloconsigo.co"

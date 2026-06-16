@@ -165,11 +165,140 @@ function rowsFromDocx(xml: string): string[][] {
   return rows;
 }
 
+// ── Parseo por columnas explícitas (Word sin tablas / Excel con encabezado) ────
+// Algunos proveedores (p. ej. Ledacom 2026) entregan la lista con columnas
+// explícitas y encabezado "Marca,Referencia,Categoría,…,Precio" — en .docx como
+// CSV pegado en párrafos, o en .xlsx con celdas. Cuando hay encabezado respetamos
+// marca/categoría reales y capturamos specs, en vez de adivinarlas del nombre.
+
+/** Párrafos de un document.xml como texto plano. */
+function paragraphsFromDocx(xml: string): string[] {
+  return [...xml.matchAll(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g)]
+    .map((m) => decodeXml([...m[1].matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map((x) => x[1]).join("")).trim())
+    .filter(Boolean);
+}
+
+/** Parsea una línea CSV (maneja campos entre comillas y "" escapado). */
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') inQ = false;
+      else cur += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ",") { out.push(cur); cur = ""; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+}
+
+// Etiquetas de categoría del proveedor → slugs internos (para márgenes/filtros).
+const CAT_LABEL_MAP: [RegExp, string][] = [
+  [/tableta/i, "tableta"],
+  [/port[aá]til/i, "portatil"],
+  [/all.?in.?one|todo en uno/i, "all-in-one"],
+  [/ensamblad|escritorio/i, "escritorio"],
+  [/perif[eé]ric/i, "perifericos"],
+  [/software|antivirus|licencia/i, "software"],
+  [/servidor/i, "servidor"],
+  [/(tarjeta.*v[ií]deo|gr[aá]fica|\bvideo\b)/i, "tarjeta-grafica"],
+  [/c[aá]mara|seguridad|vigilancia/i, "camara"],
+  [/red(es)?|router|switch/i, "redes"],
+  [/almacenamiento|disco|ssd|nvme/i, "almacenamiento"],
+  [/memoria|\bram\b/i, "memoria-ram"],
+  [/monitor/i, "monitor"],
+  [/accesori/i, "accesorios"],
+];
+function slugCategoria(label: string): string {
+  for (const [re, slug] of CAT_LABEL_MAP) if (re.test(label)) return slug;
+  const s = label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return s || "accesorios";
+}
+
+// Encabezados que son columnas BASE (no specs). El resto de columnas con título
+// (Procesador, Memoria RAM, Almacenamiento, Pantalla, Otros Detalles…) → specs.
+const NON_SPEC_HEADER = /^(marca|referencia|nombre|producto|modelo|descripci[oó]n|categor[ií]a|precio|valor|cod|item|sku)$/;
+
+/** ¿Esta fila es un encabezado tipo "Marca … Precio"? */
+function isHeaderRow(r: string[]): boolean {
+  const low = r.map((c) => c.toLowerCase().trim());
+  return low.includes("marca") && low.some((c) => /precio|valor/.test(c));
+}
+
+/**
+ * Motor unificado: dado un conjunto de filas (de tabla Word, hoja Excel o CSV en
+ * párrafos), si hay una fila de encabezado "Marca … Precio" parsea por COLUMNAS
+ * EXPLÍCITAS (respeta marca/categoría y captura specs). Si no, cae a la heurística
+ * posicional de siempre (precio + nombre a la izquierda) para proveedores sin encabezado.
+ */
+function productsFromRows(rows: string[][]): ParsedProduct[] {
+  const headerIdx = rows.findIndex(isHeaderRow);
+  if (headerIdx === -1) return productsFromCells(rows);
+
+  const header = rows[headerIdx];
+  const low = header.map((c) => c.toLowerCase().trim());
+  const find = (re: RegExp, def: number) => { const i = low.findIndex((c) => re.test(c)); return i === -1 ? def : i; };
+  const idxMarca  = find(/marca/, 0);
+  const idxNombre = find(/referencia|descrip|nombre|producto|modelo/, 1);
+  const idxCat    = find(/categor/, 2);
+  const idxPrecio = find(/precio|valor/, header.length - 1);
+  const specCols = header
+    .map((label, i) => ({ i, label: label.trim() }))
+    .filter(({ label }) => label && !NON_SPEC_HEADER.test(label.toLowerCase()));
+
+  const out: ParsedProduct[] = [];
+  const seen = new Set<string>();
+  for (let r = 0; r < rows.length; r++) {
+    if (r === headerIdx) continue;
+    const cells = rows[r];
+    if (isHeaderRow(cells)) continue;                       // encabezados repetidos (docx multi-sección)
+    if (cells.filter((c) => c.trim()).length < 2) continue; // títulos de sección, líneas sueltas
+
+    const nombre = (cells[idxNombre] ?? "").trim();
+    const precioRaw = (cells[idxPrecio] ?? cells[cells.length - 1] ?? "").trim();
+    if (!nombre || nombre.length < 3 || nombre.toLowerCase() === "n/a") continue;
+    if (!looksLikePrice(precioRaw)) continue;
+    const precio = parsePrecio(precioRaw);
+    if (precio < 1000) continue;
+    if (NON_TECH.test(nombre)) continue;
+
+    const marca = (cells[idxMarca] ?? "").trim() || inferMarca(nombre);
+    const catLabel = (cells[idxCat] ?? "").trim();
+    const categoria = catLabel ? slugCategoria(catLabel) : inferCategoria(nombre);
+
+    // Specs estructuradas (las trae el .xlsx; el .docx CSV no, van en el nombre).
+    const specs: Record<string, string> = {};
+    for (const { i, label } of specCols) {
+      const v = (cells[i] ?? "").trim();
+      if (v && v.toLowerCase() !== "n/a") specs[label] = v;
+    }
+
+    const key = nombre.toLowerCase() + "|" + precio;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    out.push({
+      nombre, marca, categoria, precio_costo: precio, referencia: "",
+      specs: Object.keys(specs).length ? specs : undefined,
+    });
+  }
+  return out;
+}
+
 export async function parseDocx(buffer: Buffer): Promise<ParsedProduct[]> {
   const zip = await JSZip.loadAsync(buffer);
   const xml = await zip.file("word/document.xml")?.async("string");
   if (!xml) return [];
-  return productsFromCells(rowsFromDocx(xml));
+  const tableRows = rowsFromDocx(xml);
+  // Con tablas → filas de tabla. Sin tablas → CSV en párrafos convertido a filas.
+  const rows = tableRows.length > 0 ? tableRows : paragraphsFromDocx(xml).map(parseCsvLine);
+  return productsFromRows(rows);
 }
 
 // ── .xlsx ───────────────────────────────────────────────────────────────────
@@ -224,7 +353,7 @@ export async function parseXlsx(buffer: Buffer): Promise<ParsedProduct[]> {
     const sx = await zip.file(sf)!.async("string");
     allRows.push(...rowsFromXlsx(sx, shared));
   }
-  return productsFromCells(allRows);
+  return productsFromRows(allRows);
 }
 
 // ── Dispatcher por extensión ───────────────────────────────────────────────────

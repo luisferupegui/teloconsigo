@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Order } from "@/lib/orders";
+import type { Order, FuenteComparacion } from "@/lib/orders";
 import { StatusSelector } from "./StatusSelector";
 import { DeleteButton } from "./DeleteButton";
 
@@ -20,7 +20,7 @@ function formatFecha(iso: string) {
 export function ProveedorRow({ order: o }: { order: Order }) {
   const [expanded, setExpanded] = useState(false);
   const pd = o.proveedorDetalle;
-  const hasDetail = !!(pd && (pd.urlCompra || pd.costoUSD || pd.costoTotalCOP || pd.proveedorLocal));
+  const hasDetail = !!(pd && (pd.urlCompra || pd.costoUSD || pd.costoTotalCOP || pd.proveedorLocal || pd.comparacionProveedores?.length));
 
   return (
     <>
@@ -123,8 +123,14 @@ export function ProveedorRow({ order: o }: { order: Order }) {
               )}
             </div>
 
-            {/* Comparación de mercado local */}
-            {pd?.comparacionMercado && (
+            {/* Comparación entre proveedores: dónde conseguirlo más barato */}
+            {pd?.comparacionProveedores && pd.comparacionProveedores.length > 0 ? (
+              <ComparacionProveedores
+                fuentes={pd.comparacionProveedores}
+                precioVenta={o.producto.precioCOP}
+              />
+            ) : pd?.comparacionMercado ? (
+              /* Legado: pedidos antiguos guardaron solo el resumen de una línea */
               <div className={`mt-2 flex items-start gap-2 rounded-lg px-3 py-2 text-xs font-medium ${
                 pd.comparacionMercado.includes("más económico")
                   ? "bg-emerald-50 text-emerald-800"
@@ -145,7 +151,7 @@ export function ProveedorRow({ order: o }: { order: Order }) {
                   )}
                 </span>
               </div>
-            )}
+            ) : null}
 
             {/* Email del cliente */}
             <p className="mt-2 text-xs text-zinc-400">
@@ -157,6 +163,59 @@ export function ProveedorRow({ order: o }: { order: Order }) {
         </tr>
       )}
     </>
+  );
+}
+
+function ComparacionProveedores({
+  fuentes, precioVenta,
+}: { fuentes: FuenteComparacion[]; precioVenta: number }) {
+  const icon = (t: FuenteComparacion["tipo"]) =>
+    t === "lista" ? "📋" : t === "colombia_web" ? "🛒" : "🇺🇸";
+  return (
+    <div className="mt-3">
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        Dónde conseguirlo más barato
+      </p>
+      <div className="overflow-hidden rounded-lg border border-zinc-200">
+        {fuentes.map((f, i) => {
+          const masBarata = i === 0;
+          const margen = precioVenta - f.costoCOP;
+          return (
+            <div
+              key={`${f.fuente}-${i}`}
+              className={`flex items-center justify-between gap-3 px-3 py-1.5 text-sm ${
+                masBarata ? "bg-emerald-50" : "bg-white"
+              } ${i > 0 ? "border-t border-zinc-100" : ""}`}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="leading-none">{icon(f.tipo)}</span>
+                <span className={`truncate ${masBarata ? "font-semibold text-emerald-800" : "text-zinc-700"}`}>
+                  {f.fuente}
+                </span>
+                {f.url && (
+                  <a href={f.url} target="_blank" rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-[#1e6cff]" title="Ver listado">↗</a>
+                )}
+                {f.nota && <span className="text-xs text-zinc-400">{f.nota}</span>}
+                {masBarata && fuentes.length > 1 && (
+                  <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    ✓ más barata
+                  </span>
+                )}
+              </span>
+              <span className="flex items-center gap-3 whitespace-nowrap">
+                <span className={masBarata ? "font-bold text-emerald-800" : "text-zinc-600"}>
+                  {formatCOP(f.costoCOP)}
+                </span>
+                <span className={`text-xs ${margen >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                  margen {formatCOP(margen)}
+                </span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

@@ -11,10 +11,11 @@ import path from "path";
 const CACHE_PATH = path.join(process.cwd(), "data", "web-cache.json");
 export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
 
-/** Producto de EE.UU. cotizado (lo que cotizar_web devuelve a Andrea). */
+/** Producto cotizado (lo que cotizar_web devuelve a Andrea). */
 export type QuoteProducto = {
   nombre?: string; marca?: string; modelo?: string; specs?: string;
   precioCOP: number; costoUSD: number; costoTotalCOP: number; fuente: string;
+  origen?: "us" | "co"; // "co" = conseguido en Colombia web; "us" = importado EE.UU.
 };
 
 /** Comparación de mercado local (solo admin). */
@@ -32,6 +33,7 @@ export type WebQuote = {
   urlCompra: string;
   precioCOP: number;
   costoTotalCOP: number;
+  origen?: "us" | "co";
 } & LocalData;
 
 type QueryEntry = { ts: number; productos: QuoteProducto[] } & LocalData;
@@ -77,7 +79,8 @@ export function saveQuote(consulta: string, productos: QuoteProducto[], local: L
   for (const p of productos) {
     const entry: WebQuote = {
       ts, costoUSD: p.costoUSD, urlCompra: p.fuente,
-      precioCOP: p.precioCOP, costoTotalCOP: p.costoTotalCOP, ...local,
+      precioCOP: p.precioCOP, costoTotalCOP: p.costoTotalCOP,
+      origen: p.origen, ...local,
     };
     for (const key of [p.modelo, p.nombre]) {
       const norm = key ? cacheKey(key) : "";

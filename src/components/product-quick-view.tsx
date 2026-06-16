@@ -7,7 +7,7 @@ import { formatCOP } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
 
 /** Número WhatsApp del negocio (sin '+') */
-const WA_NUMBER = "14079169299";
+const WA_NUMBER = "573102878194";
 
 // ─── Tipo compartido entre Navbar y SearchModal ───────────────────────────────
 

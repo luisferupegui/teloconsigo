@@ -143,12 +143,12 @@ export function Footer() {
             <h3 className="font-display text-[13px] font-bold uppercase tracking-widest text-[#4d8dff]">Contacto</h3>
             <ul className="mt-5 space-y-3.5">
               <li>
-                <a href="https://wa.me/14079169299" className="flex items-center gap-3 group">
+                <a href="https://wa.me/573102878194" className="flex items-center gap-3 group">
                   <WhatsappIcon
                     className="h-[18px] w-[18px] shrink-0 text-emerald-400 transition group-hover:text-emerald-300"
                     style={{ filter: "drop-shadow(0 0 5px rgba(52,211,153,0.75))" }}
                   />
-                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">+1 407 916 9299</span>
+                  <span className="text-xs text-zinc-300 group-hover:text-white transition whitespace-nowrap">+57 310 2878194</span>
                 </a>
               </li>
               <li>

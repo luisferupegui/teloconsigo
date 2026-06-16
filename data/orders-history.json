@@ -1,6 +1,422 @@
 [
   {
     "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Crucial DDR5 5600MHz 8GB SO-DIMM",
+      "cantidad": 1,
+      "precioCOP": 660000,
+      "proveedor": "colombia"
+    },
+    "id": "7994c131-96c3-4bd6-9b76-0be3d34c5e88",
+    "orderNumber": "150626114",
+    "fecha": "2026-06-16T02:13:15.455Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T02:46:32.215Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Crucial RAM DDR5 5600MHz SO-DIMM 8GB",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 480000,
+      "margenCOP": 210000,
+      "precioMercadoLocal": 480000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=Crucial+RAM+DDR5+5600MHz+SO-DIMM+8GB&prds=localAnnotatedOfferId:1,catalogid:13807771010223169202,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Compulago",
+          "tipo": "colombia_web",
+          "costoCOP": 480000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+RAM+DDR5+5600MHz+SO-DIMM+8GB&prds=localAnnotatedOfferId:1,catalogid:13807771010223169202,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "PCtintas",
+          "tipo": "colombia_web",
+          "costoCOP": 537990,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+RAM+DDR5+5600MHz+SO-DIMM+8GB&prds=localAnnotatedOfferId:1,productid:16325436659080685517,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Mercadolibre Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 599000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+RAM+DDR5+5600MHz+SO-DIMM+8GB&prds=localAnnotatedOfferId:1,catalogid:1342626192006143329,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Digital MTX",
+          "tipo": "colombia_web",
+          "costoCOP": 606000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+RAM+DDR5+5600MHz+SO-DIMM+8GB&prds=localAnnotatedOfferId:1,catalogid:6954488247939092064,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "f556df9a-9e58-46c7-9616-0d14031c0e16",
+    "orderNumber": "150626115",
+    "fecha": "2026-06-16T02:21:14.520Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T02:46:27.483Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Monitor Samsung 27\" IPS 120Hz 1920×1080 Plano",
+      "modelo": "LS27F320GANX",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 552000,
+      "margenCOP": 138000,
+      "proveedorLocal": "infoshop",
+      "precioMercadoLocal": 470000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:2536765325120243672,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "American Motos Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 470000,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:2536765325120243672,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "falabella.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 472885,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:4674181324097943181,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 552000
+        },
+        {
+          "fuente": "Falabella Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 569900,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,catalogid:4408674607381175855,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Compulago",
+          "tipo": "colombia_web",
+          "costoCOP": 700000,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,catalogid:12634128730961911256,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "c98b0cb2-9815-40aa-a34e-32a6e2c2f1ab",
+    "orderNumber": "150626112",
+    "fecha": "2026-06-16T01:06:32.678Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T02:46:19.114Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Crucial DDR5 5600MHz 8GB SO-DIMM",
+      "cantidad": 1,
+      "precioCOP": 660000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 355000,
+      "margenCOP": 305000,
+      "precioMercadoLocal": 355000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=Crucial+DDR5+5600MHz+8GB+SO-DIMM&prds=localAnnotatedOfferId:1,productid:8624148723176207541,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Mercadolibre Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 355000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+DDR5+5600MHz+8GB+SO-DIMM&prds=localAnnotatedOfferId:1,productid:8624148723176207541,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "falabella.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 629900,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+DDR5+5600MHz+8GB+SO-DIMM&prds=localAnnotatedOfferId:1,productid:5252465176112841187,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "mercadolibre.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 1150000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Crucial+DDR5+5600MHz+8GB+SO-DIMM&prds=localAnnotatedOfferId:1,productid:14582008042799370813,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "156cb124-8d3c-4a5e-8518-e4a181b5d7ce",
+    "orderNumber": "150626113",
+    "fecha": "2026-06-16T02:12:56.351Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T02:46:14.297Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Memoria RAM DDR5 16GB 5600 Crucial",
+      "cantidad": 1,
+      "precioCOP": 906000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 671000,
+      "margenCOP": 235000,
+      "proveedorLocal": "infoshop",
+      "precioMercadoLocal": 763866,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=Memoria+RAM+DDR5+16GB+5600+Crucial&prds=localAnnotatedOfferId:1,catalogid:1980066776012483824,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 671000
+        },
+        {
+          "fuente": "Mercadolibre Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 763866,
+          "url": "https://www.google.com/search?ibp=oshop&q=Memoria+RAM+DDR5+16GB+5600+Crucial&prds=localAnnotatedOfferId:1,catalogid:1980066776012483824,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "tecnostock.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 790000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Memoria+RAM+DDR5+16GB+5600+Crucial&prds=localAnnotatedOfferId:1,productid:422792886036629277,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "pc ware shop sas",
+          "tipo": "colombia_web",
+          "costoCOP": 799900,
+          "url": "https://www.google.com/search?ibp=oshop&q=Memoria+RAM+DDR5+16GB+5600+Crucial&prds=localAnnotatedOfferId:1,catalogid:843391498419003511,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Enjoy Videogames",
+          "tipo": "colombia_web",
+          "costoCOP": 840000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Memoria+RAM+DDR5+16GB+5600+Crucial&prds=localAnnotatedOfferId:1,productid:8976834258585823130,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "e727123f-e17f-4a1e-8e7c-c2dba183c135",
+    "orderNumber": "150626109",
+    "fecha": "2026-06-16T00:06:25.650Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T02:46:05.738Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Monitor Samsung 27\" IPS 120Hz 1920×1080 Plano",
+      "modelo": "LS27F320GANX",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 552000,
+      "margenCOP": 138000,
+      "proveedorLocal": "infoshop",
+      "comparacionProveedores": [
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 552000
+        }
+      ]
+    },
+    "id": "4e8bbcb8-82c8-4c92-8e5e-97402c57b1d9",
+    "orderNumber": "150626110",
+    "fecha": "2026-06-16T00:34:38.720Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T02:45:59.141Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Marco Ruiz",
+      "cedula": "1025678945",
+      "direccion": "Cra 77 No 14 - 12 Of 103",
+      "ciudad": "Bogotá",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Crucial DDR5 16GB 5600MHz",
+      "cantidad": 1,
+      "precioCOP": 906000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "proveedorLocal": "ledacom"
+    },
+    "id": "f7bdb7ab-cd9e-45a5-b2d3-596a60e43ccc",
+    "orderNumber": "150626107",
+    "fecha": "2026-06-15T16:51:39.942Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T00:39:17.740Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Carolina Aponte",
+      "cedula": "1023456784",
+      "direccion": "Cra 44 No 13 - 12 Of 405",
+      "ciudad": "Bogotá",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Crucial DDR5 16GB 5600MHz",
+      "cantidad": 1,
+      "precioCOP": 906000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 1136000,
+      "margenCOP": -230000,
+      "precioMercadoLocal": 1136000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=Crucial+DDR5+16GB+5600MHz&prds=localAnnotatedOfferId:1,catalogid:1980066776012483824,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Sitio local",
+          "tipo": "colombia_web",
+          "costoCOP": 1136000,
+          "nota": "30 listados"
+        }
+      ]
+    },
+    "id": "64cf97a0-e2df-4dc1-9ca6-f513c6d3b4a2",
+    "orderNumber": "150626108",
+    "fecha": "2026-06-15T18:57:35.245Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T00:39:15.182Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Lucas Contreras",
+      "cedula": "1023456789",
+      "direccion": "Calle 45 No 24 - 62",
+      "ciudad": "Bogotá",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "USB 128GB Kingston DT Exodia",
+      "cantidad": 1,
+      "precioCOP": 67000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 49000,
+      "margenCOP": 18000,
+      "proveedorLocal": "infoshop"
+    },
+    "id": "e2f0432a-4af0-4bce-bf50-22780fc9d99b",
+    "orderNumber": "140626106",
+    "fecha": "2026-06-14T14:29:49.775Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T00:38:46.075Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Pedro Palacios",
+      "cedula": "1023456786",
+      "direccion": "Cra 67 No 53 - 12 Bloque 4 Apto 101",
+      "ciudad": "Cali",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "AMD Ryzen 7 5700G",
+      "cantidad": 1,
+      "precioCOP": 1083000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 887000,
+      "margenCOP": 196000,
+      "proveedorLocal": "infoshop"
+    },
+    "id": "c20de8ed-254f-4905-b1e5-4d2c522612a2",
+    "orderNumber": "130626105",
+    "fecha": "2026-06-13T23:13:05.132Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T00:38:43.206Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Carlos Perez",
+      "cedula": "1023567894",
+      "direccion": "Calle 34 No 56 - 68",
+      "ciudad": "Neiva",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Seagate BarraCuda 2TB",
+      "modelo": "ST2000DM008",
+      "cantidad": 1,
+      "precioCOP": 394000,
+      "proveedor": "eeuu"
+    },
+    "proveedorDetalle": {
+      "urlCompra": "https://www.newegg.com/seagate-barracuda-st2000dm008-2tb-for-daily-computing-7200-rpm/p/N82E16822184773",
+      "costoUSD": 54.99,
+      "costoTotalCOP": 304000,
+      "margenCOP": 90000,
+      "precioMercadoLocal": 413000,
+      "fuenteLocal": "https://www.mercadolibre.com.co/disco-duro-interno-seagate-barracuda-st2000dm008-2tb-plata/p/MCO18103083",
+      "comparacionMercado": "MercadoLibre más caro: $413.000 (3 listados) vs $394.000 (US importado)"
+    },
+    "id": "ba45debc-7c8c-4130-8530-61f23115e052",
+    "orderNumber": "130626104",
+    "fecha": "2026-06-13T18:21:51.656Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T00:38:39.912Z"
+  },
+  {
+    "cliente": {
       "nombre": "Pedro Malvano",
       "cedula": "1034567894",
       "direccion": "Cra 35 No 89 Sur - 43 Bloque 4 Apto 502",

@@ -1,23 +1,61 @@
 import "server-only";
+import fs from "fs";
+import path from "path";
 
 // Precios "puesto en Colombia" — DETERMINISTA, nunca los calcula el modelo.
 //
 // Dos flujos:
-//   A) Importación EE.UU.: (usdProducto / 0.7 + fleteUS) × TRM
+//   A) Importación EE.UU.: (usdProducto / DIVISOR + fleteUS) × TRM
 //   B) Local Colombia:     precioBase × (1 + margen) + fleteCOP
 
 // ── A) IMPORTACIÓN EE.UU. ────────────────────────────────────────────────────
 
-const DIVISOR = 0.7;
-const TRM = 3800; // fijo por ahora; luego se conecta a tasa en vivo
-
 export type ShippingTier = "component" | "laptop" | "desktop";
 
-const SHIPPING_USD: Record<ShippingTier, number> = {
-  component: 25,  // GPU, RAM, SSD, CPU, accesorios, periféricos, monitores ≤27"
-  laptop:    60,  // portátiles, notebooks, mini PCs
-  desktop:  100,  // torres, all-in-one, workstations
+export type ImportConfig = {
+  divisor:  number;
+  trm:      number;
+  shipping: Record<ShippingTier, number>;
 };
+
+const CONFIG_PATH = path.join(process.cwd(), "data", "importacion-config.json");
+
+const DEFAULTS: ImportConfig = {
+  divisor:  0.7,
+  trm:      3800,
+  shipping: { component: 25, laptop: 60, desktop: 100 },
+};
+
+export function loadImportConfig(): ImportConfig {
+  try {
+    const raw = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+    return {
+      divisor: Number(raw.divisor)  > 0 ? Number(raw.divisor)  : DEFAULTS.divisor,
+      trm:     Number(raw.trm)      > 0 ? Number(raw.trm)      : DEFAULTS.trm,
+      shipping: {
+        component: Number(raw.shipping?.component) > 0 ? Number(raw.shipping.component) : DEFAULTS.shipping.component,
+        laptop:    Number(raw.shipping?.laptop)    > 0 ? Number(raw.shipping.laptop)    : DEFAULTS.shipping.laptop,
+        desktop:   Number(raw.shipping?.desktop)   > 0 ? Number(raw.shipping.desktop)   : DEFAULTS.shipping.desktop,
+      },
+    };
+  } catch {
+    return { ...DEFAULTS, shipping: { ...DEFAULTS.shipping } };
+  }
+}
+
+export function saveImportConfig(cfg: Partial<ImportConfig>): void {
+  const current = loadImportConfig();
+  const next: ImportConfig = {
+    divisor:  cfg.divisor  ?? current.divisor,
+    trm:      cfg.trm      ?? current.trm,
+    shipping: {
+      component: cfg.shipping?.component ?? current.shipping.component,
+      laptop:    cfg.shipping?.laptop    ?? current.shipping.laptop,
+      desktop:   cfg.shipping?.desktop   ?? current.shipping.desktop,
+    },
+  };
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(next, null, 2), "utf-8");
+}
 
 export type Cotizacion = {
   usdProducto: number;
@@ -29,14 +67,15 @@ export type Cotizacion = {
 
 /** Precio puesto en Colombia (COP) para producto importado desde EE.UU. */
 export function cotizarImportacion(usdProducto: number, tier: ShippingTier = "component"): Cotizacion {
-  const usdEnvio = SHIPPING_USD[tier];
-  const usdTotal = usdProducto / DIVISOR + usdEnvio;
+  const cfg = loadImportConfig();
+  const usdEnvio = cfg.shipping[tier];
+  const usdTotal = usdProducto / cfg.divisor + usdEnvio;
   return {
     usdProducto,
     usdEnvio,
     usdTotal:    Math.round(usdTotal * 100) / 100,
-    trm:         TRM,
-    copEstimado: Math.round((usdTotal * TRM) / 1000) * 1000,
+    trm:         cfg.trm,
+    copEstimado: Math.round((usdTotal * cfg.trm) / 1000) * 1000,
   };
 }
 

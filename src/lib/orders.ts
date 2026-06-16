@@ -8,6 +8,15 @@ const COUNTER_PATH  = path.join(process.cwd(), "data", "order-counter.json");
 
 export type OrderEstado = "pendiente" | "confirmado" | "enviado" | "entregado";
 
+/** Una fuente de aprovisionamiento con su costo de adquisición (solo admin). */
+export type FuenteComparacion = {
+  fuente:   string;                            // "Ledacom" | "Infoshop" | "MercadoLibre" | "EE.UU. (importado)"
+  tipo:     "lista" | "colombia_web" | "eeuu";
+  costoCOP: number;                            // lo que nos cuesta conseguir el producto por esa fuente
+  nota?:    string;                            // contexto: "US$120.00", etc.
+  url?:     string;                            // enlace al listado (colombia_web / EE.UU.)
+};
+
 export type ProveedorDetalle = {
   urlCompra?:           string;   // enlace Amazon/Newegg donde comprar
   costoUSD?:            number;   // precio en origen (USD)
@@ -17,7 +26,10 @@ export type ProveedorDetalle = {
   // Comparación de mercado local (solo admin — nunca visible al cliente)
   precioMercadoLocal?:  number;   // promedio de precios en MercadoLibre/Alkosto/etc.
   fuenteLocal?:         string;   // URL de un listing local de referencia
-  comparacionMercado?:  string;   // "MercadoLibre más económico: $X vs $Y (US importado)"
+  comparacionMercado?:  string;   // (legado) resumen de una línea; los pedidos nuevos usan comparacionProveedores
+  // Comparación entre proveedores: dónde conseguir el producto más barato (solo admin).
+  // Ordenada de menor a mayor costo → la primera es la más económica.
+  comparacionProveedores?: FuenteComparacion[];
 };
 
 export type Order = {

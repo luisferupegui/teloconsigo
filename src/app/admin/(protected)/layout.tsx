@@ -42,9 +42,9 @@ export default async function AdminLayout({
             ["/admin", "📦 Catálogo"],
             ["/admin/productos", "📋 Productos y Promociones"],
             ["/admin/nuevo", "➕ Nuevo"],
-            ["/admin/importar", "📥 Importar CSV"],
             ["/admin/pedidos", "🛍️ Pedidos"],
             ["/admin/historial", "📜 Historial"],
+            ["/admin/precios",  "💰 Precios"],
             ["/admin/usuarios", "👤 Usuarios"],
           ].map(([href, label]) => (
             <Link

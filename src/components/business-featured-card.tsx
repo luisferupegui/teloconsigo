@@ -81,7 +81,7 @@ export function BusinessFeaturedCard({
   const isFavorite = has(productKey);
 
   const precio = product.precioDesde ?? product.precio;
-  const href   = `/conseguir?ref=${product.referencia ?? ""}`;
+  const href   = `/asesor?producto=${encodeURIComponent(product.nombre)}&ref=${encodeURIComponent(product.referencia ?? product.slug ?? "")}&precio=${precio ?? ""}`;
 
   const displayName = product.nombre
     .replace(new RegExp(`^${product.marca}\\s+`, "i"), "")

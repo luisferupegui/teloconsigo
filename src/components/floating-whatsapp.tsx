@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { X, ChevronRight } from "lucide-react";
+import { X, ChevronRight, MessageCircle } from "lucide-react";
+
+const WA_HREF = "https://wa.me/573102878194?text=Hola%2C%20visit%C3%A9%20la%20web%20de%20Te%20lo%20Consigo%20y%20quisiera%20informaci%C3%B3n%20sobre%20un%20producto";
 
 const AVATAR      = "/asesor/andrea.png";
 const SESSION_KEY = "tlc-andrea-chat";
@@ -96,7 +98,7 @@ export function FloatingWhatsApp() {
               )}
             </div>
 
-            {/* CTA */}
+            {/* CTA principal — Andrea */}
             <Link
               href="/asesor"
               className="mt-3 flex items-center justify-between rounded-xl bg-gradient-to-r from-[#1e6cff] to-[#4f8aff] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#1e6cff]/25 transition hover:brightness-105 hover:shadow-[#1e6cff]/40"
@@ -104,6 +106,24 @@ export function FloatingWhatsApp() {
               <span>{hasConversation ? "Retomar conversación" : "Hablar con Andrea"}</span>
               <ChevronRight className="h-4 w-4 opacity-80" />
             </Link>
+
+            {/* Separador */}
+            <div className="mt-2.5 flex items-center gap-2">
+              <div className="h-px flex-1 bg-zinc-100" />
+              <span className="text-[10px] font-medium text-zinc-400">o</span>
+              <div className="h-px flex-1 bg-zinc-100" />
+            </div>
+
+            {/* CTA secundario — WhatsApp */}
+            <a
+              href={WA_HREF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-xl border border-[#25D366]/30 bg-[#25D366]/8 px-4 py-2 text-sm font-semibold text-[#128C7E] transition hover:bg-[#25D366]/15"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              Escríbenos por WhatsApp
+            </a>
           </div>
         </div>
       )}

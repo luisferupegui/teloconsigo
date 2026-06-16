@@ -9,7 +9,7 @@ import {
   ShieldCheck, Award, Flame, ChevronRight, Cpu,
 } from "lucide-react";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; hidden?: boolean };
 type InactivityState = "active" | "notified15" | "notified30" | "archived";
 
 const AVATAR        = "/asesor/andrea.png";
@@ -67,7 +67,7 @@ const SALUDO_GENERAL =
   "¡Hola! Soy **Andrea** 😊\n\nEstoy aquí para ayudarte a encontrar la mejor tecnología para tu hogar o empresa.\n\n¿Qué producto estás buscando?";
 
 const saludoProducto = (nombre: string) =>
-  `¡Hola! Soy **Andrea** 😊\n\nVi que te interesa el **${nombre}**. Con gusto te ayudo con el precio, la disponibilidad y la entrega.\n\n¿Qué te gustaría saber?`;
+  `¡Hola! Soy **Andrea** 😊\n\nVi que te interesa el **${nombre}**. Dame un momento que verifico el precio y disponibilidad para ti 🔍`;
 
 // ─── Render markdown: negritas + listas ───────────────────────────────────
 function applyBold(line: string) {
@@ -168,36 +168,40 @@ function AsesorContent() {
     content: hasProducto ? saludoProducto(producto) : SALUDO_GENERAL,
   };
 
-  const [messages,   setMessages]   = useState<Msg[]>([initialMsg]);
-  const [input,      setInput]      = useState("");
-  const [loading,    setLoading]    = useState(false);
-  const [isTyping,   setIsTyping]   = useState(false);
-  const [lastActivity, setLastActivity] = useState<number>(() => Date.now());
-  const [inactivity, setInactivity] = useState<InactivityState>("active");
-  const [showChoice, setShowChoice] = useState(false);
-  const scrollRef                   = useRef<HTMLDivElement>(null);
-  const restoredRef                 = useRef(false);
-  const savedDataRef                = useRef<{ msgs: Msg[]; la: number; is: InactivityState } | null>(null);
+  const [messages,      setMessages]      = useState<Msg[]>([initialMsg]);
+  const [input,         setInput]         = useState("");
+  const [loading,       setLoading]       = useState(false);
+  const [isTyping,      setIsTyping]      = useState(false);
+  const [lastActivity,  setLastActivity]  = useState<number>(() => Date.now());
+  const [inactivity,    setInactivity]    = useState<InactivityState>("active");
+  const [showChoice,    setShowChoice]    = useState(false);
+  const [sessionReady,  setSessionReady]  = useState(false);
+  const scrollRef       = useRef<HTMLDivElement>(null);
+  const restoredRef     = useRef(false);
+  const autoStartedRef  = useRef(false);
+  const savedDataRef    = useRef<{ msgs: Msg[]; la: number; is: InactivityState } | null>(null);
 
   // ── Detectar conversación guardada al montar ──────────────────────────────
   useEffect(() => {
     if (restoredRef.current) return;
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
-      if (!saved) { restoredRef.current = true; return; }
+      if (!saved) { restoredRef.current = true; setSessionReady(true); return; }
       const parsed = JSON.parse(saved);
-      const msgs: Msg[]         = Array.isArray(parsed) ? parsed : (parsed?.messages ?? []);
-      const la:   number        = parsed?.lastActivity   ?? Date.now();
-      const is:   InactivityState = parsed?.inactivityState ?? "active";
-      const hasUser = msgs.some((m: Msg) => m.role === "user");
-      if (!hasUser || msgs.length < 1) { restoredRef.current = true; return; }
+      const msgs: Msg[]           = Array.isArray(parsed) ? parsed : (parsed?.messages ?? []);
+      const la:   number          = parsed?.lastActivity     ?? Date.now();
+      const is:   InactivityState = parsed?.inactivityState  ?? "active";
+      const hasUser = msgs.some((m: Msg) => m.role === "user" && !m.hidden);
+      if (!hasUser || msgs.length < 1) { restoredRef.current = true; setSessionReady(true); return; }
       savedDataRef.current = { msgs, la, is };
       setShowChoice(true);
-    } catch { restoredRef.current = true; }
+      setSessionReady(true);
+    } catch { restoredRef.current = true; setSessionReady(true); }
   }, []);
 
   const handleContinue = () => {
     const data = savedDataRef.current;
+    autoStartedRef.current = true; // conversación restaurada → no disparar auto-inicio
     if (!data) { setShowChoice(false); restoredRef.current = true; return; }
     let { msgs, la, is } = data;
     const elapsed    = Date.now() - la;
@@ -240,7 +244,7 @@ function AsesorContent() {
 
   // ── Timer de inactividad ──────────────────────────────────────────────────
   useEffect(() => {
-    const hasUserMsg = messages.some((m) => m.role === "user");
+    const hasUserMsg = messages.some((m) => m.role === "user" && !m.hidden);
     if (!hasUserMsg || inactivity === "archived") return;
 
     const id = setInterval(() => {
@@ -259,7 +263,43 @@ function AsesorContent() {
     return () => clearInterval(id);
   }, [lastActivity, inactivity, messages]);
 
-  const hasUserMsg = messages.some((m) => m.role === "user");
+  // ── Auto-inicio: buscar precio/disponibilidad al llegar desde una card ────
+  useEffect(() => {
+    if (!sessionReady || showChoice || !hasProducto) return;
+    if (autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    const SEP = String.fromCharCode(30);
+    const autoUserMsg: Msg = { role: "user", content: `¿Cuál es el precio y disponibilidad del ${producto}?`, hidden: true };
+    setLoading(true);
+    setIsTyping(true);
+    const doFetch = async () => {
+      try {
+        const res = await fetch("/api/asesor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [initialMsg], contexto: { producto, ref, precio }, autoInicio: true }),
+        });
+        if (!res.ok || !res.body) { setIsTyping(false); setLoading(false); return; }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = "";
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          const parts = acc.split(SEP);
+          const bubbles: Msg[] = parts.map((c) => c.trim()).filter((c) => c.length > 0).map((c) => ({ role: "assistant" as const, content: c }));
+          setMessages([initialMsg, autoUserMsg, ...bubbles]);
+          setIsTyping(parts[parts.length - 1].trim().length === 0);
+        }
+        if (acc.split(SEP).every((c) => c.trim().length === 0)) setMessages([initialMsg]);
+      } catch { setMessages([initialMsg]); }
+      finally { setLoading(false); setIsTyping(false); }
+    };
+    doFetch();
+  }, [sessionReady, showChoice, hasProducto]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const hasUserMsg = messages.some((m) => m.role === "user" && !m.hidden);
 
   const send = async (text: string) => {
     const t = text.trim();
@@ -281,15 +321,21 @@ function AsesorContent() {
     setLoading(true);
     setIsTyping(true);
 
-    const appendAssistant = (content: string) =>
-      setMessages((prev) => [...prev, { role: "assistant", content }]);
+    // El backend separa el preámbulo ("dame un momento") de la respuesta final
+    // con un ASCII Record Separator (char 30). Cada segmento es su propio globo;
+    // mientras llega el siguiente, se muestra el indicador "escribiendo…".
+    const SEP = String.fromCharCode(30);
 
-    const updateLast = (content: string) =>
-      setMessages((prev) => {
-        const copy = [...prev];
-        copy[copy.length - 1] = { role: "assistant", content };
-        return copy;
-      });
+    const renderStream = (acc: string) => {
+      const parts = acc.split(SEP);
+      const bubbles = parts
+        .map((c) => c.trim())
+        .filter((c) => c.length > 0)
+        .map((c) => ({ role: "assistant" as const, content: c }));
+      setMessages([...withUser, ...bubbles]);
+      // Si el último segmento aún está vacío, Andrea sigue "escribiendo" el próximo globo.
+      setIsTyping(parts[parts.length - 1].trim().length === 0);
+    };
 
     try {
       const res = await fetch("/api/asesor", {
@@ -305,39 +351,29 @@ function AsesorContent() {
         let msg = "Uf, no pude responderte en este momento. ¿Lo intentamos de nuevo?";
         try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* */ }
         setIsTyping(false);
-        appendAssistant(msg);
+        setMessages([...withUser, { role: "assistant", content: msg }]);
         return;
       }
 
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
-      let acc     = "";
-      let started = false;
+      let acc = "";
 
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        if (!started && acc.length > 0) {
-          // Primer carácter recibido: oculta el indicador y crea el mensaje
-          started = true;
-          setIsTyping(false);
-          appendAssistant(acc);
-        } else if (started) {
-          updateLast(acc);
-        }
+        renderStream(acc);
       }
 
-      const fallback = "Uf, no me llegó la respuesta. ¿Lo intentamos de nuevo? 😊";
-      if (!started) {
+      // Si no llegó ningún contenido real (solo separadores o vacío) → fallback.
+      if (acc.split(SEP).every((c) => c.trim().length === 0)) {
         setIsTyping(false);
-        appendAssistant(fallback);
-      } else if (!acc.trim()) {
-        updateLast(fallback);
+        setMessages([...withUser, { role: "assistant", content: "Uf, no me llegó la respuesta. ¿Lo intentamos de nuevo? 😊" }]);
       }
     } catch {
       setIsTyping(false);
-      appendAssistant("Parece que se cayó la conexión. ¿Lo intentamos de nuevo?");
+      setMessages([...withUser, { role: "assistant", content: "Parece que se cayó la conexión. ¿Lo intentamos de nuevo?" }]);
     } finally {
       setLoading(false);
       setIsTyping(false);
@@ -442,7 +478,7 @@ function AsesorContent() {
                 </div>
               )}
 
-              {!showChoice && messages.map((m, i) => {
+              {!showChoice && messages.filter((m) => !m.hidden).map((m, i) => {
                 if (m.role === "user") {
                   return (
                     <div
@@ -511,7 +547,7 @@ function AsesorContent() {
                 </div>
               )}
 
-              {hasProducto && !hasUserMsg && !showChoice && (
+              {hasProducto && !hasUserMsg && !showChoice && !loading && !autoStartedRef.current && (
                 <div className="flex flex-wrap gap-1.5">
                   {QUICK_PRODUCTO.map((q) => (
                     <button
