@@ -998,10 +998,10 @@ export async function POST(req: Request): Promise<Response> {
         // Crédito agotado o key inválida → NO invitar a reintentar (no va a funcionar).
         // Rate limit o sobrecarga → sí puede funcionar en unos momentos.
         const isCreditsError =
-          (err instanceof Anthropic.APIStatusError && (err.status === 402 || err.status === 401)) ||
+          (err instanceof Anthropic.APIError && (err.status === 402 || err.status === 401)) ||
           (err instanceof Error && /credit|balance|billing|payment|authenticate/i.test(err.message));
         const isOverloaded =
-          err instanceof Anthropic.APIStatusError && (err.status === 429 || err.status === 529);
+          err instanceof Anthropic.APIError && (err.status === 429 || err.status === 529);
 
         const CONTACTO = "\n\n📞 **Teléfono / WhatsApp:** +57 310 2878194\n✉️ **Email:** ventas@teloconsigo.co\n\nEn un momento un especialista en tecnología se contactará contigo. ¡Fue un placer atenderte! 😊";
         const clientMsg = isCreditsError
