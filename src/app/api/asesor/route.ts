@@ -375,6 +375,9 @@ function parseCopPrice(s?: string): number | null {
 // Ruido típico de Shopping: PCs/torres completos y lotes que NO son el producto pedido.
 const SERPER_NOISE = /\b(gaming pc|gaming desktop|desktop pc|pc with|torre|computador|tower|barebone|bundle|combo|lote|pre-?built|prebuilt)\b/i;
 
+// Productos de segunda mano / reacondicionados — siempre excluidos (solo vendemos nuevos).
+const USADO = /\b(usado|segunda\s*mano|reacondicionado|recondicionado|refurbished|open\s*box|de\s*segunda|seminuevo)\b/i;
+
 // Marketplaces INTERNACIONALES (no "webs locales"): se excluyen de la comparación de
 // proveedores colombianos — su precio no es un costo realista para vender en Colombia.
 const INTL_SELLER = /\b(ebay|aliexpress|alibaba|amazon|made-in-china|microless|banggood|temu|wish|walmart|newegg|dhgate)\b/i;
@@ -413,6 +416,9 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
     const cop = parseCopPrice(it.price);
     if (!cop) continue;
     if (!isComputer && SERPER_NOISE.test(it.title ?? "")) continue;
+    // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
+    if (it.condition && it.condition !== "new") continue;
+    if (USADO.test(it.title ?? "")) continue;
     if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link)) continue;
     local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true, vendedor: it.source });
   }

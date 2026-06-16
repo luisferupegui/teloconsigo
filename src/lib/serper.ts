@@ -11,6 +11,7 @@ export type SerperShoppingItem = {
   delivery?: string;
   rating?: number;
   ratingCount?: number;
+  condition?: string; // "new" | "used" | "refurbished" (cuando Serper lo provee)
 };
 
 async function serperPost(endpoint: string, body: object, apiKey: string): Promise<Record<string, unknown>> {
