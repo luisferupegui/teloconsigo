@@ -115,6 +115,34 @@ function renderRich(text: string): ReactNode {
           ))}
         </ol>,
       );
+    } else if (/^\s*\|.+\|\s*$/.test(line)) {
+      // Tabla markdown: recolectar todas las filas contiguas
+      const rows: string[][] = [];
+      const isSep: boolean[] = [];
+      while (i < lines.length && /^\s*\|.+\|\s*$/.test(lines[i])) {
+        const cells = lines[i].trim().split("|").slice(1, -1).map((c) => c.trim());
+        rows.push(cells);
+        isSep.push(cells.every((c) => /^[-: ]+$/.test(c)));
+        i++;
+      }
+      const headers  = rows[0] ?? [];
+      const bodyRows = rows.filter((_, idx) => idx !== 0 && !isSep[idx]);
+      nodes.push(
+        <div key={`tbl${i}`} className="my-2 overflow-x-auto rounded-lg border border-zinc-200">
+          <table className="w-full text-xs">
+            <thead className="bg-zinc-50">
+              <tr>{headers.map((h, j) => <th key={j} className="px-3 py-2 text-left font-semibold text-zinc-700 whitespace-nowrap">{applyBold(h)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {bodyRows.map((row, j) => (
+                <tr key={j} className={j % 2 === 0 ? "bg-white" : "bg-zinc-50/50"}>
+                  {row.map((cell, k) => <td key={k} className="px-3 py-1.5 text-zinc-600">{applyBold(cell)}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
     } else if (line === "") {
       nodes.push(<div key={`sp${i}`} className="h-1.5" />);
       i++;
@@ -170,7 +198,7 @@ function AsesorContent() {
 
   const [messages,      setMessages]      = useState<Msg[]>([initialMsg]);
   const [input,         setInput]         = useState("");
-  const [loading,       setLoading]       = useState(false);
+  const [loading,       setLoading]       = useState(hasProducto); // true desde el inicio cuando hay producto → evita flash de QUICK_PRODUCTO
   const [isTyping,      setIsTyping]      = useState(false);
   const [lastActivity,  setLastActivity]  = useState<number>(() => Date.now());
   const [inactivity,    setInactivity]    = useState<InactivityState>("active");
@@ -202,6 +230,7 @@ function AsesorContent() {
   const handleContinue = () => {
     const data = savedDataRef.current;
     autoStartedRef.current = true; // conversación restaurada → no disparar auto-inicio
+    setLoading(false); // si hasProducto=true loading arrancó true; al restaurar se habilita el input
     if (!data) { setShowChoice(false); restoredRef.current = true; return; }
     let { msgs, la, is } = data;
     const elapsed    = Date.now() - la;

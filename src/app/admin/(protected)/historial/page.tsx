@@ -1,5 +1,5 @@
 import { getHistory, getExpiredHistory, type HistoryOrder } from "@/lib/orders";
-import { AccionesBanner, ExportButton } from "./HistorialClient";
+import { AccionesBanner, ExportButton, HistorialStatusSelector } from "./HistorialClient";
 
 function formatCOP(n: number) {
   return "$" + n.toLocaleString("es-CO");
@@ -144,14 +144,7 @@ function HistorialRow({ order: o }: { order: HistoryOrder }) {
         ) : null}
       </td>
       <td className="px-4 py-3">
-        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          o.estado === "entregado" ? "bg-emerald-100 text-emerald-700" :
-          o.estado === "enviado"   ? "bg-blue-100 text-blue-700" :
-          o.estado === "confirmado" ? "bg-violet-100 text-violet-700" :
-          "bg-amber-100 text-amber-700"
-        }`}>
-          {o.estado.charAt(0).toUpperCase() + o.estado.slice(1)}
-        </span>
+        <HistorialStatusSelector orderId={o.id} current={o.estado} />
       </td>
     </tr>
   );

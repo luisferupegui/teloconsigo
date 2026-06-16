@@ -131,6 +131,15 @@ export function updateOrderEstado(id: string, estado: OrderEstado): boolean {
   return true;
 }
 
+export function updateHistoryEstado(id: string, estado: OrderEstado): boolean {
+  const history = readJSON<HistoryOrder[]>(HISTORY_PATH, []);
+  const idx = history.findIndex((o) => o.id === id);
+  if (idx === -1) return false;
+  history[idx].estado = estado;
+  writeJSON(HISTORY_PATH, history);
+  return true;
+}
+
 /** Mueve el pedido al historial y lo elimina de pedidos activos. */
 export function deleteOrder(id: string): boolean {
   const orders = getOrders();

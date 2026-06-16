@@ -3,7 +3,7 @@ import { getAnthropicApiKey, getSerperApiKey } from "@/lib/settings";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
-import { saveOrder, type FuenteComparacion } from "@/lib/orders";
+import { saveOrder, deleteOrder, type FuenteComparacion } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
 import { loadActiveProducts, loadMargins, applyMargin } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
@@ -87,6 +87,20 @@ const tools: Anthropic.Tool[] = [
         },
       },
       required: ["cliente", "producto"],
+    },
+  },
+  {
+    name: "cancelar_pedido",
+    description:
+      "Cancela un pedido registrado en esta conversación cuando el cliente quiere corregir datos o anularlo. " +
+      "Usa el pedidoId exacto recibido en la respuesta de registrar_pedido. " +
+      "Tras cancelar, puedes llamar a registrar_pedido de nuevo con los datos correctos.",
+    input_schema: {
+      type: "object",
+      properties: {
+        pedidoId: { type: "string", description: "El campo pedidoId retornado por registrar_pedido." },
+      },
+      required: ["pedidoId"],
     },
   },
   {
@@ -420,7 +434,7 @@ function respuestaCotizar(productos: QuoteProducto[]) {
   return {
     encontrados: productos.length,
     productos,
-    nota: `INTERNO: ${origenNota} DEBES presentar AL MENOS 3 opciones con precio firme en COP (campo precioCOP — úsalo EXACTO, no lo redondees). Para laptops y desktops, incluye siempre: procesador, RAM, almacenamiento y pantalla (si es laptop). Para productos de Colombia (origen='co'), las specs están en el campo 'nombre' — extráelas y preséntalas con formato limpio. Indica el tiempo de entrega de CADA opción. Al registrar: origen='co' → proveedor="colombia"; origen='us' → proveedor="eeuu" con costoUSD del producto. NO menciones búsqueda, importación ni cotización.`,
+    nota: `INTERNO: ${origenNota} DEBES presentar AL MENOS 3 opciones con precio firme en COP (campo precioCOP — úsalo EXACTO, no lo redondees). Para laptops, desktops y tablets incluye siempre: procesador, RAM, almacenamiento y pantalla. En desktops: si es AIO/Todo-en-uno indica el tamaño de la pantalla; si viene con monitor indica su tamaño; si es torre indica "Torre (sin monitor)". Para productos de Colombia (origen='co'), las specs están en el campo 'nombre' — extráelas y preséntalas con formato limpio. Indica el tiempo de entrega de CADA opción. Al registrar: origen='co' → proveedor="colombia"; origen='us' → proveedor="eeuu" con costoUSD del producto. NO menciones búsqueda, importación ni cotización.`,
   };
 }
 
@@ -437,37 +451,28 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
 
   if (locales.length === 0) return { productosCO: [], localData: {} };
 
-  // Hasta 4 precios: primero de tiendas prioritarias (alkosto/ktronix/pcfactory/falabella);
-  // si no llega a 4, rellena con exito/linio/mercadolibre como respaldo.
-  const esPrioritaria = (p: WebProducto) =>
-    PRIORITY_SITES_CO.some((s) => (p.fuente ?? "").toLowerCase().includes(s));
-  const prioritarias  = locales.filter(esPrioritaria).slice(0, 4).map((p) => p.copLocal as number);
-  const respaldo      = locales.filter((p) => !esPrioritaria(p)).map((p) => p.copLocal as number);
-  const preciosAvg    = [...prioritarias, ...respaldo].slice(0, 4);
-
-  const precioPromedioMercado = Math.round(
-    preciosAvg.reduce((s, v) => s + v, 0) / preciosAvg.length / 1000,
-  ) * 1000;
-
-  // Margen según categoría del producto (loadMargins → margins.json); fallback 35%.
+  // Margen según categoría; fallback 35%.
   const margins  = loadMargins();
   const catKey   = inferirCategoriaMargen(locales[0].nombre ?? "", clasificacion);
   const margen   = margins[catKey] ?? margins.default ?? 0.35;
-  const precioCliente = Math.ceil(precioPromedioMercado * (1 + margen) / 10000) * 10000;
 
-  // Opciones para Andrea: hasta 5 resultados distintos, todos con el precio calculado.
-  const productosCO: QuoteProducto[] = locales.slice(0, 5).map((p) => ({
-    nombre: p.nombre, specs: "",
-    precioCOP:     precioCliente,
-    costoUSD:      0,
-    costoTotalCOP: precioPromedioMercado,
-    fuente:        p.fuente ?? "",
-    origen:        "co" as const,
-  }));
+  // Precio individual por tienda: cada opción refleja lo que cuesta en esa tienda específica,
+  // así Andrea presenta alternativas con precios genuinamente distintos.
+  const productosCO: QuoteProducto[] = locales.slice(0, 5).map((p) => {
+    const copLocal = p.copLocal as number;
+    return {
+      nombre: p.nombre, specs: "",
+      precioCOP:     Math.ceil(copLocal * (1 + margen) / 10000) * 10000,
+      costoUSD:      0,
+      costoTotalCOP: copLocal,
+      fuente:        p.fuente ?? "",
+      origen:        "co" as const,
+    };
+  });
 
   const fuenteRef = locales.find((p) => p.fuente)?.fuente ?? "";
   const localData: LocalData = {
-    precioMercadoLocal: precioPromedioMercado,
+    precioMercadoLocal: locales[0].copLocal as number,  // la más barata (referencia admin)
     fuenteLocal:        fuenteRef,
     cantidadListados:   locales.length,
     siteLocal:          siteNameFromUrl(fuenteRef),
@@ -794,10 +799,20 @@ async function registrarPedido(input: unknown): Promise<unknown> {
   }
 }
 
+async function cancelarPedido(input: unknown): Promise<unknown> {
+  const { pedidoId } = input as { pedidoId?: string };
+  if (!pedidoId) return { error: "Falta el pedidoId." };
+  const ok = deleteOrder(pedidoId);
+  return ok
+    ? { ok: true }
+    : { error: "No encontré el pedido. Puede que ya haya sido procesado." };
+}
+
 async function runTool(anthropic: Anthropic, name: string, input: unknown): Promise<unknown> {
   try {
     if (name === "buscar_productos") return buscarProductos(input as Record<string, unknown>);
     if (name === "registrar_pedido") return await registrarPedido(input);
+    if (name === "cancelar_pedido")  return await cancelarPedido(input);
     if (name === "cotizar_web") {
       const consulta = String((input as { consulta?: unknown })?.consulta ?? "").trim();
       return consulta ? await cotizarWeb(anthropic, consulta) : { error: "consulta vacía" };
@@ -858,6 +873,8 @@ FORMATO: cuando necesites pedirle al cliente varios datos (nombre, cédula, dire
 - Dirección de entrega y ciudad
 - Teléfono de contacto
 - Correo electrónico
+
+CORRECCIÓN O CANCELACIÓN: si el cliente detecta un error en sus datos o quiere cancelar JUSTO después de registrar (en esta misma conversación), llama cancelar_pedido con el pedidoId que recibiste. Confírmale al cliente que se anuló y ofrece registrarlo de nuevo con los datos correctos si lo desea. No puedes cancelar pedidos de conversaciones anteriores.
 
 CIERRE DE PEDIDO: cuando registrar_pedido devuelva ok=true y pedidoId, responde al cliente con calidez usando su nombre y el número de orden:
 "¡Listo, [nombre]! Tu pedido quedó registrado con el número de orden **[orderNumber]** 🙌. En breve un representante de nuestro equipo te contactará al [teléfono] para confirmar y coordinar el pago. [nombre], fue un placer atenderte — ¡que tengas un excelente resto del día! 😊"
@@ -923,9 +940,10 @@ export async function POST(req: Request): Promise<Response> {
       // distintos y mostrar el indicador "escribiendo…" mientras Andrea consulta.
       const BUBBLE_SEP = String.fromCharCode(30); // ASCII Record Separator (no aparece en texto normal)
       const MAX_TURNS = 8;
-      let buscarCount   = 0;  // veces que Andrea consultó disponibilidad local
-      let cotizarCount  = 0;  // veces que consultó web (Colombia/EE.UU.)
-      let registrarCount = 0; // veces que registró un pedido (máx 1 — evita duplicados por "gracias")
+      let buscarCount    = 0;  // veces que Andrea consultó disponibilidad local
+      let cotizarCount   = 0;  // veces que consultó web (Colombia/EE.UU.)
+      let registrarCount = 0;  // veces que registró un pedido
+      let cancelarCount  = 0;  // veces que canceló un pedido (máx 1; desbloquea un registro extra)
       try {
         for (let turn = 0; turn < MAX_TURNS; turn++) {
           let turnText = "";
@@ -935,9 +953,10 @@ export async function POST(req: Request): Promise<Response> {
           //  • último turno: SIN herramientas → Andrea DEBE presentar lo que ya tiene.
           const isLast = turn === MAX_TURNS - 1;
           const turnTools = isLast ? [] : tools.filter((t) =>
-            t.name === "buscar_productos"  ? buscarCount   < 1 :
-            t.name === "cotizar_web"       ? cotizarCount  < 2 :
-            t.name === "registrar_pedido"  ? registrarCount < 1 : true,
+            t.name === "buscar_productos"  ? buscarCount    < 1 :
+            t.name === "cotizar_web"       ? cotizarCount   < 2 :
+            t.name === "cancelar_pedido"   ? cancelarCount  < 1 :
+            t.name === "registrar_pedido"  ? registrarCount < (1 + cancelarCount) : true,
           );
           // Solo el turno 0 transmite su texto EN VIVO (el preámbulo "dame un momento").
           // El texto de turnos intermedios (turno ≥1 que llaman otra herramienta) se
@@ -986,6 +1005,7 @@ export async function POST(req: Request): Promise<Response> {
               if (block.name === "buscar_productos") buscarCount++;
               if (block.name === "cotizar_web")      cotizarCount++;
               if (block.name === "registrar_pedido") registrarCount++;
+              if (block.name === "cancelar_pedido")  cancelarCount++;
               const result = await runTool(anthropic, block.name, block.input);
               toolResults.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(result) });
             }
