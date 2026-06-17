@@ -108,7 +108,7 @@ export function HeroSlider() {
               Ver productos
             </Link>
             <Link
-              href="/catalogo?oferta=true"
+              href="/soluciones"
               className="rounded-md border border-white/25 bg-white/10 px-7 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20"
             >
               Ofertas del día

@@ -70,7 +70,8 @@ export function getCachedQuery(consulta: string): QueryEntry | null {
   return e && Date.now() - e.ts < WEB_CACHE_TTL ? e : null;
 }
 
-/** Guarda el resultado de una consulta e indexa cada producto por nombre/modelo. */
+/** Guarda el resultado de una consulta e indexa cada producto por nombre, modelo Y url.
+ *  La URL es la clave más estable: no cambia cuando Andrea reformatea el nombre al registrar. */
 export function saveQuote(consulta: string, productos: QuoteProducto[], local: LocalData): void {
   const c = load();
   prune(c);
@@ -82,7 +83,7 @@ export function saveQuote(consulta: string, productos: QuoteProducto[], local: L
       precioCOP: p.precioCOP, costoTotalCOP: p.costoTotalCOP,
       origen: p.origen, ...local,
     };
-    for (const key of [p.modelo, p.nombre]) {
+    for (const key of [p.modelo, p.nombre, p.fuente]) {
       const norm = key ? cacheKey(key) : "";
       if (norm.length >= 3) c.products[norm] = entry;
     }
@@ -90,15 +91,18 @@ export function saveQuote(consulta: string, productos: QuoteProducto[], local: L
   save(c);
 }
 
-/** Recupera el costo/precio de un producto (para registrarPedido). */
-export function getWebQuote(nombre: string, modelo?: string): WebQuote | null {
+/** Recupera el costo/precio de un producto (para registrarPedido).
+ *  Busca por nombre, modelo, URL de compra (más estable) y fuzzy por nombre. */
+export function getWebQuote(nombre: string, modelo?: string, urlCompra?: string): WebQuote | null {
   const c = load();
   const now = Date.now();
-  for (const key of [modelo, nombre]) {
+  // 1) Exacto: modelo, nombre, url
+  for (const key of [modelo, nombre, urlCompra]) {
     const norm = key ? cacheKey(key) : "";
     const e = norm ? c.products[norm] : undefined;
     if (e && now - e.ts < WEB_CACHE_TTL) return e;
   }
+  // 2) Fuzzy por nombre (cubre reformateos de Andrea)
   const target = cacheKey(nombre);
   if (target.length >= 6) {
     for (const k of Object.keys(c.products)) {

@@ -13,6 +13,16 @@ type ImportConfig = {
   shipping: { component: number; laptop: number; desktop: number };
 };
 
+type SearchMode = "co_eeuu" | "eeuu_co" | "co_only" | "eeuu_only";
+type Priorities = Record<string, SearchMode>;
+
+const SEARCH_MODE_OPTIONS: { value: SearchMode; label: string; short: string }[] = [
+  { value: "co_eeuu",  label: "🇨🇴 Colombia → 🇺🇸 EE.UU.",  short: "CO → US" },
+  { value: "eeuu_co",  label: "🇺🇸 EE.UU. → 🇨🇴 Colombia",  short: "US → CO" },
+  { value: "co_only",  label: "🇨🇴 Solo Colombia",            short: "Solo CO" },
+  { value: "eeuu_only",label: "🇺🇸 Solo EE.UU.",              short: "Solo US" },
+];
+
 // ── Labels de categorías de márgenes ────────────────────────────────────────
 
 const CAT_LABELS: Record<string, { label: string; desc: string }> = {
@@ -28,7 +38,8 @@ const CAT_LABELS: Record<string, { label: string; desc: string }> = {
   "tarjeta-grafica": { label: "Tarjetas gráficas (GPU)",          desc: "RTX, Radeon, Quadro…" },
   "fuente-poder":    { label: "Fuentes de poder (PSU)",           desc: "Certificadas 80+, modulares" },
   "refrigeracion":   { label: "Refrigeración / Coolers",          desc: "Disipadores aire y líquido" },
-  "escritorio":      { label: "Computadores de escritorio",       desc: "Torres, AIO, mini-PCs" },
+  "escritorio":      { label: "Computadores de escritorio",       desc: "Desktop, All in One (AIO), Gaming PC, Workstation (torre)" },
+  "mini-pc":         { label: "Mini-PC",                           desc: "Mini-PC, Intel NUC, barebone, mini computador" },
   "redes":           { label: "Redes (switches, routers, APs)",   desc: "Cisco, Ubiquiti, TP-Link…" },
   "mouse":           { label: "Mouse / Ratones",                  desc: "Inalámbrico, ergonómico, gaming" },
   "auriculares":     { label: "Auriculares / Headsets",           desc: "Diademas, in-ear, USB-C" },
@@ -52,6 +63,7 @@ const CAT_ORDER = [
   "impresora",       // Impresoras
   "licencia",        // Licencias Windows / Office
   "memoria-ram",     // Memoria RAM
+  "mini-pc",         // Mini-PC
   "monitor",         // Monitores
   "motherboard",     // Motherboards / Placas madre
   "mouse",           // Mouse / Ratones
@@ -92,9 +104,11 @@ function StatusBadge({ status }: { status: SaveStatus }) {
 export default function PreciosPage() {
   const [margins,    setMargins]    = useState<Margins>({});
   const [importCfg,  setImportCfg]  = useState<ImportConfig>({ divisor: 0.7, trm: 3800, shipping: { component: 25, laptop: 60, desktop: 100 } });
+  const [priorities, setPriorities] = useState<Priorities>({});
   const [loading,    setLoading]    = useState(true);
   const [mStatus,    setMStatus]    = useState<SaveStatus>("idle");
   const [iStatus,    setIStatus]    = useState<SaveStatus>("idle");
+  const [pStatus,    setPStatus]    = useState<SaveStatus>("idle");
   const [showDesc,   setShowDesc]   = useState(false);
 
   // Cargar datos
@@ -102,8 +116,9 @@ export default function PreciosPage() {
     Promise.all([
       fetch("/api/admin/margins").then((r) => r.json()),
       fetch("/api/admin/importacion-config").then((r) => r.json()),
+      fetch("/api/admin/search-priority").then((r) => r.json()),
     ])
-      .then(([m, cfg]) => { setMargins(m); setImportCfg(cfg); })
+      .then(([m, cfg, p]) => { setMargins(m); setImportCfg(cfg); setPriorities(p); })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -137,6 +152,20 @@ export default function PreciosPage() {
       setMStatus(res.ok ? "saved" : "error");
     } catch { setMStatus("error"); }
     setTimeout(() => setMStatus("idle"), 3000);
+  }
+
+  // Guardar prioridades de búsqueda
+  async function savePriorities() {
+    setPStatus("saving");
+    try {
+      const res = await fetch("/api/admin/search-priority", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(priorities),
+      });
+      setPStatus(res.ok ? "saved" : "error");
+    } catch { setPStatus("error"); }
+    setTimeout(() => setPStatus("idle"), 3000);
   }
 
   // Guardar fórmula EE.UU.
@@ -271,7 +300,73 @@ export default function PreciosPage() {
         </div>
       </div>
 
-      {/* ── SECCIÓN 2: Fórmula EE.UU. ──────────────────────────────────── */}
+      {/* ── SECCIÓN 2: Prioridad de búsqueda por categoría ────────────── */}
+      <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
+
+        <div className="px-6 py-4 border-b border-zinc-100">
+          <h2 className="text-base font-bold text-zinc-900">🔍 Prioridad de búsqueda por categoría</h2>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            Cuando las listas de proveedores no alcanzan 3 opciones, ¿dónde busca Andrea primero?
+            Las listas locales siempre son prioridad 1 (gratis).
+          </p>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 text-xs text-zinc-500 uppercase tracking-wider">
+              <tr>
+                <th className="px-6 py-3 text-left font-semibold">Categoría</th>
+                <th className="px-6 py-3 text-left font-semibold hidden sm:table-cell">Productos típicos</th>
+                <th className="px-6 py-3 text-center font-semibold w-56">Buscar en</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {[...CAT_ORDER].map((key) => {
+                const meta = CAT_LABELS[key];
+                const mode: SearchMode = priorities[key] ?? "co_eeuu";
+                const isDefault = key === "default";
+                return (
+                  <tr key={key} className={isDefault ? "bg-zinc-50/60" : "hover:bg-zinc-50/40"}>
+                    <td className="px-6 py-2.5">
+                      <span className={`font-semibold text-sm ${isDefault ? "text-zinc-500 italic" : "text-zinc-800"}`}>
+                        {meta?.label ?? key}
+                      </span>
+                    </td>
+                    <td className="px-6 py-2.5 text-zinc-400 text-xs hidden sm:table-cell">
+                      {meta?.desc ?? "—"}
+                    </td>
+                    <td className="px-6 py-2.5">
+                      <select
+                        value={mode}
+                        onChange={(e) => setPriorities((prev) => ({ ...prev, [key]: e.target.value as SearchMode }))}
+                        className="w-full rounded-lg border border-zinc-300 px-2 py-1.5 text-xs font-semibold text-zinc-800 focus:border-[#1e6cff] focus:outline-none focus:ring-2 focus:ring-[#1e6cff]/20 bg-white"
+                      >
+                        {SEARCH_MODE_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-100 bg-zinc-50">
+          <StatusBadge status={pStatus} />
+          <button
+            onClick={savePriorities}
+            disabled={pStatus === "saving"}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#1e6cff] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[#1e6cff]/20 hover:bg-[#1858d6] disabled:opacity-60 transition"
+          >
+            {pStatus === "saving" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Guardar prioridades
+          </button>
+        </div>
+      </div>
+
+      {/* ── SECCIÓN 3: Fórmula EE.UU. ──────────────────────────────────── */}
       <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
 
         <div className="px-6 py-4 border-b border-zinc-100">

@@ -47,7 +47,7 @@ function LineaCard({
   CatIcon: React.ComponentType<{ className?: string }>;
   imageUrl: string | null;
 }) {
-  const href = `/conseguir?cat=${catSlug}&marca=${encodeURIComponent(linea.marca)}&linea=${encodeURIComponent(linea.nombre)}`;
+  const href = `/asesor?producto=${encodeURIComponent(`${linea.marca} ${linea.nombre}`)}`;
   return (
     <Link
       href={href}
@@ -290,8 +290,8 @@ export default async function TiendaPage({
                 {(catActiva.lineas?.length ?? 0) === 0 ? (
                   <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center">
                     <p className="text-zinc-500 text-sm">Próximamente</p>
-                    <Link href="/conseguir" className="mt-4 inline-block text-sm font-semibold text-[#1e6cff]">
-                      Solicitar igual →
+                    <Link href="/asesor" className="mt-4 inline-block text-sm font-semibold text-[#1e6cff]">
+                      Hablar con Andrea →
                     </Link>
                   </div>
                 ) : (

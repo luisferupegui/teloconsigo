@@ -1,6 +1,439 @@
 [
   {
     "cliente": {
+      "nombre": "Juan Pérez",
+      "cedula": "1234567",
+      "direccion": "Calle 50 # 10-20",
+      "ciudad": "Medellín",
+      "telefono": "3001234567",
+      "email": "juan@ejemplo.com"
+    },
+    "producto": {
+      "nombre": "Dell OptiPlex 7070",
+      "cantidad": 1,
+      "precioCOP": 1380000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "urlCompra": "https://www.google.com/search?ibp=oshop&q=computador+torre+HP+Dell+oficina+Intel+Core+i5+8GB+RAM+escritorio&prds=localAnnotatedOfferId:1,catalogid:18179062924380671064,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "costoTotalCOP": 1150000,
+      "margenCOP": 230000,
+      "precioMercadoLocal": 3096000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=Dell+OptiPlex+7070&prds=localAnnotatedOfferId:1,productid:1010700804544577222,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "MercadoLibre",
+          "tipo": "colombia_web",
+          "costoCOP": 3096000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Dell+OptiPlex+7070&prds=localAnnotatedOfferId:1,productid:1010700804544577222,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "3a20885f-1d1a-4147-9e24-c80089a74565",
+    "orderNumber": "160626129",
+    "fecha": "2026-06-17T00:00:58.392Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-17T00:16:41.633Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "PC Ensamblado AMD Ryzen 7 5700G 32GB RAM 1.5TB SSD Monitor 27\" 180Hz",
+      "cantidad": 1,
+      "precioCOP": 3239000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 2699000,
+      "margenCOP": 540000,
+      "proveedorLocal": "ledacom",
+      "precioMercadoLocal": 2442000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,catalogid:12474483575572261756,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Ledacom",
+          "tipo": "lista",
+          "costoCOP": 2350000
+        },
+        {
+          "fuente": "Janus",
+          "tipo": "colombia_web",
+          "costoCOP": 2442000,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,catalogid:12474483575572261756,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+          "nota": "precio de mercado"
+        },
+        {
+          "fuente": "Falabella",
+          "tipo": "colombia_web",
+          "costoCOP": 2689900,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,productid:4415325710615966683,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "c5f1e116-931c-4947-b6ac-2d0fa0804806",
+    "orderNumber": "160626127",
+    "fecha": "2026-06-16T20:34:13.428Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-17T00:16:39.331Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "AMD Ryzen 7 5700G — 32GB RAM / 1.5TB SSD / Monitor 27\" 180Hz",
+      "cantidad": 1,
+      "precioCOP": 4250000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 887000,
+      "margenCOP": 3363000,
+      "proveedorLocal": "infoshop",
+      "comparacionProveedores": [
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 887000
+        }
+      ]
+    },
+    "id": "41208503-9b57-4619-89ad-32d01bb9ab09",
+    "orderNumber": "160626123",
+    "fecha": "2026-06-16T16:34:01.124Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:35:52.110Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Torre Ensamblada Intel Core i9-14900 | 32GB RAM | 1TB | GPU 2GB HDMI",
+      "cantidad": 1,
+      "precioCOP": 7940000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 2301200,
+      "margenCOP": 5638800,
+      "precioMercadoLocal": 2301200,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=Torre+Ensamblada+Intel+Core+i9-14900+%7C+32GB+RAM+%7C+1TB+%7C+GPU+2GB+HDMI&prds=localAnnotatedOfferId:1,productid:8867058555520774685,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Mercadolibre Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 2301200,
+          "url": "https://www.google.com/search?ibp=oshop&q=Torre+Ensamblada+Intel+Core+i9-14900+%7C+32GB+RAM+%7C+1TB+%7C+GPU+2GB+HDMI&prds=localAnnotatedOfferId:1,productid:8867058555520774685,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "mercadolibre.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 2399000,
+          "url": "https://www.google.com/search?ibp=oshop&q=Torre+Ensamblada+Intel+Core+i9-14900+%7C+32GB+RAM+%7C+1TB+%7C+GPU+2GB+HDMI&prds=localAnnotatedOfferId:1,productid:12681670482776482540,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "58b4cb98-fda7-4e1d-86aa-9ef5161814b0",
+    "orderNumber": "160626122",
+    "fecha": "2026-06-16T16:19:02.329Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:52.658Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Samsung 27\" LS27F320",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 552000,
+      "margenCOP": 138000,
+      "proveedorLocal": "infoshop",
+      "comparacionProveedores": [
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 552000
+        }
+      ]
+    },
+    "id": "65ce0a16-18f0-49b8-8977-88a2064a453b",
+    "orderNumber": "160626121",
+    "fecha": "2026-06-16T15:42:30.923Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:47.329Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "ABS Cyclone Aqua i7 + RTX 5060 Ti",
+      "cantidad": 1,
+      "precioCOP": 6351000,
+      "proveedor": "eeuu"
+    },
+    "id": "e5c660c4-2256-45c1-ba04-58518cc4e1eb",
+    "orderNumber": "160626120",
+    "fecha": "2026-06-16T15:42:29.131Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:45.291Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "ASUS TUF Gaming FX607VJ",
+      "cantidad": 1,
+      "precioCOP": 3407000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 2600000,
+      "margenCOP": 807000,
+      "precioMercadoLocal": 2600000,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=ASUS+TUF+Gaming+FX607VJ&prds=localAnnotatedOfferId:1,productid:1954906460255258033,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "mercadolibre.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 2600000,
+          "url": "https://www.google.com/search?ibp=oshop&q=ASUS+TUF+Gaming+FX607VJ&prds=localAnnotatedOfferId:1,productid:1954906460255258033,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "falabella.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 3039888,
+          "url": "https://www.google.com/search?ibp=oshop&q=ASUS+TUF+Gaming+FX607VJ&prds=localAnnotatedOfferId:1,productid:11711290987867977934,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Mercadolibre Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 3179000,
+          "url": "https://www.google.com/search?ibp=oshop&q=ASUS+TUF+Gaming+FX607VJ&prds=localAnnotatedOfferId:1,catalogid:13714258332400826375,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Falabella Colombia - MARKETPLACE",
+          "tipo": "colombia_web",
+          "costoCOP": 3179999,
+          "url": "https://www.google.com/search?ibp=oshop&q=ASUS+TUF+Gaming+FX607VJ&prds=localAnnotatedOfferId:1,catalogid:534454221138008925,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "ff47ab31-a897-4b32-b0e8-8236adae9bdb",
+    "orderNumber": "160626119",
+    "fecha": "2026-06-16T14:23:09.234Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:43.021Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Samsung 27\" LS27F320GANX",
+      "modelo": "LS27F320GANX",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 552000,
+      "margenCOP": 138000,
+      "proveedorLocal": "infoshop",
+      "precioMercadoLocal": 472885,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:4674181324097943181,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "falabella.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 472885,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:4674181324097943181,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Alkosto",
+          "tipo": "colombia_web",
+          "costoCOP": 519930,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,catalogid:4408674607381175855,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 552000
+        },
+        {
+          "fuente": "Ktronix",
+          "tipo": "colombia_web",
+          "costoCOP": 899930,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,catalogid:14357036661412009799,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "958ac14a-f9dd-463a-a58a-54dd35c33708",
+    "orderNumber": "150626118",
+    "fecha": "2026-06-16T02:44:27.310Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:40.243Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Monitor Samsung 27\" LS27F320GANX",
+      "modelo": "LS27F320GANX",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 552000,
+      "margenCOP": 138000,
+      "proveedorLocal": "infoshop",
+      "precioMercadoLocal": 472885,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:4674181324097943181,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "falabella.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 472885,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:4674181324097943181,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Alkosto",
+          "tipo": "colombia_web",
+          "costoCOP": 519930,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,catalogid:4408674607381175855,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 552000
+        },
+        {
+          "fuente": "Ktronix",
+          "tipo": "colombia_web",
+          "costoCOP": 899930,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,catalogid:14357036661412009799,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "ca89738b-3155-4cbe-87d3-cf514707f03b",
+    "orderNumber": "150626117",
+    "fecha": "2026-06-16T02:43:55.124Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:37.627Z"
+  },
+  {
+    "cliente": {
+      "nombre": "Antonio Lobo",
+      "cedula": "1023456783",
+      "direccion": "Cra 77 No 4 - 22 Apto 303",
+      "ciudad": "Ibagué",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Monitor Samsung 27\" LS27F320GANX",
+      "modelo": "LS27F320GANX",
+      "cantidad": 1,
+      "precioCOP": 690000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 552000,
+      "margenCOP": 138000,
+      "proveedorLocal": "infoshop",
+      "precioMercadoLocal": 374972,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:12341160537239476735,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Máy tính Tiến Tân",
+          "tipo": "colombia_web",
+          "costoCOP": 374972,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:12341160537239476735,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "JFM Technology",
+          "tipo": "colombia_web",
+          "costoCOP": 449820,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:5491251147278023977,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "American Motos Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 470000,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:2536765325120243672,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "falabella.com.co",
+          "tipo": "colombia_web",
+          "costoCOP": 472885,
+          "url": "https://www.google.com/search?ibp=oshop&q=LS27F320GANX&prds=localAnnotatedOfferId:1,productid:4674181324097943181,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 552000
+        }
+      ]
+    },
+    "id": "d6533c8f-bf43-4e2b-881b-d9ce5f249610",
+    "orderNumber": "150626116",
+    "fecha": "2026-06-16T02:30:54.832Z",
+    "estado": "pendiente",
+    "fechaArchivado": "2026-06-16T20:30:33.145Z"
+  },
+  {
+    "cliente": {
       "nombre": "Antonio Lobo",
       "cedula": "1023456783",
       "direccion": "Cra 77 No 4 - 22 Apto 303",

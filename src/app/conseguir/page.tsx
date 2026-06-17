@@ -3,8 +3,52 @@
 import Link from "next/link";
 import { useState } from "react";
 
+type FormState = {
+  nombre:      string;
+  telefono:    string;
+  correo:      string;
+  descripcion: string;
+  presupuesto: string;
+  ciudad:      string;
+};
+
+const INITIAL: FormState = {
+  nombre:      "",
+  telefono:    "",
+  correo:      "",
+  descripcion: "",
+  presupuesto: "No estoy seguro",
+  ciudad:      "",
+};
+
 export default function ConseguirPage() {
+  const [form,    setForm]    = useState<FormState>(INITIAL);
   const [enviado, setEnviado] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
+
+  function set(field: keyof FormState, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/conseguir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Error al enviar");
+      setEnviado(true);
+    } catch {
+      setError("No pudimos enviar tu solicitud. Intenta de nuevo o escríbenos por WhatsApp.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   if (enviado) {
     return (
@@ -52,10 +96,7 @@ export default function ConseguirPage() {
       </div>
 
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          setEnviado(true);
-        }}
+        onSubmit={handleSubmit}
         className="mt-8 space-y-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8"
       >
         <div className="grid gap-4 sm:grid-cols-2">
@@ -66,6 +107,8 @@ export default function ConseguirPage() {
             <input
               required
               type="text"
+              value={form.nombre}
+              onChange={(e) => set("nombre", e.target.value)}
               className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-[#1e6cff] focus:outline-none"
               placeholder="Tu nombre"
             />
@@ -77,6 +120,8 @@ export default function ConseguirPage() {
             <input
               required
               type="tel"
+              value={form.telefono}
+              onChange={(e) => set("telefono", e.target.value)}
               className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-[#1e6cff] focus:outline-none"
               placeholder="+57 300 000 0000"
             />
@@ -89,6 +134,8 @@ export default function ConseguirPage() {
           </span>
           <input
             type="email"
+            value={form.correo}
+            onChange={(e) => set("correo", e.target.value)}
             className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-[#1e6cff] focus:outline-none"
             placeholder="tu@correo.com"
           />
@@ -101,6 +148,8 @@ export default function ConseguirPage() {
           <textarea
             required
             rows={5}
+            value={form.descripcion}
+            onChange={(e) => set("descripcion", e.target.value)}
             className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-[#1e6cff] focus:outline-none"
             placeholder="Describe el producto: marca, modelo, características, cantidad, presupuesto aproximado…"
           />
@@ -111,7 +160,11 @@ export default function ConseguirPage() {
             <span className="text-sm font-semibold text-zinc-900">
               Presupuesto aproximado
             </span>
-            <select className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
+            <select
+              value={form.presupuesto}
+              onChange={(e) => set("presupuesto", e.target.value)}
+              className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+            >
               <option>Menos de $500.000</option>
               <option>$500.000 - $1.000.000</option>
               <option>$1.000.000 - $3.000.000</option>
@@ -126,11 +179,19 @@ export default function ConseguirPage() {
             </span>
             <input
               type="text"
+              value={form.ciudad}
+              onChange={(e) => set("ciudad", e.target.value)}
               className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-[#1e6cff] focus:outline-none"
               placeholder="Medellín, Bogotá, Cali…"
             />
           </label>
         </div>
+
+        {error && (
+          <p className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-zinc-500">
@@ -138,9 +199,10 @@ export default function ConseguirPage() {
           </p>
           <button
             type="submit"
-            className="rounded-full bg-[#1e6cff] px-8 py-3 text-sm font-bold text-white hover:bg-[#1858d6]"
+            disabled={sending}
+            className="rounded-full bg-[#1e6cff] px-8 py-3 text-sm font-bold text-white hover:bg-[#1858d6] disabled:opacity-60 transition"
           >
-            Enviar solicitud
+            {sending ? "Enviando…" : "Enviar solicitud"}
           </button>
         </div>
       </form>

@@ -344,14 +344,14 @@ export default function CatalogoPage() {
                 {/* CTA */}
                 <div>
                   <Link
-                    href={`/conseguir?tipo=${sol.tipo}`}
+                    href="/asesor"
                     className="group inline-flex items-center gap-2 rounded-none
                                px-7 py-3.5 text-xs font-black uppercase tracking-wider
                                text-white transition-all duration-200
                                hover:gap-3 hover:brightness-110"
                     style={{ backgroundColor: sol.acentoBg }}
                   >
-                    Cotizar esta solución
+                    Hablar con Andrea
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -382,7 +382,7 @@ export default function CatalogoPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              href="/conseguir"
+              href="/asesor"
               className="inline-flex items-center gap-2 rounded-full
                          bg-gradient-to-r from-[#128C7E] to-[#25D366]
                          px-8 py-4 text-sm font-bold text-white
@@ -390,7 +390,7 @@ export default function CatalogoPage() {
                          hover:brightness-110 hover:scale-[1.02] transition-all duration-200"
             >
               <MessageCircle className="h-4 w-4" />
-              Hablar con un asesor
+              Hablar con Andrea
             </Link>
             <Link
               href="/asesor"
