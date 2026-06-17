@@ -5,9 +5,10 @@ import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
 import { saveOrder, deleteOrder, type FuenteComparacion } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
-import { loadActiveProducts, loadMargins, applyMargin } from "@/lib/supplier-catalog";
+import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
 import { getCachedQuery, saveQuote, getWebQuote, type QuoteProducto, type LocalData, type WebQuote } from "@/lib/web-cache";
+import { getSearchMode } from "@/lib/search-priority";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
 export const runtime = "nodejs";
@@ -197,7 +198,12 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   } else if (productos.length >= 3) {
     nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 con su precio firme y resalta la entrega rápida. NO uses cotizar_web (ya hay suficientes locales). Al registrar usa proveedor="colombia".`;
   } else {
-    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles). Preséntala(s) Y completa hasta 3 opciones llamando cotizar_web — puede traer opciones de Colombia (1–3 días) o EE.UU. (6–10 días). Indica el tiempo de entrega de CADA opción por separado. Al registrar: locales → proveedor="colombia"; cotizar_web con origen="co" → proveedor="colombia"; cotizar_web con origen="us" → proveedor="eeuu".`;
+    // Construir descripción de specs del(los) producto(s) local(es) para guiar la búsqueda de alternativas.
+    const specsLocales = productos.map((p) => {
+      const specs = Object.entries(p.specs ?? {}).map(([, v]) => String(v)).filter(Boolean).join(", ");
+      return `${p.nombre}${specs ? ` (${specs})` : ""}`;
+    }).join("; ");
+    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles): ${specsLocales}. Preséntala(s) Y completa hasta 3 opciones llamando cotizar_web UNA VEZ. REGLA CLAVE DEL QUERY: construye la consulta con las SPECS del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) pero SIN mencionar la marca ni el modelo exacto — el objetivo es encontrar ALTERNATIVAS DE OTRAS MARCAS con características similares. Ejemplo: si tienes "HP EliteBook Core i7-1365U 16GB 512GB", busca "laptop empresarial Core i7 16GB 512GB" para obtener Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. Nunca busques el modelo exacto o la marca del producto ya encontrado localmente. Indica el tiempo de entrega de CADA opción por separado. Al registrar: locales → proveedor="colombia"; cotizar_web con origen="co" → proveedor="colombia"; cotizar_web con origen="us" → proveedor="eeuu".`;
   }
 
   return { encontrados: productos.length, totalCompatibles: deduped.length, localDisponibles: productos.length, productos, nota };
@@ -240,6 +246,7 @@ const PRIORIDAD_SITIO_CO: Record<string, number> = {
   falabella:    3,
   exito:        4,
   linio:        5,
+  janus:        6,   // especialista en PCs de escritorio/ensamblados (solo aplica a computadores)
   mercadolibre: 99,
 };
 
@@ -249,8 +256,13 @@ const PRIORITY_SITES_CO = ["alkosto", "ktronix", "pcfactory", "falabella"] as co
 // Solo se acepta información de tiendas tecnológicas reconocidas en Colombia.
 // Cualquier otro vendedor (motos, ropa, ferretería…) se descarta silenciosamente.
 const TECH_RETAILERS_CO = /\b(alkosto|ktronix|pcfactory|falabella|exito|linio|mercadolibre|mercado\s*libre)\b/i;
-function isTechRetailerCO(source?: string, link?: string): boolean {
-  return TECH_RETAILERS_CO.test(`${source ?? ""} ${link ?? ""}`);
+// Tiendas ESPECIALISTAS en PCs de escritorio/ensamblados (precio de mercado real para esa
+// categoría). Solo se aceptan cuando la búsqueda es de un computador — nunca para componentes
+// ni accesorios — y se usan como BENCHMARK de comparación, no como opción al cliente.
+const PC_RETAILERS_CO = /\bjanus\b/i;
+function isTechRetailerCO(source?: string, link?: string, allowPCStores = false): boolean {
+  const hay = `${source ?? ""} ${link ?? ""}`;
+  return TECH_RETAILERS_CO.test(hay) || (allowPCStores && PC_RETAILERS_CO.test(hay));
 }
 
 /** Infiere la clave de margen (`margins.json`) a partir del nombre del producto
@@ -263,7 +275,15 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
   if (/antivirus|kaspersky|bitdefender|\beset\b|norton|avast/.test(n)) return "antivirus";
   if (/licencia|windows\s*\d|office\s*\d|microsoft\s*365|ms365/.test(n)) return "licencia";
   if (/servidor|server|\bpoweredge\b|\bproliant\b/.test(n))        return "servidor";
-  if (/desktop|escritorio|all.?in.?one|\baio\b/.test(n))           return "escritorio";
+  // Mini-PC ANTES que escritorio: es su propia categoría (NUC, barebone, mini computador).
+  if (/mini.?pc|minipc|\bnuc\b|mini.?computador|barebone/.test(n))  return "mini-pc";
+  if (/desktop|escritorio|all.?in.?one|\baio\b|todo en uno|gaming\s*pc|pc\s*gam(er|ing)|ensamblad|workstation|estaci[oó]n de trabajo/.test(n)) return "escritorio";
+  // PC COMPLETO aunque el nombre lleve specs: si pide CPU y GPU juntos, es un equipo entero
+  // (nadie busca "un CPU y una GPU" como una sola consulta salvo para armar un PC). Evita que
+  // "PC gamer RTX 4070 Core i9" se desvíe a procesador/tarjeta-grafica (que van a EE.UU.).
+  if (/ryzen|core ?i[3579]|\bi[3579][- ]?\d|\bxeon\b/.test(n) && /\brtx\b|\bgtx\b|\brx\s?\d{3,4}\b|radeon|geforce/.test(n)) return "escritorio";
+  // PC completo clasificado como "equipo" → escritorio (consulta con "computador"/"torre pc"/etc.).
+  if (clasificacion === "equipo") return "escritorio";
   if (/procesador|\bcpu\b|ryzen|core i[3579]|xeon/.test(n))        return "procesador";
   if (/\bram\b|ddr[2345]/.test(n))                                  return "memoria-ram";
   if (/\bssd\b|nvme|\bhdd\b/.test(n))                              return "almacenamiento";
@@ -274,7 +294,6 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
   if (/auricular|aud[ií]fono|headset/.test(n))                     return "auriculares";
   if (/impresora/.test(n))                                          return "impresora";
   if (/router|\bswitch\b|access.?point/.test(n))                   return "redes";
-  if (clasificacion === "equipo")    return "portatil";
   if (clasificacion === "accesorio") return "accesorios";
   return "default";
 }
@@ -409,7 +428,10 @@ async function fetchUsViaAnthropic(anthropic: Anthropic, consulta: string): Prom
 // limpio en el resultado (MercadoLibre/Alkosto/Falabella/Éxito). Barato y determinista.
 // strictRetailerFilter=true → solo alkosto/ktronix/falabella/… (flujo cliente, evita motos/ropa).
 // strictRetailerFilter=false → cualquier vendedor colombiano local (flujo admin, INTL_SELLER filtra después).
-async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer = false, strictRetailerFilter = true): Promise<WebProducto[]> {
+// allowPCSpecialists=true → además acepta especialistas en PCs (Janus). Solo se usa en la
+// comparación del admin (benchmark de mercado), NUNCA en las opciones al cliente (evita
+// el doble margen: el precio de Janus ya es retail).
+async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer = false, strictRetailerFilter = true, allowPCSpecialists = false): Promise<WebProducto[]> {
   const raw = await serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []);
   const local: WebProducto[] = [];
   for (const it of raw) {
@@ -419,7 +441,7 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
     // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
     if (it.condition && it.condition !== "new") continue;
     if (USADO.test(it.title ?? "")) continue;
-    if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link)) continue;
+    if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link, allowPCSpecialists)) continue;
     local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true, vendedor: it.source });
   }
   return local;
@@ -517,31 +539,203 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
 
   const serperKey = getSerperApiKey();
   const categoria = clasificarConsulta(consulta);
+  // Prioridad configurable por categoría desde el panel admin.
+  const catKey = inferirCategoriaMargen(consulta, categoria);
+  const mode   = getSearchMode(catKey);
 
   let productosCO: QuoteProducto[] = [];
   let productosUS: QuoteProducto[] = [];
   let localData: LocalData = {};
 
-  // TODAS las categorías: Colombia primero (Serper, ~$0.001, rápido ~1–3s).
-  // EE.UU. SOLO si Colombia < 3 resultados → evita gastar créditos Anthropic (~$0.06)
-  // cuando el mercado local ya alcanza. Aplica igual a equipos, componentes y accesorios.
-  // (La diferencia por categoría es solo el filtro de ruido de Serper: equipos lo desactivan.)
-  const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo") : [];
-  ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
-  if (productosCO.length < 3) {
+  if (mode === "co_only") {
+    if (serperKey) {
+      const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
+      ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
+    }
+  } else if (mode === "eeuu_only") {
     productosUS = construirProductosUS(await fetchUsViaAnthropic(anthropic, consulta));
+  } else if (mode === "eeuu_co") {
+    // EE.UU. primero; Colombia rellena si faltan opciones.
+    productosUS = construirProductosUS(await fetchUsViaAnthropic(anthropic, consulta));
+    if (productosUS.length < 3 && serperKey) {
+      const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
+      ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
+    }
+  } else {
+    // co_eeuu (default): Colombia primero; EE.UU. solo si faltan opciones.
+    const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo") : [];
+    ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
+    if (productosCO.length < 3) {
+      productosUS = construirProductosUS(await fetchUsViaAnthropic(anthropic, consulta));
+    }
   }
-  // Colombia primero (hasta 3); EE.UU. rellena solo hasta completar 3 (verdadero último recurso).
-  const productosFinales = [
-    ...productosCO.slice(0, 3),
-    ...productosUS.slice(0, Math.max(0, 3 - productosCO.length)),
-  ];
+
+  // Armar lista final: el mercado prioritario primero.
+  const productosFinales = (mode === "eeuu_co" || mode === "eeuu_only")
+    ? [
+        ...productosUS.slice(0, 3),
+        ...productosCO.slice(0, Math.max(0, 3 - productosUS.length)),
+      ]
+    : [
+        ...productosCO.slice(0, 3),
+        ...productosUS.slice(0, Math.max(0, 3 - productosCO.length)),
+      ];
 
   // Caché persistente (consulta + cada producto). localData (Colombia) se adjunta a
   // CADA producto — así un pedido de EE.UU. siempre tiene su comparación con Colombia.
   if (productosFinales.length > 0) saveQuote(consulta, productosFinales, localData);
 
   return respuestaCotizar(productosFinales);
+}
+
+// ── Cotización de PC de escritorio / ensamblado ──────────────────────────────
+// Un PC ensamblado NO es un SKU: su costo no puede salir de UNA pieza suelta (ese
+// era el bug del "AMD Ryzen 7 5700G — 32GB/1.5TB/Monitor" cotizado a $887.000 = solo
+// el CPU). Estos helpers cotizan equipos de escritorio con costo AUTORITATIVO:
+//   1) CONFIG COMPLETA: la línea ensamblada/marca más cercana en las listas (cat. escritorio).
+//   2) FALLBACK BOM: suma de piezas identificables + base de armado, si no hay config.
+
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Costo base de las piezas que el nombre casi nunca detalla (board + fuente + chasis
+ *  + mano de obra). Se suma SOLO en el fallback BOM. Ajustable si cambia el costo de armado. */
+const BASE_ARMADO_COP = 600000;
+
+/** Extrae el token de modelo de CPU (5700g, 14700, 12400f…). Es el identificador más
+ *  estable entre el nombre verboso de Andrea y el abreviado de las listas ("(16/512)"). */
+function cpuToken(nombre: string): string | null {
+  const n = nombre.toLowerCase();
+  const intel = n.match(/\bi[3579][\s-]?(\d{4,5}[a-z]{0,2})\b/);   // i7-14700, i5 12400f
+  if (intel) return norm(intel[1]);
+  const amd = n.match(/\b(\d{4}[a-z]{1,3})\b/);                    // 5700g, 5600x, 7800x3d
+  if (amd) return norm(amd[1]);
+  return null;
+}
+
+/** Frase legible de CPU para construir queries de COMPARACIÓN de escritorios en Serper
+ *  (ej: "ryzen 7 5700g", "core i7 12700"). El nombre verboso exacto no matchea en Google
+ *  Shopping; una frase de CPU sí trae PCs comparables (Janus y otros). Vacío si no se reconoce. */
+function cpuFrase(nombre: string): string {
+  const n = nombre.toLowerCase();
+  let m = n.match(/ryzen\s*(\d)\s*[- ]?\s*(\d{3,4}\w{0,3})/);
+  if (m) return `ryzen ${m[1]} ${m[2]}`;
+  m = n.match(/(?:core\s*)?(i[3579])[\s-]?(\d{4,5}\w{0,2})/);
+  if (m) return `core ${m[1]} ${m[2]}`;
+  m = n.match(/xeon\s*([\w-]+)/);
+  if (m) return `xeon ${m[1]}`;
+  return "";
+}
+
+/** ¿El nombre describe un PC de escritorio COMPUESTO (ensamblado o de marca con varias
+ *  specs), no una pieza suelta? Excluye portátiles/tablets (van por su propio camino). */
+function esEscritorioCompuesto(nombre: string): boolean {
+  const n = nombre.toLowerCase();
+  // Mini-PC / portátiles / tablets NO son ensamblados de torre → su propio camino (SKU de marca).
+  if (/laptop|port[aá]til|notebook|\btablet\b|ipad|mini.?pc|minipc|\bnuc\b|barebone/.test(n)) return false;
+  if (/desktop|escritorio|all.?in.?one|\baio\b|ensamblad|\btorre\b|gaming pc|pc gamer|workstation/.test(n)) return true;
+  const hasCPU = /ryzen|core ?i[3579]|\bi[3579][\s-]?\d|\bxeon\b|pentium|celeron/.test(n);
+  const hasRAM = /\bram\b|\bddr[2345]\b/.test(n);
+  const hasSto = /\b(ssd|hdd|nvme)\b/.test(n);
+  const hasMon = /\bmonitor\b/.test(n);                 // un CPU suelto nunca trae monitor
+  const shorthand = /\(\d{1,2}\/\d{3,4}\)/.test(n);     // "(16/512)" = RAM/almacenamiento de las listas
+  return hasCPU && (hasRAM || hasSto || hasMon || shorthand);
+}
+
+/** CONFIG COMPLETA: el PC de escritorio ensamblado/marca más cercano en las listas
+ *  (categoría escritorio), igualando por token de CPU y eligiendo el de precio al
+ *  cliente más cercano al cotizado (misma gama). Nunca toma piezas sueltas. */
+const GPU_DEDICADA = /\b(rtx|gtx|radeon|geforce|quadro)\b|\brx\s?\d{3,4}\b/;
+
+function costoEscritorioConfig(
+  nombre: string,
+  precioCliente: number,
+  margins: Margins,
+): { precioCosto: number; proveedor: string; lista: string } | null {
+  const token = cpuToken(nombre);
+  if (!token) return null;
+  let candidatos = loadActiveProducts().filter(
+    (p) => p.categoria === "escritorio" && norm(p.nombre).includes(token),
+  );
+  if (candidatos.length === 0) return null;
+  // Igualar la presencia de GPU dedicada: no ofrecer un equipo con RTX/RX si el cliente
+  // no la pidió (ni al revés). Es el diferenciador de gama más claro entre configs.
+  const reqGPU = GPU_DEDICADA.test(nombre.toLowerCase());
+  const mismaGPU = candidatos.filter((p) => GPU_DEDICADA.test(p.nombre.toLowerCase()) === reqGPU);
+  if (mismaGPU.length > 0) candidatos = mismaGPU;
+  // Entre las del mismo CPU y misma clase de GPU, la de precio al cliente más cercano al cotizado.
+  let best = candidatos[0];
+  let bestDiff = Infinity;
+  for (const c of candidatos) {
+    const diff = Math.abs(applyMargin(c.precio_costo, "escritorio", margins) - precioCliente);
+    if (diff < bestDiff) { bestDiff = diff; best = c; }
+  }
+  // Si la config más cercana difiere más del 30 % del precio cotizado, los specs son
+  // distintos (p.ej. 16 GB vs 32 GB). BOM calcula mejor desde las piezas reales.
+  if (bestDiff / precioCliente > 0.30) return null;
+  return { precioCosto: best.precio_costo, proveedor: best.proveedor, lista: best.listaNombre };
+}
+
+/** FALLBACK BOM: suma el costo de las piezas identificables en el nombre (CPU, RAM,
+ *  almacenamiento, GPU, monitor) — cada una de SU categoría, la más barata que casa con
+ *  su capacidad/modelo — más una base de armado. Devuelve null si ni el CPU se encuentra. */
+function costoEscritorioBOM(nombre: string): { precioCosto: number; piezas: string[] } | null {
+  const n = nombre.toLowerCase();
+  const productos = loadActiveProducts();
+  // Las listas a veces traen EQUIPOS COMPLETOS (portátiles/AIO) mal categorizados como
+  // pieza (ej: un portátil con "512GB SSD" colado en almacenamiento). Estos marcadores
+  // delatan un equipo entero → se excluyen para no inflar el BOM con su precio.
+  const ES_EQUIPO = /pantalla|laptop|port[aá]til|notebook|freedos|core ultra|\bdvd\b|teclado y mouse|ryzen|core ?i[3579]|\bi[3579][\s-]?\d|\bxeon\b|pentium|celeron/;
+  // Cada pieza debe SER de su tipo: exigimos su palabra clave (no basta la capacidad,
+  // que también aparece en el nombre de un equipo completo).
+  const masBarato = (
+    cat: string, tipoRe: RegExp, pred: (p: ActiveProduct) => boolean, permitirEquipo = false,
+  ): ActiveProduct | null =>
+    productos.filter((p) => {
+      const nm = p.nombre.toLowerCase();
+      return p.categoria === cat && (permitirEquipo || !ES_EQUIPO.test(nm)) && tipoRe.test(nm) && pred(p);
+    }).sort((a, b) => a.precio_costo - b.precio_costo)[0] ?? null;
+
+  const piezas: string[] = [];
+  let total = BASE_ARMADO_COP;
+
+  // CPU (obligatorio): sin CPU no hay base fiable → null. (permitirEquipo: la pieza ES un CPU.)
+  const token = cpuToken(nombre);
+  const cpu = token ? masBarato("procesador", /./, (p) => norm(p.nombre).includes(token), true) : null;
+  if (!cpu) return null;
+  total += cpu.precio_costo; piezas.push(`CPU ${cpu.nombre}`);
+
+  // RAM: por capacidad declarada junto a "RAM/DDR" (ej: "32GB RAM").
+  const ramCap = n.match(/(\d{1,3})\s?gb\b(?=[^/]*\b(ram|ddr)\b)|(?:ram|ddr[2345])\D{0,6}(\d{1,3})\s?gb/);
+  const ramGB = ramCap ? (ramCap[1] ?? ramCap[3]) : null;
+  if (ramGB) {
+    const ram = masBarato("memoria-ram", /\b(ddr[2345]|ram|[su]o-?dimm|udimm)\b/, (p) => norm(p.nombre).includes(`${ramGB}gb`));
+    if (ram) { total += ram.precio_costo; piezas.push(`RAM ${ram.nombre}`); }
+  }
+
+  // Almacenamiento: por capacidad declarada junto a SSD/NVMe/HDD (ej: "1.5TB SSD", "512GB NVMe").
+  const stoCap = n.match(/(\d+(?:\.\d+)?)\s?(tb|gb)\b(?=[^,;|]*\b(ssd|nvme|hdd|disco)\b)/);
+  if (stoCap) {
+    const cap = norm(`${stoCap[1]}${stoCap[2]}`);
+    const sto = masBarato("almacenamiento", /\b(ssd|nvme|hdd|m\.?2|sata|disco)\b/, (p) => norm(p.nombre).includes(cap));
+    if (sto) { total += sto.precio_costo; piezas.push(`Disco ${sto.nombre}`); }
+  }
+
+  // GPU dedicada: por token de modelo (rtx 4060, rx 7600…), si el nombre la menciona.
+  const gpu = n.match(/\b(?:rtx|gtx|rx)\s?(\d{3,4})\b/);
+  if (gpu) {
+    const g = masBarato("tarjeta-grafica", /\b(rtx|gtx|radeon|geforce|rx)\b/, (p) => norm(p.nombre).includes(gpu[1]));
+    if (g) { total += g.precio_costo; piezas.push(`GPU ${g.nombre}`); }
+  }
+
+  // Monitor: por tamaño en pulgadas (ej: "Monitor 27\""), si lo incluye.
+  const mon = n.match(/monitor[^0-9]*(\d{2}(?:\.\d)?)/);
+  if (mon) {
+    const pulg = norm(mon[1]);
+    const m = masBarato("monitor", /\bmonitor\b/, (p) => norm(p.nombre).includes(pulg));
+    if (m) { total += m.precio_costo; piezas.push(`Monitor ${m.nombre}`); }
+  }
+
+  return { precioCosto: total, piezas };
 }
 
 /** Busca el costo de un producto en las listas de proveedor ACTIVAS. Si hay
@@ -583,16 +777,21 @@ function buscarCostoLocal(
  *  Menor costo por proveedor. GRATIS (datos locales, sin red). */
 function fuentesDeListas(nombre: string, modelo: string | undefined): FuenteComparacion[] {
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
   const target = norm(nombre);
   const targetModelo = modelo ? norm(modelo) : "";
   if (target.length < 4) return [];
+  // PC de escritorio/ensamblado: compara SOLO configs completas (cat. escritorio) del
+  // mismo CPU — nunca piezas sueltas (evita comparar contra el procesador solo).
+  const escritorio = esEscritorioCompuesto(nombre);
+  const token = escritorio ? cpuToken(nombre) : null;
   const porProveedor = new Map<string, number>();
   for (const p of loadActiveProducts()) {
     const n = norm(p.nombre);
-    const match = n === target
-      || (n.length >= 6 && (n.includes(target) || target.includes(n)))
-      || (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false)));
+    const match = escritorio
+      ? (p.categoria === "escritorio" && !!token && n.includes(token))
+      : (n === target
+        || (n.length >= 6 && (n.includes(target) || target.includes(n)))
+        || (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false))));
     if (!match) continue;
     const prov = (p.proveedor || p.listaNombre || "lista").toLowerCase();
     const prev = porProveedor.get(prov);
@@ -613,13 +812,15 @@ function construirComparacionProveedores(
 
 /** Helper: nombre legible de una tienda colombiana a partir de su URL. */
 function siteNameFromUrl(url: string): string {
-  return url.includes("alkosto")      ? "Alkosto"
-    : url.includes("ktronix")     ? "Ktronix"
-    : url.includes("falabella")   ? "Falabella"
-    : url.includes("exito")       ? "Éxito"
-    : url.includes("linio")       ? "Linio"
-    : url.includes("pcfactory")   ? "PCFactory"
-    : url.includes("mercadolibre") ? "MercadoLibre"
+  const u = (url ?? "").toLowerCase();   // acepta tanto URLs como el nombre del vendedor ("Janus LTDA")
+  return u.includes("alkosto")      ? "Alkosto"
+    : u.includes("ktronix")     ? "Ktronix"
+    : u.includes("falabella")   ? "Falabella"
+    : u.includes("exito")       ? "Éxito"
+    : u.includes("linio")       ? "Linio"
+    : u.includes("pcfactory")   ? "PCFactory"
+    : u.includes("mercadolibre") ? "MercadoLibre"
+    : u.includes("janus")       ? "Janus"
     : "Sitio local";
 }
 
@@ -630,15 +831,26 @@ function siteNameFromUrl(url: string): string {
 async function serperColombiaListings(nombre: string, modelo?: string): Promise<FuenteComparacion[]> {
   const key = getSerperApiKey();
   if (!key) return [];
-  // Priorizar el modelo/SKU cuando está disponible: es un identificador único que Serper
-  // maneja mucho mejor que un nombre largo con specs incrustadas (ej: "LS27F320GANX" vs
-  // "Monitor Samsung 27\" IPS 120Hz 1920×1080 Plano LS27F320GANX" que retorna 0 resultados).
-  const consulta = modelo && modelo.trim().length >= 4 ? modelo.trim() : nombre.trim();
+  // Para ESCRITORIOS: el nombre verboso exacto no matchea en Google Shopping; una frase de
+  // CPU (+ GPU si aplica) sí trae PCs comparables (Janus y otros). Para lo demás, priorizar
+  // el modelo/SKU (identificador único que Serper maneja mejor que specs incrustadas).
+  const esEsc = esEscritorioCompuesto(nombre);
+  const gpu = nombre.toLowerCase().match(/\b(?:rtx|gtx|rx)\s?\d{3,4}\b/);
+  const fraseEsc = esEsc ? [cpuFrase(nombre), gpu?.[0]].filter(Boolean).join(" ").trim() : "";
+  const consulta = fraseEsc
+    ? `computador escritorio ${fraseEsc}`
+    : (modelo && modelo.trim().length >= 4 ? modelo.trim() : nombre.trim());
   if (consulta.length < 4) return [];
-  // Usar nombre (no el modelo) para la clasificación: el SKU solo no tiene contexto semántico.
-  const isComputer = clasificarConsulta(nombre) === "equipo";
-  const raw = (await fetchLocalViaSerper(consulta, key, isComputer).catch(() => [] as WebProducto[]))
-    .filter((p) => typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false);
+  // Un PC ensamblado se trata SIEMPRE como computador (su nombre lleno de specs puede
+  // clasificarse como "componente" y entonces el filtro de ruido descartaría los PCs reales).
+  const isComputer = clasificarConsulta(nombre) === "equipo" || esEsc;
+  // allowPCSpecialists: en computadores aceptamos Janus como benchmark de mercado de escritorios.
+  // Solo tiendas con catálogo PROPIO de equipos nuevos (Alkosto, Ktronix, Falabella, Éxito, Janus).
+  // MercadoLibre y Linio son marketplaces que mezclan nuevo/usado → no son comparación fiable.
+  const MARKETPLACE_CO = /mercadolibre|mercado\s*libre|linio/i;
+  const raw = (await fetchLocalViaSerper(consulta, key, isComputer, true, isComputer).catch(() => [] as WebProducto[]))
+    .filter((p) => typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false &&
+      !MARKETPLACE_CO.test(`${p.vendedor ?? ""} ${p.fuente ?? ""}`));
   if (raw.length === 0) return [];
   // Descarta outliers (< 0.5× o > 2× la mediana) y marketplaces INTERNACIONALES
   // (eBay/AliExpress/Microless…): no son "webs locales" y su precio no es un costo
@@ -652,9 +864,10 @@ async function serperColombiaListings(nombre: string, modelo?: string): Promise<
   // Una opción por tienda (la más barata), ordenadas asc por precio, máx 4.
   const porTienda = new Map<string, WebProducto>();
   for (const p of [...limpios].sort((a, b) => (a.copLocal as number) - (b.copLocal as number))) {
-    // Tienda conocida → nombre canónico (dedup "Mercadolibre Colombia" vs URL); si no, el vendedor.
-    const conocida = siteNameFromUrl(p.fuente || "");
-    const tienda = conocida !== "Sitio local" ? conocida : ((p.vendedor || "").trim() || "Sitio local");
+    // Nombre canónico: fuente primero, luego vendedor (dedup "Mercadolibre Colombia" == "mercadolibre.com.co").
+    const conocidaFuente = siteNameFromUrl(p.fuente || "");
+    const conocidaVendedor = conocidaFuente === "Sitio local" ? siteNameFromUrl(p.vendedor || "") : conocidaFuente;
+    const tienda = conocidaVendedor !== "Sitio local" ? conocidaVendedor : ((p.vendedor || "").trim() || "Sitio local");
     if (!porTienda.has(tienda)) porTienda.set(tienda, p);
   }
   return [...porTienda.entries()].slice(0, 4).map(([tienda, p]) => ({
@@ -662,6 +875,8 @@ async function serperColombiaListings(nombre: string, modelo?: string): Promise<
     tipo:     "colombia_web" as const,
     costoCOP: p.copLocal as number,
     url:      p.fuente || undefined,
+    // Janus es un competidor especialista: su precio es de MERCADO (retail), no nuestro costo.
+    ...(tienda === "Janus" ? { nota: "precio de mercado" } : {}),
   }));
 }
 
@@ -677,9 +892,10 @@ async function registrarPedido(input: unknown): Promise<unknown> {
   const producto = { ...rawProducto };
 
   // Recuperamos del caché del servidor la cotización US + comparación local que
-  // generó cotizar_web (indexada por nombre/modelo). Es la fuente de verdad: el
-  // precio y el costo NUNCA dependen de lo que mande Andrea.
-  const quote = getWebQuote(producto.nombre, producto.modelo);
+  // generó cotizar_web. Busca por nombre/modelo Y por URL (más estable cuando Andrea
+  // reformatea el nombre al registrar). Es la fuente de verdad: precio y costo NUNCA
+  // dependen de lo que mande Andrea.
+  const quote = getWebQuote(producto.nombre, producto.modelo, pd?.urlCompra);
 
   let costoUSD: number | undefined;
   let costoTotalCOP: number | undefined;
@@ -704,8 +920,33 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       costoTotalCOP      = Math.round((pd.costoUSD + c.usdEnvio) * c.trm / 1000) * 1000;
     }
     if (costoTotalCOP != null) margenCOP = producto.precioCOP - costoTotalCOP;
+  } else if (esEscritorioCompuesto(producto.nombre)) {
+    // PC DE ESCRITORIO / ENSAMBLADO → costo AUTORITATIVO (no es un SKU suelto):
+    //   1) config completa más cercana en las listas (cat. escritorio), o
+    //   2) fallback BOM (suma de piezas + base de armado) si ninguna config encaja.
+    const margins = loadMargins();
+    const config  = costoEscritorioConfig(producto.nombre, producto.precioCOP, margins);
+    const bom     = config ? null : costoEscritorioBOM(producto.nombre);
+    const costo   = config?.precioCosto ?? bom?.precioCosto ?? null;
+    if (costo != null) {
+      costoTotalCOP = costo;
+      // Precio AUTORITATIVO = costo × margen escritorio. Andrea NO fija el precio del
+      // ensamblado (antes inventaba $4.25M sobre un costo real de ~$2.4M).
+      producto.precioCOP = applyMargin(costo, "escritorio", margins);
+      margenCOP = producto.precioCOP - costo;
+      if (config) {
+        const prov = config.proveedor.toLowerCase();
+        proveedorLocal = prov.includes("ledacom") ? "ledacom"
+          : prov.includes("infoshop") ? "infoshop" : (proveedorLocal ?? "manual");
+      } else {
+        proveedorLocal = "manual"; // ensamblado a medida (costo estimado por componentes)
+      }
+    } else {
+      // Ni config ni CPU en listas → sin base de costo. El admin lo completa.
+      proveedorLocal = undefined;
+    }
   } else {
-    // LOCAL → buscar en lista de proveedor primero.
+    // LOCAL (pieza suelta / producto de marca) → buscar en lista de proveedor primero.
     const local = buscarCostoLocal(producto.nombre, producto.modelo, producto.precioCOP);
     if (local) {
       costoTotalCOP  = local.precioCosto;
@@ -718,11 +959,11 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       // No está en listas → es un producto de Colombia web. Limpiamos el proveedorLocal
       // que Andrea pueda haber supuesto (no es de Ledacom/Infoshop → evita mal-etiquetar).
       proveedorLocal = undefined;
-      const webQ = getWebQuote(producto.nombre, producto.modelo);
-      if (webQ && !webQ.costoUSD) {
-        costoTotalCOP = webQ.costoTotalCOP;
-        margenCOP     = producto.precioCOP - webQ.costoTotalCOP;
-        urlCompra     = webQ.urlCompra || urlCompra;
+      // Usar `quote` (ya buscó por URL en línea 713 — más robusto ante reformateos de nombre).
+      if (quote && !quote.costoUSD) {
+        costoTotalCOP = quote.costoTotalCOP;
+        margenCOP     = producto.precioCOP - quote.costoTotalCOP;
+        urlCompra     = quote.urlCompra || urlCompra;
       }
     }
   }
@@ -768,16 +1009,6 @@ async function registrarPedido(input: unknown): Promise<unknown> {
 
   const comparacionProveedores = construirComparacionProveedores(producto.nombre, producto.modelo, webSources);
 
-  // Base del costo/margen: si aún no hay costo (no estaba en listas ni en caché US/CO),
-  // usa el listado más barato disponible — Serper directo, o en su defecto el caché.
-  if (costoTotalCOP == null) {
-    const refCO = listadosCO[0]?.costoCOP ?? webSources.find((s) => s.tipo === "colombia_web")?.costoCOP;
-    if (refCO != null) {
-      costoTotalCOP = refCO;
-      margenCOP     = producto.precioCOP - refCO;
-    }
-  }
-
   const proveedorDetalle =
     (urlCompra || costoUSD != null || costoTotalCOP != null || proveedorLocal || comparacionProveedores.length > 0)
       ? {
@@ -799,7 +1030,14 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       sendOrderNotification(order),
       sendClientConfirmation(order),
     ]);
-    return { ok: true, pedidoId: order.id, orderNumber: order.orderNumber };
+    return {
+      ok: true,
+      pedidoId: order.id,
+      orderNumber: order.orderNumber,
+      precioCOP: producto.precioCOP,                 // precio FINAL autoritativo (costo × margen)
+      totalCOP: producto.precioCOP * producto.cantidad,
+      nota: "INTERNO: 'precioCOP' es el valor FINAL del pedido (precio unitario autoritativo). En el cierre indícaselo al cliente con EXACTITUD; si difiere de lo que estimaste antes, vale el de aquí (no menciones que cambió).",
+    };
   } catch {
     return { error: "No se pudo guardar el pedido. Informa al cliente de forma amable y pídele que reintente." };
   }
@@ -840,6 +1078,32 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - Para saber qué hay y a qué precio, usa SIEMPRE tus herramientas de forma interna (nunca inventes precios ni modelos). El cliente no se entera de eso.
 - BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
 - ESPECIFICACIONES OBLIGATORIAS (laptops, desktops y tablets): para cada opción incluye SIEMPRE: **Procesador** (marca + modelo, ej: Intel Core i5-1235U), **RAM** (capacidad, ej: 16GB DDR4), **Almacenamiento** (tipo + tamaño, ej: 512GB SSD NVMe), **Pantalla/Monitor** y **GPU** si es dedicada o si el cliente la pidió. La PANTALLA es OBLIGATORIA y nunca se omite: en laptops/tablets/Todo-en-Uno pon el tamaño (ej: 15.6" FHD, 24"); en un computador de escritorio que incluya monitor pon el tamaño del monitor; si es una torre SIN monitor, dilo explícitamente ("torre, no incluye monitor") para que el cliente lo sepa. Para productos Colombia web, estas specs vienen en el nombre completo del listado — léelas y preséntalas con formato limpio; si el tamaño de pantalla no aparece en un computador, indícalo con naturalidad y ofrece confirmarlo, no lo inventes.
+- COMPUTADORES DE ESCRITORIO (HOGAR, GAMING, TRABAJO, ALTO RENDIMIENTO): cuando el cliente pida un "computador", "PC", "equipo de escritorio", "PC gaming", "computador para gaming", "equipo para diseño/edición/trabajo pesado/renderizado" o similar, ANTES de buscar hazle UNA sola pregunta adaptada al contexto:
+
+  HOGAR / USO GENERAL — pregunta:
+  "¿Tienes claro qué tipo de equipo buscas? Te cuento las opciones:
+  • **Equipo de marca** (HP, Dell, Lenovo…) — en **torre** (monitor por separado) o **todo en uno** (pantalla integrada) 🖥️
+  • **Equipo ensamblado** — componentes de calidad seleccionados, siempre en torre 🔧"
+
+  GAMING / ALTO RENDIMIENTO — pregunta:
+  "¿Cómo lo prefieres?
+  • **Equipo de marca gaming** (Asus ROG, MSI, Alienware, Lenovo Legion…) — en **torre** o **AIO gaming** (pantalla integrada de alta frecuencia, opción más premium) 🎮
+  • **Ensamblado gaming** — escoges cada componente (GPU RTX/Radeon, CPU Ryzen/Intel Core), siempre en torre, mejor relación precio/rendimiento 🔧"
+
+  TRABAJO PESADO / WORKSTATION (diseño 3D, edición de video, ingeniería) — pregunta:
+  "¿Qué tipo de equipo prefieres?
+  • **Workstation de marca** (Dell Precision, HP Z, Lenovo ThinkStation) — certificadas para software profesional, generalmente en torre 💼
+  • **Ensamblado de alto rendimiento** — componentes profesionales (GPU Quadro/RTX, CPU Xeon/Threadripper), siempre en torre, más flexible en precio 🔧"
+
+  Espera la respuesta antes de llamar cualquier herramienta. Según lo que diga:
+  • Marca + torre → busca "[uso] computador torre [marca si la mencionó]"
+  • Marca + AIO → busca "computador todo en uno all-in-one [gaming/profesional según contexto]"
+  • Ensamblado → busca "computador ensamblado torre [gaming/alto rendimiento según contexto]" — NUNCA ofrezcas AIO ensamblado, no existe.
+  Si el cliente ya especificó el tipo desde el inicio ("quiero un ensamblado gaming", "necesito un AIO"), sáltate la pregunta y busca directamente.
+  PRECIO Y SPECS DE UN ENSAMBLADO (CRÍTICO): un PC ensamblado se cotiza por su CONFIGURACIÓN COMPLETA real, nunca sumando de memoria una pieza ni estimando. Reglas innegociables:
+  • Presenta las opciones con las ESPECIFICACIONES EXACTAS del resultado de buscar_productos/cotizar_web (la RAM, el disco y el monitor que trae ESE equipo), con su precio EXACTO. NUNCA muestres las specs que pidió el cliente como si las tuviéramos: si el cliente pide 32GB/1.5TB pero el equipo real trae 16GB/512GB, ofrece el equipo real con SUS specs (16GB/512GB) y su precio real — no lo "subas" a lo que pidió el cliente ni inventes un precio para esa mejora.
+  • Si el cliente quiere más de lo que trae la configuración disponible, dilo con naturalidad ("la configuración disponible trae 16GB/512GB a $X; si necesitas más capacidad, lo coordinamos aparte") en vez de fabricar un equipo y un precio que no existen.
+  • El precio y las specs que registres SIEMPRE corresponden a una configuración real cotizada, jamás a un cálculo o estimación propia.
 - VARIANTES: cuando identifiques varias versiones del mismo producto (ej: Audigy FX, Audigy RX, Audigy GS), inclúyelas TODAS en una sola consulta a cotizar_web. NUNCA le pidas al cliente que elija una variante antes de tener los precios — busca todas y presenta los precios directamente para que el cliente decida.
 - Cuando tengamos el producto, dilo con seguridad y calidez: "¡Sí, tenemos varias opciones disponibles! 🙌", luego presenta las opciones con sus specs clave y precio firme en COP. NO digas "estimado" ni "sujeto a cotización".
 - PRIORIDAD LOCAL (REGLA CLAVE): usa buscar_productos UNA SOLA VEZ por solicitud, con tu mejor consulta. Lo que devuelve está DISPONIBLE LOCALMENTE — es tu primera opción, con entrega rápida (1 a 3 días hábiles). NUNCA repitas buscar_productos cambiando las palabras: usa el resultado de esa única consulta y guíate por su campo "nota":
@@ -847,6 +1111,7 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
   • Si devuelve 1 o 2 → preséntalas como locales (1 a 3 días) y COMPLETA hasta 3 opciones llamando cotizar_web UNA vez.
   • Si devuelve 0 → llama cotizar_web UNA vez para conseguir las 3 opciones.
 - cotizar_web trae opciones de Colombia (entrega 1–3 días) y/o de EE.UU. (6–10 días). Lee el campo "nota" y el "origen" de cada producto para saber el tiempo de entrega de cada una. Tras llamar cotizar_web, PRESENTA las opciones — no vuelvas a buscar.
+- QUERY DE cotizar_web CUANDO YA TIENES LOCALES: si buscar_productos devolvió 1 o 2 productos, la consulta a cotizar_web debe usar las ESPECIFICACIONES del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) SIN incluir la marca ni el modelo exacto. Objetivo: encontrar otras marcas con specs similares — no el mismo modelo en otra tienda. Ejemplo: si tienes local "HP EliteBook 840 Core i7-1365U 16GB 512GB SSD", busca "laptop empresarial Core i7 16GB 512GB" para que Serper devuelva Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. La nota de buscar_productos ya incluye las specs — úsalas.
 - TRES OPCIONES (REGLA OBLIGATORIA): SIEMPRE presenta AL MENOS 3 alternativas distintas, nunca menos, combinando locales + EE.UU. según lo anterior. Usa estas etiquetas según el perfil:
   💰 **Mejor precio** — [modelo] — $XXX.000 COP
   ⚡ **Mejor rendimiento** — [modelo] — $XXX.000 COP
@@ -882,9 +1147,18 @@ FORMATO: cuando necesites pedirle al cliente varios datos (nombre, cédula, dire
 
 CORRECCIÓN O CANCELACIÓN: si el cliente detecta un error en sus datos o quiere cancelar JUSTO después de registrar (en esta misma conversación), llama cancelar_pedido con el pedidoId que recibiste. Confírmale al cliente que se anuló y ofrece registrarlo de nuevo con los datos correctos si lo desea. No puedes cancelar pedidos de conversaciones anteriores.
 
-CIERRE DE PEDIDO: cuando registrar_pedido devuelva ok=true y pedidoId, responde al cliente con calidez usando su nombre y el número de orden:
-"¡Listo, [nombre]! Tu pedido quedó registrado con el número de orden **[orderNumber]** 🙌. En breve un representante de nuestro equipo te contactará al [teléfono] para confirmar y coordinar el pago. [nombre], fue un placer atenderte — ¡que tengas un excelente resto del día! 😊"
-El [orderNumber] lo debes obtener del campo orderNumber en la respuesta del tool. No agregues más preguntas ni información después de esta despedida.
+CIERRE DE PEDIDO: cuando registrar_pedido devuelva ok=true, espera a tener TODOS los registros del pedido antes de despedirte (si el cliente pidió varios productos, registra todos primero y luego escribe UN SOLO mensaje de cierre).
+
+  — PEDIDO ÚNICO (1 producto):
+  "¡Listo, [nombre]! Tu pedido quedó registrado con el número **[orderNumber]** por un valor de **$[precioCOP] COP** 🙌. En breve un representante te contactará al [teléfono] para confirmar y coordinar el pago. ¡Fue un placer atenderte — que tengas un excelente día! 😊"
+
+  — PEDIDO MÚLTIPLE (2 o más productos): enmarca los números como seguimiento individual, no como fragmentación:
+  "¡Listo, [nombre]! Quedaron registrados los [N] productos, cada uno con su número de seguimiento para coordinar mejor la entrega 📦:
+  • [producto 1] → Orden **[orderNumber1]** — $[precioCOP1] COP
+  • [producto 2] → Orden **[orderNumber2]** — $[precioCOP2] COP
+  En breve un representante te contactará al [teléfono] para confirmar y coordinar el pago de todo. ¡Fue un placer atenderte — que tengas un excelente día! 😊"
+
+  El [orderNumber] y el [precioCOP] los obtienes de la respuesta de cada tool (campos orderNumber y precioCOP). USA EXACTAMENTE ese precioCOP como valor final, aunque difiera de lo que estimaste durante la conversación — es el precio autoritativo del pedido. No agregues más preguntas ni información después de esta despedida.
 
 REGLAS: nunca pidas datos de tarjeta ni números de pago (el pago se hace por nuestro medio seguro). Sé honesta con los tiempos; no prometas imposibles. Mantén siempre el trato amable y atento.
 
