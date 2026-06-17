@@ -752,12 +752,22 @@ function buscarCostoLocal(
   const targetModelo = modelo ? norm(modelo) : "";
   if (target.length < 4) return null;
 
+  // Tokens del nombre original (≥4 chars) para el fallback por intersección.
+  const palabras = nombre.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(s => s.length >= 4);
+
   const candidatos = loadActiveProducts().filter((p) => {
     const n = norm(p.nombre);
     if (!n) return false;
     if (n === target) return true;
     if (n.length >= 6 && (n.includes(target) || target.includes(n))) return true;
     if (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false))) return true;
+    // Fallback por tokens: cubre "Monitor Samsung 27\" 1920×1080" vs "Monitor Samsung 27\" LF27T350"
+    // (las listas usan el modelo corto; Andrea usa la descripción con specs completas).
+    if (palabras.length >= 2) {
+      let hits = 0;
+      for (const tok of palabras) if (n.includes(tok)) hits++;
+      if (hits >= 2) return true;
+    }
     return false;
   });
   if (candidatos.length === 0) return null;
