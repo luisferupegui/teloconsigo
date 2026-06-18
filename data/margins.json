@@ -21,5 +21,6 @@
   "motherboard": 0.25,
   "antivirus": 0.35,
   "licencia": 0.25,
+  "escritorio-alto-rendimiento": 0.12,
   "default": 0.35
 }

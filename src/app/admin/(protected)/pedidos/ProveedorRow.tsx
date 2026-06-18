@@ -207,9 +207,18 @@ function ComparacionProveedores({
                 <span className={masBarata ? "font-bold text-emerald-800" : "text-zinc-600"}>
                   {formatCOP(f.costoCOP)}
                 </span>
-                <span className={`text-xs ${margen >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                  margen {formatCOP(margen)}
-                </span>
+                {f.nota === "precio de mercado" ? (
+                  // Janus retail: mostrar si somos más baratos o más caros que el mercado
+                  <span className={`text-xs ${margen >= 0 ? "text-red-500" : "text-emerald-600"}`}>
+                    {margen >= 0
+                      ? `somos ${formatCOP(margen)} más caros`
+                      : `somos ${formatCOP(-margen)} más baratos`}
+                  </span>
+                ) : (
+                  <span className={`text-xs ${margen >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                    margen {formatCOP(margen)}
+                  </span>
+                )}
               </span>
             </div>
           );

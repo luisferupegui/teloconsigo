@@ -48,6 +48,7 @@ const CAT_LABELS: Record<string, { label: string; desc: string }> = {
   "accesorios":      { label: "Accesorios generales",             desc: "Hubs, cables, adaptadores…" },
   "teclado":         { label: "Teclados",                         desc: "Mecánicos, membrana, inalámbrico" },
   "motherboard":     { label: "Motherboards / Placas madre",      desc: "AM5, LGA1700, HEDT…" },
+  "escritorio-alto-rendimiento": { label: "Escritorio alto rendimiento", desc: "Gaming, edición de video, producción (GPU dedicada / CPU tope). Margen competitivo" },
   "default":         { label: "Categorías sin especificar",       desc: "Fallback cuando no hay categoría definida" },
 };
 
@@ -59,6 +60,7 @@ const CAT_ORDER = [
   "antivirus",       // Antivirus
   "auriculares",     // Auriculares / Headsets
   "escritorio",      // Computadores de escritorio
+  "escritorio-alto-rendimiento", // Gaming / edición / producción
   "fuente-poder",    // Fuentes de poder (PSU)
   "impresora",       // Impresoras
   "licencia",        // Licencias Windows / Office
@@ -214,8 +216,7 @@ export default function PreciosPage() {
           <div>
             <h2 className="text-base font-bold text-zinc-900">📊 Márgenes por categoría — Colombia</h2>
             <p className="mt-0.5 text-xs text-zinc-500">
-              Aplican a: listas de proveedores (Infoshop / Ledacom) y búsquedas web en Colombia.
-              Precio cliente = costo × (1 + %)
+              Aplican a las listas de proveedores (Infoshop / Ledacom) y a las búsquedas web en Colombia. Precio cliente = costo × (1 + %). Los escritorios de <strong>alto rendimiento</strong> (gaming/edición) tienen su propia categoría con margen más competitivo; los básicos conservan el de <em>Computadores de escritorio</em>.
             </p>
           </div>
           <button

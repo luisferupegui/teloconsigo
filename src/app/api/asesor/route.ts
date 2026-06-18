@@ -125,12 +125,82 @@ const tools: Anthropic.Tool[] = [
   },
 ];
 
+// ── Ficha: tarjeta de producto pre-formateada (FIDELIDAD: Andrea la copia tal cual) ──
+// El modelo solía reescribir specs y precios (inventaba 1TB donde había 512GB, quitaba
+// el monitor, inflaba el precio). La defensa: el servidor arma la ficha exacta y Andrea
+// solo la copia. Aquí se construye; el SYSTEM prompt obliga a copiarla sin alterar.
+const fmtCOP = (n: number) =>
+  "$" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " COP";
+
+/** Specs estructuradas → líneas de viñeta, en orden legible. Solo incluye las que
+ *  EXISTEN; nunca inventa una. Cubre las variantes de clave más comunes. */
+function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
+  if (!specs) return [];
+  const order: [string, string][] = [
+    ["procesador", "Procesador"], ["cpu", "Procesador"],
+    ["ram", "RAM"], ["memoria", "RAM"],
+    ["almacenamiento", "Almacenamiento"], ["disco", "Almacenamiento"],
+    ["monitor", "Pantalla"], ["pantalla", "Pantalla"],
+    ["gpu", "Gráfica"], ["grafica", "Gráfica"], ["tarjeta_grafica", "Gráfica"],
+    ["board", "Placa base"], ["so", "Sistema"], ["incluye", "Incluye"],
+  ];
+  const out: string[] = [];
+  const usados = new Set<string>();
+  for (const [key, label] of order) {
+    const v = specs[key];
+    if (v && !usados.has(label)) { out.push(`- ${label}: ${v}`); usados.add(label); }
+  }
+  return out;
+}
+
+// Un escritorio "completo" lleva un monitor (palabra "monitor"/"pantalla" o una medida
+// de 20–39"); una torre sola no. Las medidas de 11–17" son pantallas de portátil, no monitor.
+const INCLUYE_MONITOR = /\bmonitor\b|\bpantalla\b|\b(?:2\d|3[0-9])(?:[.,]\d)?\s*(?:"|''|pulg)/i;
+
+/** Tamaño de monitor en pulgadas si aparece (ej: 24", 23.8"); "" si no. */
+function tamMonitor(s: string): string {
+  const m = s.match(/\b(\d{2}(?:[.,]\d)?)\s*(?:"|''|pulg)/i);
+  return m ? m[1].replace(",", ".") + '"' : "";
+}
+
+/** Línea de estado de monitor para la ficha, deducida del texto. Distingue portátil
+ *  (pantalla propia → null, no aplica), AIO (pantalla integrada), y escritorio (incluye
+ *  monitor vs solo torre). Es lo que permite AGRUPAR opciones sin mezclar precios. */
+function monitorStatusFromName(texto: string): string | null {
+  if (/\b(port[aá]til|laptop|notebook|ultrabook)\b/i.test(texto) || /pantalla\s*1[0-7]\b|\b1[0-7][.,]\d\s*(?:"|'')/i.test(texto)) return null; // portátil
+  if (/all.?in.?one|\baio\b|todo.?en.?uno/i.test(texto)) {
+    const t = tamMonitor(texto); return `🖥️ Todo-en-uno · pantalla integrada${t ? ` ${t}` : ""}`;
+  }
+  if (!TIENE_CPU.test(texto)) return null; // componente/accesorio suelto: sin línea de monitor
+  if (INCLUYE_MONITOR.test(texto)) {
+    const t = tamMonitor(texto); return `🖥️ Incluye monitor${t ? ` ${t}` : ""}`;
+  }
+  return "🖥️ Solo torre (sin monitor)";
+}
+
+/** Tarjeta lista para mostrar al cliente. Si hay specs estructuradas las usa; si no,
+ *  el nombre completo (que ya contiene la configuración real) es la fuente fiel. Añade
+ *  el estado de monitor cuando aplica. El precio va EXACTO. Andrea copia esto sin cambiar nada. */
+function construirFicha(nombre: string, specs: Record<string, string> | undefined, precio: number | null): string {
+  const lineas = fichaSpecLines(specs);
+  const mon = monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`);
+  const cuerpo = lineas.length > 0 ? `\n${lineas.join("\n")}` : "";
+  const monLinea = mon ? `\n${mon}` : "";
+  const precioLinea = precio != null ? `\n💲 ${fmtCOP(precio)}` : "";
+  return `**${nombre}**${cuerpo}${monLinea}${precioLinea}`;
+}
+
 // ── Disponibilidad local (proyecta SOLO campos seguros; nunca `proveedor`) ─────
 type CustomerProduct = {
   referencia: string | null; nombre: string; marca: string; categoria: string;
   segmento: string | null; precioDesde: number | null; precioIvaIncluido: boolean;
-  specs: Record<string, string>; descripcion: string; url: string;
+  specs: Record<string, string>; descripcion: string; url: string; ficha: string;
 };
+
+// Un equipo completo SIEMPRE nombra su CPU; un accesorio/componente suelto (chasis,
+// cooler, fuente, SSD, RAM, monitor) no. En búsquedas de EQUIPO sirve para descartar ruido
+// (p. ej. "CHASIS ANTEC + 5 FANS" colado por "color", o un cooler con "PANTALLA RGB").
+const TIENE_CPU = /\b(ryzen|core\s?i[3579]|core\s?ultra|xeon|pentium|celeron|athlon|threadripper|i[3579]-\d{3,4})\b/i;
 
 function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; localDisponibles: number; productos: CustomerProduct[]; nota: string } {
   const consulta = String(input?.consulta ?? "").toLowerCase().trim();
@@ -154,6 +224,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
         referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
         segmento: null, precioDesde: precio, precioIvaIncluido: false,
         specs: p.specs ?? {}, descripcion: "", url: "",
+        ficha: construirFicha(p.nombre, p.specs, precio),
       },
     };
   });
@@ -169,15 +240,28 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
         segmento: p.segmento ? SEGMENTO_LABEL[p.segmento] : null, precioDesde: precio,
         precioIvaIncluido: p.precioIvaIncluido ?? false, specs: p.specs ?? {}, descripcion: p.descripcionUso,
         url: `/conseguir?ref=${encodeURIComponent(p.referencia ?? p.slug)}`,
+        ficha: construirFicha(p.nombre, p.specs, precio),
       },
     };
   });
+
+  // Si el cliente pide un EQUIPO completo, exige que el producto nombre un CPU: así se
+  // descartan piezas/accesorios sueltos que el scoring por palabras cuela (chasis, cooler…).
+  const soloEquipos = clasificarConsulta(consulta) === "equipo";
+  // Búsqueda explícita de escritorio/ensamblado (sin mencionar portátil) → excluir portátiles.
+  // TIENE_CPU descarta periféricos pero NO laptops (tienen CPU). Sin este filtro un DELL INSPIRON
+  // aparece en búsquedas de "ensamblado para edición" porque su Core i7 pasa el filtro de CPU.
+  const ESCRITORIO_Q = /\b(ensamblad|escritorio|desktop|torre\s*pc|pc\s*torre|all.?in.?one|aio|todo.?en.?uno|workstation|gaming\s*pc)\b/i;
+  const PORTATIL_Q   = /\b(laptop|port[aá]til|notebook|ultrabook)\b/i;
+  const soloEscritorio = ESCRITORIO_Q.test(consulta) && !PORTATIL_Q.test(consulta);
 
   const combinados = [...locales, ...catalogo]
     .filter((x) => x.score > 0)
     .filter((x) => (precioMax !== null ? x.precio !== null && x.precio <= precioMax : true))
     // el filtro por segmento solo aplica al catálogo (las listas de proveedor no traen segmento)
-    .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true));
+    .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true))
+    .filter((x) => !soloEquipos || TIENE_CPU.test(x.prod.nombre))
+    .filter((x) => !soloEscritorio || (x.prod.categoria !== "portatil" && !PORTATIL_Q.test(x.prod.nombre)));
 
   // Orden: primero local, luego por relevancia y precio. Dedupe por referencia/nombre
   // conservando la primera (la versión local con prioridad).
@@ -192,18 +276,31 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 
   const productos = deduped.slice(0, limite).map((x) => x.prod);
 
+  // ¿Los resultados son escritorios de ALTO RENDIMIENTO (GPU dedicada / CPU tope)? Activa la
+  // REGLA 2x2: con 1–2 locales se completa hasta 4 opciones (locales + web), no hasta 3.
+  const hayAltoRend = productos.some((p) =>
+    /escritorio|desktop|computador|\bpc\b|torre|all.?in.?one|\baio\b/i.test(`${p.categoria} ${p.nombre}`)
+    && !/laptop|port[aá]til|notebook/i.test(p.nombre)
+    && ALTO_RENDIMIENTO_RE.test(p.nombre));
+
   let nota: string;
   if (productos.length === 0) {
     nota = "INTERNO: no hay disponibilidad local. Llama cotizar_web — buscará primero en tiendas colombianas (entrega 1–3 días) y luego en EE.UU. (6–10 días). Ofrece al menos 3 opciones con su tiempo de entrega.";
   } else if (productos.length >= 3) {
-    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 con su precio firme y resalta la entrega rápida. NO uses cotizar_web (ya hay suficientes locales). Al registrar usa proveedor="colombia".`;
+    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 COPIANDO su campo "ficha" TAL CUAL (specs y precio EXACTOS — no los cambies ni combines productos); solo antepón la etiqueta y la entrega rápida. NO uses cotizar_web (ya hay suficientes locales). Al registrar usa proveedor="colombia".`;
   } else {
     // Construir descripción de specs del(los) producto(s) local(es) para guiar la búsqueda de alternativas.
     const specsLocales = productos.map((p) => {
       const specs = Object.entries(p.specs ?? {}).map(([, v]) => String(v)).filter(Boolean).join(", ");
       return `${p.nombre}${specs ? ` (${specs})` : ""}`;
     }).join("; ");
-    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles): ${specsLocales}. Preséntala(s) Y completa hasta 3 opciones llamando cotizar_web UNA VEZ. REGLA CLAVE DEL QUERY: construye la consulta con las SPECS del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) pero SIN mencionar la marca ni el modelo exacto — el objetivo es encontrar ALTERNATIVAS DE OTRAS MARCAS con características similares. Ejemplo: si tienes "HP EliteBook Core i7-1365U 16GB 512GB", busca "laptop empresarial Core i7 16GB 512GB" para obtener Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. Nunca busques el modelo exacto o la marca del producto ya encontrado localmente. Indica el tiempo de entrega de CADA opción por separado. Al registrar: locales → proveedor="colombia"; cotizar_web con origen="co" → proveedor="colombia"; cotizar_web con origen="us" → proveedor="eeuu".`;
+    // Regla 2x2: los escritorios de ALTO RENDIMIENTO AÑADEN 2 opciones de web a las locales
+    // (1 local → 3 en total; 2 locales → 4 en total). El resto completa hasta 3.
+    const objetivo  = hayAltoRend ? productos.length + 2 : 3;
+    const completar = hayAltoRend
+      ? `como es un escritorio de ALTO RENDIMIENTO aplica la REGLA 2x2: añade 2 opciones de webs locales colombianas (combos o torres, lo mejor que consigas) para mostrar ${objetivo} EN TOTAL (las ${productos.length} locales + 2 de web)`
+      : `completa hasta 3 opciones`;
+    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles): ${specsLocales}. Preséntala(s) COPIANDO su campo "ficha" TAL CUAL (specs y precio EXACTOS) Y ${completar} llamando cotizar_web UNA VEZ. REGLA CLAVE DEL QUERY: construye la consulta con las SPECS del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) pero SIN mencionar la marca ni el modelo exacto — el objetivo es encontrar ALTERNATIVAS DE OTRAS MARCAS con características similares. Ejemplo: si tienes "HP EliteBook Core i7-1365U 16GB 512GB", busca "laptop empresarial Core i7 16GB 512GB" para obtener Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. Nunca busques el modelo exacto o la marca del producto ya encontrado localmente. Indica el tiempo de entrega de CADA opción por separado. Al registrar: locales → proveedor="colombia"; cotizar_web con origen="co" → proveedor="colombia"; cotizar_web con origen="us" → proveedor="eeuu".`;
   }
 
   return { encontrados: productos.length, totalCompatibles: deduped.length, localDisponibles: productos.length, productos, nota };
@@ -265,11 +362,22 @@ function isTechRetailerCO(source?: string, link?: string, allowPCStores = false)
   return TECH_RETAILERS_CO.test(hay) || (allowPCStores && PC_RETAILERS_CO.test(hay));
 }
 
+// Escritorio de ALTO RENDIMIENTO (gaming / edición de video / producción): debe tener GPU
+// DEDICADA (RTX/GTX/RX/Quadro), CPU tope de gama (Ryzen 9 / i9 / Xeon / Threadripper) o ser
+// workstation. Un "PC Gamer" con gráficos integrados NO cuenta — gaming exige GPU dedicada.
+// Tiene su propia categoría de margen ("escritorio-alto-rendimiento"). NO usar "radeon" suelto:
+// las APU lo traen integrado.
+const ALTO_RENDIMIENTO_RE = /\b(rtx|gtx|quadro|geforce)\b|\brx\s?\d{3,4}\b|\bryzen\s*9\b|\bcore\s?i9\b|\bi9-\d|\bthreadripper\b|\bxeon\b|\bworkstation\b/i;
+const escritorioTier = (n: string): string =>
+  ALTO_RENDIMIENTO_RE.test(n) ? "escritorio-alto-rendimiento" : "escritorio";
+
 /** Infiere la clave de margen (`margins.json`) a partir del nombre del producto
  *  y la clasificación de la consulta. Si no hay coincidencia usa "default". */
 function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): string {
   const n = (nombre ?? "").toLowerCase();
-  if (/\bmonitor\b/.test(n))                                        return "monitor";
+  // "monitor" solo si NO es un equipo completo: un PC combo dice "+ Monitor 24\"" pero lleva CPU
+  // → debe ir a escritorio, no a la categoría monitor (si no, un gaming con monitor no recibe su margen).
+  if (/\bmonitor\b/.test(n) && !TIENE_CPU.test(n))                 return "monitor";
   if (/laptop|port[aá]til|notebook/.test(n))                       return "portatil";
   if (/\btablet\b|ipad|galaxy.?tab/.test(n))                       return "tablet";
   if (/antivirus|kaspersky|bitdefender|\beset\b|norton|avast/.test(n)) return "antivirus";
@@ -277,13 +385,13 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
   if (/servidor|server|\bpoweredge\b|\bproliant\b/.test(n))        return "servidor";
   // Mini-PC ANTES que escritorio: es su propia categoría (NUC, barebone, mini computador).
   if (/mini.?pc|minipc|\bnuc\b|mini.?computador|barebone/.test(n))  return "mini-pc";
-  if (/desktop|escritorio|all.?in.?one|\baio\b|todo en uno|gaming\s*pc|pc\s*gam(er|ing)|ensamblad|workstation|estaci[oó]n de trabajo/.test(n)) return "escritorio";
+  if (/desktop|escritorio|all.?in.?one|\baio\b|todo en uno|gaming\s*pc|pc\s*gam(er|ing)|ensamblad|workstation|estaci[oó]n de trabajo/.test(n)) return escritorioTier(n);
   // PC COMPLETO aunque el nombre lleve specs: si pide CPU y GPU juntos, es un equipo entero
   // (nadie busca "un CPU y una GPU" como una sola consulta salvo para armar un PC). Evita que
   // "PC gamer RTX 4070 Core i9" se desvíe a procesador/tarjeta-grafica (que van a EE.UU.).
-  if (/ryzen|core ?i[3579]|\bi[3579][- ]?\d|\bxeon\b/.test(n) && /\brtx\b|\bgtx\b|\brx\s?\d{3,4}\b|radeon|geforce/.test(n)) return "escritorio";
+  if (/ryzen|core ?i[3579]|\bi[3579][- ]?\d|\bxeon\b/.test(n) && /\brtx\b|\bgtx\b|\brx\s?\d{3,4}\b|radeon|geforce/.test(n)) return escritorioTier(n);
   // PC completo clasificado como "equipo" → escritorio (consulta con "computador"/"torre pc"/etc.).
-  if (clasificacion === "equipo") return "escritorio";
+  if (clasificacion === "equipo") return escritorioTier(n);
   if (/procesador|\bcpu\b|ryzen|core i[3579]|xeon/.test(n))        return "procesador";
   if (/\bram\b|ddr[2345]/.test(n))                                  return "memoria-ram";
   if (/\bssd\b|nvme|\bhdd\b/.test(n))                              return "almacenamiento";
@@ -447,6 +555,16 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
   return local;
 }
 
+// Ficha web (cotizar_web): las specs vienen como string con "|" (EE.UU.) o dentro del
+// nombre (Colombia). Arma la tarjeta exacta con el precioCOP autoritativo. Andrea la copia.
+function fichaWeb(p: QuoteProducto): string {
+  const partes = (p.specs ?? "").split("|").map((s) => s.trim()).filter(Boolean);
+  const cuerpo = partes.length > 0 ? "\n" + partes.map((s) => `- ${s}`).join("\n") : "";
+  const mon = monitorStatusFromName(`${p.nombre} ${p.specs ?? ""}`);
+  const monLinea = mon ? `\n${mon}` : "";
+  return `**${p.nombre}**${cuerpo}${monLinea}\n💲 ${fmtCOP(p.precioCOP)}`;
+}
+
 // Respuesta estándar de cotizar_web hacia Andrea.
 function respuestaCotizar(productos: QuoteProducto[]) {
   if (productos.length === 0) {
@@ -461,13 +579,15 @@ function respuestaCotizar(productos: QuoteProducto[]) {
     : `Todas de EE.UU. (proveedor="eeuu", entrega 6–10 días hábiles).`;
   return {
     encontrados: productos.length,
-    productos,
-    nota: `INTERNO: ${origenNota} DEBES presentar AL MENOS 3 opciones con precio firme en COP (campo precioCOP — úsalo EXACTO, no lo redondees). Para laptops, desktops y tablets incluye siempre: procesador, RAM, almacenamiento y pantalla. En desktops: si es AIO/Todo-en-uno indica el tamaño de la pantalla; si viene con monitor indica su tamaño; si es torre indica "Torre (sin monitor)". Para productos de Colombia (origen='co'), las specs están en el campo 'nombre' — extráelas y preséntalas con formato limpio. Indica el tiempo de entrega de CADA opción. Al registrar: origen='co' → proveedor="colombia"; origen='us' → proveedor="eeuu" con costoUSD del producto. NO menciones búsqueda, importación ni cotización.`,
+    productos: productos.map((p) => ({ ...p, ficha: fichaWeb(p) })),
+    nota: `INTERNO: ${origenNota} DEBES presentar AL MENOS 3 opciones COPIANDO el campo "ficha" de cada una TAL CUAL: specs y precio EXACTOS, sin cambiar ni una cifra, sin agregar specs que no estén y sin combinar dos productos en uno. Solo antepón la etiqueta (💰/🎯/⚡) e indica la ENTREGA de CADA opción por separado. Al registrar: origen='co' → proveedor="colombia"; origen='us' → proveedor="eeuu" con costoUSD del producto. NO menciones búsqueda, importación ni cotización.`,
   };
 }
 
 // Colombia (Serper) → opciones al cliente + datos de mercado (admin).
-// Precio cliente = promedio mercado (hasta 4 tiendas prioritarias) × margen por categoría.
+// El precio de Serper YA es de mercado/retail; el margen va por CATEGORÍA del producto. Los
+// escritorios de alto rendimiento (gaming/edición) usan "escritorio-alto-rendimiento" (12%,
+// competitivo); los básicos y demás conservan su margen de categoría configurado.
 function construirProductosCO(localParsed: WebProducto[], clasificacion: Categoria = "otro"): { productosCO: QuoteProducto[]; localData: LocalData } {
   const locales = localParsed
     .filter((p) => typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false)
@@ -479,15 +599,14 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
 
   if (locales.length === 0) return { productosCO: [], localData: {} };
 
-  // Margen según categoría; fallback 35%.
-  const margins  = loadMargins();
-  const catKey   = inferirCategoriaMargen(locales[0].nombre ?? "", clasificacion);
-  const margen   = margins[catKey] ?? margins.default ?? 0.35;
+  const margins = loadMargins();
 
-  // Precio individual por tienda: cada opción refleja lo que cuesta en esa tienda específica,
-  // así Andrea presenta alternativas con precios genuinamente distintos.
+  // Precio individual por tienda Y por categoría: cada opción usa el margen que le corresponde
+  // (un escritorio gaming/edición → 12%; uno básico → su margen de escritorio; etc.).
   const productosCO: QuoteProducto[] = locales.slice(0, 5).map((p) => {
     const copLocal = p.copLocal as number;
+    const catKey   = inferirCategoriaMargen(p.nombre ?? "", clasificacion);
+    const margen   = margins[catKey] ?? margins.default ?? 0.35;
     return {
       nombre: p.nombre, specs: "",
       precioCOP:     Math.ceil(copLocal * (1 + margen) / 10000) * 10000,
@@ -654,7 +773,7 @@ function costoEscritorioConfig(
   const token = cpuToken(nombre);
   if (!token) return null;
   let candidatos = loadActiveProducts().filter(
-    (p) => p.categoria === "escritorio" && norm(p.nombre).includes(token),
+    (p) => p.categoria?.startsWith("escritorio") && norm(p.nombre).includes(token),
   );
   if (candidatos.length === 0) return null;
   // Igualar la presencia de GPU dedicada: no ofrecer un equipo con RTX/RX si el cliente
@@ -790,15 +909,17 @@ function fuentesDeListas(nombre: string, modelo: string | undefined): FuenteComp
   const target = norm(nombre);
   const targetModelo = modelo ? norm(modelo) : "";
   if (target.length < 4) return [];
-  // PC de escritorio/ensamblado: compara SOLO configs completas (cat. escritorio) del
-  // mismo CPU — nunca piezas sueltas (evita comparar contra el procesador solo).
+  // PC de escritorio/ensamblado: compara SOLO configs completas del mismo CPU,
+  // igualando presencia de GPU — nunca piezas sueltas ni mezcla GPU/sin-GPU.
   const escritorio = esEscritorioCompuesto(nombre);
   const token = escritorio ? cpuToken(nombre) : null;
+  const reqGPU = escritorio ? GPU_DEDICADA.test(nombre.toLowerCase()) : false;
   const porProveedor = new Map<string, number>();
   for (const p of loadActiveProducts()) {
     const n = norm(p.nombre);
     const match = escritorio
-      ? (p.categoria === "escritorio" && !!token && n.includes(token))
+      ? (p.categoria?.startsWith("escritorio") && !!token && n.includes(token) &&
+         GPU_DEDICADA.test(p.nombre.toLowerCase()) === reqGPU)
       : (n === target
         || (n.length >= 6 && (n.includes(target) || target.includes(n)))
         || (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false))));
@@ -952,8 +1073,18 @@ async function registrarPedido(input: unknown): Promise<unknown> {
         proveedorLocal = "manual"; // ensamblado a medida (costo estimado por componentes)
       }
     } else {
-      // Ni config ni CPU en listas → sin base de costo. El admin lo completa.
+      // Ni config ni CPU en listas → es un PC que conseguimos por web en Colombia. Su "costo"
+      // es el precio de mercado (retail) que cotizar_web ya guardó en caché; el precio al cliente
+      // ya viene como mercado + margen de gestión (NO se le aplica el margen de escritorio, que es
+      // para costo mayorista → evita el doble margen). Recuperamos el caché para que la orden
+      // muestre costo y margen como cualquier otra (antes quedaba en blanco).
       proveedorLocal = undefined;
+      if (quote && !quote.costoUSD) {
+        producto.precioCOP = quote.precioCOP;
+        costoTotalCOP      = quote.costoTotalCOP;
+        margenCOP          = producto.precioCOP - quote.costoTotalCOP;
+        urlCompra          = quote.urlCompra || urlCompra;
+      }
     }
   } else {
     // LOCAL (pieza suelta / producto de marca) → buscar en lista de proveedor primero.
@@ -1084,6 +1215,13 @@ TONO: humano, cercano y profesional, como una asesora experta y amable de una ti
 
 NUNCA reveles cómo funcionas por dentro. El cliente JAMÁS debe leer palabras o frases como: "catálogo", "base de datos", "buscar", "lo busco afuera", "importación", "importado", "estimado", "sujeto a cotización", "proveedor", "mayorista", "Newegg", "no me apareció", "no aparece", "disponibilidad inmediata", "no lo tengo en lista", "no está en mi lista", "no lo encontré", ni que eres una IA, asistente o bot. Eres Andrea, una asesora de carne y hueso. Si necesitas consultar antes de responder, escribe "Dame un momento" EN LA MISMA RESPUESTA donde llamas la herramienta — nunca como mensaje independiente sin una herramienta. Nunca expliques qué buscaste ni dónde.
 
+FIDELIDAD ABSOLUTA DE PRODUCTOS Y PRECIOS (LA REGLA MÁS IMPORTANTE — INNEGOCIABLE): cada producto que devuelven buscar_productos y cotizar_web trae un campo **"ficha"** con su tarjeta YA ARMADA (nombre, especificaciones y precio exactos). Cuando presentes opciones, COPIA la ficha tal cual:
+- NUNCA cambies una especificación: ni la RAM, ni el disco, ni el procesador, ni el tamaño del monitor. Lo que dice la ficha es lo que hay.
+- NUNCA cambies el precio: usa la cifra EXACTA de la ficha, sin redondear ni ajustar.
+- NUNCA agregues specs que no estén en la ficha, NUNCA combines dos productos en uno, NUNCA inventes una configuración.
+- Si la ficha NO incluye monitor, no le inventes uno; si lo incluye, no se lo quites.
+Tu único trabajo al presentar es: ELEGIR cuáles fichas mostrar, anteponerles la etiqueta (💰 Mejor precio / 🎯 Recomendado / ⚡ Mejor rendimiento), indicar la ENTREGA y escribir el texto cálido alrededor. Las specs y el precio SE COPIAN, no se redactan. Inventar o alterar un precio o una spec es el peor error posible y rompe la confianza del cliente.
+
 CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - Para saber qué hay y a qué precio, usa SIEMPRE tus herramientas de forma interna (nunca inventes precios ni modelos). El cliente no se entera de eso.
 - BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
@@ -1092,28 +1230,60 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 
   HOGAR / USO GENERAL — pregunta:
   "¿Tienes claro qué tipo de equipo buscas? Te cuento las opciones:
-  • **Equipo de marca** (HP, Dell, Lenovo…) — en **torre** (monitor por separado) o **todo en uno** (pantalla integrada) 🖥️
-  • **Equipo ensamblado** — componentes de calidad seleccionados, siempre en torre 🔧"
+  • **Torre de marca** (HP, Dell, Lenovo…) — el computador va aparte, el monitor se cotiza por separado 🖥️
+  • **Todo en uno** (HP, Dell, Lenovo…) — pantalla y computador integrados en una sola pieza 🖥️
+  • **Ensamblado** — componentes de calidad seleccionados, siempre en torre (monitor aparte) 🔧"
 
   GAMING / ALTO RENDIMIENTO — pregunta:
   "¿Cómo lo prefieres?
-  • **Equipo de marca gaming** (Asus ROG, MSI, Alienware, Lenovo Legion…) — en **torre** o **AIO gaming** (pantalla integrada de alta frecuencia, opción más premium) 🎮
+  • **Torre de marca gaming** (Asus ROG, MSI, Alienware, Lenovo Legion…) — el equipo va aparte, el monitor se cotiza por separado 🎮
+  • **AIO gaming** — pantalla de alta frecuencia integrada al equipo, opción más premium 🖥️
   • **Ensamblado gaming** — escoges cada componente (GPU RTX/Radeon, CPU Ryzen/Intel Core), siempre en torre, mejor relación precio/rendimiento 🔧"
 
-  TRABAJO PESADO / WORKSTATION (diseño 3D, edición de video, ingeniería) — pregunta:
+  TRABAJO PESADO / WORKSTATION (diseño gráfico, edición de video, IA, desarrollo, ingeniería) — pregunta:
   "¿Qué tipo de equipo prefieres?
-  • **Workstation de marca** (Dell Precision, HP Z, Lenovo ThinkStation) — certificadas para software profesional, generalmente en torre 💼
-  • **Ensamblado de alto rendimiento** — componentes profesionales (GPU Quadro/RTX, CPU Xeon/Threadripper), siempre en torre, más flexible en precio 🔧"
+  • **Workstation de marca** (Dell Precision, HP Z, Lenovo ThinkStation) — certificadas para software profesional, en torre (monitor aparte) 💼
+  • **Ensamblado de alto rendimiento** — componentes profesionales (GPU RTX/Quadro, CPU Ryzen 9/Xeon/Threadripper), siempre en torre (monitor aparte), más flexible en precio 🔧"
 
-  Espera la respuesta antes de llamar cualquier herramienta. Según lo que diga:
-  • Marca + torre → busca "[uso] computador torre [marca si la mencionó]"
-  • Marca + AIO → busca "computador todo en uno all-in-one [gaming/profesional según contexto]"
-  • Ensamblado → busca "computador ensamblado torre [gaming/alto rendimiento según contexto]" — NUNCA ofrezcas AIO ensamblado, no existe.
-  Si el cliente ya especificó el tipo desde el inicio ("quiero un ensamblado gaming", "necesito un AIO"), sáltate la pregunta y busca directamente.
+  EMPRESAS / SERVIDORES (NAS, CCTV, bases de datos, virtualización 24/7) — pregunta:
+  "¿Qué tipo de solución necesitas?
+  • **Servidor torre** — para oficina o sala de datos, sin monitor 🏢
+  • **NAS / almacenamiento en red** — para respaldos y archivos compartidos 💾
+  • **Solución a medida** — cuéntame el uso y lo configuramos juntos 🔧"
+
+  Mapeo de perfiles → preguntas de formato (uso interno, no lo menciones): Hogar y Estudio/Oficina/Desarrollo de Software → pregunta HOGAR/USO GENERAL. Gaming/Gamer Premium/Streaming → pregunta GAMING/ALTO RENDIMIENTO. Diseño Gráfico/Edición de Video/IA y Data Science → pregunta TRABAJO PESADO/WORKSTATION. Servidores/NAS/CCTV → pregunta EMPRESAS/SERVIDORES.
+  Si el uso no queda claro en el primer mensaje, HAZ PRIMERO UNA sola pregunta de uso: "¿Para qué lo vas a usar principalmente? (trabajo de oficina, diseño, gaming, edición de video, IA, servidor…) Así te consigo la mejor opción 😊" — espera la respuesta antes de hacer la pregunta de formato.
+
+  Espera la respuesta antes de llamar cualquier herramienta. Cada opción mapea a UNA búsqueda de un solo formato (jamás mezcles formatos en la misma lista):
+  • Torre de marca → busca "[uso] computador torre [marca si la mencionó]" — todas las opciones SIN monitor.
+  • Todo en uno / AIO → busca "computador todo en uno all-in-one [gaming/profesional según contexto]" — todas CON pantalla integrada.
+  • Ensamblado → busca "computador ensamblado torre [gaming/alto rendimiento según contexto]" — siempre torre SIN monitor. NUNCA ofrezcas AIO ensamblado, no existe.
+  Si el cliente ya especificó el formato desde el inicio ("quiero un ensamblado gaming", "necesito un AIO", "una torre HP"), sáltate la pregunta y busca directamente.
+  PRESENTACIÓN DE ESCRITORIOS — NO MEZCLES CON/SIN MONITOR (REGLA CLAVE): cada ficha de escritorio trae una línea de estado: "🖥️ Incluye monitor X" o "🖥️ Solo torre (sin monitor)". Mezclar ambos tipos en una sola lista ranqueada es EXACTAMENTE lo que pierde al cliente con los precios (una torre sola siempre se ve más barata que un combo con monitor, aunque el equipo sea igual o mejor). En vez de eso, AGRUPA con encabezados. Ejemplo:
+  **🖥️ Equipos completos (con monitor incluido)**
+  …aquí las fichas que dicen "Incluye monitor", comparables entre sí…
+  **🔧 Solo torre (sin monitor)** — *a estas les puedes sumar el monitor que prefieras*
+  …aquí las fichas que dicen "Solo torre"…
+  CUÁNTAS MOSTRAR: por defecto 3 opciones. EXCEPCIÓN — escritorios de ALTO RENDIMIENTO (gaming/edición/producción con GPU dedicada): la nota de buscar_productos puede pedirte la REGLA 2x2 — AÑADIR 2 opciones de webs locales a las que haya en listas (combos o torres, lo mejor que se consiga). Así, 1 local → 3 en total; 2 locales → 4 en total. Preséntalas agrupadas con/sin monitor según la línea 🖥️ de cada ficha (sin forzar un número fijo por grupo). Cuando el cliente elija una torre sin monitor, ofrécele el monitor según la regla de AVANCE SIN RETROCESO.
+  ORDEN OBLIGATORIO: primero TODAS las opciones "Incluye monitor", después TODAS las "Solo torre" — nunca intercaladas. Un encabezado de grupo va SOLO encima de opciones de ESE grupo: jamás pongas "🔧 Solo torre" sobre una opción que incluye monitor (ese fue el error). Si TODAS las opciones son del mismo tipo, NO pongas encabezados de grupo — la línea 🖥️ de cada ficha ya lo dice. Dentro de cada grupo copia las fichas TAL CUAL con su etiqueta (💰/🎯/⚡). RESPETA SIEMPRE la línea de monitor de la ficha: si dice "Solo torre" no digas que trae monitor, y si dice "Incluye monitor" no la presentes como torre pelada.
+  DETECCIÓN AIO POR NOMBRE (REGLA ABSOLUTA): si el nombre del producto contiene "All In One", "AIO", "Todo en uno", "Todo-en-uno" o "all-in-one", ese equipo tiene pantalla integrada — ponlo SIEMPRE en el grupo "🖥️ Equipos completos (con monitor incluido)", sin importar qué diga el campo nota. Un AIO NUNCA va bajo "Solo torre (sin monitor)".
+  FORMATO ESTRICTO POR TIPO ELEGIDO: Si el cliente eligió ENSAMBLADO → incluye SOLO ensamblados; NUNCA torres HP/Dell/Lenovo, NUNCA AIOs de marca. Si eligió TORRE DE MARCA → solo torres de marca, no ensamblados. Si eligió AIO/TODO EN UNO → solo AIOs de marca; los ensamblados no existen en formato AIO.
   PRECIO Y SPECS DE UN ENSAMBLADO (CRÍTICO): un PC ensamblado se cotiza por su CONFIGURACIÓN COMPLETA real, nunca sumando de memoria una pieza ni estimando. Reglas innegociables:
   • Presenta las opciones con las ESPECIFICACIONES EXACTAS del resultado de buscar_productos/cotizar_web (la RAM, el disco y el monitor que trae ESE equipo), con su precio EXACTO. NUNCA muestres las specs que pidió el cliente como si las tuviéramos: si el cliente pide 32GB/1.5TB pero el equipo real trae 16GB/512GB, ofrece el equipo real con SUS specs (16GB/512GB) y su precio real — no lo "subas" a lo que pidió el cliente ni inventes un precio para esa mejora.
   • Si el cliente quiere más de lo que trae la configuración disponible, dilo con naturalidad ("la configuración disponible trae 16GB/512GB a $X; si necesitas más capacidad, lo coordinamos aparte") en vez de fabricar un equipo y un precio que no existen.
   • El precio y las specs que registres SIEMPRE corresponden a una configuración real cotizada, jamás a un cálculo o estimación propia.
+- GUÍA TÉCNICA POR PERFIL (uso interno — nunca menciones el nombre del perfil al cliente): al evaluar resultados de buscar_productos/cotizar_web para escritorios o portátiles, prioriza estas specs. Si los resultados no encajan exactamente con el perfil (ej. solo hay ensamblados gaming para un cliente de hogar), preséntalo con contexto natural ("tiene componentes gaming que le dan margen de crecimiento 💡") en lugar de forzar el match:
+  • **Hogar y Estudio** (Netflix, YouTube, Teams, Zoom, tareas, navegador): i3-i5/Ryzen 3-5, 16GB DDR4, 512GB–1TB SSD, GPU INTEGRADA (sin RTX), monitor FHD normal no gaming. Frase: "Con 16GB el equipo abre Teams, el navegador y las apps al mismo tiempo sin trabarse 💡"
+  • **Oficina** (Siigo, Helisa, SAP, Excel pesado, CRM, ERP, multitarea): i5/Ryzen 5, 16–32GB DDR4, 1TB SSD, GPU integrada. Frase: "Con 32GB corre el ERP y grandes archivos de Excel al mismo tiempo sin ralentizarse 💡"
+  • **Diseño Gráfico** (Photoshop, Illustrator, Corel, InDesign): i7/Ryzen 7, 32GB, RTX 4060+ OBLIGATORIA, 1TB SSD Gen4, monitor IPS calibrado. Frase: "La RTX tiene núcleos CUDA que aceleran los filtros de Photoshop y el renderizado — la diferencia se siente de inmediato 💡"
+  • **Desarrollo de Software** (IDEs, compilación, Docker, VMs ligeras, Git): i7/Ryzen 7, 32GB DDR4/5, 1–2TB SSD Gen4; GPU integrada suficiente (sin RTX obligatoria). Frase: "Con 32GB puedes tener el IDE, varios contenedores Docker y el navegador con pestañas abiertos al mismo tiempo sin problemas 💡"
+  • **Gaming** (Fortnite, Warzone, GTA, Apex, 1080p–1440p): Ryzen 5 7600/i5-13400F o superior, 16–32GB DDR5, RTX 5060/5060 Ti, SSD Gen4, monitor 144Hz+. Frase: "Con la RTX 5060 logras más de 100 FPS en los títulos populares a 1080p — fluido para cualquier juego 🎮"
+  • **Gamer Premium** (AAA 4K, eSports competitivo, máximo FPS): Ryzen 7 7800X3D/9800X3D, 32GB DDR5, RTX 5070 Ti/5080, SSD Gen4/5, monitor 165Hz+. Frase: "El X3D elimina los tirones en juegos competitivos y la RTX 5080 te da FPS de sobra en cualquier título a 4K 🎮"
+  • **Streaming** (OBS/Streamlabs, jugar y transmitir al mismo tiempo): Ryzen 7 X3D o i7, 32–64GB DDR5, RTX 5070 (NVENC sin sacrificar FPS), 1–2TB SSD Gen4, monitor 144Hz+. Frase: "La RTX codifica el stream por hardware (NVENC) sin robarle FPS al juego — transmites en calidad alta sin notarlo 🎮"
+  • **Edición de Video** (Premiere Pro, DaVinci Resolve, After Effects, 4K/8K): Ryzen 9/i7, 32–64GB DDR5, RTX 4070 o RTX 5070+, 2TB SSD Gen4. Frase: "A más VRAM, más capas de efectos sin trabar la línea de tiempo; con 64GB de RAM el proyecto 4K fluye sin cortes 💡"
+  • **IA y Data Science** (Docker, ML, LLMs locales, TensorFlow, PyTorch): Ryzen 9, 64–128GB DDR5, RTX 5070 Ti/5080/5090 (mín. 12GB VRAM), 2TB SSD Gen4. Frase: "La VRAM es el recurso crítico para correr modelos de IA localmente — más VRAM, modelos más grandes sin depender de la nube 💡"
+  • **Servidores y Empresas** (NAS, CCTV, bases de datos, virtualización 24/7): Xeon/EPYC o Ryzen Pro, RAM ECC, RAID, UPS APC obligatorio. Frase: "En Colombia las variaciones eléctricas son frecuentes — el UPS APC protege el hardware y evita pérdida de datos en operación continua 💡"
+  PORTÁTILES — mismo perfil de uso. Criterios adicionales: Hogar/Oficina/Desarrollo → batería >8h, peso <1.8kg, 16GB RAM, 14–15.6" FHD. Gaming portátil → 144Hz+, RTX 5060+, 32GB. Gamer Premium portátil → 165Hz+, RTX 5070/5080, 32GB, refrigeración activa. Diseño/Video portátil → pantalla IPS calibrada, RTX 4060+, 32GB. Estudiantil → i5/Ryzen 5, 16GB, 512GB SSD, peso ligero y buena batería.
 - VARIANTES: cuando identifiques varias versiones del mismo producto (ej: Audigy FX, Audigy RX, Audigy GS), inclúyelas TODAS en una sola consulta a cotizar_web. NUNCA le pidas al cliente que elija una variante antes de tener los precios — busca todas y presenta los precios directamente para que el cliente decida.
 - Cuando tengamos el producto, dilo con seguridad y calidez: "¡Sí, tenemos varias opciones disponibles! 🙌", luego presenta las opciones con sus specs clave y precio firme en COP. NO digas "estimado" ni "sujeto a cotización".
 - PRIORIDAD LOCAL (REGLA CLAVE): usa buscar_productos UNA SOLA VEZ por solicitud, con tu mejor consulta. Lo que devuelve está DISPONIBLE LOCALMENTE — es tu primera opción, con entrega rápida (1 a 3 días hábiles). NUNCA repitas buscar_productos cambiando las palabras: usa el resultado de esa única consulta y guíate por su campo "nota":
@@ -1141,6 +1311,11 @@ ORDEN DEL PROCESO DE VENTA — respeta siempre este orden:
 2. Presentar opciones con precios.
 3. Confirmar qué opción quiere el cliente y **cuántas unidades** necesita.
 4. SOLO DESPUÉS de tener producto y cantidad confirmados, pedir los datos de entrega (nombre, cédula, dirección, teléfono, correo). Nunca pidas datos personales antes de saber qué y cuánto quiere el cliente.
+
+AVANCE SIN RETROCESO (REGLA CLAVE): cuando el cliente indique qué opción le interesa — aunque sea con frases cortas como "esa", "la segunda", "me quedo con esa", "la del Ryzen", "quiero esa" — confirma el producto elegido en UNA frase. NO vuelvas a buscar el mismo equipo, NO ofrezcas otras versiones del computador (más RAM, otra gama) ni vuelvas a comparar PCs. El cliente ya decidió.
+  • Si eligió un equipo que NO incluye monitor (torre de marca, o una torre sola sin pantalla), ofrécele UNA SOLA VEZ un monitor como complemento opcional, en una frase breve y natural ("¿Te sumo un monitor para completarlo? Manejo muy buenas opciones 🙌"). Si dice que sí, búscale monitores y muéstrale máximo 3 con su precio; si dice que no, sigue sin insistir. Este ofrecimiento ocurre UNA sola vez en toda la conversación.
+  • Si eligió un EQUIPO COMPLETO / combo (ensamblado con monitor incluido) o un TODO-EN-UNO / AIO (pantalla integrada), NO le ofrezcas monitor: ya lo trae.
+  Una vez resuelto el monitor (lo quiera o no), pregunta de inmediato cuántas unidades necesita y avanza al paso 3. No agregues más ofertas ni preguntas.
 
 PUEDES responder directamente (sin herramienta):
 - Pagos: aceptamos tarjeta de crédito/débito, PSE y transferencia, y opciones para empresas.

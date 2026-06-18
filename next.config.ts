@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp"],
+  experimental: {
+    proxyClientMaxBodySize: 52_428_800, // 50 MB — para importar PDFs grandes de Janus
+  },
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",

@@ -2,6 +2,7 @@ import { loadBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
 import { ProductManager, type ManagedBusinessProduct } from "@/components/admin/product-manager";
 import { SupplierListsManager } from "@/components/admin/supplier-lists-manager";
+import { JanusImporter } from "@/components/admin/janus-importer";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Productos · Admin" };
@@ -9,6 +10,7 @@ export const metadata = { title: "Productos · Admin" };
 const TABS = [
   { id: "productos", label: "📋 Gestionar productos" },
   { id: "pdf",       label: "📄 Listas de precios (Word/Excel)" },
+  { id: "janus",     label: "🖥️ Lista Janus (PDF)" },
 ] as const;
 
 export default async function ProductosAdminPage({
@@ -17,7 +19,9 @@ export default async function ProductosAdminPage({
   searchParams: Promise<{ tab?: string; filter?: string }>;
 }) {
   const { tab = "productos", filter = "all" } = await searchParams;
-  const activeTab = (tab === "pdf" ? "pdf" : "productos") as "productos" | "pdf";
+  const activeTab = (
+    tab === "pdf" ? "pdf" : tab === "janus" ? "janus" : "productos"
+  ) as "productos" | "pdf" | "janus";
 
   const raw = loadBusinessProducts();
 
@@ -63,6 +67,7 @@ export default async function ProductosAdminPage({
 
       {activeTab === "productos" && <ProductManager products={products} initialFilter={filter} />}
       {activeTab === "pdf"       && <SupplierListsManager />}
+      {activeTab === "janus"     && <JanusImporter />}
     </div>
   );
 }

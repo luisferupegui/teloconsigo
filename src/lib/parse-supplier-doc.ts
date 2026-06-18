@@ -70,6 +70,13 @@ function inferMarca(nombre: string): string {
 // Nota: NO envolver con \b(...)\b — un \b final tras un dígito rompe el match con
 // modelos como "RX 7600" (el dígito va seguido de otro dígito, no de un borde).
 const CAT_RULES: [RegExp, string][] = [
+  // PORTÁTIL primero: un portátil menciona GPU, disco, RAM, CPU, fuente y pantalla, así que
+  // CUALQUIER regla de componente lo capturaría mal (antes caían en "almacenamiento" por el
+  // "512GB"). Se detecta por la palabra explícita, o por CPU + PANTALLA de tamaño de portátil
+  // (11–17"). Los escritorios con monitor dicen "MONITOR" (no "PANTALLA 1x") y los monitores/AIO
+  // son de 21" en adelante, así que no caen aquí.
+  [/(port[aá]til|laptop|notebook|ultrabook)/i, "portatil"],
+  [/^(?=.*\b(ryzen|core\s?i[3579]|core\s?ultra|celeron|pentium|athlon|i[3579]-\d{3,4}[a-z])\b)(?=.*(pantalla\s*1[0-7]\b|\b1[0-7][.,]\d\s*("|''|pulg)))/i, "portatil"],
   [/(\brtx|\bgtx|\bradeon|\brx\s?\d|\barc\s?a\d|geforce)/i, "tarjeta-grafica"],
   [/(\bssd\b|\bnvme\b|\bm\.?2\b|\bhdd\b|\bdisco|barracuda|legend\s?\d|\bnv[123]\b|\b\d{3,4}\s?gb\b|\b\d\s?tb\b)/i, "almacenamiento"],
   [/(\bddr[345]\b|udimm|sodimm|\bram\b|memoria)/i, "memoria-ram"],
