@@ -69,6 +69,9 @@ const SALUDO_GENERAL =
 const saludoProducto = (nombre: string) =>
   `¡Hola! Soy **Andrea** 😊\n\nVi que te interesa el **${nombre}**. Dame un momento que verifico el precio y disponibilidad para ti 🔍`;
 
+const SALUDO_ARMADOR =
+  "¡Hola! Soy **Andrea** 😊\n\n¡Me encanta tu configuración! 🙌 Dame un momento que te confirmo el precio final y la entrega 🔍";
+
 // ─── Render markdown: negritas + listas ───────────────────────────────────
 function applyBold(line: string) {
   return line.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
@@ -190,10 +193,11 @@ function AsesorContent() {
   const ref         = searchParams.get("ref") ?? "";
   const precio      = searchParams.get("precio") ?? "";
   const hasProducto = producto.length > 0;
+  const isArmador   = ref === "armador";
 
   const initialMsg: Msg = {
     role: "assistant",
-    content: hasProducto ? saludoProducto(producto) : SALUDO_GENERAL,
+    content: isArmador ? SALUDO_ARMADOR : hasProducto ? saludoProducto(producto) : SALUDO_GENERAL,
   };
 
   const [messages,      setMessages]      = useState<Msg[]>([initialMsg]);

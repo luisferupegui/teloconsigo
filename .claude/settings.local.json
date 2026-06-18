@@ -326,7 +326,9 @@
       "PowerShell(python -c \"from pypdf import PdfReader; print\\('pypdf OK'\\)\" 2>&1)",
       "Bash(node scripts/test-janus-parser.mjs)",
       "Bash(node scripts/test-janus-import.mjs)",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\AVIDEMO\\\\Desktop\\\\Proyecto web 1\\\\node_modules\" | Where-Object { $_.Name -match \"mammoth|docx|doc2\" } | Select-Object Name)"
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\AVIDEMO\\\\Desktop\\\\Proyecto web 1\\\\node_modules\" | Where-Object { $_.Name -match \"mammoth|docx|doc2\" } | Select-Object Name)",
+      "mcp__visualize__show_widget",
+      "Bash(curl -s http://localhost:3000/armador)"
     ]
   }
 }

@@ -1380,7 +1380,10 @@ export async function POST(req: Request): Promise<Response> {
   // Auto-inicio desde card de producto: el frontend no envía user msg (para no mostrar
   // burbuja), pero el bucle agéntico necesita al menos un turno de usuario.
   if (convo.length === 0 && autoInicio && body.contexto?.producto) {
-    convo = [{ role: "user", content: `¿Cuál es el precio y disponibilidad del ${body.contexto.producto}?` }];
+    const c = body.contexto;
+    convo = [{ role: "user", content: c.ref === "armador"
+      ? `Armé esta configuración en el armador de PC y quiero cotizarla: ${c.producto}`
+      : `¿Cuál es el precio y disponibilidad del ${c.producto}?` }];
   }
 
   if (convo.length === 0) {
@@ -1388,14 +1391,25 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const ctx = body.contexto;
-  const system = autoInicio && ctx?.producto
+  const isArmador = ctx?.ref === "armador";
+  const system = isArmador
+    // Llega del Armador de PC: el cliente ya eligió una configuración completa de ensamblado.
+    ? `${SYSTEM}\n\nCONTEXTO ARMADOR DE PC: el cliente armó esta configuración a la medida y quiere cotizarla: "${ctx?.producto}". El chat ya mostró el saludo. Reglas para este caso:
+- NO hagas la pregunta de formato (torre de marca / AIO / ensamblado): el cliente YA eligió un ENSAMBLADO a la medida. Llama buscar_productos UNA vez con el perfil + las piezas clave (CPU, GPU, RAM) para traer los ensamblados disponibles; completa con cotizar_web si hace falta para llegar a 3 opciones.
+- PROHIBIDO REVELAR LA COCINA (igual de innegociable que siempre): JAMÁS digas que "no lo tenemos pre-ensamblado", "no está en configuración estándar", "lo coordinamos con un especialista", "precio real de cada pieza" ni nada que delate que la build exacta no está en stock. Para el cliente, armar su equipo a la medida es lo más normal del mundo y tú lo resuelves.
+- PRESENTA con seguridad las mejores opciones de ensamblado que consigas, COPIANDO su ficha TAL CUAL (specs y precio EXACTOS de buscar_productos/cotizar_web — nunca inventes un precio para la build exacta del cliente). Si la combinación ideal del cliente trae más de lo que hay listo, ofrece la opción real más cercana con su precio firme y entrega, presentada como su equipo a la medida — sin mencionar diferencias internas.
+- Esta configuración SÍ puede incluir monitor (viene en la config). Si la opción incluye monitor, preséntala como equipo completo; si es torre sola, aplica la regla de monitor de AVANCE SIN RETROCESO.
+- CIERRE (NO derives a WhatsApp/email salvo falla técnica real): después de mostrar el precio firme y la entrega, avanza al cierre normal — confirma la opción y pregunta cuántas unidades necesita, luego pide los datos para registrar el pedido. El cierre es una cotización/pedido registrado, NUNCA un "contáctanos por WhatsApp".
+- Ve DIRECTO al precio y la entrega — no repitas "dame un momento" ni el saludo. Usa el perfil ("PC Gamer", "Edición de video", "Oficina"…) para el lenguaje técnico de valor.`
+    : autoInicio && ctx?.producto
     // Auto-inicio: el saludo ya fue mostrado por el frontend. Andrea va directo al resultado.
     ? `${SYSTEM}\n\nCONTEXTO: el cliente llegó desde la página del producto **${ctx.producto}**${ctx.ref ? ` (ref ${ctx.ref})` : ""}. El chat ya le mostró el saludo de bienvenida mencionando el producto. Busca el precio y disponibilidad y preséntalos DIRECTAMENTE con tus 3 opciones — NO escribas texto de espera como "dame un momento" ni repitas el saludo, ve directo a las opciones.`
     : ctx?.producto
     ? `${SYSTEM}\n\nCONTEXTO: el cliente llegó interesado en "${ctx.producto}"${ctx.ref ? ` (interno ref ${ctx.ref})` : ""}. Salúdalo por su nombre de producto y ayúdalo con eso.`
     : SYSTEM;
 
-  const anthropic = new Anthropic({ apiKey });
+  // maxRetries: el SDK reintenta solo (429/500/529/red) con backoff antes de fallar.
+  const anthropic = new Anthropic({ apiKey, maxRetries: 3 });
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -1479,24 +1493,31 @@ export async function POST(req: Request): Promise<Response> {
           convo.push({ role: "user", content: toolResults });
         }
       } catch (err) {
-        // Distinguir errores de facturación/crédito de errores transitorios.
-        // Crédito agotado o key inválida → NO invitar a reintentar (no va a funcionar).
-        // Rate limit o sobrecarga → sí puede funcionar en unos momentos.
-        const isCreditsError =
-          (err instanceof Anthropic.APIError && (err.status === 402 || err.status === 401)) ||
-          (err instanceof Error && /credit|balance|billing|payment|authenticate/i.test(err.message));
-        const isOverloaded =
-          err instanceof Anthropic.APIError && (err.status === 429 || err.status === 529);
+        // Clasificar para responder bien al cliente:
+        //  • FACTURACIÓN/AUTH (402/401, crédito agotado o key inválida): no se resuelve
+        //    reintentando → derivar a contacto directo (no perder el lead).
+        //  • TRANSITORIO (sobrecarga 429/529, error 5xx, red): reintentar suele funcionar
+        //    → invitar a reintentar SIN el mensaje alarmante de "no puedo continuar".
+        const status = err instanceof Anthropic.APIError ? err.status : undefined;
+        const emsg = err instanceof Error ? err.message : String(err);
+        const isBilling =
+          status === 401 || status === 402 ||
+          /insufficient|credit balance|out of credit|billing|payment required|quota/i.test(emsg);
+        const isTransient =
+          status === 429 || status === 529 || status === 500 || status === 503 ||
+          /overloaded|timed? ?out|ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN|fetch failed|network/i.test(emsg);
 
         const CONTACTO = "\n\n📞 **Teléfono / WhatsApp:** +57 310 2878194\n✉️ **Email:** ventas@teloconsigo.co\n\nEn un momento un especialista en tecnología se contactará contigo. ¡Fue un placer atenderte! 😊";
-        const clientMsg = isCreditsError
+        const clientMsg = isBilling
           ? `Tuve un inconveniente técnico y no puedo continuar en este momento 🙏. Por favor contáctanos directamente:${CONTACTO}`
-          : isOverloaded
-          ? "Hay mucha demanda en este momento y no pude responderte 😅. Espera unos segundos e inténtalo de nuevo, o si prefieres contáctanos directamente:" + CONTACTO
-          : `Tuve un inconveniente para responderte 😅. Si prefieres que te atendamos de inmediato:${CONTACTO}`;
+          : isTransient
+          ? "Hay mucha demanda en este momento y no pude responderte 😅. Espera unos segundos e inténtalo de nuevo, por favor 🙌"
+          : "Uy, tuve un problemita para responderte 😅. ¿Lo intentamos de nuevo? Si prefieres atención inmediata:" + CONTACTO;
 
         controller.enqueue(new TextEncoder().encode(clientMsg));
-        console.error("[asesor] error:", isCreditsError ? "BILLING/AUTH ERROR" : isOverloaded ? "OVERLOADED" : "GENERIC", err);
+        console.error(
+          `[asesor] error status=${status ?? "n/a"} type=${isBilling ? "BILLING/AUTH" : isTransient ? "TRANSIENT" : "UNKNOWN"} msg=${emsg}`,
+        );
       } finally {
         controller.close();
       }
