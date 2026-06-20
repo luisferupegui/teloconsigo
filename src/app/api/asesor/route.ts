@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { getAnthropicApiKey, getSerperApiKey } from "@/lib/settings";
+import { getAnthropicApiKey, getAnthropicApiKeys, getSerperApiKey } from "@/lib/settings";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
@@ -1419,7 +1419,11 @@ export async function POST(req: Request): Promise<Response> {
     : SYSTEM;
 
   // maxRetries: el SDK reintenta solo (429/500/529/red) con backoff antes de fallar.
-  const anthropic = new Anthropic({ apiKey, maxRetries: 3 });
+  // keys = [panel, entorno]: si la del panel es rechazada (401/402) en el primer
+  // llamado, caemos a la del entorno — así una clave vieja en el panel no tumba a Andrea.
+  const keys = getAnthropicApiKeys();
+  let keyIdx = 0;
+  let anthropic = new Anthropic({ apiKey: keys[0] ?? apiKey, maxRetries: 3 });
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -1462,7 +1466,24 @@ export async function POST(req: Request): Promise<Response> {
             messages: convo,
           });
           s.on("text", (delta: string) => { turnText += delta; if (streamLive) controller.enqueue(enc.encode(delta)); });
-          const msg = await s.finalMessage();
+          let msg: Anthropic.Message;
+          try {
+            msg = await s.finalMessage();
+          } catch (err) {
+            // FALLBACK DE CLAVE: si el PRIMER llamado falla por auth/crédito (401/402) y hay
+            // otra clave (la del entorno), reintenta con ella. Solo en turn 0 y sin nada
+            // transmitido aún → convo intacto, reinicio limpio. El camino de éxito NO cambia.
+            const status = err instanceof Anthropic.APIError ? err.status : undefined;
+            const authErr = status === 401 || status === 402;
+            if (authErr && turn === 0 && turnText.length === 0 && keyIdx + 1 < keys.length) {
+              keyIdx++;
+              anthropic = new Anthropic({ apiKey: keys[keyIdx], maxRetries: 3 });
+              console.warn(`[asesor] clave #${keyIdx} rechazada (${status}); reintentando con clave alterna`);
+              turn = -1; // el turn++ del for reinicia el bucle en 0 con la nueva clave
+              continue;
+            }
+            throw err; // otro error, o sin más claves → manejo normal (catch externo)
+          }
           convo.push({ role: "assistant", content: msg.content });
 
           if (msg.stop_reason !== "tool_use") {

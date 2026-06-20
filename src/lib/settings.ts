@@ -51,6 +51,18 @@ export function getAnthropicApiKey(): string | null {
   return null;
 }
 
+/** Claves candidatas en orden de preferencia [panel, entorno], sin duplicados ni
+ *  marcadores. El asesor las usa para CAER a la del entorno si la del panel es
+ *  rechazada (401/402) — así una clave vieja en el panel no tumba a Andrea. */
+export function getAnthropicApiKeys(): string[] {
+  const out: string[] = [];
+  const fromPanel = loadSettings().anthropicApiKey;
+  if (isRealKey(fromPanel)) out.push(fromPanel.trim());
+  const fromEnv = process.env.ANTHROPIC_API_KEY;
+  if (isRealKey(fromEnv) && fromEnv.trim() !== out[0]) out.push(fromEnv.trim());
+  return out;
+}
+
 /** De dónde proviene la clave activa, para mostrarlo en el panel. */
 export function getKeySource(): "panel" | "env" | null {
   if (isRealKey(loadSettings().anthropicApiKey)) return "panel";
