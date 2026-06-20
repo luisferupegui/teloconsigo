@@ -519,7 +519,7 @@ async function fetchUsViaAnthropic(anthropic: Anthropic, consulta: string): Prom
         model: MODEL_WEB,
         max_tokens: 2500,
         system: SUB_SYSTEM,
-        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
+        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }],
         messages: [{ role: "user", content: consulta }],
       },
       { timeout: 60000, maxRetries: 0 },
