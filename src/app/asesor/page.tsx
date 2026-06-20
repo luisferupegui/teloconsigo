@@ -57,9 +57,9 @@ const TOP_PRODUCTS = [
   { img: "/productos/P3406CKANZ0441X/card.png",   name: "Portátiles",            desc: "Para trabajo y estudio",          q: "Busco un portátil" },
   { img: "/productos/LS27F320GANX/card.png",       name: "Monitores",             desc: "Más pantalla, más productividad", q: "Quiero un monitor" },
   { img: "/productos/13C50021LD/card.png",         name: "Equipos de escritorio", desc: "Potencia para hogar y oficina",   q: "Necesito un equipo de escritorio" },
-  { img: "/lineas-orig/auriculares-audio/jbl.png", name: "Auriculares JBL",       desc: "Sonido premium gaming",           q: "Quiero unos auriculares JBL gaming" },
-  { img: "/lineas-orig/tarjetas-graficas/nvidia-rtx.png", name: "Componentes", desc: "GPU, RAM, procesadores y más", q: "Busco componentes: tarjeta de video, RAM o procesador" },
-  { img: "/lineas-orig/kits-streaming/elgato.png", name: "Stream Deck Elgato",    desc: "Crea contenido profesional",      q: "Necesito un kit de streaming Elgato" },
+  { img: "/brands/v2-clean/34_HyperX_logo.png",    name: "Auriculares HyperX",    desc: "Sonido premium gaming",           q: "Quiero unos auriculares HyperX gaming" },
+  { img: "/brands/v2-clean/49_AMD_logo.png",       name: "Componentes",           desc: "GPU, RAM, procesadores y más",    q: "Busco componentes: tarjeta de video, RAM o procesador" },
+  { img: "/brands/v2-clean/35_Elgato_logo.png",    name: "Stream Deck Elgato",    desc: "Crea contenido profesional",      q: "Necesito un kit de streaming Elgato" },
 ];
 
 // ─── Saludos ───────────────────────────────────────────────────────────────
