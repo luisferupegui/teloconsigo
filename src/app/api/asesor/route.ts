@@ -959,7 +959,7 @@ function siteNameFromUrl(url: string): string {
  *  aparte, NO gasta créditos de Anthropic). Una opción por tienda con su enlace,
  *  descartando outliers (productos errados / variantes / mayoristas). Para que el
  *  admin compare dónde comprar. Devuelve [] si no hay key/resultados o si falla. */
-async function serperColombiaListings(nombre: string, modelo?: string): Promise<FuenteComparacion[]> {
+async function serperColombiaListings(nombre: string, modelo?: string, precioCliente?: number): Promise<FuenteComparacion[]> {
   const key = getSerperApiKey();
   if (!key) return [];
   // Para ESCRITORIOS: el nombre verboso exacto no matchea en Google Shopping; una frase de
@@ -988,8 +988,18 @@ async function serperColombiaListings(nombre: string, modelo?: string): Promise<
   // realista para una venta en Colombia. Así la comparación queda consistente.
   const ordenados = raw.map((p) => p.copLocal as number).sort((a, b) => a - b);
   const mediana = ordenados[Math.floor(ordenados.length / 2)];
+  // ENSAMBLADOS: un PC a la medida no tiene match 1:1 en retail, así que Serper suele
+  // devolver equipos MÁS BARATOS y DISTINTOS (ej: el mismo CPU con gráficos integrados en
+  // vez de la RTX) que inflan el margen aparente. Dos guardas extra solo para escritorios:
+  //  1) GPU: si la config lleva GPU dedicada, el resultado DEBE mencionar esa misma GPU.
+  //  2) PISO: descarta resultados por debajo del 55 % de NUESTRO precio (anclado al precio
+  //     real, no a la mediana del set): por debajo de eso ya es otra máquina, no la misma.
+  const reqGpuKey = esEsc && gpu ? gpu[0].toLowerCase().replace(/\s+/g, "") : null;
+  const pisoEsc   = esEsc && precioCliente ? precioCliente * 0.55 : 0;
   const limpios = raw.filter((p) =>
     (p.copLocal as number) >= mediana * 0.5 && (p.copLocal as number) <= mediana * 2 &&
+    (p.copLocal as number) >= pisoEsc &&
+    (!reqGpuKey || (p.nombre ?? "").toLowerCase().replace(/\s+/g, "").includes(reqGpuKey)) &&
     !INTL_SELLER.test(`${p.vendedor ?? ""} ${p.fuente ?? ""}`));
   if (limpios.length === 0) return [];
   // Una opción por tienda (la más barata), ordenadas asc por precio, máx 4.
@@ -1120,7 +1130,7 @@ async function registrarPedido(input: unknown): Promise<unknown> {
     });
   }
   // Colombia: listados individuales vía Serper (~$0.001, barato), una opción por tienda.
-  const listadosCO = await serperColombiaListings(producto.nombre, producto.modelo);
+  const listadosCO = await serperColombiaListings(producto.nombre, producto.modelo, producto.precioCOP);
   webSources.push(...listadosCO);
   if (listadosCO.length > 0) {
     precioMercadoLocal = listadosCO[0].costoCOP;
