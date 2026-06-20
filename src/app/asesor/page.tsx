@@ -3,10 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Send, Monitor, Laptop, Gamepad2, Building2, Headphones, Truck,
-  ShieldCheck, Award, TrendingUp, ChevronRight, Cpu, Minus,
+  ShieldCheck, Award, TrendingUp, ChevronRight, Cpu, Minimize2,
 } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string; hidden?: boolean };
@@ -189,6 +189,7 @@ function TypingIndicator() {
 // ─── Contenido principal ───────────────────────────────────────────────────
 function AsesorContent() {
   const searchParams = useSearchParams();
+  const router       = useRouter();
   const producto    = searchParams.get("producto") ?? "";
   const ref         = searchParams.get("ref") ?? "";
   const precio      = searchParams.get("precio") ?? "";
@@ -208,7 +209,6 @@ function AsesorContent() {
   const [inactivity,    setInactivity]    = useState<InactivityState>("active");
   const [showChoice,    setShowChoice]    = useState(false);
   const [sessionReady,  setSessionReady]  = useState(false);
-  const [minimized,     setMinimized]     = useState(false);
   const scrollRef       = useRef<HTMLDivElement>(null);
   const restoredRef     = useRef(false);
   const autoStartedRef  = useRef(false);
@@ -433,7 +433,7 @@ function AsesorContent() {
           <span className="text-zinc-500">Andrea</span>
         </nav>
 
-        <div className={`grid grid-cols-1 gap-5 lg:grid-cols-3 ${minimized ? "hidden" : ""}`}>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
 
           {/* ── Columna chat (2/3) ────────────────────────────────────── */}
           <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm lg:col-span-2">
@@ -469,21 +469,22 @@ function AsesorContent() {
                 </p>
               </div>
 
-              <div className="z-10 ml-auto flex items-center gap-2 self-center">
+              <div className="z-10 ml-auto flex items-center gap-3 self-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/asesor/logo-slogan.png"
                   alt="Te lo Consigo"
-                  style={{ height: 64, width: "auto" }}
-                  className="hidden sm:block"
+                  style={{ height: 52, width: "auto" }}
+                  className="hidden md:block"
                 />
                 <button
-                  onClick={() => setMinimized(true)}
-                  aria-label="Minimizar chat"
-                  title="Minimizar chat"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+                  onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
+                  aria-label="Minimizar chat y seguir navegando por el sitio"
+                  title="Minimizar y seguir navegando"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#1e6cff]/25 bg-white/80 px-3.5 py-2 text-xs font-semibold text-[#1858d6] shadow-sm backdrop-blur transition hover:border-[#1e6cff]/50 hover:bg-white"
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minimize2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Minimizar</span>
                 </button>
               </div>
             </div>
@@ -685,65 +686,10 @@ function AsesorContent() {
           </div>
         </div>
 
-        <p className={`mt-4 text-center text-[11px] text-zinc-400 ${minimized ? "hidden" : ""}`}>
+        <p className="mt-4 text-center text-[11px] text-zinc-400">
           Atención personalizada de teloconsigo.co
         </p>
-
-        {/* ── Estado minimizado: aviso central ──────────────────────────── */}
-        {minimized && (
-          <div
-            className="flex flex-col items-center justify-center gap-4 py-24 text-center animate-fade-in-up"
-            style={{ animationDuration: "0.25s" }}
-          >
-            <ChatAvatar size={64} />
-            <div>
-              <p className="text-base font-semibold text-zinc-900">Chat minimizado</p>
-              <p className="mt-0.5 text-sm text-zinc-500">
-                {hasUserMsg
-                  ? "Tienes una conversación activa con Andrea."
-                  : "Andrea está disponible cuando la necesites."}
-              </p>
-            </div>
-            <button
-              onClick={() => setMinimized(false)}
-              className="inline-flex items-center gap-2 rounded-full bg-[#1e6cff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1858d6]"
-            >
-              {hasUserMsg ? "Reanudar conversación" : "Abrir chat"}
-              <ChevronRight className="h-4 w-4 opacity-80" />
-            </button>
-          </div>
-        )}
       </div>
-
-      {/* ── Burbuja flotante para restaurar — solo cuando está minimizado ── */}
-      {minimized && (
-        <button
-          onClick={() => setMinimized(false)}
-          aria-label={hasUserMsg ? "Reanudar conversación con Andrea" : "Abrir chat con Andrea"}
-          className="group fixed bottom-6 right-6 z-50 flex items-center gap-2.5"
-        >
-          <span className="pointer-events-none flex translate-x-1 items-center gap-2 whitespace-nowrap rounded-full border border-zinc-100 bg-white px-3.5 py-1.5 opacity-0 shadow-lg shadow-black/[0.08] transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
-            <span className={`h-2 w-2 rounded-full ${hasUserMsg ? "animate-pulse bg-[#1e6cff]" : "bg-emerald-500"}`} />
-            <span className="text-xs font-semibold text-zinc-800">
-              {hasUserMsg ? "Conversación activa" : "Andrea en línea"}
-            </span>
-          </span>
-          <span className="relative flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full shadow-2xl shadow-black/20 ring-[3px] ring-white transition duration-200 group-hover:scale-105">
-            <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-20 ${hasUserMsg ? "bg-[#1e6cff]" : "bg-emerald-400"}`} />
-            <Image
-              src={AVATAR}
-              alt="Andrea"
-              width={58}
-              height={58}
-              className="relative h-full w-full rounded-full object-cover object-top"
-            />
-            <span className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
-            {hasUserMsg && (
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white bg-[#1e6cff] shadow-sm" />
-            )}
-          </span>
-        </button>
-      )}
     </div>
   );
 }
