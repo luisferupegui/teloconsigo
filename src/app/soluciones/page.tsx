@@ -15,6 +15,7 @@ import {
   Video,
   Wifi,
   Home,
+  Cpu,
 } from "lucide-react";
 
 export const metadata = {
@@ -188,6 +189,19 @@ const SECCIONES: SeccionDef[] = [
     badge:        PILL,
     badgeIcon:    "text-white",
     tagText:      "text-emerald-700",
+  },
+  {
+    id:           "componentes",
+    filterBy:     "segmento",
+    filterValue:  "componentes",
+    titulo:       "Componentes",
+    tags:         ["CPU", "RAM", "GPU", "Almacenamiento"],
+    descripcion:  "Procesadores, tarjetas gráficas, memorias RAM, fuentes de poder, motherboards y almacenamiento para armar o mejorar tu equipo.",
+    icon:         Cpu,
+    iconGradient: "from-purple-700 to-purple-500",
+    badge:        PILL,
+    badgeIcon:    "text-white",
+    tagText:      "text-purple-700",
   },
 ];
 
