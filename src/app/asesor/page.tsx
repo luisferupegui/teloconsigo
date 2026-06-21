@@ -436,23 +436,7 @@ function AsesorContent() {
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
 
           {/* ── Columna chat (2/3) ────────────────────────────────────── */}
-          <div className="flex flex-col gap-2 lg:col-span-2">
-
-            {/* Botón Minimizar encima de la tarjeta */}
-            <div>
-              <button
-                onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
-                aria-label="Minimizar chat y seguir navegando por el sitio"
-                title="Minimizar y seguir navegando"
-                className="flex items-center gap-1.5 rounded-full border border-[#1e6cff]/25 bg-white px-3.5 py-1.5 text-xs font-semibold text-[#1858d6] shadow-sm transition hover:border-[#1e6cff]/50 hover:bg-[#1e6cff]/5"
-              >
-                <Minimize2 className="h-3.5 w-3.5" />
-                <span>Minimizar</span>
-              </button>
-            </div>
-
-            {/* Tarjeta del chat */}
-            <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm lg:col-span-2">
 
             {/* Encabezado de Andrea */}
             <div className="relative flex items-center gap-4 overflow-hidden border-b border-zinc-100 px-6 py-5">
@@ -635,10 +619,22 @@ function AsesorContent() {
               </form>
             </div>
           </div>
-          </div>{/* fin columna chat */}
 
           {/* ── Sidebar (1/3) ─────────────────────────────────────────── */}
           <div className="flex flex-col gap-4 lg:col-span-1">
+
+            {/* Minimizar */}
+            <div>
+              <button
+                onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
+                aria-label="Minimizar chat y seguir navegando por el sitio"
+                title="Minimizar y seguir navegando"
+                className="flex items-center gap-1.5 rounded-full border border-[#1e6cff]/25 bg-white px-3.5 py-1.5 text-xs font-semibold text-[#1858d6] shadow-sm transition hover:border-[#1e6cff]/50 hover:bg-[#1e6cff]/5"
+              >
+                <Minimize2 className="h-3.5 w-3.5" />
+                <span>Minimizar</span>
+              </button>
+            </div>
 
             {/* Sellos de confianza */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
