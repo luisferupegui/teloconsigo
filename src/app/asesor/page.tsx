@@ -428,11 +428,6 @@ function AsesorContent() {
 
         {/* Breadcrumb + Minimizar */}
         <div className="mb-4 flex items-center justify-between">
-          <nav className="text-xs text-zinc-400">
-            <Link href="/" className="hover:text-zinc-600">Inicio</Link>
-            <span className="mx-1.5">/</span>
-            <span className="text-zinc-500">Andrea</span>
-          </nav>
           <button
             onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
             aria-label="Minimizar chat y seguir navegando por el sitio"
@@ -442,6 +437,11 @@ function AsesorContent() {
             <Minimize2 className="h-3.5 w-3.5" />
             <span>Minimizar</span>
           </button>
+          <nav className="text-xs text-zinc-400">
+            <Link href="/" className="hover:text-zinc-600">Inicio</Link>
+            <span className="mx-1.5">/</span>
+            <span className="text-zinc-500">Andrea</span>
+          </nav>
         </div>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
