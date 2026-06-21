@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Send, Monitor, Laptop, Gamepad2, Building2, Headphones, Truck,
-  ShieldCheck, Award, TrendingUp, ChevronRight, Cpu, Minimize2,
+  ShieldCheck, Award, Sparkles, ChevronRight, Cpu, Minimize2,
 } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string; hidden?: boolean };
@@ -652,7 +652,7 @@ function AsesorContent() {
             {/* Productos más buscados */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
               <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-zinc-900">
-                <TrendingUp className="h-4 w-4 text-[#1e6cff]" />
+                <Sparkles className="h-4 w-4 text-amber-400" />
                 Productos más buscados
               </h2>
 
