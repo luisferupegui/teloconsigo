@@ -328,7 +328,11 @@
       "Bash(node scripts/test-janus-import.mjs)",
       "PowerShell(Get-ChildItem \"C:\\\\Users\\\\AVIDEMO\\\\Desktop\\\\Proyecto web 1\\\\node_modules\" | Where-Object { $_.Name -match \"mammoth|docx|doc2\" } | Select-Object Name)",
       "mcp__visualize__show_widget",
-      "Bash(curl -s http://localhost:3000/armador)"
+      "Bash(curl -s http://localhost:3000/armador)",
+      "Bash(node scripts/test-web-model.mjs)",
+      "Bash(awk '{print $5\"\\\\t\"$9}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 30 http://localhost:3000/asesor)",
+      "mcp__Claude_in_Chrome__navigate"
     ]
   }
 }

@@ -197,7 +197,7 @@ export default function CatalogoPage() {
               <LayoutGrid className="h-4 w-4 text-[#4d8dff]" />
             </div>
             <div>
-              <p className="text-sm font-bold text-white leading-tight">Catálogo</p>
+              <p className="text-sm font-bold text-white leading-tight">Catálogo de Componentes</p>
               <p className="text-xs text-zinc-500 leading-tight mt-0.5">
                 Procesadores · Memorias · GPUs · Impresoras · Almacenamiento
               </p>
@@ -351,7 +351,7 @@ export default function CatalogoPage() {
                                hover:gap-3 hover:brightness-110"
                     style={{ backgroundColor: sol.acentoBg }}
                   >
-                    Hablar con Andrea
+                    Cotiza ya mismo
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -390,16 +390,7 @@ export default function CatalogoPage() {
                          hover:brightness-110 hover:scale-[1.02] transition-all duration-200"
             >
               <MessageCircle className="h-4 w-4" />
-              Hablar con Andrea
-            </Link>
-            <Link
-              href="/asesor"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15
-                         px-8 py-4 text-sm font-semibold text-white
-                         hover:bg-white/5 transition"
-            >
-              Probar el Asesor IA
-              <ArrowRight className="h-4 w-4" />
+              Habla con un Especialista en Tecnología
             </Link>
           </div>
         </div>

@@ -113,10 +113,10 @@ export default function ArmadorPage() {
           <div className="mt-6 flex items-center justify-center">
             <Link
               href="/asesor"
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 transition hover:border-[#1e6cff]/40 hover:text-[#1e6cff]"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-600 hover:shadow-emerald-300 hover:scale-[1.02]"
             >
               <MessageCircle className="h-4 w-4" />
-              ¿No sabes cuál elegir? Andrea te asesora
+              ¿No sabes cuál elegir? Aquí te asesoramos
             </Link>
           </div>
         </section>
