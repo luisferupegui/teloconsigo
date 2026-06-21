@@ -349,7 +349,7 @@ export default function SolucionesPage() {
             href="/asesor"
             className="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-50 transition"
           >
-            Hablar con el Asesor IA →
+            Habla con un Especialista en Tecnología →
           </Link>
           <Link
             href="/conseguir"
