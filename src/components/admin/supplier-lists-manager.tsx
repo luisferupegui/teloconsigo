@@ -41,13 +41,13 @@ const CAT_MAP: Record<string, { categoria: string; usoCaso: string; segmento: st
   portatil:          { categoria: "portatil", usoCaso: "portatil-oficina", segmento: "productividad-oficina" },
   monitor:           { categoria: "monitor",  usoCaso: "monitor",          segmento: "monitores" },
   escritorio:        { categoria: "pc",        usoCaso: "pc-empresarial",  segmento: "productividad-oficina" },
-  procesador:        { categoria: "accesorio", usoCaso: "accesorio",       segmento: "creadores-produccion" },
-  motherboard:       { categoria: "accesorio", usoCaso: "accesorio",       segmento: "creadores-produccion" },
-  "memoria-ram":     { categoria: "accesorio", usoCaso: "accesorio",       segmento: "creadores-produccion" },
-  almacenamiento:    { categoria: "accesorio", usoCaso: "accesorio",       segmento: "creadores-produccion" },
-  "tarjeta-grafica": { categoria: "accesorio", usoCaso: "accesorio",       segmento: "gaming-streaming" },
-  "fuente-poder":    { categoria: "accesorio", usoCaso: "accesorio",       segmento: "creadores-produccion" },
-  refrigeracion:     { categoria: "accesorio", usoCaso: "accesorio",       segmento: "gaming-streaming" },
+  procesador:        { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
+  motherboard:       { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
+  "memoria-ram":     { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
+  almacenamiento:    { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
+  "tarjeta-grafica": { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
+  "fuente-poder":    { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
+  refrigeracion:     { categoria: "accesorio", usoCaso: "accesorio",       segmento: "componentes" },
   redes:             { categoria: "accesorio", usoCaso: "accesorio",       segmento: "redes-servidores" },
   mouse:             { categoria: "accesorio", usoCaso: "accesorio",       segmento: "accesorios" },
   teclado:           { categoria: "accesorio", usoCaso: "accesorio",       segmento: "accesorios" },
@@ -96,6 +96,7 @@ const SEGMENTOS: [string, string][] = [
   ["smart-home",            "Smart Home"],
   ["monitores",             "Monitores"],
   ["accesorios",            "Accesorios"],
+  ["componentes",           "Componentes"],
 ];
 
 // Publica un producto del proveedor al catálogo público (con margen ya aplicado).

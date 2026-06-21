@@ -26,7 +26,8 @@ export type Segmento =
   | "creadores-produccion"
   | "smart-home"
   | "monitores"
-  | "accesorios";
+  | "accesorios"
+  | "componentes";
 
 export const SEGMENTOS: { value: Segmento; label: string }[] = [
   { value: "hogar-estudio",         label: "Hogar y Estudio"          },
@@ -38,6 +39,7 @@ export const SEGMENTOS: { value: Segmento; label: string }[] = [
   { value: "smart-home",            label: "Smart Home y Conectividad"},
   { value: "monitores",             label: "Monitores"                },
   { value: "accesorios",            label: "Accesorios"               },
+  { value: "componentes",           label: "Componentes"              },
 ];
 
 export const SEGMENTO_LABEL: Record<string, string> = Object.fromEntries(
@@ -55,6 +57,7 @@ export const SEGMENTO_COLOR: Record<Segmento, string> = {
   "smart-home":            "bg-amber-100 text-amber-700",
   "monitores":             "bg-teal-100 text-teal-700",
   "accesorios":            "bg-zinc-100 text-zinc-600",
+  "componentes":           "bg-purple-100 text-purple-700",
 };
 
 // Capacidad de las secciones del home (cards): mínimo y máximo por sección.

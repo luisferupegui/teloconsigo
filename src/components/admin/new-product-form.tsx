@@ -22,6 +22,7 @@ const SEG_TO_USO: Record<Segmento, string> = {
   "smart-home":            "accesorio",
   "monitores":             "monitor",
   "accesorios":            "accesorio",
+  "componentes":           "accesorio",
 };
 const SEG_TO_CAT: Record<Segmento, string> = {
   "hogar-estudio":         "portatil",
@@ -33,6 +34,7 @@ const SEG_TO_CAT: Record<Segmento, string> = {
   "smart-home":            "accesorio",
   "monitores":             "monitor",
   "accesorios":            "accesorio",
+  "componentes":           "accesorio",
 };
 
 export function NewProductForm() {
