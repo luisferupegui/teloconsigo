@@ -51,7 +51,7 @@ export default async function CatalogoAdminPage({
       {/* Header */}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">📦 Catálogo de Líneas</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">📦 Catálogo de Componentes</h1>
           <p className="mt-1 text-sm text-zinc-500">
             Imágenes de las líneas de producto que aparecen en{" "}
             <Link href="/tienda" target="_blank" className="text-indigo-600 hover:underline font-semibold">
