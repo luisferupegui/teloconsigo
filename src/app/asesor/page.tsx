@@ -437,7 +437,7 @@ function AsesorContent() {
             onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
             aria-label="Minimizar chat y seguir navegando por el sitio"
             title="Minimizar y seguir navegando"
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-500 shadow-sm transition hover:border-[#1e6cff]/40 hover:text-[#1858d6]"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#1e6cff]/25 bg-white px-3.5 py-1.5 text-xs font-semibold text-[#1858d6] shadow-sm transition hover:border-[#1e6cff]/50 hover:bg-[#1e6cff]/5"
           >
             <Minimize2 className="h-3.5 w-3.5" />
             <span>Minimizar</span>
