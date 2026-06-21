@@ -426,12 +426,23 @@ function AsesorContent() {
     <div className="py-6">
       <div className="mx-auto max-w-6xl px-4">
 
-        {/* Breadcrumb */}
-        <nav className="mb-4 text-xs text-zinc-400">
-          <Link href="/" className="hover:text-zinc-600">Inicio</Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-zinc-500">Andrea</span>
-        </nav>
+        {/* Breadcrumb + Minimizar */}
+        <div className="mb-4 flex items-center justify-between">
+          <nav className="text-xs text-zinc-400">
+            <Link href="/" className="hover:text-zinc-600">Inicio</Link>
+            <span className="mx-1.5">/</span>
+            <span className="text-zinc-500">Andrea</span>
+          </nav>
+          <button
+            onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
+            aria-label="Minimizar chat y seguir navegando por el sitio"
+            title="Minimizar y seguir navegando"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-500 shadow-sm transition hover:border-[#1e6cff]/40 hover:text-[#1858d6]"
+          >
+            <Minimize2 className="h-3.5 w-3.5" />
+            <span>Minimizar</span>
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
 
@@ -469,7 +480,7 @@ function AsesorContent() {
                 </p>
               </div>
 
-              <div className="z-10 ml-auto flex items-center gap-3 self-center">
+              <div className="z-10 ml-auto self-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/asesor/logo-slogan.png"
@@ -477,15 +488,6 @@ function AsesorContent() {
                   style={{ height: 52, width: "auto" }}
                   className="hidden md:block"
                 />
-                <button
-                  onClick={() => { if (typeof window !== "undefined" && window.history.length > 1) router.back(); else router.push("/"); }}
-                  aria-label="Minimizar chat y seguir navegando por el sitio"
-                  title="Minimizar y seguir navegando"
-                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#1e6cff]/25 bg-white/80 px-3.5 py-2 text-xs font-semibold text-[#1858d6] shadow-sm backdrop-blur transition hover:border-[#1e6cff]/50 hover:bg-white"
-                >
-                  <Minimize2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Minimizar</span>
-                </button>
               </div>
             </div>
 
