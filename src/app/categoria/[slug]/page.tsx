@@ -3,7 +3,12 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { existsSync, statSync } from "fs";
 import path from "path";
-import { categories, type Linea } from "@/lib/categories";
+import { loadCategories, type Linea } from "@/lib/categories";
+import { conIconos } from "@/lib/categories-icons";
+
+// La taxonomía se lee del disco en cada render (vive en data/categories.json y se
+// gestiona desde el panel), y `conIconos` le devuelve el `cat.Icon` que ya usaba el JSX.
+const categorias = () => conIconos(loadCategories());
 import type React from "react";
 
 // Cache-busting dinámico basado en mtime del archivo — cambia automáticamente
@@ -15,7 +20,7 @@ function withV(src: string): string {
 }
 
 export async function generateStaticParams() {
-  return categories.map((c) => ({ slug: c.slug }));
+  return categorias().map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -24,7 +29,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const cat = categories.find((c) => c.slug === slug);
+  const cat = categorias().find((c) => c.slug === slug);
   if (!cat) return {};
   return {
     title: `${cat.nombre} | teloconsigo.co`,
@@ -100,7 +105,7 @@ export default async function CategoriaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const cat = categories.find((c) => c.slug === slug);
+  const cat = categorias().find((c) => c.slug === slug);
   if (!cat) notFound();
 
   // Agrupar líneas. Si tienen `tipo` (p. ej. impresoras: láser / inyección),

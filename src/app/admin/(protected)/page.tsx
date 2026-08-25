@@ -1,8 +1,10 @@
 import { existsSync, statSync } from "fs";
 import path from "path";
 import Link from "next/link";
-import { categories } from "@/lib/categories";
+import { loadCategories } from "@/lib/categories";
+import { conIconos } from "@/lib/categories-icons";
 import { LineImageUploader } from "@/components/admin/line-image-uploader";
+import { AccionesCategoria, NuevaLinea, AccionesLinea } from "@/components/admin/categoria-crud";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Catálogo · Admin" };
@@ -31,6 +33,7 @@ export default async function CatalogoAdminPage({
 }) {
   const { categoria: catParam } = await searchParams;
 
+  const categories = conIconos(loadCategories());
   const data = categories.map((cat) => {
     const lineas = (cat.lineas ?? []).map((l) => ({
       ...l,
@@ -150,49 +153,63 @@ export default async function CatalogoAdminPage({
                     </span>
                   )}
                   <span className="rounded-full bg-zinc-200 px-2 py-0.5 font-semibold text-zinc-600">
-                    {catActiva.lineas.length} líneas
+                    {catActiva.lineas.length} productos
                   </span>
                 </div>
               </div>
 
+              <div className="flex flex-wrap items-center gap-3 border-b border-zinc-100 px-5 py-3">
+                <AccionesCategoria
+                  slug={catActiva.slug}
+                  nombre={catActiva.nombre}
+                  descripcion={catActiva.descripcion}
+                  icon={catActiva.icon}
+                  lineas={catActiva.lineas.length}
+                />
+              </div>
+
               {catActiva.lineas.length === 0 ? (
-                <p className="px-5 py-4 text-sm text-zinc-400">Sin líneas definidas.</p>
+                <p className="px-5 py-6 text-sm text-zinc-400">Todavía no hay productos en esta categoría.</p>
               ) : (
-                <table className="w-full text-sm">
-                  <thead className="border-b border-zinc-100 text-left text-xs uppercase tracking-wide text-zinc-400">
-                    <tr>
-                      <th className="px-5 py-2">Imagen actual</th>
-                      <th className="px-3 py-2">Línea</th>
-                      <th className="px-3 py-2">Marca</th>
-                      <th className="px-3 py-2">Slug</th>
-                      <th className="px-3 py-2">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-50">
-                    {catActiva.lineas.map((linea) => (
-                      <tr key={linea.slug} className="hover:bg-zinc-50 transition-colors">
-                        <td className="px-5 py-2.5">
-                          <LineImageUploader
-                            categoria={catActiva.slug}
-                            slug={linea.slug}
-                            initialUrl={linea.imageUrl}
-                          />
-                        </td>
-                        <td className="px-3 py-2.5 font-semibold text-zinc-900">{linea.nombre}</td>
-                        <td className="px-3 py-2.5 text-zinc-500">{linea.marca}</td>
-                        <td className="px-3 py-2.5 font-mono text-xs text-zinc-400">{linea.slug}</td>
-                        <td className="px-3 py-2.5">
-                          {linea.imageUrl ? (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">✓ OK</span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600">⚠ Sin imagen</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="divide-y divide-zinc-100">
+                  {catActiva.lineas.map((linea) => (
+                    <div key={linea.slug} className="px-5 py-3 transition-colors hover:bg-zinc-50/70">
+                      <div className="flex flex-wrap items-center gap-4">
+                        <LineImageUploader
+                          categoria={catActiva.slug}
+                          slug={linea.slug}
+                          initialUrl={linea.imageUrl}
+                        />
+
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-bold text-zinc-900">{linea.nombre}</p>
+                          <p className="truncate text-xs text-zinc-500">{linea.marca}</p>
+                          <p className="truncate font-mono text-[11px] text-zinc-400">{linea.slug}</p>
+                        </div>
+
+                        {linea.imageUrl ? (
+                          <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                            ✓ Con imagen
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-600">
+                            ⚠ Sin imagen
+                          </span>
+                        )}
+
+                        <AccionesLinea
+                          categoria={catActiva.slug}
+                          slug={linea.slug}
+                          marca={linea.marca}
+                          nombre={linea.nombre}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
+
+              <NuevaLinea categoria={catActiva.slug} />
             </div>
           ) : (
             /* ── Sin categoría: grid de resumen ── */

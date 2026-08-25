@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { products } from "@/lib/products";
-import { categories } from "@/lib/categories";
+import { loadCategories } from "@/lib/categories";
 
 const BASE = "https://teloconsigo.co";
 // Dominio comprado en Namecheap
@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
   }));
 
-  const catUrls = categories.map((c) => ({
+  const catUrls = loadCategories().map((c) => ({
     url: `${BASE}/categoria/${c.slug}`,
     lastModified: new Date(),
   }));
