@@ -253,13 +253,14 @@ function ApiKeyPanel({ status, onChange, flash }: {
           <KeyRound className={`h-5 w-5 shrink-0 mt-0.5 ${configured ? "text-zinc-500" : "text-amber-600"}`} />
           <div className="flex-1">
             <p className={`text-sm font-bold ${configured ? "text-zinc-900" : "text-amber-900"}`}>
-              {configured ? "Cambiar clave API de Anthropic" : "Falta configurar la clave API de Anthropic"}
+              {configured ? "Cambiar clave API de DeepSeek" : "Falta configurar la clave API de DeepSeek"}
             </p>
             <p className={`mt-0.5 text-xs ${configured ? "text-zinc-500" : "text-amber-700"}`}>
-              Sin una clave válida la extracción con IA falla con error 401. Consíguela en{" "}
-              <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer" className="font-semibold underline">
-                console.anthropic.com
-              </a>{" "}(empieza por <code className="rounded bg-black/5 px-1">sk-ant-</code>).
+              Es el cerebro de Andrea, el asesor del chat. Sin una clave válida el asesor responde
+              &ldquo;no disponible&rdquo;. Consíguela en{" "}
+              <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer" className="font-semibold underline">
+                platform.deepseek.com
+              </a>{" "}(empieza por <code className="rounded bg-black/5 px-1">sk-</code>).
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -268,7 +269,7 @@ function ApiKeyPanel({ status, onChange, flash }: {
                   type={show ? "text" : "password"}
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  placeholder="sk-ant-api03-…"
+                  placeholder="sk-…"
                   className="w-full rounded-lg border border-zinc-300 px-3 py-2 pr-9 text-sm font-mono focus:border-indigo-400 focus:outline-none"
                 />
                 <button type="button" onClick={() => setShow((s) => !s)}
@@ -302,7 +303,7 @@ function ApiKeyPanel({ status, onChange, flash }: {
     <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
       <div className="flex items-center gap-2 text-sm">
         <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-        <span className="font-semibold text-emerald-900">Clave API configurada</span>
+        <span className="font-semibold text-emerald-900">Clave API de DeepSeek configurada</span>
         <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs text-emerald-800">{status?.masked}</code>
         <span className="text-xs text-emerald-700">· fuente: {status?.source === "panel" ? "panel" : ".env.local"}</span>
       </div>
@@ -353,12 +354,13 @@ function SerperKeyPanel({ status, onChange, flash }: {
           <KeyRound className="h-5 w-5 shrink-0 mt-0.5 text-zinc-500" />
           <div className="flex-1">
             <p className="text-sm font-bold text-zinc-900">
-              Búsqueda en EE.UU. con Serper <span className="font-normal text-zinc-400">(opcional, más barata)</span>
+              Búsqueda web con Serper <span className="font-normal text-amber-600">(necesaria para cotizar)</span>
             </p>
             <p className="mt-0.5 text-xs text-zinc-500">
-              Abarata la cotización de productos en EE.UU. Consíguela gratis en{" "}
+              DeepSeek no navega la web, así que TODA la cotización web (Colombia y EE.UU.) pasa por Serper.
+              Sin esta key, Andrea solo puede ofrecer lo que haya en las listas de proveedor. Consíguela gratis en{" "}
               <a href="https://serper.dev" target="_blank" rel="noreferrer" className="font-semibold underline">serper.dev</a>{" "}
-              (2.500 búsquedas sin tarjeta). Sin esta key, el sistema usa la búsqueda de Anthropic.
+              (2.500 búsquedas sin tarjeta).
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[260px]">

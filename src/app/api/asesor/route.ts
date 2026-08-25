@@ -1,13 +1,20 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { getAnthropicApiKey, getAnthropicApiKeys, getSerperApiKey } from "@/lib/settings";
+import {
+  DeepSeek,
+  DeepSeekAPIError,
+  DEEPSEEK_MODEL,
+  deepseekJson,
+  type DSMessage,
+  type DSTool,
+} from "@/lib/deepseek";
+import { getDeepseekApiKey, getDeepseekApiKeys, getSerperApiKey } from "@/lib/settings";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
-import { saveOrder, deleteOrder, type FuenteComparacion } from "@/lib/orders";
+import { saveOrder, deleteOrder, getOrders, getHistory, type FuenteComparacion, type OrderEstado } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
-import { getCachedQuery, saveQuote, getWebQuote, type QuoteProducto, type LocalData, type WebQuote } from "@/lib/web-cache";
+import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData, type WebQuote } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
@@ -16,12 +23,21 @@ export const runtime = "nodejs";
 // El caché de cotizaciones web (por consulta y por producto) vive en
 // `src/lib/web-cache.ts` (persistente en disco, TTL 7 días). Aquí solo se usa.
 
-// ── Modelos ─────────────────────────────────────────────────────────────────
-const MODEL = "claude-sonnet-4-6";     // conversación (Andrea)
-const MODEL_WEB = "claude-sonnet-4-6"; // sub-búsqueda web (interna)
+// ── Modelos (DeepSeek) ───────────────────────────────────────────────────────
+const MODEL = DEEPSEEK_MODEL;     // conversación (Andrea)
+const MODEL_WEB = DEEPSEEK_MODEL; // sub-llamadas internas de cotización web
 
 // ── Herramientas de Andrea (todas se ejecutan AQUÍ — ninguna es server tool) ──
-const tools: Anthropic.Tool[] = [
+// Se declaran con el esquema legible `input_schema` y se traducen al formato de
+// función de DeepSeek/OpenAI en `toDSTool`.
+type ToolDef = { name: string; description: string; input_schema: Record<string, unknown> };
+
+const toDSTool = (t: ToolDef): DSTool => ({
+  type: "function",
+  function: { name: t.name, description: t.description, parameters: t.input_schema },
+});
+
+const tools: ToolDef[] = [
   {
     name: "buscar_productos",
     description:
@@ -39,6 +55,14 @@ const tools: Anthropic.Tool[] = [
         },
         precioMax: { type: "number", description: "Opcional. Presupuesto máximo por unidad en COP." },
         limite: { type: "integer", description: "Opcional. Máximo de resultados (default 10, máx 15)." },
+        formato: {
+          type: "string",
+          enum: ["ensamblado", "torre-marca", "todo-en-uno", "portatil"],
+          description:
+            "OBLIGATORIO en cuanto sepas qué formato de equipo quiere el cliente (es la respuesta a tu pregunta de formato, o lo que pidió con sus palabras). " +
+            '"ensamblado" = PC de escritorio armado a la medida; "torre-marca" = torre de fabricante (OptiPlex, ThinkCentre, ProDesk); ' +
+            '"todo-en-uno" = AIO con pantalla integrada; "portatil" = laptop. Sin este dato salen equipos del formato equivocado.',
+        },
       },
       required: ["consulta"],
     },
@@ -105,6 +129,22 @@ const tools: Anthropic.Tool[] = [
     },
   },
   {
+    name: "consultar_pedido",
+    description:
+      "Consulta el estado de un pedido YA REGISTRADO cuando el cliente pregunta por él. " +
+      "Necesitas DOS datos: el número de orden y, para verificar identidad, el correo o la cédula con que se registró. " +
+      "Si el cliente solo te da el número, pídele el correo o la cédula antes de llamarla — sin verificar no se entrega información. " +
+      "Nunca inventes ni supongas un estado: si esta herramienta no encuentra el pedido, dilo con naturalidad y ofrece el contacto del equipo.",
+    input_schema: {
+      type: "object",
+      properties: {
+        orderNumber: { type: "string", description: "Número de orden que dio el cliente (ej: 240826143)." },
+        verificacion: { type: "string", description: "Correo o cédula que dio el cliente, para comprobar que el pedido es suyo." },
+      },
+      required: ["orderNumber", "verificacion"],
+    },
+  },
+  {
     name: "cotizar_web",
     description:
       "Consigue opciones cuando buscar_productos devolvió menos de 3 disponibilidad local. Busca PRIMERO " +
@@ -134,6 +174,18 @@ const fmtCOP = (n: number) =>
 
 /** Specs estructuradas → líneas de viñeta, en orden legible. Solo incluye las que
  *  EXISTEN; nunca inventa una. Cubre las variantes de clave más comunes. */
+/** Capacidades en notación estándar ("16gb", "512gb") añadidas al texto de búsqueda, para
+ *  que una consulta con "16GB" encuentre también los nombres abreviados de las listas
+ *  ("(16/512)"). Sin esto había que aflojar el filtro de specs y entonces salía cualquier
+ *  cosa: un Ryzen 3 para quien pidió un Ryzen 5 con RTX 5060. */
+function capacidadesNormalizadas(nombre: string): string {
+  const { ram, disco } = ramYDisco(nombre);
+  const out: string[] = [];
+  if (ram != null) out.push(`${ram}gb`);
+  if (disco != null) out.push(disco >= 1024 && disco % 1024 === 0 ? `${disco / 1024}tb` : `${disco}gb`);
+  return out.join(" ");
+}
+
 function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
   if (!specs) return [];
   const order: [string, string][] = [
@@ -157,6 +209,19 @@ function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
 // de 20–39"); una torre sola no. Las medidas de 11–17" son pantallas de portátil, no monitor.
 const INCLUYE_MONITOR = /\bmonitor\b|\bpantalla\b|\b(?:2\d|3[0-9])(?:[.,]\d)?\s*(?:"|''|pulg)/i;
 
+// Pantalla de 10–17" = pantalla de PORTÁTIL (los monitores del catálogo son de 19" en
+// adelante). El decimal es OPCIONAL: los nombres traen tanto 15,6" como 14".
+const PANTALLA_PORTATIL = /\bpantalla\s*1[0-7]\b|\b1[0-7](?:[.,]\d)?\s*(?:"|''|pulg)/i;
+
+/** ¿El nombre describe un PORTÁTIL? La palabra "portátil"/"laptop" casi nunca aparece en
+ *  los nombres reales de las listas ("LENOVO V14 G4 … PANTALLA 14\" FHD"), así que la
+ *  señal fuerte es la pantalla de 10–17" propia. Se exige que NO mencione un monitor
+ *  aparte para no confundir un combo de escritorio que traiga un monitor pequeño. */
+function esPortatilPorNombre(texto: string): boolean {
+  if (/\b(port[aá]til|laptop|notebook|ultrabook)\b/i.test(texto)) return true;
+  return !/\bmonitor\b/i.test(texto) && PANTALLA_PORTATIL.test(texto);
+}
+
 /** Tamaño de monitor en pulgadas si aparece (ej: 24", 23.8"); "" si no. */
 function tamMonitor(s: string): string {
   const m = s.match(/\b(\d{2}(?:[.,]\d)?)\s*(?:"|''|pulg)/i);
@@ -166,8 +231,16 @@ function tamMonitor(s: string): string {
 /** Línea de estado de monitor para la ficha, deducida del texto. Distingue portátil
  *  (pantalla propia → null, no aplica), AIO (pantalla integrada), y escritorio (incluye
  *  monitor vs solo torre). Es lo que permite AGRUPAR opciones sin mezclar precios. */
-function monitorStatusFromName(texto: string): string | null {
-  if (/\b(port[aá]til|laptop|notebook|ultrabook)\b/i.test(texto) || /pantalla\s*1[0-7]\b|\b1[0-7][.,]\d\s*(?:"|'')/i.test(texto)) return null; // portátil
+function monitorStatusFromName(texto: string, categoria?: string): string | null {
+  // La CATEGORÍA manda cuando existe: un "IdeaCentre 3 24ALC6 (16/512)" es un todo-en-uno
+  // aunque su nombre no diga "AIO" en ninguna parte, y salía etiquetado "Solo torre".
+  const cat = (categoria ?? "").toLowerCase();
+  if (cat === "portatil" || cat === "portátil" || cat === "tableta" || cat === "tablet") return null;
+  if (cat === "all-in-one") {
+    const t = tamMonitor(texto);
+    return `🖥️ Todo-en-uno · pantalla integrada${t ? ` ${t}` : ""}`;
+  }
+  if (esPortatilPorNombre(texto)) return null; // portátil: pantalla propia, no aplica
   if (/all.?in.?one|\baio\b|todo.?en.?uno/i.test(texto)) {
     const t = tamMonitor(texto); return `🖥️ Todo-en-uno · pantalla integrada${t ? ` ${t}` : ""}`;
   }
@@ -181,13 +254,55 @@ function monitorStatusFromName(texto: string): string | null {
 /** Tarjeta lista para mostrar al cliente. Si hay specs estructuradas las usa; si no,
  *  el nombre completo (que ya contiene la configuración real) es la fuente fiel. Añade
  *  el estado de monitor cuando aplica. El precio va EXACTO. Andrea copia esto sin cambiar nada. */
-function construirFicha(nombre: string, specs: Record<string, string> | undefined, precio: number | null): string {
+function construirFicha(nombre: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string): string {
   const lineas = fichaSpecLines(specs);
-  const mon = monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`);
+  const mon = monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`, categoria);
   const cuerpo = lineas.length > 0 ? `\n${lineas.join("\n")}` : "";
   const monLinea = mon ? `\n${mon}` : "";
   const precioLinea = precio != null ? `\n💲 ${fmtCOP(precio)}` : "";
   return `**${nombre}**${cuerpo}${monLinea}${precioLinea}`;
+}
+
+// ── FORMATO DE EQUIPO ────────────────────────────────────────────────────────
+//
+// El SYSTEM hace que Andrea pregunte "¿torre de marca, todo-en-uno o ensamblado?".
+// Esa respuesta vive en la CONVERSACIÓN, no en el texto de la consulta, así que
+// filtrar por regex sobre la consulta fallaba: el cliente pedía un ensamblado y
+// salían portátiles. Ahora Andrea manda el formato como PARÁMETRO y aquí se cruza
+// con la categoría real del producto.
+type Formato = "ensamblado" | "torre-marca" | "todo-en-uno" | "portatil";
+
+// Líneas de modelo de fabricante: un equipo de MARCA, nunca un ensamblado.
+const LINEA_DE_MARCA = /\b(optiplex|thinkcentre|thinkstation|prodesk|elitedesk|proone|ideacentre|vostro|inspiron|aspire|legion|omen|victus|precision|latitude|elitebook|probook|pavilion|ideapad|thinkpad|macbook|imac)\b/i;
+
+/** Formato real de un producto. `null` = no es un equipo completo (componente,
+ *  accesorio, monitor…) y por tanto el filtro de formato no le aplica. */
+function formatoDeProducto(categoria: string, nombre: string): Formato | null {
+  const c = (categoria ?? "").toLowerCase();
+
+  // Listas de proveedor: la categoría YA distingue el formato.
+  if (c === "portatil" || c === "portátil") return "portatil";
+  if (c === "all-in-one") return "todo-en-uno";
+  if (c === "pc-equipos-de-marca") return "torre-marca";
+  if (c === "escritorio" || c === "escritorio-alto-rendimiento") return "ensamblado";
+
+  // Catálogo publicado: la categoría "pc" agrupa todo → se deduce del nombre.
+  if (c === "pc") {
+    if (esPortatilPorNombre(nombre)) return "portatil";
+    if (/all.?in.?one|\baio\b|todo.?en.?uno|proone/i.test(nombre)) return "todo-en-uno";
+    if (LINEA_DE_MARCA.test(nombre)) return "torre-marca";
+    return "ensamblado";
+  }
+
+  // Sin categoría útil manda el NOMBRE. Es imprescindible: las listas traen equipos
+  // COMPLETOS mal categorizados como pieza — un "EQUIPO PC RYZEN 7 8700F / … / RTX 5060"
+  // archivado bajo `tarjeta-grafica`, o un portátil bajo `almacenamiento` por su "512GB
+  // SSD". Sin esto se colaban como si fueran componentes y aparecían PCs de $5.670.000
+  // entre las opciones de un cliente que pidió un disco SSD.
+  if (esPortatilPorNombre(nombre)) return "portatil";
+  if (/all.?in.?one|\baio\b|todo.?en.?uno|proone/i.test(nombre)) return "todo-en-uno";
+  if (esEscritorioCompuesto(nombre)) return LINEA_DE_MARCA.test(nombre) ? "torre-marca" : "ensamblado";
+  return null;
 }
 
 // ── Disponibilidad local (proyecta SOLO campos seguros; nunca `proveedor`) ─────
@@ -207,24 +322,43 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   const segmento = input?.segmento as Segmento | undefined;
   const precioMax = typeof input?.precioMax === "number" ? input.precioMax : null;
   const limite = Math.min(Math.max(Number(input?.limite) || 10, 1), 15);
+  const FORMATOS = new Set<Formato>(["ensamblado", "torre-marca", "todo-en-uno", "portatil"]);
+  const formatoRaw = input?.formato as Formato | undefined;
+  const formato = formatoRaw && FORMATOS.has(formatoRaw) ? formatoRaw : null;
   const terms = consulta.split(/\s+/).filter((t) => t.length > 1);
   const score = (haystack: string) => (terms.length === 0 ? 1 : terms.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0));
 
   // prioridad 0 = listas de proveedor (disponibilidad local), 1 = catálogo publicado
-  type Row = { score: number; precio: number | null; prioridad: number; prod: CustomerProduct };
+  type Row = { score: number; precio: number | null; prioridad: number; haystack: string; prod: CustomerProduct };
+  // Términos EXIGIBLES: los que llevan cifra (ddr5, 5060, 16gb, 1tb, i7) identifican el
+  // producto CONCRETO que pidió el cliente, no una preferencia negociable.
+  // Además de las cifras, un puñado de palabras que DISTINGUEN productos parecidos: quien
+  // pide una memoria USB no quiere una micro SD, y quien pide un combo teclado+mouse no
+  // quiere solo el mouse. La lista es corta a propósito — cada palabra tiene que aparecer
+  // de forma consistente en los nombres de las listas o excluiría productos válidos.
+  const DISCRIMINANTE = /^(usb|sodimm|externo|teclado|mouse)$/i;
+  const exigibles = terms.filter((t) => t.length >= 2 && (/[0-9]/.test(t) || DISCRIMINANTE.test(t)));
+
+  // GAMA DE CPU: "Ryzen 5" y "Core i7" se parten en dos términos y el de un solo carácter
+  // se descarta, así que la gama nunca se exigía — quien pedía un Ryzen 5 recibía tres
+  // Ryzen 3. Se extraen como token compuesto ("ryzen5", "corei7") y se comparan contra el
+  // texto del producto sin espacios.
+  const gamasCPU = (s: string): string[] =>
+    (s.toLowerCase().match(/\b(?:ryzen|core\s*ultra|core)\s*i?[3579]\b/g) ?? []).map((m) => m.replace(/\s+/g, ""));
+  const gamasPedidas = gamasCPU(consulta);
 
   // 1) LISTAS DE PROVEEDOR ACTIVAS — disponibilidad local, precio = costo + margen de categoría.
   const margins = loadMargins();
   const locales: Row[] = loadActiveProducts().map((p) => {
     const precio = applyMargin(p.precio_costo, p.categoria, margins);
-    const haystack = [p.nombre, p.marca, p.categoria, Object.values(p.specs ?? {}).join(" ")].join(" ").toLowerCase();
+    const haystack = [p.nombre, p.marca, p.categoria, Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
     return {
-      score: score(haystack), precio, prioridad: 0,
+      score: score(haystack), precio, prioridad: 0, haystack,
       prod: {
         referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
         segmento: null, precioDesde: precio, precioIvaIncluido: false,
         specs: p.specs ?? {}, descripcion: "", url: "",
-        ficha: construirFicha(p.nombre, p.specs, precio),
+        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria),
       },
     };
   });
@@ -232,28 +366,40 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // 2) CATÁLOGO PUBLICADO — también disponibilidad local.
   const catalogo: Row[] = loadPublishedBusinessProducts().map((p) => {
     const precio = p.precioDesde ?? p.precio;
-    const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" ")].join(" ").toLowerCase();
+    const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
     return {
-      score: score(haystack), precio, prioridad: 1,
+      score: score(haystack), precio, prioridad: 1, haystack,
       prod: {
         referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
         segmento: p.segmento ? SEGMENTO_LABEL[p.segmento] : null, precioDesde: precio,
         precioIvaIncluido: p.precioIvaIncluido ?? false, specs: p.specs ?? {}, descripcion: p.descripcionUso,
         url: `/conseguir?ref=${encodeURIComponent(p.referencia ?? p.slug)}`,
-        ficha: construirFicha(p.nombre, p.specs, precio),
+        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria),
       },
     };
   });
 
   // Si el cliente pide un EQUIPO completo, exige que el producto nombre un CPU: así se
   // descartan piezas/accesorios sueltos que el scoring por palabras cuela (chasis, cooler…).
-  const soloEquipos = clasificarConsulta(consulta) === "equipo";
+  const clase = clasificarConsulta(consulta);
+  const soloEquipos = clase === "equipo";
+  // INVERSO: si el cliente pide una PIEZA o un ACCESORIO, un equipo COMPLETO nunca es la
+  // respuesta. Un combo de escritorio se llama "… + Monitor Janus 24\"" y por eso entraba
+  // en la búsqueda de "monitor"; lo mismo pasaba con RAM, disco o procesador, que también
+  // aparecen en el nombre de cualquier PC. Se excluye todo lo que sea un equipo completo.
+  const soloPiezas = clase === "componente" || clase === "accesorio";
   // Búsqueda explícita de escritorio/ensamblado (sin mencionar portátil) → excluir portátiles.
   // TIENE_CPU descarta periféricos pero NO laptops (tienen CPU). Sin este filtro un DELL INSPIRON
   // aparece en búsquedas de "ensamblado para edición" porque su Core i7 pasa el filtro de CPU.
   const ESCRITORIO_Q = /\b(ensamblad|escritorio|desktop|torre\s*pc|pc\s*torre|all.?in.?one|aio|todo.?en.?uno|workstation|gaming\s*pc)\b/i;
   const PORTATIL_Q   = /\b(laptop|port[aá]til|notebook|ultrabook)\b/i;
   const soloEscritorio = ESCRITORIO_Q.test(consulta) && !PORTATIL_Q.test(consulta);
+  // Simétrico: si el cliente pide PORTÁTIL (y no menciona escritorio), excluir equipos de
+  // escritorio. Sin esto, un "JANUS WORKSTATION … + Monitor 27\"" entra en la búsqueda de
+  // "portátil i7 16GB" porque comparte CPU y RAM, y el nombre de un portátil casi nunca
+  // contiene la palabra "portátil". Detector: `monitorStatusFromName` devuelve null solo
+  // para equipos con pantalla propia (portátiles); una torre o un combo con monitor no.
+  const soloPortatil = PORTATIL_Q.test(consulta) && !ESCRITORIO_Q.test(consulta);
 
   const combinados = [...locales, ...catalogo]
     .filter((x) => x.score > 0)
@@ -261,13 +407,49 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     // el filtro por segmento solo aplica al catálogo (las listas de proveedor no traen segmento)
     .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true))
     .filter((x) => !soloEquipos || TIENE_CPU.test(x.prod.nombre))
-    .filter((x) => !soloEscritorio || (x.prod.categoria !== "portatil" && !PORTATIL_Q.test(x.prod.nombre)));
+    .filter((x) => !!formato || !soloPiezas || formatoDeProducto(x.prod.categoria, x.prod.nombre) === null)
+    // FORMATO EXPLÍCITO (lo manda Andrea): manda sobre cualquier deducción del texto.
+    // La coincidencia es ESTRICTA: si el cliente pidió un equipo completo de cierto
+    // formato, un producto que no es ese formato nunca es una respuesta válida — ni
+    // otro formato (portátil en una búsqueda de ensamblado) ni una pieza suelta
+    // (un "INTEL CORE I7 12700F" pelado colándose entre los portátiles, que es lo que
+    // pasaba: el filtro de equipos exige que se nombre un CPU y un CPU suelto lo cumple).
+    .filter((x) => !formato || formatoDeProducto(x.prod.categoria, x.prod.nombre) === formato)
+    // Deducción por texto: solo actúa cuando Andrea NO mandó el formato.
+    .filter((x) => !!formato || !soloEscritorio || (x.prod.categoria !== "portatil" && !esPortatilPorNombre(x.prod.nombre)))
+    .filter((x) => !!formato || !soloPortatil || x.prod.categoria === "portatil" || esPortatilPorNombre(x.prod.nombre));
+
+  // ESPECIFICACIÓN EXIGIDA: como el servidor elige por PRECIO, sin esta guarda entraba
+  // siempre lo más barato aunque fuera otro producto — una DDR4 para quien pidió DDR5, una
+  // RTX 5050 para quien pidió una 5060, un Ryzen 5 para quien pidió un i7. Se aplica con
+  // RETROCESO: si no deja nada se usa la lista sin filtrar, porque las listas abrevian
+  // ("(16/512)" en vez de "16GB") y es peor dejar al cliente sin opciones.
+  const cumpleSpecs = (x: Row) => {
+    if (!exigibles.every((t) => x.haystack.includes(t))) return false;
+    if (gamasPedidas.length === 0) return true;
+    const plano = x.haystack.replace(/\s+/g, "");
+    return gamasPedidas.some((g) => plano.includes(g));
+  };
+  // MISMA FAMILIA: un disco duro EXTERNO no es la respuesta para quien pide un SSD NVMe
+  // interno, por mucho que ambos digan "1TB". Se reutiliza el mismo clasificador de la
+  // consulta sobre el nombre + categoría del producto y se exige que coincidan.
+  const mismaFamilia = (x: Row) =>
+    !soloPiezas || clasificarConsulta(`${x.prod.nombre} ${x.prod.categoria}`) === clase;
+
+  // Se afloja por pasos antes que dejar al cliente sin opciones: specs + familia →
+  // solo specs → sin filtrar (las listas abrevian, p. ej. "(16/512)" en vez de "16GB").
+  const estricto = combinados.filter((x) => cumpleSpecs(x) && mismaFamilia(x));
+  const soloEspecs = estricto.length > 0 ? estricto : combinados.filter(cumpleSpecs);
+  // NO se afloja más allá de esto: si nada local cumple lo que pidió el cliente, la
+  // respuesta correcta es "no hay disponibilidad local" y que Andrea lo consiga por web.
+  // Devolver lo que sea era peor — ofrecía un Ryzen 3 a quien pidió un Ryzen 5 con RTX 5060.
+  const conSpecs = soloEspecs;
 
   // Orden: primero local, luego por relevancia y precio. Dedupe por referencia/nombre
   // conservando la primera (la versión local con prioridad).
-  combinados.sort((a, b) => a.prioridad - b.prioridad || b.score - a.score || (a.precio ?? Infinity) - (b.precio ?? Infinity));
+  conSpecs.sort((a, b) => a.prioridad - b.prioridad || b.score - a.score || (a.precio ?? Infinity) - (b.precio ?? Infinity));
   const seen = new Set<string>();
-  const deduped = combinados.filter((x) => {
+  const deduped = conSpecs.filter((x) => {
     const key = x.prod.nombre.toLowerCase().replace(/[^a-z0-9]/g, "");
     if (!key || seen.has(key)) return key ? false : true;
     seen.add(key);
@@ -287,7 +469,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   if (productos.length === 0) {
     nota = "INTERNO: no hay disponibilidad local. Llama cotizar_web — buscará primero en tiendas colombianas (entrega 1–3 días) y luego en EE.UU. (6–10 días). Ofrece al menos 3 opciones con su tiempo de entrega.";
   } else if (productos.length >= 3) {
-    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta al menos 3 COPIANDO su campo "ficha" TAL CUAL (specs y precio EXACTOS — no los cambies ni combines productos); solo antepón la etiqueta y la entrega rápida. NO uses cotizar_web (ya hay suficientes locales). Al registrar usa proveedor="colombia".`;
+    nota = `INTERNO: ${productos.length} opciones DISPONIBLES LOCALMENTE (entrega 1 a 3 días hábiles). Presenta COPIANDO los "bloque" del campo "seleccion" TAL CUAL y en su orden (ya vienen elegidos, etiquetados y con la entrega). NO uses cotizar_web (ya hay suficientes locales). Al registrar usa proveedor="colombia".`;
   } else {
     // Construir descripción de specs del(los) producto(s) local(es) para guiar la búsqueda de alternativas.
     const specsLocales = productos.map((p) => {
@@ -316,8 +498,8 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 //         interna en el admin; el cliente nunca ve estos precios
 //
 // Tiendas de EE.UU. PRIORIZADAS para B2B/empresarial (el orden es la prioridad).
-// El precio de EE.UU. lo busca Anthropic (lee la página y da el precio real;
-// Serper no puede con estos sitios). La comparación local sí va por Serper.
+// El precio de EE.UU. lo trae Serper Shopping (gl=us) y DeepSeek solo lo estructura:
+// DeepSeek no navega la web. Este orden es la prioridad de vendedor al rankear.
 const SITIOS_US = [
   "cdw.com", "serversupply.com", "provantage.com", "insight.com", "connection.com", // infraestructura empresarial
   "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com",               // general
@@ -412,7 +594,7 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
 //  En todas las categorías el ORDEN de fuentes es idéntico:
 //    1. buscar_productos (listas locales — GRATIS, siempre primero)
 //    2. cotizar_web → Colombia primero (Serper ~$0.001)
-//    3. EE.UU. SOLO si Colombia < 3 resultados (Anthropic web_search ~$0.06 — verdadero último recurso)
+//    3. EE.UU. SOLO si Colombia < 3 resultados (Serper gl=us + estructura DeepSeek — último recurso)
 const COMPUTER_QUERY  = /\b(laptop|port[aá]til|notebook|computador(a)?|desktop|pc de escritorio|todo en uno|all.?in.?one|aio|tablet|ipad|torre pc)\b/i;
 const COMPONENT_QUERY = /\b(motherboard|placa( base| madre)?|tarjeta madre|mainboard|memoria( ram)?|ram|ddr[2345]|disco( duro)?|hdd|ssd|nvme|m\.?2|sata|procesador|cpu|ryzen|core i[3579]|i[3579]-\w|xeon|pentium|celeron|tarjeta (de )?(video|gr[aá]fica|sonido|red|raid)|gpu|vga|rtx|gtx|radeon|geforce|raid|sound ?card|psu|fuente de poder|disipador|cooler|ventilador|refrigeraci[oó]n|switch|router|access point|punto de acceso|servidor|server|\bnas\b|storage|firewall)\b/i;
 // Accesorios / consumo masivo: baratos y abundantes local → Colombia primero, EE.UU.
@@ -438,32 +620,43 @@ function clasificarConsulta(consulta: string): Categoria {
   return "otro";
 }
 
-const SUB_SYSTEM = `Eres un buscador de precios de tecnología en EE.UU. para una tienda colombiana B2B (atiende empresas).
-
-Traduce la consulta al inglés. Solo artículos NUEVOS. El precio va en dólares, SIN el envío internacional a Colombia.
-
-PRIORIZA estas tiendas en este ORDEN (muchas las ignoran otros buscadores, pero para equipo empresarial son clave):
-1. INFRAESTRUCTURA EMPRESARIAL — switches, routers, access points, servidores, storage/NAS, y marcas Cisco, Ubiquiti/UniFi, Dell, HPE, Synology, Aruba, Fortinet: **cdw.com, serversupply.com, provantage.com, insight.com, connection.com**
-2. GENERAL — laptops, componentes, monitores, impresoras, periféricos: **newegg.com, bhphotovideo.com, bestbuy.com, microcenter.com**
-3. ÚLTIMO RECURSO (solo si no hay en las anteriores): amazon.com, ebay.com (en eBay suma el flete interno de EE.UU.)
+// Prompt 1: traducir la consulta del cliente a un query de compra en inglés.
+// DeepSeek no navega: solo produce el término de búsqueda que se le pasa a Serper (gl=us).
+const US_QUERY_SYSTEM = `Eres un experto en compras de tecnología en EE.UU. para una tienda colombiana B2B.
+Recibes lo que pide un cliente en español y devuelves el MEJOR término de búsqueda en INGLÉS para Google Shopping de EE.UU.
 
 Reglas:
-- Si el cliente busca red/servidores/storage/equipo empresarial, EMPIEZA por el grupo 1.
-- Si el mismo modelo aparece en varias tiendas, devuelve el de MENOR precio.
-- Devuelve HASTA 5 opciones distintas (económica, rendimiento, relación precio/calidad). Máximo 6 búsquedas.
+- Traduce y usa la terminología comercial real del producto (ej: "portátil empresarial i7 16GB" → "business laptop core i7 16GB 512GB SSD").
+- Conserva marca, modelo, capacidades y tamaños si el cliente los dio; no inventes ninguno.
+- Sin comillas, sin operadores, sin nombres de tienda. Entre 3 y 10 palabras.
+- Solo producto NUEVO (no agregues "used" ni "refurbished").
 
-Devuelve EXCLUSIVAMENTE JSON válido (sin texto, sin markdown, sin \`\`\`):
-{"productos":[
-  {"nombre":"...","marca":"...","modelo":"...","specs":"...","source":"us","usd":0.00,"tier":"component","fuente":"<url directa>"}
-]}
+Responde EXCLUSIVAMENTE con json de esta forma: {"query":"..."}`;
 
-"tier": "laptop" | "desktop" | "component" (servidores/torres/workstations/all-in-one = "desktop"; switches/APs/accesorios = "component").
+// Prompt 2: estructurar los resultados crudos de Serper (EE.UU.) en fichas.
+// El precio y la URL NO los produce el modelo: el servidor los toma del candidato
+// por su índice "i". Así el modelo no puede inventar un precio (fidelidad absoluta).
+const US_NORMALIZE_SYSTEM = `Eres un catalogador de productos de tecnología para una tienda colombiana B2B.
+Recibes una consulta de cliente y una lista json de anuncios reales de tiendas de EE.UU. (cada uno con "i", "title" y "store").
+
+Tu tarea: elegir HASTA 5 anuncios que REALMENTE correspondan a lo que pide el cliente y describirlos de forma limpia.
+
+Reglas innegociables:
+- NUNCA inventes ni modifiques precios ni URLs: no los devuelvas, el sistema los toma del anuncio por su "i".
+- Usa SOLO la información que aparece en el "title". Si un dato no está en el título, NO lo pongas.
+- Descarta accesorios, repuestos, lotes y anuncios que no sean el producto pedido.
+- Si el mismo modelo aparece varias veces, deja UNA sola entrada (la de menor "i").
+- Prioriza tiendas empresariales (cdw, serversupply, provantage, insight, connection) para redes, servidores y storage.
+- Si ningún anuncio sirve, devuelve la lista vacía.
+
+"tier": "laptop" | "desktop" | "component" (servidores, torres, workstations y todo-en-uno = "desktop"; switches, access points, componentes y accesorios = "component").
 "specs": FORMATO SEGÚN TIER:
   - laptop: "Procesador | RAM | Almacenamiento | Pantalla | GPU (si dedicada)" — ej: "Core i5-1235U | 16GB DDR4 | 512GB NVMe | 15.6\" FHD | Intel Iris Xe"
-  - desktop: "Procesador | RAM | Almacenamiento | Pantalla/Monitor | GPU" — el dato de PANTALLA es OBLIGATORIO: si es Todo-en-Uno (AIO) pon el tamaño (ej: 'Pantalla 24\" FHD'); si trae monitor en el combo pon su tamaño (ej: 'Monitor 22\"'); si es torre sin monitor pon 'Torre (sin monitor)'. Ej AIO: "Core i5-1335U | 16GB | 512GB SSD | Pantalla 24\" FHD | Iris Xe". Ej torre: "Ryzen 5 5600G | 16GB DDR4 | 1TB NVMe | Torre (sin monitor) | Gráfica integrada".
-  - component: descripción breve 3–8 palabras en español.
+  - desktop: "Procesador | RAM | Almacenamiento | Pantalla/Monitor | GPU" — el dato de PANTALLA es OBLIGATORIO: si es Todo-en-Uno (AIO) pon el tamaño (ej: 'Pantalla 24\" FHD'); si trae monitor en el combo pon su tamaño (ej: 'Monitor 22\"'); si es torre sin monitor pon 'Torre (sin monitor)'.
+  - component: descripción breve de 3 a 8 palabras en español.
 
-Si no encuentras nada: {"productos":[]}.`;
+Responde EXCLUSIVAMENTE con json de esta forma:
+{"productos":[{"i":0,"nombre":"...","marca":"...","modelo":"...","specs":"...","tier":"component"}]}`;
 
 type WebProducto = {
   nombre?: string; marca?: string; modelo?: string; specs?: string;
@@ -509,27 +702,94 @@ const USADO = /\b(usado|segunda\s*mano|reacondicionado|recondicionado|refurbishe
 // proveedores colombianos — su precio no es un costo realista para vender en Colombia.
 const INTL_SELLER = /\b(ebay|aliexpress|alibaba|amazon|made-in-china|microless|banggood|temu|wish|walmart|newegg|dhgate)\b/i;
 
-// PRECIO EE.UU. (lo que paga el cliente) → búsqueda web de Anthropic: es lo único
-// que lee la página y da el precio REAL (Serper no puede con estos sitios). Las
-// tiendas B2B priorizadas viven en SUB_SYSTEM.
-async function fetchUsViaAnthropic(anthropic: Anthropic, consulta: string): Promise<WebProducto[]> {
-  try {
-    const sub = await anthropic.messages.create(
-      {
-        model: MODEL_WEB,
-        max_tokens: 2500,
-        system: SUB_SYSTEM,
-        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }],
-        messages: [{ role: "user", content: consulta }],
-      },
-      { timeout: 60000, maxRetries: 0 },
-    );
-    const text = sub.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("\n");
-    const m = text.match(/\{[\s\S]*\}/);
-    return m ? ((JSON.parse(m[0]).productos ?? []) as WebProducto[]) : [];
-  } catch {
-    return [];
+// PRECIO EE.UU. (lo que paga el cliente).
+//
+// DeepSeek NO tiene búsqueda web del lado del servidor (la API de Anthropic sí la
+// tenía con web_search). El flujo se reparte en dos partes con roles claros:
+//   1. DATO CRUDO (precio + tienda + URL) → Serper Shopping gl=us. Determinista.
+//   2. ESTRUCTURA (marca, modelo, specs, tier) → DeepSeek, SIN tocar precio ni URL.
+// Consecuencia operativa: sin key de Serper NO hay cotización de EE.UU.
+// Precio en USD de Google Shopping US: "$1,299.00" → 1299.00
+function parseUsdPrice(s?: string): number | null {
+  if (!s) return null;
+  const m = s.replace(/,/g, "").match(/(\d+(?:\.\d{1,2})?)/);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// Segunda mano en inglés (Serper US). Complementa a USADO (español).
+const USADO_US = /\b(used|refurb(ished)?|renewed|open[\s-]?box|pre[\s-]?owned|for parts|as[\s-]is)\b/i;
+
+/** Posición del vendedor dentro de SITIOS_US (menor = más prioritario). */
+function usStoreRank(source?: string, link?: string): number {
+  const hay = `${source ?? ""} ${link ?? ""}`.toLowerCase();
+  const i = SITIOS_US.findIndex((d) => hay.includes(d) || hay.includes(d.split(".")[0]));
+  return i === -1 ? SITIOS_US.length : i;
+}
+
+type UsCandidato = { i: number; title: string; store: string; usd: number; link: string };
+
+async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: boolean): Promise<WebProducto[]> {
+  const serperKey = getSerperApiKey();
+  if (!serperKey) return [];
+
+  // 1) Consulta en inglés (DeepSeek). Si falla, se usa la consulta original tal cual.
+  const traducida = await deepseekJson<{ query?: string }>(ds, US_QUERY_SYSTEM, consulta, {
+    model: MODEL_WEB, maxTokens: 120, timeoutMs: 20_000,
+  });
+  const query = (traducida?.query ?? "").trim() || consulta;
+
+  // 2) Anuncios reales de EE.UU. (Serper). Solo NUEVOS y con precio parseable.
+  const raw = await serperShopping(query, "us", serperKey).catch((): SerperShoppingItem[] => []);
+  const candidatos: UsCandidato[] = [];
+  for (const it of raw) {
+    const usd = parseUsdPrice(it.price);
+    if (!usd) continue;
+    if (it.condition && it.condition !== "new") continue;
+    const title = it.title ?? "";
+    if (USADO.test(title) || USADO_US.test(title)) continue;
+    if (!isComputer && SERPER_NOISE.test(title)) continue;
+    candidatos.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
   }
+  if (candidatos.length === 0) return [];
+
+  // Ordena por prioridad de tienda B2B y luego por precio; reindexa para el modelo.
+  candidatos.sort((a, b) => usStoreRank(a.store, a.link) - usStoreRank(b.store, b.link) || a.usd - b.usd);
+  const top = candidatos.slice(0, 12).map((c, i) => ({ ...c, i }));
+
+  // 3) Estructura (DeepSeek). El precio y la URL NO vienen del modelo: se re-adjuntan
+  //    desde `top[i]`, de modo que una alucinación no puede alterar un precio.
+  const payload = JSON.stringify({
+    consulta,
+    anuncios: top.map((c) => ({ i: c.i, title: c.title, store: c.store })),
+  });
+  const parsed = await deepseekJson<{ productos?: { i?: number; nombre?: string; marca?: string; modelo?: string; specs?: string; tier?: string }[] }>(
+    ds, US_NORMALIZE_SYSTEM, payload, { model: MODEL_WEB, maxTokens: 1500, timeoutMs: 45_000 },
+  );
+
+  const elegidos = parsed?.productos;
+  if (!Array.isArray(elegidos) || elegidos.length === 0) {
+    // Sin estructura utilizable: devolvemos los 3 mejores anuncios con su título crudo.
+    return top.slice(0, 3).map((c) => ({
+      nombre: c.title, source: "us" as const, usd: c.usd, tier: "component" as ShippingTier, fuente: c.link,
+    }));
+  }
+
+  const out: WebProducto[] = [];
+  for (const p of elegidos.slice(0, 5)) {
+    const c = top[Number(p.i)];
+    if (!c) continue;                       // índice inventado → se descarta
+    out.push({
+      nombre: (p.nombre ?? "").trim() || c.title,
+      marca: p.marca, modelo: p.modelo, specs: p.specs,
+      source: "us",
+      usd: c.usd,                            // precio AUTORITATIVO del anuncio
+      tier: p.tier as ShippingTier,
+      fuente: c.link,                        // URL AUTORITATIVA del anuncio
+    });
+  }
+  return out;
 }
 
 // COMPARACIÓN LOCAL (solo admin) → Serper Shopping gl=co: aquí el precio SÍ viene
@@ -580,7 +840,7 @@ function respuestaCotizar(productos: QuoteProducto[]) {
   return {
     encontrados: productos.length,
     productos: productos.map((p) => ({ ...p, ficha: fichaWeb(p) })),
-    nota: `INTERNO: ${origenNota} DEBES presentar AL MENOS 3 opciones COPIANDO el campo "ficha" de cada una TAL CUAL: specs y precio EXACTOS, sin cambiar ni una cifra, sin agregar specs que no estén y sin combinar dos productos en uno. Solo antepón la etiqueta (💰/🎯/⚡) e indica la ENTREGA de CADA opción por separado. Al registrar: origen='co' → proveedor="colombia"; origen='us' → proveedor="eeuu" con costoUSD del producto. NO menciones búsqueda, importación ni cotización.`,
+    nota: `INTERNO: ${origenNota} Presenta COPIANDO los "bloque" del campo "seleccion" TAL CUAL y en su orden: ya vienen elegidos entre lo local y lo de la web, ordenados por precio, etiquetados (💰/🎯/⚡) y con la entrega de cada uno. No cambies ni una cifra, no agregues specs que no estén, no combines dos productos en uno. Al registrar: origen='co' → proveedor="colombia"; origen='us' → proveedor="eeuu" con costoUSD del producto. NO menciones búsqueda, importación ni cotización.`,
   };
 }
 
@@ -618,24 +878,48 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
   });
 
   const fuenteRef = locales.find((p) => p.fuente)?.fuente ?? "";
+  // Nombre de la tienda: primero por URL y, si no se reconoce, el vendedor que reporta
+  // Serper. Los enlaces de Google Shopping son redirecciones (google.com/search?ibp=oshop…)
+  // donde la tienda NO aparece en la URL, así que sin este respaldo el admin veía "Sitio
+  // local" y no sabía de dónde había salido el precio.
+  const porUrl = siteNameFromUrl(fuenteRef);
   const localData: LocalData = {
     precioMercadoLocal: locales[0].copLocal as number,  // la más barata (referencia admin)
     fuenteLocal:        fuenteRef,
     cantidadListados:   locales.length,
-    siteLocal:          siteNameFromUrl(fuenteRef),
+    siteLocal:          porUrl !== "Sitio local" ? porUrl : ((locales[0].vendedor ?? "").trim() || "Sitio local"),
   };
   return { productosCO, localData };
 }
 
-// EE.UU. (Anthropic web_search) → precio al cliente con fórmula de importación.
+// EE.UU. (Serper gl=us + estructura de DeepSeek) → precio al cliente con fórmula de importación.
 function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
   const VALID_TIERS = new Set<ShippingTier>(["component", "laptop", "desktop"]);
   const seenUS = new Map<string, QuoteProducto>();
+  const fijados = new Set<string>(); // claves con precio ya fijado por el caché
   for (const p of usParsed) {
     if (typeof p.usd !== "number" || p.usd <= 0) continue;
+    const key = (p.modelo ?? p.nombre ?? "").toLowerCase().replace(/\s+/g, "");
+    if (fijados.has(key)) continue; // otro listado del mismo modelo no baja el precio fijado
+
+    // PRECIO FIJO POR PRODUCTO: si este modelo ya se cotizó y la cotización sigue vigente
+    // (TTL 7 días), se respeta ESE precio. Google Shopping devuelve vendedores distintos
+    // en cada búsqueda, así que sin esto el mismo producto salía a un precio distinto
+    // según el momento. Para re-cotizar a propósito está "actualizar precio" en el admin.
+    const previo = getWebQuoteStrict(p.modelo, p.nombre);
+    if (previo && previo.origen === "us" && previo.costoUSD > 0 && previo.precioCOP > 0) {
+      seenUS.set(key, {
+        nombre: p.nombre, marca: p.marca, modelo: p.modelo, specs: p.specs,
+        precioCOP: previo.precioCOP, costoUSD: previo.costoUSD,
+        costoTotalCOP: previo.costoTotalCOP,
+        fuente: previo.urlCompra || p.fuente || "", origen: "us",
+      });
+      fijados.add(key);
+      continue;
+    }
+
     const tier: ShippingTier = VALID_TIERS.has(p.tier as ShippingTier) ? (p.tier as ShippingTier) : "component";
     const c = cotizarImportacion(p.usd, tier);
-    const key = (p.modelo ?? p.nombre ?? "").toLowerCase().replace(/\s+/g, "");
     const prev = seenUS.get(key);
     if (!prev || p.usd < (prev.costoUSD ?? Infinity)) {
       seenUS.set(key, {
@@ -651,7 +935,7 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
   return [...seenUS.values()].sort((a, b) => a.precioCOP - b.precioCOP).slice(0, 5);
 }
 
-async function cotizarWeb(anthropic: Anthropic, consulta: string) {
+async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
   const cached = getCachedQuery(consulta);
   if (cached) return respuestaCotizar(cached.productos);
@@ -672,10 +956,10 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
       ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
     }
   } else if (mode === "eeuu_only") {
-    productosUS = construirProductosUS(await fetchUsViaAnthropic(anthropic, consulta));
+    productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
   } else if (mode === "eeuu_co") {
     // EE.UU. primero; Colombia rellena si faltan opciones.
-    productosUS = construirProductosUS(await fetchUsViaAnthropic(anthropic, consulta));
+    productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
     if (productosUS.length < 3 && serperKey) {
       const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
       ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
@@ -685,7 +969,7 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
     const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo") : [];
     ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
     if (productosCO.length < 3) {
-      productosUS = construirProductosUS(await fetchUsViaAnthropic(anthropic, consulta));
+      productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
     }
   }
 
@@ -715,6 +999,27 @@ async function cotizarWeb(anthropic: Anthropic, consulta: string) {
 //   2) FALLBACK BOM: suma de piezas identificables + base de armado, si no hay config.
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** ¿Dos nombres normalizados se refieren al MISMO producto por contención?
+ *
+ *  Exige que sean de tamaño COMPARABLE. Sin esa guarda, el nombre de un equipo completo
+ *  contiene el de sus propias piezas — "pctorregamer‹amdryzen57600›x16gb512gbssdrtx5060"
+ *  contiene "amdryzen57600", el CPU suelto — y el equipo terminaba tomando el precio y el
+ *  costo de la pieza. Caso real: "PC Torre Gamer Ryzen 5 7600X + RTX 5060" cotizado en
+ *  $1.119.000 (costo $932.000 = el procesador pelado) cuando el mercado lo tiene a $5.199.900. */
+/** Tramo de flete de importación según lo que sea el producto. Un portátil y un
+ *  escritorio pagan mucho más flete que una pieza suelta. */
+function tierDeNombre(nombre: string): ShippingTier {
+  if (esPortatilPorNombre(nombre)) return "laptop";
+  if (esEscritorioCompuesto(nombre)) return "desktop";
+  return "component";
+}
+
+function contencionFiable(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (!(a.includes(b) || b.includes(a))) return false;
+  return Math.min(a.length, b.length) / Math.max(a.length, b.length) >= 0.6;
+}
 
 /** Costo base de las piezas que el nombre casi nunca detalla (board + fuente + chasis
  *  + mano de obra). Se suma SOLO en el fallback BOM. Ajustable si cambia el costo de armado. */
@@ -765,6 +1070,45 @@ function esEscritorioCompuesto(nombre: string): boolean {
  *  cliente más cercano al cotizado (misma gama). Nunca toma piezas sueltas. */
 const GPU_DEDICADA = /\b(rtx|gtx|radeon|geforce|quadro)\b|\brx\s?\d{3,4}\b/;
 
+/** RAM y almacenamiento declarados en el nombre de un equipo, en GB. Cubre las tres
+ *  formas que conviven en los datos:
+ *    "16GB DDR4 SSD 512GB SATA"  → 16 / 512   (listas Janus, verboso)
+ *    "16GB 512GB"                → 16 / 512   (catálogo: RAM primero, es la convención)
+ *    "(16/512)"                  → 16 / 512   (abreviatura de Ledacom)
+ *    "SSD 2TB"                   → · / 2048
+ *  Sin esto no se puede saber si dos equipos con el mismo CPU son la misma configuración. */
+function ramYDisco(nombre: string): { ram: number | null; disco: number | null } {
+  const n = nombre.toLowerCase();
+
+  const corto = n.match(/\(\s*(\d{1,3})\s*\/\s*(\d{1,4})\s*(tb|gb)?\s*\)/);
+  if (corto) {
+    let disco = parseInt(corto[2], 10);
+    if (corto[3] === "tb" || disco <= 8) disco *= 1024; // "(16/2tb)" y "(16/2)" = 2TB
+    return { ram: parseInt(corto[1], 10), disco };
+  }
+
+  const caps: { gb: number; i: number }[] = [];
+  const re = /(\d+(?:[.,]\d+)?)\s*(tb|gb)\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(n)) !== null) {
+    caps.push({ gb: parseFloat(m[1].replace(",", ".")) * (m[2] === "tb" ? 1024 : 1), i: m.index });
+  }
+  if (caps.length === 0) return { ram: null, disco: null };
+
+  // RAM: la capacidad pegada a "ram/ddr"; si no, la primera que sea de tamaño de RAM.
+  const pegadaARam = caps.find((c) => /\b(ram|ddr[2345]|dimm)\b/.test(n.slice(Math.max(0, c.i - 14), c.i + 18)));
+  const ram = pegadaARam?.gb ?? caps.find((c) => c.gb <= 128)?.gb ?? null;
+  // Disco: la primera capacidad que no es la RAM y tiene tamaño de disco.
+  const disco = caps.find((c) => c.gb !== ram && c.gb >= 120)?.gb ?? null;
+  return { ram, disco };
+}
+
+/** Dos capacidades son "la misma" con 10 % de tolerancia: las listas escriben 500, 512
+ *  o 480 para el mismo disco. */
+function mismaCapacidad(a: number | null, b: number | null): boolean {
+  return a != null && b != null && Math.abs(a - b) <= Math.max(a, b) * 0.1;
+}
+
 function costoEscritorioConfig(
   nombre: string,
   precioCliente: number,
@@ -781,16 +1125,38 @@ function costoEscritorioConfig(
   const reqGPU = GPU_DEDICADA.test(nombre.toLowerCase());
   const mismaGPU = candidatos.filter((p) => GPU_DEDICADA.test(p.nombre.toLowerCase()) === reqGPU);
   if (mismaGPU.length > 0) candidatos = mismaGPU;
-  // Entre las del mismo CPU y misma clase de GPU, la de precio al cliente más cercano al cotizado.
-  let best = candidatos[0];
-  let bestDiff = Infinity;
-  for (const c of candidatos) {
-    const diff = Math.abs(applyMargin(c.precio_costo, "escritorio", margins) - precioCliente);
-    if (diff < bestDiff) { bestDiff = diff; best = c; }
+
+  // Mismo formato de monitor: un combo con monitor cuesta bastante más que la torre sola,
+  // así que mezclarlos falsea el costo.
+  const reqMon = INCLUYE_MONITOR.test(nombre);
+  const mismoMon = candidatos.filter((p) => INCLUYE_MONITOR.test(p.nombre) === reqMon);
+  if (mismoMon.length > 0) candidatos = mismoMon;
+
+  // MISMAS CAPACIDADES (RAM y disco). Esto es lo que faltaba: antes se elegía la config
+  // de PRECIO más cercano al cotizado, y como el precio cotizado SALE del costo el
+  // criterio era circular — para un equipo de 512GB tomaba como costo uno de 2TB
+  // ($2.479.000 en vez de $2.049.000) y el margen del panel salía subestimado ~$430.000.
+  const req = ramYDisco(nombre);
+  if (req.ram != null) {
+    const f = candidatos.filter((p) => mismaCapacidad(ramYDisco(p.nombre).ram, req.ram));
+    if (f.length > 0) candidatos = f;
   }
-  // Si la config más cercana difiere más del 30 % del precio cotizado, los specs son
-  // distintos (p.ej. 16 GB vs 32 GB). BOM calcula mejor desde las piezas reales.
-  if (bestDiff / precioCliente > 0.30) return null;
+  if (req.disco != null) {
+    const f = candidatos.filter((p) => mismaCapacidad(ramYDisco(p.nombre).disco, req.disco));
+    if (f.length > 0) candidatos = f;
+  }
+
+  // Ya coinciden en CPU, GPU, monitor y capacidades → la MÁS BARATA es el costo real
+  // de conseguir ese equipo.
+  const best = candidatos.reduce((a, b) => (b.precio_costo < a.precio_costo ? b : a));
+
+  // Si el nombre no declaraba capacidades, el emparejado quedó flojo: se conserva la
+  // salvaguarda antigua (si el precio resultante se aleja >30 % del cotizado, el BOM
+  // desde piezas reales calcula mejor).
+  if (req.ram == null && req.disco == null) {
+    const precioConfig = applyMargin(best.precio_costo, "escritorio", margins);
+    if (Math.abs(precioConfig - precioCliente) / precioCliente > 0.30) return null;
+  }
   return { precioCosto: best.precio_costo, proveedor: best.proveedor, lista: best.listaNombre };
 }
 
@@ -871,24 +1237,37 @@ function buscarCostoLocal(
   const targetModelo = modelo ? norm(modelo) : "";
   if (target.length < 4) return null;
 
-  // Tokens del nombre original (≥4 chars) para el fallback por intersección.
-  const palabras = nombre.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(s => s.length >= 4);
+  // Tokens ÚNICOS del nombre original (≥4 chars) para el fallback por intersección.
+  // El Set es imprescindible: "Samsung DDR3L-1600 SODIMM 8GB … Samsung Chip Notebook
+  // Memory" repite "samsung", y contando repeticiones esa ÚNICA palabra compartida
+  // alcanzaba el umbral de 2 — la memoria terminaba emparejada con un MONITOR Samsung
+  // de $404.000 y el pedido mostraba margen negativo.
+  const palabras = [...new Set(
+    nombre.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((s) => s.length >= 4),
+  )];
 
-  const candidatos = loadActiveProducts().filter((p) => {
+  // Se separa el emparejado FUERTE (nombre/modelo) del FLOJO (tokens sueltos) para no
+  // dejar que una coincidencia floja compita con una buena.
+  const fuertes: ActiveProduct[] = [];
+  const flojos: ActiveProduct[] = [];
+  for (const p of loadActiveProducts()) {
     const n = norm(p.nombre);
-    if (!n) return false;
-    if (n === target) return true;
-    if (n.length >= 6 && (n.includes(target) || target.includes(n))) return true;
-    if (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false))) return true;
+    if (!n) continue;
+    if (n === target
+      || (n.length >= 6 && contencionFiable(n, target))
+      || (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false)))) {
+      fuertes.push(p);
+      continue;
+    }
     // Fallback por tokens: cubre "Monitor Samsung 27\" 1920×1080" vs "Monitor Samsung 27\" LF27T350"
     // (las listas usan el modelo corto; Andrea usa la descripción con specs completas).
     if (palabras.length >= 2) {
       let hits = 0;
       for (const tok of palabras) if (n.includes(tok)) hits++;
-      if (hits >= 2) return true;
+      if (hits >= 2) flojos.push(p);
     }
-    return false;
-  });
+  }
+  const candidatos = fuertes.length > 0 ? fuertes : flojos;
   if (candidatos.length === 0) return null;
 
   const margins = loadMargins();
@@ -914,14 +1293,23 @@ function fuentesDeListas(nombre: string, modelo: string | undefined): FuenteComp
   const escritorio = esEscritorioCompuesto(nombre);
   const token = escritorio ? cpuToken(nombre) : null;
   const reqGPU = escritorio ? GPU_DEDICADA.test(nombre.toLowerCase()) : false;
+  // Las capacidades también cuentan: emparejar solo por CPU hacía que la fila "lista"
+  // mostrara una configuración MÁS BARATA y distinta (otra RAM u otro disco) que la
+  // vendida, y el admin comparaba contra un equipo que no era el suyo.
+  const reqCap = escritorio ? ramYDisco(nombre) : { ram: null, disco: null };
+  const reqMon = escritorio ? INCLUYE_MONITOR.test(nombre) : false;
   const porProveedor = new Map<string, number>();
   for (const p of loadActiveProducts()) {
     const n = norm(p.nombre);
+    const capP = escritorio ? ramYDisco(p.nombre) : { ram: null, disco: null };
     const match = escritorio
       ? (p.categoria?.startsWith("escritorio") && !!token && n.includes(token) &&
-         GPU_DEDICADA.test(p.nombre.toLowerCase()) === reqGPU)
+         GPU_DEDICADA.test(p.nombre.toLowerCase()) === reqGPU &&
+         INCLUYE_MONITOR.test(p.nombre) === reqMon &&
+         (reqCap.ram   == null || mismaCapacidad(capP.ram, reqCap.ram)) &&
+         (reqCap.disco == null || mismaCapacidad(capP.disco, reqCap.disco)))
       : (n === target
-        || (n.length >= 6 && (n.includes(target) || target.includes(n)))
+        || (n.length >= 6 && contencionFiable(n, target))
         || (targetModelo.length >= 4 && (n.includes(targetModelo) || (p.referencia ? norm(p.referencia) === targetModelo : false))));
     if (!match) continue;
     const prov = (p.proveedor || p.listaNombre || "lista").toLowerCase();
@@ -956,7 +1344,7 @@ function siteNameFromUrl(url: string): string {
 }
 
 /** Listados individuales más BARATOS de Colombia vía Serper (~$0.001, servicio
- *  aparte, NO gasta créditos de Anthropic). Una opción por tienda con su enlace,
+ *  aparte, NO gasta créditos de DeepSeek). Una opción por tienda con su enlace,
  *  descartando outliers (productos errados / variantes / mayoristas). Para que el
  *  admin compare dónde comprar. Devuelve [] si no hay key/resultados o si falla. */
 async function serperColombiaListings(nombre: string, modelo?: string, precioCliente?: number): Promise<FuenteComparacion[]> {
@@ -1021,28 +1409,94 @@ async function serperColombiaListings(nombre: string, modelo?: string, precioCli
   }));
 }
 
-async function registrarPedido(input: unknown): Promise<unknown> {
+/** Busca, entre las opciones que el SERVIDOR mostró en esta conversación, la que Andrea
+ *  está registrando. Exacta por nombre normalizado y, si no, por contención (al registrar
+ *  a veces recorta el nombre larguísimo de una lista de proveedor). */
+function opcionMostrada(acc: Acumulador, nombre: string): OpcionSel | null {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const objetivo = norm(nombre);
+  if (objetivo.length < 4) return null;
+  const todas = [...acc.locales, ...acc.web];
+  for (const o of todas) if (norm(o.nombre) === objetivo) return o;
+  for (const o of todas) {
+    const k = norm(o.nombre);
+    if (k.length >= 8 && contencionFiable(k, objetivo)) return o;
+  }
+  return null;
+}
+
+/** Precio al cliente de un producto de las fuentes LOCALES, con la MISMA fórmula que usa
+ *  `buscar_productos` (listas → costo × margen de SU categoría; catálogo → su precio
+ *  publicado). El acumulador solo vive dentro de una petición y el pedido se registra en
+ *  una posterior, así que esta re-derivación es la que garantiza que cotización y pedido
+ *  coincidan aunque el cliente confirme varios mensajes después. `null` si no se halla. */
+type FichaLocal = { precio: number; costo?: number; proveedor?: string };
+
+function fichaLocalDeCatalogo(nombre: string): FichaLocal | null {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const objetivo = norm(nombre);
+  if (objetivo.length < 6) return null;
+
+  const margins = loadMargins();
+  // Mismo orden de preferencia que buscar_productos: listas de proveedor antes que catálogo.
+  const candidatos: { key: string; ficha: FichaLocal }[] = [];
+  for (const p of loadActiveProducts()) {
+    const precio = applyMargin(p.precio_costo, p.categoria, margins);
+    if (precio > 0) {
+      candidatos.push({ key: norm(p.nombre), ficha: { precio, costo: p.precio_costo, proveedor: p.proveedor } });
+    }
+  }
+  for (const p of loadPublishedBusinessProducts()) {
+    const precio = p.precioDesde ?? p.precio;
+    // El catálogo publicado no guarda costo → el costo se resolverá por config/BOM.
+    if (typeof precio === "number" && precio > 0) candidatos.push({ key: norm(p.nombre), ficha: { precio } });
+  }
+
+  for (const c of candidatos) if (c.key === objetivo) return c.ficha;
+  for (const c of candidatos) {
+    if (c.key.length >= 10 && contencionFiable(c.key, objetivo)) return c.ficha;
+  }
+  return null;
+}
+
+async function registrarPedido(input: unknown, acc: Acumulador): Promise<unknown> {
   const { cliente, producto: rawProducto, proveedorDetalle: pd } = input as {
     cliente: { nombre: string; cedula: string; direccion: string; ciudad: string; telefono: string; email: string };
     producto: { nombre: string; modelo?: string; cantidad: number; precioCOP: number; proveedor: "colombia" | "eeuu" };
     proveedorDetalle?: {
-      urlCompra?: string; costoUSD?: number; proveedorLocal?: "ledacom" | "infoshop" | "manual";
+      urlCompra?: string; costoUSD?: number; proveedorLocal?: string;
     };
   };
 
   const producto = { ...rawProducto };
+  // La cantidad la manda el modelo: se acota para que un 0, un negativo o un valor
+  // absurdo no queden en un pedido real.
+  const cantidadCruda = Math.floor(Number(producto.cantidad));
+  producto.cantidad = Number.isFinite(cantidadCruda) ? Math.min(Math.max(cantidadCruda, 1), 999) : 1;
 
   // Recuperamos del caché del servidor la cotización US + comparación local que
   // generó cotizar_web. Busca por nombre/modelo Y por URL (más estable cuando Andrea
   // reformatea el nombre al registrar). Es la fuente de verdad: precio y costo NUNCA
   // dependen de lo que mande Andrea.
-  const quote = getWebQuote(producto.nombre, producto.modelo, pd?.urlCompra);
+  // El fallback por tokens+precio es el que salva el caso real: Andrea reformatea el
+  // nombre al registrar y la búsqueda literal falla, dejando el pedido sin datos de proveedor.
+  const quote = getWebQuote(producto.nombre, producto.modelo, pd?.urlCompra)
+    ?? getWebQuoteFuzzy(producto.nombre, producto.precioCOP);
+
+  // El producto TAL COMO ESTÁ HOY en las fuentes locales: mismo precio que usó la ficha
+  // (no puede haber diferencia entre lo cotizado y lo registrado) y, si vino de una lista
+  // de proveedor, su costo y su proveedor EXACTOS — sin heurísticas de configuración
+  // parecida, que era lo que tomaba el costo de un equipo de 2TB para uno de 512GB.
+  const localExacto = producto.proveedor === "colombia" ? fichaLocalDeCatalogo(producto.nombre) : null;
+  if (localExacto) producto.precioCOP = localExacto.precio;
 
   let costoUSD: number | undefined;
   let costoTotalCOP: number | undefined;
   let margenCOP: number | undefined;
   let urlCompra: string | undefined = pd?.urlCompra;
-  let proveedorLocal: "ledacom" | "infoshop" | "manual" | undefined = pd?.proveedorLocal;
+  // El proveedor real lo decide el SERVIDOR a partir de la lista donde encontró el costo;
+  // lo que mande Andrea es solo un punto de partida (suele adivinarlo mal).
+  let proveedorLocal: string | undefined = pd?.proveedorLocal;
   let precioMercadoLocal: number | undefined;
   let fuenteLocal: string | undefined;
 
@@ -1055,7 +1509,9 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       urlCompra          = quote.urlCompra || urlCompra;
     } else if (pd?.costoUSD) {
       // Sin caché → recalcular desde la fórmula (override: nunca el precio de Andrea)
-      const c = cotizarImportacion(pd.costoUSD);
+      // El tier decide el FLETE (componente $25, portátil $60, escritorio $100). Sin él
+      // todo pagaba flete de componente y un escritorio salía hasta $285.000 COP barato.
+      const c = cotizarImportacion(pd.costoUSD, tierDeNombre(producto.nombre));
       costoUSD           = pd.costoUSD;
       producto.precioCOP = c.copEstimado;
       costoTotalCOP      = Math.round((pd.costoUSD + c.usdEnvio) * c.trm / 1000) * 1000;
@@ -1066,22 +1522,24 @@ async function registrarPedido(input: unknown): Promise<unknown> {
     //   1) config completa más cercana en las listas (cat. escritorio), o
     //   2) fallback BOM (suma de piezas + base de armado) si ninguna config encaja.
     const margins = loadMargins();
-    const config  = costoEscritorioConfig(producto.nombre, producto.precioCOP, margins);
-    const bom     = config ? null : costoEscritorioBOM(producto.nombre);
-    const costo   = config?.precioCosto ?? bom?.precioCosto ?? null;
+    // Si el equipo ESTÁ en una lista de proveedor, su costo es el de esa fila — punto.
+    // La config parecida y el BOM son fallbacks para equipos que no están tal cual
+    // (p. ej. los del catálogo publicado o un armado a la medida).
+    const config  = localExacto?.costo != null ? null : costoEscritorioConfig(producto.nombre, producto.precioCOP, margins);
+    const bom     = localExacto?.costo != null || config ? null : costoEscritorioBOM(producto.nombre);
+    const costo   = localExacto?.costo ?? config?.precioCosto ?? bom?.precioCosto ?? null;
     if (costo != null) {
       costoTotalCOP = costo;
-      // Precio AUTORITATIVO = costo × margen escritorio. Andrea NO fija el precio del
-      // ensamblado (antes inventaba $4.25M sobre un costo real de ~$2.4M).
-      producto.precioCOP = applyMargin(costo, "escritorio", margins);
+      // El precio solo se DERIVA del costo cuando no hay uno propio (armado a la medida).
+      // Si el equipo está en una lista o en el catálogo, su precio ya está fijado arriba
+      // y recalcularlo aquí era justo lo que registraba el pedido por otro valor.
+      if (!localExacto) producto.precioCOP = applyMargin(costo, "escritorio", margins);
       margenCOP = producto.precioCOP - costo;
-      if (config) {
-        const prov = config.proveedor.toLowerCase();
-        proveedorLocal = prov.includes("ledacom") ? "ledacom"
-          : prov.includes("infoshop") ? "infoshop" : (proveedorLocal ?? "manual");
-      } else {
-        proveedorLocal = "manual"; // ensamblado a medida (costo estimado por componentes)
-      }
+      proveedorLocal =
+        localExacto?.proveedor?.toLowerCase()
+        ?? config?.proveedor.toLowerCase()
+        ?? proveedorLocal
+        ?? "manual"; // "manual" = costo estimado por piezas (BOM), no hay una lista detrás
     } else {
       // Ni config ni CPU en listas → es un PC que conseguimos por web en Colombia. Su "costo"
       // es el precio de mercado (retail) que cotizar_web ya guardó en caché; el precio al cliente
@@ -1103,9 +1561,7 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       costoTotalCOP  = local.precioCosto;
       margenCOP      = producto.precioCOP - local.precioCosto;
       const prov     = local.proveedor.toLowerCase();
-      proveedorLocal = prov.includes("ledacom") ? "ledacom"
-        : prov.includes("infoshop") ? "infoshop"
-        : (proveedorLocal ?? "manual");
+      proveedorLocal = prov || proveedorLocal || "manual";
     } else {
       // No está en listas → es un producto de Colombia web. Limpiamos el proveedorLocal
       // que Andrea pueda haber supuesto (no es de Ledacom/Infoshop → evita mal-etiquetar).
@@ -1119,9 +1575,34 @@ async function registrarPedido(input: unknown): Promise<unknown> {
     }
   }
 
+  // ── EL PRECIO DEL PEDIDO ES EL QUE SE LE MOSTRÓ AL CLIENTE ──────────────────
+  // Las ramas de arriba RECALCULAN el precio (costo × margen, fórmula de importación).
+  // Esa defensa existía cuando Andrea redactaba las fichas y podía inventarse una cifra;
+  // desde que el servidor arma la ficha y la selección, el precio mostrado YA es
+  // autoritativo, y recalcularlo aquí registraba el pedido por un valor DISTINTO al que
+  // vio el cliente. Caso real: ficha $2.950.000 → pedido $2.975.000, porque la ficha traía
+  // el precio publicado del catálogo y el pedido le aplicaba el margen de "escritorio"
+  // sobre el costo de la lista de proveedor. Cobrar algo distinto a lo cotizado es
+  // inaceptable, así que el precio mostrado manda y el costo se conserva solo para el admin.
+  // (El precio ya se ancló arriba con `localExacto`; esto cubre además el caso de que la
+  //  opción se haya mostrado en ESTA misma petición, que es la fuente más directa.)
+  // PRECIO AUTORITATIVO — nunca el que manda Andrea. Orden de confianza:
+  //   1) la opción que el servidor MOSTRÓ en esta petición
+  //   2) el producto en las fuentes locales (misma fórmula que usó la ficha)
+  //   3) la cotización web guardada en caché
+  // Sin el (3) un pedido de varias unidades quedaba inflado: Andrea multiplicaba el
+  // precio unitario por la cantidad y ese número se guardaba como precio UNITARIO
+  // (3 memorias de $100.000 → $300.000 c/u, y el cierre le decía $900.000 al cliente).
+  const mostrada = opcionMostrada(acc, producto.nombre);
+  const precioAutoritativo = mostrada?.precio ?? localExacto?.precio ?? quote?.precioCOP;
+  if (precioAutoritativo != null && precioAutoritativo > 0) producto.precioCOP = precioAutoritativo;
+  // El margen se recalcula SIEMPRE contra el precio final: si no, el admin vería un
+  // margen que no corresponde con lo que realmente se cobró.
+  if (costoTotalCOP != null) margenCOP = producto.precioCOP - costoTotalCOP;
+
   // ── Comparación de proveedores: dónde conseguir el producto más barato (solo admin) ──
   const webSources: FuenteComparacion[] = [];
-  // EE.UU.: SOLO del caché del chat (nunca en vivo — es lo único que gasta créditos Anthropic).
+  // EE.UU.: SOLO del caché del chat (nunca en vivo — cotizar en vivo gasta Serper + DeepSeek).
   if (quote?.costoUSD && quote.costoUSD > 0 && quote.costoTotalCOP) {
     webSources.push({
       fuente: "EE.UU. (importado)", tipo: "eeuu", costoCOP: quote.costoTotalCOP,
@@ -1141,21 +1622,30 @@ async function registrarPedido(input: unknown): Promise<unknown> {
     // filtro y guardó en caché — así evitamos mostrar tiendas no tech en el admin.
     const cached = quote ?? getWebQuote(producto.nombre, producto.modelo);
     if (cached && !cached.costoUSD && cached.costoTotalCOP > 0) {
-      const site = cached.siteLocal ?? siteNameFromUrl(cached.fuenteLocal ?? "");
-      if (site && site !== "Sitio local") {
-        webSources.push({
-          fuente:   site,
-          tipo:     "colombia_web",
-          costoCOP: cached.costoTotalCOP,
-          url:      cached.fuenteLocal || undefined,
-        });
-      }
+      const porUrl = siteNameFromUrl(cached.fuenteLocal ?? "");
+      const site = porUrl !== "Sitio local" ? porUrl : (cached.siteLocal ?? "");
+      // La fila se muestra SIEMPRE que haya un costo: aunque no se reconozca la tienda,
+      // el admin necesita ver de dónde salió el precio (antes se omitía y el pedido
+      // quedaba sin ninguna fuente, que es justo lo que no se podía explicar).
+      webSources.push({
+        fuente:   site && site !== "Sitio local" ? site : "Web Colombia",
+        tipo:     "colombia_web",
+        costoCOP: cached.costoTotalCOP,
+        url:      cached.fuenteLocal || undefined,
+      });
       precioMercadoLocal = cached.precioMercadoLocal ?? cached.costoTotalCOP;
       fuenteLocal        = cached.fuenteLocal;
     } else if (cached?.precioMercadoLocal) {
       precioMercadoLocal = cached.precioMercadoLocal;
       fuenteLocal        = cached.fuenteLocal;
     }
+  }
+
+  // ÚLTIMA GUARDA: si después de todas las anclas no hay un precio válido, NO se registra.
+  // Un pedido guardado en $0 (o con una cifra inventada) es peor que no registrarlo: el
+  // cliente recibe una confirmación falsa y el equipo cobra lo que no es.
+  if (!(producto.precioCOP > 0)) {
+    return { error: "No tengo un precio válido para ese producto, así que no registré el pedido. Vuelve a consultarlo con buscar_productos o cotizar_web y regístralo con el precio EXACTO de la ficha (por unidad)." };
   }
 
   const comparacionProveedores = construirComparacionProveedores(producto.nombre, producto.modelo, webSources);
@@ -1187,11 +1677,53 @@ async function registrarPedido(input: unknown): Promise<unknown> {
       orderNumber: order.orderNumber,
       precioCOP: producto.precioCOP,                 // precio FINAL autoritativo (costo × margen)
       totalCOP: producto.precioCOP * producto.cantidad,
-      nota: "INTERNO: 'precioCOP' es el valor FINAL del pedido (precio unitario autoritativo). En el cierre indícaselo al cliente con EXACTITUD; si difiere de lo que estimaste antes, vale el de aquí (no menciones que cambió).",
+      nota: producto.cantidad > 1
+        ? `INTERNO: 'precioCOP' (${producto.precioCOP}) es el precio POR UNIDAD y 'totalCOP' (${producto.precioCOP * producto.cantidad}) es el TOTAL de las ${producto.cantidad} unidades. En el cierre di el TOTAL como valor del pedido y aclara el unitario. NO multipliques nada tú: ambas cifras ya vienen calculadas.`
+        : "INTERNO: 'precioCOP' es el valor FINAL del pedido (una sola unidad). En el cierre indícaselo al cliente con EXACTITUD; si difiere de lo que estimaste antes, vale el de aquí (no menciones que cambió).",
     };
   } catch {
     return { error: "No se pudo guardar el pedido. Informa al cliente de forma amable y pídele que reintente." };
   }
+}
+
+const ESTADO_CLIENTE: Record<OrderEstado, string> = {
+  pendiente:  "En preparación — un representante lo está confirmando",
+  confirmado: "Confirmado — ya está en alistamiento",
+  enviado:    "Enviado — va en camino",
+  entregado:  "Entregado",
+};
+
+/** Estado de un pedido ya registrado. Exige número + correo o cédula: sin esa
+ *  verificación cualquiera podría leer pedidos ajenos probando números correlativos.
+ *  Devuelve SOLO lo que le corresponde saber al cliente — nada de costos ni proveedores. */
+async function consultarPedido(input: unknown): Promise<unknown> {
+  const { orderNumber, verificacion } = input as { orderNumber?: string; verificacion?: string };
+  const num = String(orderNumber ?? "").replace(/[^0-9]/g, "");
+  const ver = String(verificacion ?? "").trim().toLowerCase();
+  if (!num || !ver) return { error: "Faltan el número de orden o el dato de verificación (correo o cédula)." };
+
+  const soloDigitos = (v: string) => v.replace(/[^0-9]/g, "");
+  const pedido = [...getOrders(), ...getHistory()].find((o) => String(o.orderNumber) === num);
+  if (!pedido) {
+    return { encontrado: false, nota: "INTERNO: no existe un pedido con ese número. Pídele al cliente que lo confirme; si insiste, dale el contacto del equipo. NUNCA inventes un estado." };
+  }
+  const coincide =
+    pedido.cliente.email.trim().toLowerCase() === ver ||
+    (soloDigitos(ver).length >= 5 && soloDigitos(pedido.cliente.cedula) === soloDigitos(ver));
+  if (!coincide) {
+    return { encontrado: false, verificacionFallida: true, nota: "INTERNO: el correo/cédula NO corresponde a ese pedido. Pídeselo de nuevo con amabilidad, sin decir que existe un pedido con ese número. NUNCA reveles datos del pedido." };
+  }
+
+  return {
+    encontrado: true,
+    orderNumber: pedido.orderNumber,
+    estado: ESTADO_CLIENTE[pedido.estado] ?? pedido.estado,
+    fecha: new Date(pedido.fecha).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }),
+    producto: pedido.producto.nombre,
+    cantidad: pedido.producto.cantidad,
+    totalCOP: pedido.producto.precioCOP * pedido.producto.cantidad,
+    nota: "INTERNO: cuéntale el estado con naturalidad usando estos datos EXACTOS. No menciones proveedores, costos ni cómo lo consultaste.",
+  };
 }
 
 async function cancelarPedido(input: unknown): Promise<unknown> {
@@ -1203,14 +1735,141 @@ async function cancelarPedido(input: unknown): Promise<unknown> {
     : { error: "No encontré el pedido. Puede que ya haya sido procesado." };
 }
 
-async function runTool(anthropic: Anthropic, name: string, input: unknown): Promise<unknown> {
+// ── SELECCIÓN Y ETIQUETADO EN EL SERVIDOR ────────────────────────────────────
+//
+// Antes, Andrea elegía las 3 opciones y les ponía la etiqueta 💰/🎯/⚡. Eso obliga
+// al modelo a comparar cifras de 7 dígitos y DeepSeek se equivoca cuando los precios
+// quedan cerca (caso real: puso "Mejor precio" en una opción $23.000 MÁS cara que otra
+// que estaba mostrando). Ahora lo hace el servidor, que conoce todos los precios.
+// Es la misma defensa que ya existe para specs y precios: si el modelo puede
+// equivocarse, se lo quitamos de las manos y solo copia.
+type OpcionSel = { nombre: string; precio: number; ficha: string; entrega: "local" | "us" };
+
+// Opciones vistas en ESTA solicitud, separadas por origen. Se guardan aparte porque el
+// POOL de candidatos depende de cuántas había localmente (misma regla de negocio que ya
+// sigue Andrea):
+//   • ≥3 locales                → pool = locales (no se mezcla con la web).
+//   • 1–2 locales + cotizar_web → pool = locales + web (es el caso de "completar hasta 3").
+//   • 0 locales                 → pool = web.
+//   • ≥3 locales PERO se llamó cotizar_web igual → los locales no servían (coincidencias
+//     flojas del buscador, ej. un patch cord de $307.000 en una búsqueda de switch PoE)
+//     → pool = web. Sin esta regla, las opciones reales quedaban fuera de la ventana.
+type Acumulador = { locales: OpcionSel[]; web: OpcionSel[]; localDisponibles: number };
+
+function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
+  if (acc.web.length === 0) return acc.locales;
+  return acc.localDisponibles >= 3 ? acc.web : [...acc.locales, ...acc.web];
+}
+
+const ENTREGA_TXT: Record<OpcionSel["entrega"], string> = {
+  local: "📦 1 a 3 días hábiles",
+  us:    "📦 6 a 10 días hábiles",
+};
+
+// Ventana de RELEVANCIA: las opciones llegan ya ordenadas por relevancia (locales
+// primero). Elegimos dentro de las 6 más relevantes para no ofrecer un producto barato
+// pero mal emparejado; dentro de esa ventana, el precio decide orden y etiqueta.
+const VENTANA_RELEVANCIA = 6;
+
+/** Elige hasta 3 opciones y las devuelve YA ETIQUETADAS y ordenadas de menor a mayor
+ *  precio. `candidatos` debe venir ordenado por relevancia (el más relevante primero). */
+function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre: string; precioCOP: number; bloque: string }[] {
+  // Dedupe por nombre normalizado, conservando el primero (el más relevante).
+  const vistos = new Set<string>();
+  const unicos: OpcionSel[] = [];
+  for (const c of candidatos) {
+    if (!(c.precio > 0)) continue;
+    const key = c.nombre.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!key || vistos.has(key)) continue;
+    vistos.add(key);
+    unicos.push(c);
+  }
+  if (unicos.length === 0) return [];
+
+  const porPrecio = unicos.slice(0, VENTANA_RELEVANCIA).sort((a, b) => a.precio - b.precio);
+
+  // Con más de 3 se toman los extremos y la mediana: así las tres etiquetas significan
+  // algo distinto (barata / equilibrada / tope) en vez de tres precios casi iguales.
+  let elegidas: OpcionSel[];
+  if (porPrecio.length <= 3) {
+    elegidas = porPrecio;
+  } else {
+    const medio = porPrecio[Math.floor(porPrecio.length / 2)];
+    elegidas = [porPrecio[0], medio, porPrecio[porPrecio.length - 1]];
+  }
+
+  // 1 opción → sin etiqueta (no hay con qué comparar). 2 → extremos. 3 → las tres.
+  const etiquetas =
+    elegidas.length === 1 ? [""] :
+    elegidas.length === 2 ? ["💰 **Mejor precio**", "⚡ **Mejor rendimiento**"] :
+    ["💰 **Mejor precio**", "🎯 **Recomendado**", "⚡ **Mejor rendimiento**"];
+
+  return elegidas.map((o, i) => ({
+    etiqueta: etiquetas[i],
+    nombre: o.nombre,
+    precioCOP: o.precio,
+    bloque: `${etiquetas[i] ? `${etiquetas[i]}\n` : ""}${o.ficha}\n${ENTREGA_TXT[o.entrega]}`,
+  }));
+}
+
+const INSTRUCCION_SELECCION =
+  "INTERNO: el campo \"opciones\" trae las opciones YA ELEGIDAS, YA ORDENADAS y YA ETIQUETADAS por el sistema. " +
+  "Copia el campo \"bloque\" de cada una TAL CUAL y EN ESE ORDEN, separadas por una línea en blanco. " +
+  "NO cambies la etiqueta, ni el orden, ni el precio, ni las specs, ni la entrega. NO elijas tú otras opciones " +
+  "ni agregues una que no esté aquí. Tu trabajo es el texto cálido de alrededor: presentarlas, explicar por qué " +
+  "le sirven al cliente y avanzar al cierre. " +
+  "Si una opción viene SIN etiqueta, preséntala SIN etiqueta: no le inventes una.";
+
+/** Quita del texto final los párrafos iniciales que REPITEN el preámbulo ya mostrado.
+ *  DeepSeek tiende a re-saludar al volver con el resultado, así que el cliente veía
+ *  "¡Hola! Qué gusto saludarte…" dos veces seguidas en el mismo chat. El prompt lo pide
+ *  pero no lo cumple siempre; esto lo garantiza. Si no hay parecido, no toca nada. */
+function quitarSaludoRepetido(texto: string, preambulo: string): string {
+  const clave = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "").slice(0, 40);
+  const ESPERA = /^(dame un momento|un momento|espera|d[ée]jame revisar|perm[íi]teme)\b/i;
+
+  const parrafos = texto.split(/\n{2,}/);
+  const ref = clave(preambulo.split(/\n{2,}/)[0] ?? "");
+  let i = 0;
+  while (i < parrafos.length - 1) {
+    const p = parrafos[i].trim();
+    const esSaludoRepetido = ref.length >= 20 && clave(p) === ref;
+    const esEspera = p.length < 120 && ESPERA.test(p);
+    if (!esSaludoRepetido && !esEspera) break;
+    i++;
+  }
+  if (i === 0) return texto;
+  const restante = parrafos.slice(i).join("\n\n").trim();
+  return restante.length > 0 ? restante : texto;
+}
+
+async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulador): Promise<unknown> {
   try {
-    if (name === "buscar_productos") return buscarProductos(input as Record<string, unknown>);
-    if (name === "registrar_pedido") return await registrarPedido(input);
+    if (name === "buscar_productos") {
+      const r = buscarProductos(input as Record<string, unknown>);
+      acc.localDisponibles = r.localDisponibles;
+      for (const p of r.productos) {
+        if (typeof p.precioDesde === "number" && p.precioDesde > 0) {
+          acc.locales.push({ nombre: p.nombre, precio: p.precioDesde, ficha: p.ficha, entrega: "local" });
+        }
+      }
+      return { ...r, seleccion: { instruccion: INSTRUCCION_SELECCION, opciones: construirSeleccion(poolDeCandidatos(acc)) } };
+    }
+    if (name === "registrar_pedido") return await registrarPedido(input, acc);
     if (name === "cancelar_pedido")  return await cancelarPedido(input);
+    if (name === "consultar_pedido") return await consultarPedido(input);
     if (name === "cotizar_web") {
       const consulta = String((input as { consulta?: unknown })?.consulta ?? "").trim();
-      return consulta ? await cotizarWeb(anthropic, consulta) : { error: "consulta vacía" };
+      if (!consulta) return { error: "consulta vacía" };
+      const r = await cotizarWeb(ds, consulta);
+      for (const p of r.productos as (QuoteProducto & { ficha: string })[]) {
+        const nombre = (p.nombre ?? "").trim();
+        if (nombre && typeof p.precioCOP === "number" && p.precioCOP > 0) {
+          acc.web.push({ nombre, precio: p.precioCOP, ficha: p.ficha, entrega: p.origen === "co" ? "local" : "us" });
+        }
+      }
+      return { ...r, seleccion: { instruccion: INSTRUCCION_SELECCION, opciones: construirSeleccion(poolDeCandidatos(acc)) } };
     }
     return { error: "herramienta desconocida" };
   } catch {
@@ -1225,16 +1884,19 @@ TONO: humano, cercano y profesional, como una asesora experta y amable de una ti
 
 NUNCA reveles cómo funcionas por dentro. El cliente JAMÁS debe leer palabras o frases como: "catálogo", "base de datos", "buscar", "lo busco afuera", "importación", "importado", "estimado", "sujeto a cotización", "proveedor", "mayorista", "Newegg", "no me apareció", "no aparece", "disponibilidad inmediata", "no lo tengo en lista", "no está en mi lista", "no lo encontré", ni que eres una IA, asistente o bot. Eres Andrea, una asesora de carne y hueso. Si necesitas consultar antes de responder, escribe "Dame un momento" EN LA MISMA RESPUESTA donde llamas la herramienta — nunca como mensaje independiente sin una herramienta. Nunca expliques qué buscaste ni dónde.
 
+⚠️ NO TE REPITAS: el cliente YA LEYÓ todo lo que escribiste antes en esta conversación. Cuando vuelvas con el resultado de una consulta, NO repitas el saludo ("¡Hola!", "Qué gusto saludarte"), NO repitas "Dame un momento" ni "déjame revisar", y NO vuelvas a describir lo que el cliente te pidió. Entra DIRECTO al resultado (ej: "¡Listo! Encontré varias opciones…"). Repetir el saludo en el mismo chat delata que no recuerdas lo que acabas de decir.
+
 FIDELIDAD ABSOLUTA DE PRODUCTOS Y PRECIOS (LA REGLA MÁS IMPORTANTE — INNEGOCIABLE): cada producto que devuelven buscar_productos y cotizar_web trae un campo **"ficha"** con su tarjeta YA ARMADA (nombre, especificaciones y precio exactos). Cuando presentes opciones, COPIA la ficha tal cual:
 - NUNCA cambies una especificación: ni la RAM, ni el disco, ni el procesador, ni el tamaño del monitor. Lo que dice la ficha es lo que hay.
 - NUNCA cambies el precio: usa la cifra EXACTA de la ficha, sin redondear ni ajustar.
 - NUNCA agregues specs que no estén en la ficha, NUNCA combines dos productos en uno, NUNCA inventes una configuración.
 - Si la ficha NO incluye monitor, no le inventes uno; si lo incluye, no se lo quites.
-Tu único trabajo al presentar es: ELEGIR cuáles fichas mostrar, anteponerles la etiqueta (💰 Mejor precio / 🎯 Recomendado / ⚡ Mejor rendimiento), indicar la ENTREGA y escribir el texto cálido alrededor. Las specs y el precio SE COPIAN, no se redactan. Inventar o alterar un precio o una spec es el peor error posible y rompe la confianza del cliente.
+Tu único trabajo al presentar es escribir el texto cálido alrededor. CUÁLES opciones mostrar, en qué ORDEN, con qué ETIQUETA (💰 Mejor precio / 🎯 Recomendado / ⚡ Mejor rendimiento) y con qué ENTREGA ya viene resuelto en el campo "seleccion" de la respuesta de la herramienta: se copia, no se decide. Las specs y el precio SE COPIAN, no se redactan. Inventar o alterar un precio o una spec es el peor error posible y rompe la confianza del cliente.
 
 CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - Para saber qué hay y a qué precio, usa SIEMPRE tus herramientas de forma interna (nunca inventes precios ni modelos). El cliente no se entera de eso.
-- BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
+- BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). ⚠️ La consulta DEBE incluir TODAS las especificaciones que el cliente nombró, con sus cifras exactas: gama de procesador ("Ryzen 5", "Core i7"), modelo de gráfica ("RTX 5060"), RAM ("16GB"), almacenamiento ("1TB"), tamaño ("24 pulgadas"). Si las omites, el sistema no puede filtrar y salen productos de otra gama — un Ryzen 3 para quien pidió un Ryzen 5, o una RTX 3050 para quien pidió una 5060.
+- LO QUE PIDIÓ EL CLIENTE MANDA SOBRE EL PERFIL: si nombró piezas concretas (una gráfica, un procesador, una capacidad), búscalas TAL CUAL — no las sustituyas por lo que recomienda la tabla de perfiles de más abajo. Esa tabla es para cuando el cliente NO especifica. Si crees que otra pieza le conviene más, muéstrale primero lo que pidió y coméntale la alternativa después. Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
 - ESPECIFICACIONES OBLIGATORIAS (laptops, desktops y tablets): para cada opción incluye SIEMPRE: **Procesador** (marca + modelo, ej: Intel Core i5-1235U), **RAM** (capacidad, ej: 16GB DDR4), **Almacenamiento** (tipo + tamaño, ej: 512GB SSD NVMe), **Pantalla/Monitor** y **GPU** si es dedicada o si el cliente la pidió. La PANTALLA es OBLIGATORIA y nunca se omite: en laptops/tablets/Todo-en-Uno pon el tamaño (ej: 15.6" FHD, 24"); en un computador de escritorio que incluya monitor pon el tamaño del monitor; si es una torre SIN monitor, dilo explícitamente ("torre, no incluye monitor") para que el cliente lo sepa. Para productos Colombia web, estas specs vienen en el nombre completo del listado — léelas y preséntalas con formato limpio; si el tamaño de pantalla no aparece en un computador, indícalo con naturalidad y ofrece confirmarlo, no lo inventes.
 - COMPUTADORES DE ESCRITORIO (HOGAR, GAMING, TRABAJO, ALTO RENDIMIENTO): cuando el cliente pida un "computador", "PC", "equipo de escritorio", "PC gaming", "computador para gaming", "equipo para diseño/edición/trabajo pesado/renderizado" o similar, ANTES de buscar hazle UNA sola pregunta adaptada al contexto:
 
@@ -1265,10 +1927,12 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
   Si el uso no queda claro en el primer mensaje, HAZ PRIMERO UNA sola pregunta de uso: "¿Para qué lo vas a usar principalmente? (trabajo de oficina, diseño, gaming, edición de video, IA, servidor…) Así te consigo la mejor opción 😊" — espera la respuesta antes de hacer la pregunta de formato.
 
   Espera la respuesta antes de llamar cualquier herramienta. Cada opción mapea a UNA búsqueda de un solo formato (jamás mezcles formatos en la misma lista):
-  • Torre de marca → busca "[uso] computador torre [marca si la mencionó]" — todas las opciones SIN monitor.
-  • Todo en uno / AIO → busca "computador todo en uno all-in-one [gaming/profesional según contexto]" — todas CON pantalla integrada.
-  • Ensamblado → busca "computador ensamblado torre [gaming/alto rendimiento según contexto]" — siempre torre SIN monitor. NUNCA ofrezcas AIO ensamblado, no existe.
-  Si el cliente ya especificó el formato desde el inicio ("quiero un ensamblado gaming", "necesito un AIO", "una torre HP"), sáltate la pregunta y busca directamente.
+  • Torre de marca → buscar_productos con **formato="torre-marca"** y consulta "[uso] computador torre [marca si la mencionó]" — todas SIN monitor.
+  • Todo en uno / AIO → buscar_productos con **formato="todo-en-uno"** y consulta "computador todo en uno [gaming/profesional según contexto]" — todas CON pantalla integrada.
+  • Ensamblado → buscar_productos con **formato="ensamblado"** y consulta "computador ensamblado torre [gaming/alto rendimiento según contexto]". NUNCA ofrezcas AIO ensamblado, no existe.
+  • Portátil → buscar_productos con **formato="portatil"**.
+  ⚠️ EL PARÁMETRO formato ES OBLIGATORIO en cuanto sepas qué quiere el cliente. La palabra dentro de la consulta NO basta: el filtro de formato va por ese parámetro. Sin él salen portátiles en una búsqueda de escritorio y equipos de marca cuando el cliente pidió un ensamblado.
+  Si el cliente ya especificó el formato desde el inicio ("quiero un ensamblado gaming", "necesito un AIO", "una torre HP", "busco un portátil"), sáltate la pregunta y busca directamente CON el parámetro formato puesto.
   PRESENTACIÓN DE ESCRITORIOS — NO MEZCLES CON/SIN MONITOR (REGLA CLAVE): cada ficha de escritorio trae una línea de estado: "🖥️ Incluye monitor X" o "🖥️ Solo torre (sin monitor)". Mezclar ambos tipos en una sola lista ranqueada es EXACTAMENTE lo que pierde al cliente con los precios (una torre sola siempre se ve más barata que un combo con monitor, aunque el equipo sea igual o mejor). En vez de eso, AGRUPA con encabezados. Ejemplo:
   **🖥️ Equipos completos (con monitor incluido)**
   …aquí las fichas que dicen "Incluye monitor", comparables entre sí…
@@ -1302,11 +1966,12 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
   • Si devuelve 0 → llama cotizar_web UNA vez para conseguir las 3 opciones.
 - cotizar_web trae opciones de Colombia (entrega 1–3 días) y/o de EE.UU. (6–10 días). Lee el campo "nota" y el "origen" de cada producto para saber el tiempo de entrega de cada una. Tras llamar cotizar_web, PRESENTA las opciones — no vuelvas a buscar.
 - QUERY DE cotizar_web CUANDO YA TIENES LOCALES: si buscar_productos devolvió 1 o 2 productos, la consulta a cotizar_web debe usar las ESPECIFICACIONES del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) SIN incluir la marca ni el modelo exacto. Objetivo: encontrar otras marcas con specs similares — no el mismo modelo en otra tienda. Ejemplo: si tienes local "HP EliteBook 840 Core i7-1365U 16GB 512GB SSD", busca "laptop empresarial Core i7 16GB 512GB" para que Serper devuelva Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. La nota de buscar_productos ya incluye las specs — úsalas.
-- TRES OPCIONES (REGLA OBLIGATORIA): SIEMPRE presenta AL MENOS 3 alternativas distintas, nunca menos, combinando locales + EE.UU. según lo anterior. Usa estas etiquetas según el perfil:
-  💰 **Mejor precio** — [modelo] — $XXX.000 COP
-  ⚡ **Mejor rendimiento** — [modelo] — $XXX.000 COP
-  🎯 **Recomendado** — [modelo] — $XXX.000 COP (mejor relación precio/rendimiento)
-  Junto a cada opción indica su entrega (ej: "📦 1 a 3 días hábiles" local, o "📦 6 a 10 días hábiles" si viene de EE.UU.). Si cotizar_web devuelve pocas, amplía la búsqueda (marca, gama, specs). NUNCA presentes menos de 3 opciones con precio.
+- 🔒 QUÉ OPCIONES MOSTRAR — NO LO DECIDES TÚ: cada respuesta de buscar_productos y de cotizar_web trae un campo **"seleccion"** con las opciones YA ELEGIDAS, YA ORDENADAS por precio y YA ETIQUETADAS (💰 Mejor precio / 🎯 Recomendado / ⚡ Mejor rendimiento), cada una con su entrega incluida. Copia el campo "bloque" de cada opción TAL CUAL y EN ESE ORDEN, separadas por una línea en blanco.
+  • NO cambies la etiqueta, ni el orden, ni el precio, ni las specs, ni la entrega.
+  • NO agregues una opción que no esté en "seleccion", ni quites una que sí esté.
+  • Si llamas cotizar_web después de buscar_productos, usa SIEMPRE el "seleccion" de la ÚLTIMA respuesta: ya combina lo local con lo de la web.
+  Tu trabajo es el texto cálido alrededor: presentar, explicar por qué le sirven al cliente y avanzar al cierre.
+- TRES OPCIONES (REGLA OBLIGATORIA): si "seleccion" trae menos de 3 opciones, NO respondas todavía: llama cotizar_web para completar y presenta las 3 juntas. Presentar una sola opción es un error.
 - CREDIBILIDAD: cuando presentes opciones, menciona primero cuántas encontraste. Ejemplo: "Encontré 6 opciones compatibles. Te recomiendo estas 3 por su relación precio/rendimiento 🙌". La mayoría de clientes decide mejor cuando compara.
 - ENTREGA (dilo SIEMPRE, por separado para CADA opción):
   • Opción de buscar_productos = disponibilidad LOCAL → "te llega en 1 a 3 días hábiles".
@@ -1347,6 +2012,10 @@ CIERRE DE PEDIDO: cuando registrar_pedido devuelva ok=true, espera a tener TODOS
   — PEDIDO ÚNICO (1 producto):
   "¡Listo, [nombre]! Tu pedido quedó registrado con el número **[orderNumber]** por un valor de **$[precioCOP] COP** 🙌. En breve un representante te contactará al [teléfono] para confirmar y coordinar el pago. ¡Fue un placer atenderte — que tengas un excelente día! 😊"
 
+  — SI EL CLIENTE PIDIÓ MÁS DE UNA UNIDAD del mismo producto, el valor del pedido es el TOTAL, no el unitario:
+  "¡Listo, [nombre]! Tu pedido quedó registrado con el número **[orderNumber]**: [cantidad] unidades × $[precioCOP] COP = **$[totalCOP] COP** 🙌. En breve un representante te contactará al [teléfono] para confirmar y coordinar el pago. ¡Fue un placer atenderte — que tengas un excelente día! 😊"
+  ⚠️ NUNCA multipliques tú: 'precioCOP' (unitario) y 'totalCOP' (total) ya vienen calculados en la respuesta de registrar_pedido. Copia ambos tal cual. Tampoco multipliques el precio antes de registrar: a registrar_pedido se le pasa SIEMPRE el precio POR UNIDAD de la ficha, y la cantidad aparte.
+
   — PEDIDO MÚLTIPLE (2 o más productos): enmarca los números como seguimiento individual, no como fragmentación:
   "¡Listo, [nombre]! Quedaron registrados los [N] productos, cada uno con su número de seguimiento para coordinar mejor la entrega 📦:
   • [producto 1] → Orden **[orderNumber1]** — $[precioCOP1] COP
@@ -1354,6 +2023,8 @@ CIERRE DE PEDIDO: cuando registrar_pedido devuelva ok=true, espera a tener TODOS
   En breve un representante te contactará al [teléfono] para confirmar y coordinar el pago de todo. ¡Fue un placer atenderte — que tengas un excelente día! 😊"
 
   El [orderNumber] y el [precioCOP] los obtienes de la respuesta de cada tool (campos orderNumber y precioCOP). USA EXACTAMENTE ese precioCOP como valor final, aunque difiera de lo que estimaste durante la conversación — es el precio autoritativo del pedido. No agregues más preguntas ni información después de esta despedida.
+
+ESTADO DE UN PEDIDO: si el cliente pregunta por un pedido ya hecho, usa consultar_pedido. Necesitas el número de orden Y el correo o la cédula con que se registró — pídelos en UN solo mensaje ("¿me confirmas el número de orden y el correo o la cédula con que lo registraste? 😊"). NUNCA supongas ni inventes un estado, ni digas que "no tienes acceso" a esa información: si la herramienta no lo encuentra o la verificación no coincide, pide amablemente que revisen los datos y, si insisten, ofrece el contacto del equipo. Si el cliente pregunta por su pedido ANTES de darte esos datos, no digas que lo estás consultando: primero pídelos.
 
 REGLAS: nunca pidas datos de tarjeta ni números de pago (el pago se hace por nuestro medio seguro). Sé honesta con los tiempos; no prometas imposibles. Mantén siempre el trato amable y atento.
 
@@ -1367,7 +2038,7 @@ NUNCA dejes al cliente sin una alternativa de contacto cuando no puedas ayudarlo
 type ClientMsg = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: Request): Promise<Response> {
-  const apiKey = getAnthropicApiKey();
+  const apiKey = getDeepseekApiKey();
   if (!apiKey) {
     return Response.json({ error: "El asesor no está disponible en este momento.", code: "no_key" }, { status: 503 });
   }
@@ -1381,11 +2052,11 @@ export async function POST(req: Request): Promise<Response> {
 
   const autoInicio = body.autoInicio === true;
 
-  const mapped: Anthropic.MessageParam[] = (Array.isArray(body.messages) ? body.messages : [])
+  const mapped: DSMessage[] = (Array.isArray(body.messages) ? body.messages : [])
     .filter((m) => (m?.role === "user" || m?.role === "assistant") && typeof m.content === "string" && m.content.trim())
-    .map((m) => ({ role: m.role, content: m.content }));
+    .map((m) => ({ role: m.role, content: m.content }) as DSMessage);
   const firstUser = mapped.findIndex((m) => m.role === "user");
-  let convo: Anthropic.MessageParam[] = firstUser === -1 ? [] : mapped.slice(firstUser);
+  let convo: DSMessage[] = firstUser === -1 ? [] : mapped.slice(firstUser);
 
   // Auto-inicio desde card de producto: el frontend no envía user msg (para no mostrar
   // burbuja), pero el bucle agéntico necesita al menos un turno de usuario.
@@ -1405,7 +2076,7 @@ export async function POST(req: Request): Promise<Response> {
   const system = isArmador
     // Llega del Armador de PC: el cliente ya eligió una configuración completa de ensamblado.
     ? `${SYSTEM}\n\nCONTEXTO ARMADOR DE PC: el cliente armó esta configuración a la medida y quiere cotizarla: "${ctx?.producto}". El chat ya mostró el saludo. Reglas para este caso:
-- NO hagas la pregunta de formato (torre de marca / AIO / ensamblado): el cliente YA eligió un ENSAMBLADO a la medida. Llama buscar_productos UNA vez con el perfil + las piezas clave (CPU, GPU, RAM) para traer los ensamblados disponibles; completa con cotizar_web si hace falta para llegar a 3 opciones.
+- NO hagas la pregunta de formato (torre de marca / AIO / ensamblado): el cliente YA eligió un ENSAMBLADO a la medida. Llama buscar_productos UNA vez con **formato="ensamblado"** más el perfil y las piezas clave (CPU, GPU, RAM); completa con cotizar_web si hace falta para llegar a 3 opciones.
 - PROHIBIDO REVELAR LA COCINA (igual de innegociable que siempre): JAMÁS digas que "no lo tenemos pre-ensamblado", "no está en configuración estándar", "lo coordinamos con un especialista", "precio real de cada pieza" ni nada que delate que la build exacta no está en stock. Para el cliente, armar su equipo a la medida es lo más normal del mundo y tú lo resuelves.
 - PRESENTA con seguridad las mejores opciones de ensamblado que consigas, COPIANDO su ficha TAL CUAL (specs y precio EXACTOS de buscar_productos/cotizar_web — nunca inventes un precio para la build exacta del cliente). Si la combinación ideal del cliente trae más de lo que hay listo, ofrece la opción real más cercana con su precio firme y entrega, presentada como su equipo a la medida — sin mencionar diferencias internas.
 - Esta configuración SÍ puede incluir monitor (viene en la config). Si la opción incluye monitor, preséntala como equipo completo; si es torre sola, aplica la regla de monitor de AVANCE SIN RETROCESO.
@@ -1418,12 +2089,12 @@ export async function POST(req: Request): Promise<Response> {
     ? `${SYSTEM}\n\nCONTEXTO: el cliente llegó interesado en "${ctx.producto}"${ctx.ref ? ` (interno ref ${ctx.ref})` : ""}. Salúdalo por su nombre de producto y ayúdalo con eso.`
     : SYSTEM;
 
-  // maxRetries: el SDK reintenta solo (429/500/529/red) con backoff antes de fallar.
+  // maxRetries: el cliente reintenta solo (429/5xx/red) con backoff antes de fallar.
   // keys = [panel, entorno]: si la del panel es rechazada (401/402) en el primer
   // llamado, caemos a la del entorno — así una clave vieja en el panel no tumba a Andrea.
-  const keys = getAnthropicApiKeys();
+  const keys = getDeepseekApiKeys();
   let keyIdx = 0;
-  let anthropic = new Anthropic({ apiKey: keys[0] ?? apiKey, maxRetries: 3 });
+  let ds = new DeepSeek({ apiKey: keys[0] ?? apiKey, maxRetries: 3 });
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -1437,6 +2108,12 @@ export async function POST(req: Request): Promise<Response> {
       let cotizarCount   = 0;  // veces que consultó web (Colombia/EE.UU.)
       let registrarCount = 0;  // veces que registró un pedido
       let cancelarCount  = 0;  // veces que canceló un pedido (máx 1; desbloquea un registro extra)
+      let consultarCount = 0;  // veces que consultó el estado de un pedido (máx 2)
+      let nudgeOpciones  = 0;  // veces que se forzó completar hasta 3 opciones (máx 1)
+      let preambulo      = ""; // texto del globo de espera ya mostrado (para no repetirlo)
+      // Opciones vistas en ESTA solicitud, por origen. El servidor elige y etiqueta las 3
+      // finales sobre este acumulado (ver `poolDeCandidatos`).
+      const acc: Acumulador = { locales: [], web: [], localDisponibles: 0 };
       try {
         for (let turn = 0; turn < MAX_TURNS; turn++) {
           let turnText = "";
@@ -1448,6 +2125,7 @@ export async function POST(req: Request): Promise<Response> {
           const turnTools = isLast ? [] : tools.filter((t) =>
             t.name === "buscar_productos"  ? buscarCount    < 1 :
             t.name === "cotizar_web"       ? cotizarCount   < 2 :
+            t.name === "consultar_pedido"  ? consultarCount < 2 :
             t.name === "cancelar_pedido"   ? cancelarCount  < 1 :
             t.name === "registrar_pedido"  ? registrarCount < (1 + cancelarCount) : true,
           );
@@ -1456,37 +2134,45 @@ export async function POST(req: Request): Promise<Response> {
           // DESCARTA — así Andrea nunca repite "dame un momento". La respuesta final
           // (turno sin herramienta) se envía completa de una vez.
           const streamLive = turn === 0;
-          const s = anthropic.messages.stream({
-            model: MODEL,
-            max_tokens: 2500,
-            system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-            thinking: { type: "adaptive" },
-            output_config: { effort: "low" },
-            ...(turnTools.length > 0 ? { tools: turnTools } : {}),
-            messages: convo,
-          });
-          s.on("text", (delta: string) => { turnText += delta; if (streamLive) controller.enqueue(enc.encode(delta)); });
-          let msg: Anthropic.Message;
+          // DeepSeek es compatible con OpenAI: el system va como PRIMER mensaje del
+          // arreglo (no como parámetro aparte). El cacheo de contexto es automático
+          // en el servidor de DeepSeek, así que no hay `cache_control` que enviar.
+          let msg;
           try {
-            msg = await s.finalMessage();
+            msg = await ds.chat({
+              model: MODEL,
+              maxTokens: 2500,
+              temperature: 0.3,
+              stream: true,
+              messages: [{ role: "system", content: system }, ...convo],
+              ...(turnTools.length > 0 ? { tools: turnTools.map(toDSTool) } : {}),
+              onText: (delta: string) => {
+                turnText += delta;
+                if (streamLive) controller.enqueue(enc.encode(delta));
+              },
+            });
           } catch (err) {
             // FALLBACK DE CLAVE: si el PRIMER llamado falla por auth/crédito (401/402) y hay
             // otra clave (la del entorno), reintenta con ella. Solo en turn 0 y sin nada
             // transmitido aún → convo intacto, reinicio limpio. El camino de éxito NO cambia.
-            const status = err instanceof Anthropic.APIError ? err.status : undefined;
+            const status = err instanceof DeepSeekAPIError ? err.status : undefined;
             const authErr = status === 401 || status === 402;
             if (authErr && turn === 0 && turnText.length === 0 && keyIdx + 1 < keys.length) {
               keyIdx++;
-              anthropic = new Anthropic({ apiKey: keys[keyIdx], maxRetries: 3 });
+              ds = new DeepSeek({ apiKey: keys[keyIdx], maxRetries: 3 });
               console.warn(`[asesor] clave #${keyIdx} rechazada (${status}); reintentando con clave alterna`);
               turn = -1; // el turn++ del for reinicia el bucle en 0 con la nueva clave
               continue;
             }
             throw err; // otro error, o sin más claves → manejo normal (catch externo)
           }
-          convo.push({ role: "assistant", content: msg.content });
+          convo.push(
+            msg.toolCalls.length > 0
+              ? { role: "assistant", content: msg.content, tool_calls: msg.toolCalls }
+              : { role: "assistant", content: msg.content },
+          );
 
-          if (msg.stop_reason !== "tool_use") {
+          if (msg.toolCalls.length === 0) {
             // Red de seguridad: si en el turno 0 Andrea solo envió una frase de espera
             // sin llamar ninguna herramienta, inyectamos un recordatorio para que la use.
             if (turn === 0) {
@@ -1495,33 +2181,57 @@ export async function POST(req: Request): Promise<Response> {
                 /dame un momento|un momento|espera|déjame|permíteme/i.test(textoVisible);
               if (esEspera) {
                 controller.enqueue(enc.encode(BUBBLE_SEP)); // cierra el globo de espera
+                preambulo = turnText;
                 convo.push({ role: "user", content: "Procede: busca los productos ahora." });
                 continue;
               }
             }
-            // Respuesta final: si NO se transmitió en vivo (turno ≥1), enviarla ahora completa.
-            if (!streamLive && turnText.length > 0) controller.enqueue(enc.encode(turnText));
+            // RED DE SEGURIDAD "3 OPCIONES" (necesaria con DeepSeek): encadena menos
+            // herramientas que Claude y, con 1–2 resultados locales, cierra la respuesta
+            // presentando UNA sola opción en vez de completar con cotizar_web. Se DESCARTA
+            // esa respuesta (no se transmitió: streamLive solo es true en el turno 0) y se
+            // le exige la consulta web. Solo una vez, para garantizar terminación.
+            if (buscarCount > 0 && cotizarCount === 0 && acc.localDisponibles < 3 && !isLast && nudgeOpciones === 0) {
+              nudgeOpciones++;
+              convo.push({ role: "user", content:
+                `INTERNO (el cliente NO ve este mensaje): solo tienes ${acc.localDisponibles} opción(es) en la mano y la regla de TRES OPCIONES es obligatoria. ` +
+                "NO respondas todavía: llama cotizar_web UNA vez con las especificaciones (sin la marca ni el modelo exacto del producto local) " +
+                "y después presenta las 3 opciones juntas, cada una con su precio y su tiempo de entrega." });
+              continue;
+            }
+            // Respuesta final: si NO se transmitió en vivo (turno ≥1), enviarla ahora completa,
+            // sin el saludo ni la frase de espera que el cliente ya leyó en el globo anterior.
+            const textoFinal = preambulo ? quitarSaludoRepetido(turnText, preambulo) : turnText;
+            if (!streamLive && textoFinal.length > 0) controller.enqueue(enc.encode(textoFinal));
             break;
           }
 
           // El turno llama herramienta(s). Si el turno 0 mostró preámbulo en vivo,
           // cerramos ese globo (la respuesta final irá en un globo nuevo y entre
           // medias se ve el indicador "escribiendo…"). El texto de turnos ≥1 se descarta.
-          if (streamLive && turnText.trim().length > 0) controller.enqueue(enc.encode(BUBBLE_SEP));
-
-          const toolResults: Anthropic.ToolResultBlockParam[] = [];
-          for (const block of msg.content) {
-            if (block.type === "tool_use") {
-              if (block.name === "buscar_productos") buscarCount++;
-              if (block.name === "cotizar_web")      cotizarCount++;
-              if (block.name === "registrar_pedido") registrarCount++;
-              if (block.name === "cancelar_pedido")  cancelarCount++;
-              const result = await runTool(anthropic, block.name, block.input);
-              toolResults.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(result) });
-            }
+          if (streamLive && turnText.trim().length > 0) {
+            controller.enqueue(enc.encode(BUBBLE_SEP));
+            preambulo = turnText;
           }
-          if (toolResults.length === 0) break;
-          convo.push({ role: "user", content: toolResults });
+
+          // DeepSeek exige UN mensaje role:"tool" por cada tool_call_id del turno;
+          // omitir uno invalida la conversación en la siguiente llamada.
+          for (const call of msg.toolCalls) {
+            const nombre = call.function.name;
+            if (nombre === "buscar_productos") buscarCount++;
+            if (nombre === "cotizar_web")      cotizarCount++;
+            if (nombre === "registrar_pedido") registrarCount++;
+            if (nombre === "cancelar_pedido")  cancelarCount++;
+            if (nombre === "consultar_pedido") consultarCount++;
+            let input: unknown = {};
+            try {
+              input = JSON.parse(call.function.arguments || "{}");
+            } catch {
+              input = {}; // argumentos malformados → la herramienta responde su propio error
+            }
+            const result = await runTool(ds, nombre, input, acc);
+            convo.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result) });
+          }
         }
       } catch (err) {
         // Clasificar para responder bien al cliente:
@@ -1529,13 +2239,13 @@ export async function POST(req: Request): Promise<Response> {
         //    reintentando → derivar a contacto directo (no perder el lead).
         //  • TRANSITORIO (sobrecarga 429/529, error 5xx, red): reintentar suele funcionar
         //    → invitar a reintentar SIN el mensaje alarmante de "no puedo continuar".
-        const status = err instanceof Anthropic.APIError ? err.status : undefined;
+        const status = err instanceof DeepSeekAPIError ? err.status : undefined;
         const emsg = err instanceof Error ? err.message : String(err);
         const isBilling =
           status === 401 || status === 402 ||
           /insufficient|credit balance|out of credit|billing|payment required|quota/i.test(emsg);
         const isTransient =
-          status === 429 || status === 529 || status === 500 || status === 503 ||
+          status === 429 || status === 500 || status === 502 || status === 503 || status === 504 ||
           /overloaded|timed? ?out|ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN|fetch failed|network/i.test(emsg);
 
         const CONTACTO = "\n\n📞 **Teléfono / WhatsApp:** +57 310 2878194\n✉️ **Email:** ventas@teloconsigo.co\n\nEn un momento un especialista en tecnología se contactará contigo. ¡Fue un placer atenderte! 😊";

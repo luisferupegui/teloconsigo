@@ -1,35 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import {
   loadSettings,
   saveSettings,
-  getAnthropicApiKey,
+  getDeepseekApiKey,
   getKeySource,
   getSerperApiKey,
   getSerperKeySource,
   maskKey,
 } from "@/lib/settings";
+import { validateDeepseekKey } from "@/lib/deepseek";
 import { validateSerperKey } from "@/lib/serper";
 
 export const dynamic = "force-dynamic";
 
-// Valida la clave con una llamada que NO consume tokens (lista de modelos).
-async function validateKey(key: string): Promise<{ valid: boolean; error?: string }> {
-  try {
-    const client = new Anthropic({ apiKey: key });
-    await client.models.list({ limit: 1 });
-    return { valid: true };
-  } catch (err) {
-    if (err instanceof Anthropic.AuthenticationError) {
-      return { valid: false, error: "La clave fue rechazada por Anthropic (401). Revísala." };
-    }
-    const msg = err instanceof Error ? err.message : String(err);
-    return { valid: false, error: msg };
-  }
-}
-
 function status() {
-  const key = getAnthropicApiKey();
+  const key = getDeepseekApiKey();
   const serper = getSerperApiKey();
   return {
     hasKey: !!key,
@@ -65,23 +50,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ...status(), ok: true, valid, error });
     }
 
-    // ── Key de Anthropic ──
+    // ── Key de DeepSeek (cerebro de Andrea) ──
     const incoming = (body.apiKey ?? "").trim();
     const settings = loadSettings();
+    // Migración: la clave de Anthropic ya no se usa en ningún flujo → se descarta.
+    delete settings.anthropicApiKey;
     if (incoming === "") {
       // Cadena vacía = borrar la clave del panel (volverá a usar la del entorno si existe).
-      delete settings.anthropicApiKey;
+      delete settings.deepseekApiKey;
     } else {
-      settings.anthropicApiKey = incoming;
+      settings.deepseekApiKey = incoming;
     }
     saveSettings(settings);
 
-    const effective = getAnthropicApiKey();
+    const effective = getDeepseekApiKey();
     if (!effective) {
       return NextResponse.json({ ...status(), ok: true, valid: false, error: "No hay ninguna clave configurada." });
     }
 
-    const { valid, error } = await validateKey(effective);
+    const { valid, error } = await validateDeepseekKey(effective);
     return NextResponse.json({ ...status(), ok: true, valid, error });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

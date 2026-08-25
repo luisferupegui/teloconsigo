@@ -180,7 +180,7 @@ export default function Home() {
                   <Bot className="h-6 w-6" />
                 </div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-                  Powered by Claude AI
+                  Powered by DeepSeek AI
                 </span>
                 <h3 className="mt-1 font-display text-xl font-black text-white">
                   ASESOR IA

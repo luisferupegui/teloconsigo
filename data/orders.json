@@ -1,1 +1,149 @@
-[]
+[
+  {
+    "cliente": {
+      "nombre": "Chaparron Bonaparte",
+      "cedula": "1024563456",
+      "direccion": "Calle 12 No 10 - 24 Ibague",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Monitor LG 27\" 27U411A-B 1080p IPS 120Hz",
+      "cantidad": 1,
+      "precioCOP": 582000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 465000,
+      "margenCOP": 117000,
+      "proveedorLocal": "infoshopcorp"
+    },
+    "id": "2d3715a8-a142-4dce-8f3c-1382098f3e9d",
+    "orderNumber": "240826151",
+    "fecha": "2026-08-25T03:53:21.379Z",
+    "estado": "pendiente"
+  },
+  {
+    "cliente": {
+      "nombre": "Chaparron Bonaparte",
+      "cedula": "1024563456",
+      "direccion": "Calle 12 No 10 - 24 Ibague",
+      "ciudad": "Ibague",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "PC Torre Gamer AMD Ryzen 5 7600X 16GB 512GB SSD RTX 5060 16GB",
+      "cantidad": 1,
+      "precioCOP": 6960000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 5799900,
+      "margenCOP": 1160100,
+      "precioMercadoLocal": 5199900,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+5+7600x+rtx+5060&prds=localAnnotatedOfferId:1,productid:15444827097943487817,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Falabella",
+          "tipo": "colombia_web",
+          "costoCOP": 5199900,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+5+7600x+rtx+5060&prds=localAnnotatedOfferId:1,productid:15444827097943487817,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "62a5a64c-a306-460e-9a81-f80566587e96",
+    "orderNumber": "240826150",
+    "fecha": "2026-08-25T03:53:20.604Z",
+    "estado": "pendiente"
+  },
+  {
+    "cliente": {
+      "nombre": "Carlos Perez",
+      "cedula": "1023456789",
+      "direccion": "Calle 33 No 56 - 12",
+      "ciudad": "Medellin",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "Memoria Samsung DDR3L-1600 SODIMM 8GB",
+      "cantidad": 1,
+      "precioCOP": 100000,
+      "proveedor": "colombia"
+    },
+    "id": "3f8a579f-52f1-4939-8046-e3352e7cf108",
+    "orderNumber": "240826143",
+    "fecha": "2026-08-25T03:31:46.469Z",
+    "estado": "pendiente",
+    "proveedorDetalle": {
+      "urlCompra": "https://www.google.com/search?ibp=oshop&q=memoria+RAM+SODIMM+8GB+DDR3L+1600MHz+para+portatil&prds=localAnnotatedOfferId:1,catalogid:6051227337771720759,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "costoTotalCOP": 81000,
+      "margenCOP": 19000,
+      "precioMercadoLocal": 65527,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=memoria+RAM+SODIMM+8GB+DDR3L+1600MHz+para+portatil&prds=localAnnotatedOfferId:1,productid:2366879383870764546,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Web Colombia",
+          "tipo": "colombia_web",
+          "costoCOP": 81000,
+          "url": "https://www.google.com/search?ibp=oshop&q=memoria+RAM+SODIMM+8GB+DDR3L+1600MHz+para+portatil&prds=localAnnotatedOfferId:1,productid:2366879383870764546,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    }
+  },
+  {
+    "cliente": {
+      "nombre": "Miguel Angel Torres",
+      "cedula": "102345612",
+      "direccion": "Calle 25 A No 113 - 37",
+      "ciudad": "Bogotá",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "PC AMD Ryzen 7 5700G 16GB 512GB + Monitor Acer 24\" 144Hz + Teclado y Mouse",
+      "modelo": "Ryzen 7 5700G",
+      "cantidad": 1,
+      "precioCOP": 2950000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 2049000,
+      "margenCOP": 901000,
+      "proveedorLocal": "janus",
+      "precioMercadoLocal": 1884900,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,productid:2121116304890086434,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Falabella",
+          "tipo": "colombia_web",
+          "costoCOP": 1884900,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,productid:2121116304890086434,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Janus",
+          "tipo": "lista",
+          "costoCOP": 2049000
+        },
+        {
+          "fuente": "Janus",
+          "tipo": "colombia_web",
+          "costoCOP": 2169000,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,catalogid:20267576848972316,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+          "nota": "precio de mercado"
+        },
+        {
+          "fuente": "Ledacom",
+          "tipo": "lista",
+          "costoCOP": 2350000
+        }
+      ]
+    },
+    "id": "7a5d22d7-1694-4379-b568-1aaea026808e",
+    "orderNumber": "240826138",
+    "fecha": "2026-08-25T02:55:47.124Z",
+    "estado": "pendiente"
+  }
+]

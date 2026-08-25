@@ -22,7 +22,11 @@ export type ProveedorDetalle = {
   costoUSD?:            number;   // precio en origen (USD)
   costoTotalCOP?:       number;   // costo puesto en Colombia (fórmula importación)
   margenCOP?:           number;   // precio venta − costo total
-  proveedorLocal?:      "ledacom" | "infoshop" | "manual";
+  // Proveedor de la lista de donde salió el costo ("ledacom", "infoshop", "janus", …) o
+  // "manual" cuando el costo se estimó por piezas. Antes era un enum cerrado de 3 valores
+  // y cualquier otra lista caía en "manual" por descarte: el panel mostraba "Manual" para
+  // costos que venían de la lista de Janus.
+  proveedorLocal?:      string;
   // Comparación de mercado local (solo admin — nunca visible al cliente)
   precioMercadoLocal?:  number;   // promedio de precios en MercadoLibre/Alkosto/etc.
   fuenteLocal?:         string;   // URL de un listing local de referencia

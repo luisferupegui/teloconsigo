@@ -90,10 +90,17 @@ export function ProveedorRow({ order: o }: { order: Order }) {
               <span className="font-semibold text-zinc-700 uppercase tracking-wide text-xs w-full">Info proveedor (interno)</span>
 
               {pd?.proveedorLocal && (
-                <Detail label="Proveedor local" value={
-                  pd.proveedorLocal === "ledacom" ? "Ledacom" :
-                  pd.proveedorLocal === "infoshop" ? "Infoshop" : "Manual"
-                } />
+                // El proveedor llega como el slug de la lista ("janus", "ledacom", …) o
+                // "manual" si el costo se estimó por piezas. Antes había 3 nombres fijos
+                // aquí y cualquier otra lista se mostraba como "Manual".
+                <Detail
+                  label={pd.proveedorLocal === "manual" ? "Costo" : "Proveedor local"}
+                  value={
+                    pd.proveedorLocal === "manual"
+                      ? "Estimado por piezas"
+                      : pd.proveedorLocal.charAt(0).toUpperCase() + pd.proveedorLocal.slice(1)
+                  }
+                />
               )}
 
               {pd?.costoUSD != null && (

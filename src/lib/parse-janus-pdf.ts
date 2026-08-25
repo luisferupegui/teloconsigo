@@ -1,7 +1,10 @@
 import type { SupplierProduct } from "./supplier-catalog";
 
+// Se importa el módulo interno, NO la raíz "pdf-parse": su index.js corre un bloque
+// de debug al cargarse (`if (!module.parent)`) que lee un PDF de prueba inexistente
+// y rompe el build. La librería interna es la misma función.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse");
+const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 
 interface PdfItem {
   t: string;
