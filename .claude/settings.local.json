@@ -332,7 +332,16 @@
       "Bash(node scripts/test-web-model.mjs)",
       "Bash(awk '{print $5\"\\\\t\"$9}')",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 30 http://localhost:3000/asesor)",
-      "mcp__Claude_in_Chrome__navigate"
+      "mcp__Claude_in_Chrome__navigate",
+      "PowerShell(Write-Output \"=== winget ===\"; try { winget --version } catch { Write-Output \"winget NO disponible\" }; Write-Output \"=== Espacio en disco C: ===\"; Get-PSDrive C | Select-Object @{n='LibreGB';e={[math]::Round\\($_.Free/1GB,1\\)}})",
+      "PowerShell($dir = \"C:\\\\Users\\\\AVIDEMO\\\\Desktop\\\\Onair Radio System\"; if \\(-not \\(Test-Path $dir\\)\\) { New-Item -ItemType Directory -Path $dir | Out-Null }; Write-Output \"Carpeta creada/lista:\"; Get-Item $dir | Select-Object FullName, CreationTime)",
+      "PowerShell(winget install --id Microsoft.DotNet.SDK.8 -e --accept-source-agreements --accept-package-agreements --silent)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); Write-Output \"=== dotnet version ===\"; dotnet --version; Write-Output \"=== SDKs ===\"; dotnet --list-sdks)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); $root = \"C:\\\\Users\\\\AVIDEMO\\\\Desktop\\\\Onair Radio System\"; dotnet new avalonia.mvvm -o \"$root\\\\OnairRadioSystem\" -n OnairRadioSystem; if \\($?\\) { dotnet new sln -o \"$root\" -n OnairRadioSystem }; if \\($?\\) { dotnet sln \"$root\\\\OnairRadioSystem.sln\" add \"$root\\\\OnairRadioSystem\\\\OnairRadioSystem.csproj\" })",
+      "Bash(git -C \"C:/Users/AVIDEMO/Desktop/Onair Radio System\" init)",
+      "Bash(git -C \"C:/Users/AVIDEMO/Desktop/Onair Radio System\" branch --show-current)",
+      "Bash(git -c commit.gpgsign=false commit -q -m 'feat\\(audio\\): Hito 2 - reproduccion de audio con BASS *)",
+      "Bash(git -c commit.gpgsign=false commit -q -m 'feat\\(audio\\): salida WASAPI exclusiva a 48 kHz *)"
     ]
   }
 }
