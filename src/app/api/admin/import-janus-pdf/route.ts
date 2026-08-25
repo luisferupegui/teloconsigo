@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Readable } from "node:stream";
 import { parseJanusPdf } from "@/lib/parse-janus-pdf";
+import { parseListaPdf } from "@/lib/parse-supplier-doc";
 import {
   addList,
   generateListId,
@@ -96,19 +97,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let parsed;
-    try {
-      parsed = await parseJanusPdf(fileBuffer, { aplicarIva });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "No se pudo leer el PDF";
-      return NextResponse.json({ error: msg }, { status: 422 });
+    // Se prueban los dos lectores de PDF: el de Janus tiene columnas fijas calibradas
+    // para SU formato, y el genérico deduce las columnas del propio documento. Gana el
+    // que encuentre más productos, así una lista de otro proveedor ya no queda en cero.
+    let parsed: Awaited<ReturnType<typeof parseJanusPdf>> = [];
+    let generico: Awaited<ReturnType<typeof parseListaPdf>> = [];
+    const errores: string[] = [];
+    try { parsed = await parseJanusPdf(fileBuffer, { aplicarIva }); }
+    catch (e) { errores.push(e instanceof Error ? e.message : "lector Janus"); }
+    try { generico = await parseListaPdf(fileBuffer); }
+    catch (e) { errores.push(e instanceof Error ? e.message : "lector genérico"); }
+
+    if (generico.length > parsed.length) {
+      parsed = generico.map((p) => ({
+        nombre: p.nombre, marca: p.marca, categoria: p.categoria,
+        precio_costo: p.precio_costo, specs: p.specs ?? {}, referencia: p.referencia,
+      })) as typeof parsed;
     }
 
     if (parsed.length === 0) {
       return NextResponse.json(
         {
-          error:
-            "No se encontraron productos. Verifica que el PDF sea la lista de configuraciones de escritorio Janus.",
+          error: errores.length
+            ? `No se pudo leer el PDF: ${errores.join(" · ")}`
+            : "No se encontraron productos en el PDF. Revisa que tenga una tabla con columnas de código, producto y precio.",
         },
         { status: 422 },
       );

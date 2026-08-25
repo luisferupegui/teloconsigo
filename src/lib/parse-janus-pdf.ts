@@ -129,7 +129,43 @@ export async function parseJanusPdf(
     parsePage(items, results, seen, aplicarIva);
   }
 
-  return results;
+  return descartarMonitoresIncoherentes(results);
+}
+
+/** Descarta los equipos cuyo tamaño de monitor no cuadra con su precio.
+ *
+ *  Dentro de una misma configuración de hardware, una pantalla más grande NUNCA cuesta
+ *  menos que una más pequeña. Cuando eso pasa, el tamaño está mal leído: es lo que
+ *  delató 64 equipos "+ Monitor Janus 45\"" que costaban menos que el mismo equipo con
+ *  una de 23.8". Un precio real con una spec inventada es peor que no tener la fila:
+ *  el cliente cotizaría una pantalla que nadie le va a entregar. */
+export function descartarMonitoresIncoherentes(productos: ParsedJanusProduct[]): ParsedJanusProduct[] {
+  const pulgadas = (p: ParsedJanusProduct) =>
+    Number(p.specs?.monitor?.match(/([\d.]+)"/)?.[1] ?? NaN);
+
+  // Se agrupan por configuración: el nombre sin la parte del monitor.
+  const grupos = new Map<string, ParsedJanusProduct[]>();
+  for (const p of productos) {
+    const base = p.nombre.replace(/ \+ Monitor Janus .*$/, "");
+    if (!grupos.has(base)) grupos.set(base, []);
+    grupos.get(base)!.push(p);
+  }
+
+  const descartados = new Set<ParsedJanusProduct>();
+  for (const grupo of grupos.values()) {
+    const conMonitor = grupo.filter((p) => Number.isFinite(pulgadas(p)));
+    for (const p of conMonitor) {
+      const masPequenoYCaro = conMonitor.some(
+        (q) => pulgadas(q) < pulgadas(p) && q.precio_costo > p.precio_costo,
+      );
+      if (masPequenoYCaro) descartados.add(p);
+    }
+  }
+
+  if (descartados.size > 0) {
+    console.warn(`[janus] ${descartados.size} equipos descartados: el tamaño de monitor no cuadra con el precio`);
+  }
+  return productos.filter((p) => !descartados.has(p));
 }
 
 // ── Per-page parser ──────────────────────────────────────────────────────────
@@ -215,8 +251,15 @@ function parsePage(
       const { y: pY, value: rawPrice } = blockPrices[pi];
       if (!rawPrice) continue;
 
-      // Upper bound: the previous (higher) price, so we don't bleed into it
-      const prevPY = pi > 0 ? blockPrices[pi - 1].y : Infinity;
+      // Upper bound: the previous (higher) price, so we don't bleed into it.
+      // La primera fila no tiene precio encima, y con un techo de 50 unidades se comía
+      // la cabecera del bloque: TODAS las primeras filas salían con un tamaño de monitor
+      // ajeno (64 equipos "+ Monitor Janus 45\"" que no existen, más baratos que el mismo
+      // equipo con pantalla de 23.8"). Se le pone el mismo techo que a las demás: una fila.
+      const altoFila = blockPrices.length > 1
+        ? Math.abs(blockPrices[0].y - blockPrices[1].y)
+        : 14;
+      const prevPY = pi > 0 ? blockPrices[pi - 1].y : pY + altoFila;
 
       const rightItems = blockItems.filter(
         (i) =>
