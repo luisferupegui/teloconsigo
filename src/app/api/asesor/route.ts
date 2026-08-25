@@ -12,9 +12,14 @@ import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
 import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
 import { saveOrder, deleteOrder, getOrders, getHistory, type FuenteComparacion, type OrderEstado } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
+import {
+  piezasDeConfig, cotizarPiezaLocal, cotizarFuente, vatiosRecomendados, esAccesorioPequeno,
+  pisoDeConfiguracion, entregaDelConjunto, totalDeConfiguracion,
+  type PiezaCotizada,
+} from "@/lib/armador-cotizacion";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
-import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData, type WebQuote } from "@/lib/web-cache";
+import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
@@ -172,6 +177,136 @@ const tools: ToolDef[] = [
 const fmtCOP = (n: number) =>
   "$" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " COP";
 
+// ── SPECS A PARTIR DEL NOMBRE ────────────────────────────────────────────────
+//
+// Ningún portátil de las listas trae specs estructuradas (0 de 78), así que la ficha
+// quedaba en el nombre crudo y el precio: el cliente no veía procesador, RAM, disco,
+// gráfica ni sistema. Todo eso SÍ está dentro del nombre; aquí se extrae.
+// Regla: solo se afirma lo que el nombre dice. Nada se infiere ni se completa.
+
+/** Ruido comercial que no le importa al cliente y ensucia la ficha:
+ *  "+ Servicio", "Onsite", "Carry-In", "No Vpro", "194 AI TOPS". */
+const RUIDO_COMERCIAL = /\s*(?:\+\s*servicio\b|\bonsite\b|\bcarry[\s-]?in\b|\bno\s*vpro\b|\b\d+\s*ai\s*tops\b|\bpremier\b)/gi;
+
+function limpiarNombre(nombre: string): string {
+  return nombre.replace(RUIDO_COMERCIAL, "").replace(/\s{2,}/g, " ").replace(/[\s\-+/]+$/, "").trim();
+}
+
+/** Sistema operativo tal como debe leerlo el cliente. `null` si el nombre no lo dice. */
+function sistemaDesdeNombre(n: string): string | null {
+  if (/\bwin(?:dows)?\s*11\s*pro\b/i.test(n)) return "Windows 11 Pro";
+  if (/\bwin(?:dows)?\s*11\b/i.test(n))       return "Windows 11";
+  if (/\bwin(?:dows)?\s*10\s*pro\b/i.test(n)) return "Windows 10 Pro";
+  if (/\bfree\s*dos\b/i.test(n))              return "FreeDOS (sin Windows)";
+  if (/\bno\s*os\b|\bsin\s*s\.?o\.?\b/i.test(n)) return "Sin sistema operativo";
+  if (/\bendless\b/i.test(n))                 return "Endless OS (Linux)";
+  if (/\bubuntu\b/i.test(n))                  return "Ubuntu Linux";
+  if (/\blinux\b/i.test(n))                   return "Linux";
+  return null;
+}
+
+/** Gráfica dedicada nombrada en el texto (con su memoria si aparece). */
+function graficaDesdeNombre(n: string): string | null {
+  const m = n.match(/\b((?:rtx|gtx|radeon\s*rx|rx)\s*\d{3,4}\s*(?:ti|super)?)\s*(\d{1,2}\s*gb)?/i);
+  if (!m) return null;
+  const modelo = m[1].replace(/\s+/g, " ").trim().toUpperCase();
+  return m[2] ? `${modelo} ${m[2].replace(/\s+/g, "").toUpperCase()}` : modelo;
+}
+
+/** Procesador nombrado en el texto. Cubre las tres formas de las listas:
+ *  "Ryzen 5 7535HS", "i5-13420H", "Core 5 210H" / "Core Ultra 5 225U". */
+function procesadorDesdeNombre(n: string): string | null {
+  const patrones = [
+    /\b(?:amd\s+)?(ryzen\s*[3579]\s*[\w-]*\d[\w-]*)/i,
+    /\b(?:intel\s+)?(core\s*ultra\s*[3579][\s-]*[\w-]*\d[\w-]*)/i,
+    /\b(?:intel\s+)?(core\s*i[3579][\s-]*\d{3,5}\w*)/i,
+    /\b(i[3579][\s-]?\d{3,5}\w*)/i,
+    /\b(?:intel\s+)?(core\s*[357][\s-]*\d{3,4}\w*)/i,
+    /\b(celeron|pentium|athlon)\s*([\w-]*)/i,
+    // Último recurso: solo la gama, sin modelo ("TUF Gaming FA607NUG Ryzen 7 RTX 4050").
+    // Decir "Ryzen 7" es mejor que dejar la ficha sin procesador.
+    /\b(ryzen\s*[3579])\b/i,
+    /\b(core\s*(?:ultra\s*)?i?[3579])\b/i,
+  ];
+  for (const re of patrones) {
+    const m = n.match(re);
+    if (m) return formatoCPU(m[1]);
+  }
+  return null;
+}
+
+/** Presentación legible del procesador: "i5-13420h" → "Core i5-13420H", "RYZEN 5 7535HS"
+ *  → "Ryzen 5 7535HS". La "i" de Intel va en minúscula (es su marca) y el código de
+ *  modelo en mayúscula. */
+function formatoCPU(raw: string): string {
+  let s = raw.replace(/\s+/g, " ").trim().toLowerCase();
+  if (/^i[3579][\s-]/.test(s)) s = `core ${s}`; // el modelo suelto no dice "Core"
+  return s
+    .replace(/\b(ryzen|core|ultra|celeron|pentium|athlon)\b/g, (w) => w[0].toUpperCase() + w.slice(1))
+    .replace(/\b(\d{3,5}[a-z]{1,3})\b/g, (m) => m.toUpperCase());
+}
+
+/** Tamaño de pantalla SOLO si el nombre lo dice: en pulgadas explícitas ("15,6\"",
+ *  "PANTALLA 16\"") o en el código de serie pegado a las letras (E14, V14, A15). Ese
+ *  código es la convención del fabricante. NO se deduce de nada más: "Win 11" lleva un
+ *  11 que no es una pantalla, y preferimos no poner el dato antes que inventarlo. */
+function pantallaDesdeNombre(n: string): string | null {
+  const explicita = n.match(/\b(1[1-7])(?:[.,](\d))?\s*(?:"|''|pulg)/i);
+  if (explicita) return `${explicita[1]}${explicita[2] ? `.${explicita[2]}` : ""}"`;
+  const serie = n.match(/\b[A-Za-z]{1,4}(1[1-7])\b/);
+  if (!serie) return null;
+  // El código de serie da el tamaño redondeado: en portátiles un "15" es 15.6" y un "17"
+  // es 17.3" (convención de todos los fabricantes). Los demás sí son exactos.
+  const pulg = serie[1];
+  return pulg === "15" ? '15.6"' : pulg === "17" ? '17.3"' : `${pulg}"`;
+}
+
+/** Specs deducidas del NOMBRE, para rellenar las que el producto no trae. */
+/** Memoria portátil (USB, pendrive, microSD): guarda datos, pero no es ni RAM ni un
+ *  disco de equipo. Se distingue porque no nombra ningún procesador. */
+function esMemoriaPortable(nombre: string): boolean {
+  if (TIENE_CPU.test(nombre)) return false;
+  if (/\b(ssd|nvme|hdd|m\.?2|disco|ddr[2345]|dimm)\b/i.test(nombre)) return false;
+  return /\b(usb|pendrive|flash\s?drive|micro\s?sd|memoria\s+sd)\b/i.test(nombre);
+}
+
+function specsDesdeNombre(nombre: string, categoria?: string): Record<string, string> {
+  const n = nombre;
+  const out: Record<string, string> = {};
+
+  const cpu = procesadorDesdeNombre(n);
+  if (cpu) out.procesador = cpu;
+
+  // La memoria de la GRÁFICA no es la RAM del equipo: en "RTX 3050 4GB" ese 4GB se
+  // colaba como "RAM 4GB". Se recorta el tramo de la gráfica antes de leer capacidades.
+  const sinGpu = n.replace(/\b(?:rtx|gtx|radeon\s*rx|rx)\s*\d{3,4}\s*(?:ti|super)?\s*\d{0,2}\s*gb?/gi, " ");
+  const { ram, disco } = ramYDisco(sinGpu);
+  // En una memoria USB o una tarjeta SD la única capacidad del nombre es SU capacidad,
+  // no la RAM de un equipo: la ficha de "USB 64GB KINGSTON" decía "RAM: 64GB".
+  if (ram != null) {
+    if (esMemoriaPortable(n)) out.capacidad = `${ram}GB`;
+    else out.ram = `${ram}GB`;
+  }
+  if (disco != null) {
+    const tam = disco >= 1024 && disco % 1024 === 0 ? `${disco / 1024}TB` : `${disco}GB`;
+    out.almacenamiento = /\bnvme\b/i.test(n) ? `${tam} SSD NVMe` : `${tam} SSD`;
+  }
+
+  const gpu = graficaDesdeNombre(n);
+  if (gpu) out.gpu = gpu;
+
+  const so = sistemaDesdeNombre(n);
+  if (so) out.so = so;
+
+  // La pantalla solo aplica a equipos con pantalla propia (portátiles, todo-en-uno).
+  const cat = (categoria ?? "").toLowerCase();
+  if (cat === "portatil" || cat === "all-in-one" || esPortatilPorNombre(n)) {
+    const pantalla = pantallaDesdeNombre(n);
+    if (pantalla) out.pantalla = pantalla;
+  }
+  return out;
+}
+
 /** Specs estructuradas → líneas de viñeta, en orden legible. Solo incluye las que
  *  EXISTEN; nunca inventa una. Cubre las variantes de clave más comunes. */
 /** Capacidades en notación estándar ("16gb", "512gb") añadidas al texto de búsqueda, para
@@ -190,6 +325,7 @@ function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
   if (!specs) return [];
   const order: [string, string][] = [
     ["procesador", "Procesador"], ["cpu", "Procesador"],
+    ["capacidad", "Capacidad"],
     ["ram", "RAM"], ["memoria", "RAM"],
     ["almacenamiento", "Almacenamiento"], ["disco", "Almacenamiento"],
     ["monitor", "Pantalla"], ["pantalla", "Pantalla"],
@@ -254,13 +390,58 @@ function monitorStatusFromName(texto: string, categoria?: string): string | null
 /** Tarjeta lista para mostrar al cliente. Si hay specs estructuradas las usa; si no,
  *  el nombre completo (que ya contiene la configuración real) es la fuente fiel. Añade
  *  el estado de monitor cuando aplica. El precio va EXACTO. Andrea copia esto sin cambiar nada. */
-function construirFicha(nombre: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string): string {
-  const lineas = fichaSpecLines(specs);
-  const mon = monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`, categoria);
+/** Dato decisivo de un PROCESADOR suelto: si trae o no video integrado. Quien compra un
+ *  Intel "F"/"KF" necesita además una tarjeta gráfica o el equipo no da imagen, y eso hay
+ *  que decírselo ANTES de la compra. Solo se afirma cuando el sufijo lo indica sin
+ *  ambigüedad; si no, no se dice nada (mejor callar que inventar). */
+function notaGraficosCPU(nombre: string): string | null {
+  const n = nombre.toLowerCase();
+  const SIN     = "🎮 Sin gráficos integrados — necesita tarjeta de video aparte";
+  const CON     = "🎮 Con gráficos integrados — funciona sin tarjeta de video";
+  const BASICOS = "🎮 Gráficos integrados básicos — para juegos o diseño necesita tarjeta de video";
+
+  // ── AMD Ryzen PRIMERO: G/GE/GT trae Radeon integrada; F no trae nada ──
+  // (Va antes que Intel porque "Ryzen 5 5500" encaja en un patrón de "i5" demasiado
+  //  suelto y salía marcado como Intel con gráficos.)
+  if (/\bryzen\b/.test(n)) {
+    const amd = /\b(\d)(\d{3})\s?(g[et]?|f|x3d|x|)\b/.exec(n);
+    if (!amd) return null;
+    const sufijo = amd[3];
+    if (sufijo.startsWith("g")) return CON;
+    if (sufijo === "f") return SIN;
+    // Sin sufijo de gráficos: la serie 5000 no trae video; de la 7000 en adelante sí,
+    // pero solo para escritorio básico — no sirve para jugar.
+    return amd[1] === "5" ? SIN : BASICOS;
+  }
+
+  // ── Intel: los Core Ultra siempre traen gráficos Arc ──
+  if (/\bcore\s*ultra\b/.test(n)) return CON;
+  // El sufijo F (o KF) del modelo es el que NO trae video. Se exige el prefijo "i".
+  const intel = /\bi[3579][\s-]?(\d{3,5})(k?f?)\b/.exec(n);
+  if (intel) return intel[2].includes("f") ? SIN : CON;
+
+  return null;
+}
+
+function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string): string {
+  // El nombre se limpia de ruido comercial ("+ Servicio", "Onsite", "194 AI TOPS") y las
+  // specs que el producto no trae se deducen del propio nombre. Las estructuradas mandan:
+  // solo se rellenan los huecos.
+  const nombre = limpiarNombre(nombreCrudo);
+  const specs2 = { ...specsDesdeNombre(nombreCrudo, categoria), ...(specs ?? {}) };
+  const lineas = fichaSpecLines(specs2);
+  // La línea de monitor es SOLO para equipos completos. Un procesador suelto salía
+  // etiquetado "🖥️ Solo torre (sin monitor)", que no significa nada para una pieza:
+  // pasaba el filtro de "nombra un CPU" porque el producto ES un CPU.
+  const esEquipoCompleto = formatoDeProducto(categoria ?? "", nombre) !== null;
+  const mon = esEquipoCompleto
+    ? monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`, categoria)
+    : null;
+  const gpu = esEquipoCompleto ? null : notaGraficosCPU(nombre);
   const cuerpo = lineas.length > 0 ? `\n${lineas.join("\n")}` : "";
-  const monLinea = mon ? `\n${mon}` : "";
+  const extra = [mon, gpu].filter(Boolean).map((l) => `\n${l}`).join("");
   const precioLinea = precio != null ? `\n💲 ${fmtCOP(precio)}` : "";
-  return `**${nombre}**${cuerpo}${monLinea}${precioLinea}`;
+  return `**${nombre}**${cuerpo}${extra}${precioLinea}`;
 }
 
 // ── FORMATO DE EQUIPO ────────────────────────────────────────────────────────
@@ -424,6 +605,45 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // RTX 5050 para quien pidió una 5060, un Ryzen 5 para quien pidió un i7. Se aplica con
   // RETROCESO: si no deja nada se usa la lista sin filtrar, porque las listas abrevian
   // ("(16/512)" en vez de "16GB") y es peor dejar al cliente sin opciones.
+  // ── GAMA MÍNIMA PARA USOS EXIGENTES ────────────────────────────────────────
+  // Diseño, edición, render, gaming o IA necesitan potencia real. Sin esta guarda, como
+  // el servidor elige por precio, salía un "JANUS **WORKSTATION** Pentium G7400 8GB" a
+  // $2.339.000 para un cliente que pidió diseño gráfico: la palabra "workstation" del
+  // nombre lo hacía puntuar alto, pero un Pentium con 8GB no sirve para ese trabajo.
+  const USO_EXIGENTE = /\b(dise[ñn]o|edici[oó]n|render|3d|modelado|gaming|gamer|juegos|streaming|\bia\b|inteligencia artificial|data science|autocad|photoshop|premiere|after\s?effects|solidworks|revit|workstation|alto rendimiento)\b/i;
+  const CPU_ENTRADA  = /\b(pentium|celeron|athlon|core\s?i3|\bi3-\d|ryzen\s?3)\b/i;
+  const exigente = USO_EXIGENTE.test(consulta);
+
+  // Y hay usos que además exigen GRÁFICA DEDICADA. Photoshop, Premiere, un render 3D o
+  // un juego se apoyan en la GPU: un Core i5-12400 con vídeo integrado no los mueve por
+  // mucho que la lista lo llame "WORKSTATION". Esa palabra en el nombre es de marketing
+  // del proveedor, no una spec — y era justo lo que hacía puntuar alto a un equipo de
+  // oficina en una consulta de diseño.
+  // "Workstation" y "alto rendimiento" quedan FUERA de esta lista a propósito: son
+  // etiquetas genéricas y quien las escribe puede estar pidiendo potencia de CPU.
+  const USO_GPU = /\b(dise[ñn]o|edici[oó]n|render|3d|modelado|gaming|gamer|juegos|streaming|\bia\b|inteligencia artificial|autocad|photoshop|illustrator|coreldraw|premiere|after\s?effects|davinci|solidworks|revit|blender|maya|unreal)\b/i;
+  // Marcas de una GPU DEDICADA en el nombre o en las specs. El vídeo integrado no cuenta:
+  // si el nombre no la menciona, no se puede afirmar que la tenga (dato faltante NUNCA
+  // es "sí la trae").
+  const GPU_EN_FICHA = /\b(?:rtx|gtx)\s?\d{3,4}\b|\brx\s?\d{3,4}\b|\bquadro\b|\barc\s?a\d{3}\b|\bradeon\s+(?:rx|pro)\b/i;
+  const exigeGpu = USO_GPU.test(consulta);
+
+  /** Para un uso exigente: fuera la gama de entrada, menos de 16GB de RAM y —cuando el
+   *  trabajo se apoya en la GPU— los equipos completos sin gráfica dedicada. */
+  const gamaSuficiente = (x: Row) => {
+    if (!exigente) return true;
+    if (CPU_ENTRADA.test(x.prod.nombre)) return false;
+    const { ram } = ramYDisco(x.prod.nombre);
+    if (ram != null && ram < 16) return false;
+    // Solo se le exige GPU a un EQUIPO COMPLETO: quien busca "monitor para diseño" o
+    // "RAM para edición" está pidiendo una pieza, no una máquina.
+    if (exigeGpu && formatoDeProducto(x.prod.categoria, x.prod.nombre) !== null) {
+      const texto = `${x.prod.nombre} ${x.prod.specs?.gpu ?? ""} ${x.prod.specs?.grafica ?? ""}`;
+      if (!GPU_EN_FICHA.test(texto)) return false;
+    }
+    return true;
+  };
+
   const cumpleSpecs = (x: Row) => {
     if (!exigibles.every((t) => x.haystack.includes(t))) return false;
     if (gamasPedidas.length === 0) return true;
@@ -438,8 +658,11 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 
   // Se afloja por pasos antes que dejar al cliente sin opciones: specs + familia →
   // solo specs → sin filtrar (las listas abrevian, p. ej. "(16/512)" en vez de "16GB").
-  const estricto = combinados.filter((x) => cumpleSpecs(x) && mismaFamilia(x));
-  const soloEspecs = estricto.length > 0 ? estricto : combinados.filter(cumpleSpecs);
+  // La gama mínima NO se afloja en ningún paso: ofrecerle un Pentium a quien pide un
+  // equipo de diseño es peor que no ofrecerle nada, y para eso está la cotización web.
+  const conGama = combinados.filter(gamaSuficiente);
+  const estricto = conGama.filter((x) => cumpleSpecs(x) && mismaFamilia(x));
+  const soloEspecs = estricto.length > 0 ? estricto : conGama.filter(cumpleSpecs);
   // NO se afloja más allá de esto: si nada local cumple lo que pidió el cliente, la
   // respuesta correcta es "no hay disponibilidad local" y que Andrea lo consiga por web.
   // Devolver lo que sea era peor — ofrecía un Ryzen 3 a quien pidió un Ryzen 5 con RTX 5060.
@@ -505,17 +728,6 @@ const SITIOS_US = [
   "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com",               // general
   "amazon.com", "ebay.com",                                                          // último recurso
 ];
-// Prioridad de mayor a menor: especializadas en tech/precio primero, marketplace al final.
-const SITIOS_LOCAL = [
-  "alkosto.com",
-  "ktronix.com",
-  "falabella.com.co",
-  "exito.com",
-  "linio.com.co",
-  "pcfactory.com.co",
-  "mercadolibre.com.co",   // última prioridad: marketplace con gran variación de calidad
-];
-
 // Peso para ordenar resultados de Serper: menor = aparece primero en las opciones.
 // Prioridad B2B: alkosto/ktronix/pcfactory/falabella son las 4 referencias principales.
 const PRIORIDAD_SITIO_CO: Record<string, number> = {
@@ -528,9 +740,6 @@ const PRIORIDAD_SITIO_CO: Record<string, number> = {
   janus:        6,   // especialista en PCs de escritorio/ensamblados (solo aplica a computadores)
   mercadolibre: 99,
 };
-
-// Sitios "raíz" (sin http/www/TLD) de las 4 referencias de precio prioritarias.
-const PRIORITY_SITES_CO = ["alkosto", "ktronix", "pcfactory", "falabella"] as const;
 
 // Solo se acepta información de tiendas tecnológicas reconocidas en Colombia.
 // Cualquier otro vendedor (motos, ropa, ferretería…) se descarta silenciosamente.
@@ -668,23 +877,6 @@ type WebProducto = {
 };
 
 /** Promedia los 3 precios más cercanos a la mediana (descarta outliers). */
-function promediarPrecios(precios: number[]): number {
-  if (precios.length === 0) return 0;
-  const sorted = [...precios].sort((a, b) => a - b);
-  let toAvg: number[];
-  if (sorted.length <= 3) {
-    toAvg = sorted;
-  } else {
-    const median = sorted[Math.floor(sorted.length / 2)];
-    toAvg = sorted
-      .map((p) => ({ p, dist: Math.abs(p - median) }))
-      .sort((a, b) => a.dist - b.dist)
-      .slice(0, 3)
-      .map((x) => x.p);
-  }
-  return Math.round(toAvg.reduce((s, v) => s + v, 0) / toAvg.length / 1000) * 1000;
-}
-
 // Precio local (Colombia) desde Serper Shopping: . y , son separadores de miles.
 function parseCopPrice(s?: string): number | null {
   if (!s) return null;
@@ -754,9 +946,21 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   }
   if (candidatos.length === 0) return [];
 
+  // PRECIOS BASURA: Google Shopping cuela cifras que no son el precio del producto —
+  // accesorios del mismo anuncio, precios "desde", cuotas o placeholders. Caso real: un
+  // "Innodisk 1TB SSD SATA" listado en **US$1** salía cotizado al cliente en $100.000 COP
+  // (1 ÷ 0,7 + 25 de flete × 3.800). La fórmula era fiel; el dato de origen era falso.
+  // Se descarta lo que quede muy por debajo de la mediana del propio resultado, con un
+  // piso absoluto: nada real sale de EE.UU. por menos de US$5.
+  const ordenados = candidatos.map((c) => c.usd).sort((a, b) => a - b);
+  const medianaUsd = ordenados[Math.floor(ordenados.length / 2)];
+  const pisoUsd = Math.max(5, medianaUsd * 0.35);
+  const creibles = candidatos.filter((c) => c.usd >= pisoUsd);
+  if (creibles.length === 0) return [];
+
   // Ordena por prioridad de tienda B2B y luego por precio; reindexa para el modelo.
-  candidatos.sort((a, b) => usStoreRank(a.store, a.link) - usStoreRank(b.store, b.link) || a.usd - b.usd);
-  const top = candidatos.slice(0, 12).map((c, i) => ({ ...c, i }));
+  creibles.sort((a, b) => usStoreRank(a.store, a.link) - usStoreRank(b.store, b.link) || a.usd - b.usd);
+  const top = creibles.slice(0, 12).map((c, i) => ({ ...c, i }));
 
   // 3) Estructura (DeepSeek). El precio y la URL NO vienen del modelo: se re-adjuntan
   //    desde `top[i]`, de modo que una alucinación no puede alterar un precio.
@@ -820,9 +1024,30 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
 function fichaWeb(p: QuoteProducto): string {
   const partes = (p.specs ?? "").split("|").map((s) => s.trim()).filter(Boolean);
   const cuerpo = partes.length > 0 ? "\n" + partes.map((s) => `- ${s}`).join("\n") : "";
-  const mon = monitorStatusFromName(`${p.nombre} ${p.specs ?? ""}`);
-  const monLinea = mon ? `\n${mon}` : "";
-  return `**${p.nombre}**${cuerpo}${monLinea}\n💲 ${fmtCOP(p.precioCOP)}`;
+  // Igual que en las fichas locales: la línea de monitor es SOLO para equipos completos,
+  // y a un procesador suelto le corresponde el dato de si trae video integrado.
+  const nombre = p.nombre ?? "";
+  const esEquipoCompleto = formatoDeProducto("", nombre) !== null;
+  const mon = esEquipoCompleto ? monitorStatusFromName(`${nombre} ${p.specs ?? ""}`) : null;
+  const gpu = esEquipoCompleto ? null : notaGraficosCPU(nombre);
+  const extra = [mon, gpu].filter(Boolean).map((l) => `\n${l}`).join("");
+  return `**${nombre}**${cuerpo}${extra}\n💲 ${fmtCOP(p.precioCOP)}`;
+}
+
+/** Deja solo las opciones que cumplen los términos con CIFRA de la consulta (modelo,
+ *  capacidad). Se aplica tanto a los resultados frescos como a los que salen del caché:
+ *  una entrada guardada antes de este filtro seguía ofreciendo un 7600X a quien pedía un
+ *  5600G. Si la consulta no trae cifras, no filtra nada. */
+function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
+  // Las tiendas escriben "64 GB" y el cliente "64gb": se pega la cifra a su unidad en
+  // ambos lados para que un espacio no descarte el producto correcto.
+  const pegar = (t: string) => t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2");
+  const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
+  if (exig.length === 0) return productos;
+  return productos.filter((p) => {
+    const hs = pegar(`${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`);
+    return exig.every((t) => hs.includes(t));
+  });
 }
 
 // Respuesta estándar de cotizar_web hacia Andrea.
@@ -849,8 +1074,17 @@ function respuestaCotizar(productos: QuoteProducto[]) {
 // escritorios de alto rendimiento (gaming/edición) usan "escritorio-alto-rendimiento" (12%,
 // competitivo); los básicos y demás conservan su margen de categoría configurado.
 function construirProductosCO(localParsed: WebProducto[], clasificacion: Categoria = "otro"): { productosCO: QuoteProducto[]; localData: LocalData } {
-  const locales = localParsed
-    .filter((p) => typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false)
+  // Mismo saneamiento que en EE.UU.: Google Shopping cuela precios que no son el del
+  // producto (accesorios del anuncio, "desde", cuotas). Se descarta lo que quede muy por
+  // debajo de la mediana del propio resultado.
+  const conPrecio = localParsed.filter(
+    (p) => typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false,
+  );
+  const ordenadosCop = conPrecio.map((p) => p.copLocal as number).sort((a, b) => a - b);
+  const pisoCop = ordenadosCop.length > 0 ? ordenadosCop[Math.floor(ordenadosCop.length / 2)] * 0.35 : 0;
+
+  const locales = conPrecio
+    .filter((p) => (p.copLocal as number) >= pisoCop)
     .sort((a, b) => {
       const prioA = Object.entries(PRIORIDAD_SITIO_CO).find(([k]) => (a.fuente ?? "").includes(k))?.[1] ?? 50;
       const prioB = Object.entries(PRIORIDAD_SITIO_CO).find(([k]) => (b.fuente ?? "").includes(k))?.[1] ?? 50;
@@ -920,6 +1154,12 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
 
     const tier: ShippingTier = VALID_TIERS.has(p.tier as ShippingTier) ? (p.tier as ShippingTier) : "component";
     const c = cotizarImportacion(p.usd, tier);
+
+    // FLETE MAYOR QUE EL PRODUCTO = no se ofrece. Traer de EE.UU. una memoria USB de
+    // US$8 cuesta US$25 de envío, y salía cotizada en $258.000 al lado de la misma
+    // memoria que tenemos aquí a $40.000. La cuenta está bien; lo que no tiene sentido
+    // es la operación. Se descarta antes de que llegue al cliente.
+    if (c.usdEnvio > p.usd) continue;
     const prev = seenUS.get(key);
     if (!prev || p.usd < (prev.costoUSD ?? Infinity)) {
       seenUS.set(key, {
@@ -938,7 +1178,7 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
 async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
   const cached = getCachedQuery(consulta);
-  if (cached) return respuestaCotizar(cached.productos);
+  if (cached) return respuestaCotizar(filtrarPorSpecs(cached.productos, consulta));
 
   const serperKey = getSerperApiKey();
   const categoria = clasificarConsulta(consulta);
@@ -960,7 +1200,9 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   } else if (mode === "eeuu_co") {
     // EE.UU. primero; Colombia rellena si faltan opciones.
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
-    if (productosUS.length < 3 && serperKey) {
+    // Se cuentan las que SOBREVIVEN al filtro de specs, no las que llegaron: un listado
+    // que no confirma lo que pidió el cliente no es una opción (ver abajo).
+    if (filtrarPorSpecs(productosUS, consulta).length < 3 && serperKey) {
       const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
       ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
     }
@@ -968,27 +1210,42 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     // co_eeuu (default): Colombia primero; EE.UU. solo si faltan opciones.
     const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo") : [];
     ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
-    if (productosCO.length < 3) {
+    // El filtro de specs se aplica ANTES de decidir si hace falta EE.UU. Los títulos de
+    // Google Shopping en Colombia suelen omitir la capacidad ("Memoria USB Kingston
+    // DataTraveler 3.2" sin decir si es de 64 o de 128GB), así que esas tres opciones se
+    // descartaban DESPUÉS — y para entonces ya se había decidido no buscar en EE.UU.
+    // Resultado: el cliente que pedía una USB de 64GB veía UNA sola opción, la local.
+    if (filtrarPorSpecs(productosCO, consulta).length < 3) {
       productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
     }
   }
 
   // Armar lista final: el mercado prioritario primero.
+  // Se recortan a tres DESPUÉS de filtrar: si no, los tres huecos se los llevaban
+  // listados que no cumplían lo pedido y las opciones buenas se quedaban fuera.
+  const validosCO = filtrarPorSpecs(productosCO, consulta);
+  const validosUS = filtrarPorSpecs(productosUS, consulta);
   const productosFinales = (mode === "eeuu_co" || mode === "eeuu_only")
     ? [
-        ...productosUS.slice(0, 3),
-        ...productosCO.slice(0, Math.max(0, 3 - productosUS.length)),
+        ...validosUS.slice(0, 3),
+        ...validosCO.slice(0, Math.max(0, 3 - validosUS.length)),
       ]
     : [
-        ...productosCO.slice(0, 3),
-        ...productosUS.slice(0, Math.max(0, 3 - productosCO.length)),
+        ...validosCO.slice(0, 3),
+        ...validosUS.slice(0, Math.max(0, 3 - validosCO.length)),
       ];
 
   // Caché persistente (consulta + cada producto). localData (Colombia) se adjunta a
   // CADA producto — así un pedido de EE.UU. siempre tiene su comparación con Colombia.
-  if (productosFinales.length > 0) saveQuote(consulta, productosFinales, localData);
+  // Las opciones de la web también tienen que ser LO QUE PIDIÓ EL CLIENTE. Sin esto, a
+  // quien pedía un Ryzen 5 5600G le salía un 7600X como "mejor precio". Se exigen los
+  // términos con cifra (modelo, capacidad); si ninguno encaja se devuelve vacío y Andrea
+  // pide marca o modelo — es más honesto que ofrecerle otro producto.
+  const finales = filtrarPorSpecs(productosFinales, consulta);
 
-  return respuestaCotizar(productosFinales);
+  if (finales.length > 0) saveQuote(consulta, finales, localData);
+
+  return respuestaCotizar(finales);
 }
 
 // ── Cotización de PC de escritorio / ensamblado ──────────────────────────────
@@ -1056,6 +1313,10 @@ function esEscritorioCompuesto(nombre: string): boolean {
   const n = nombre.toLowerCase();
   // Mini-PC / portátiles / tablets NO son ensamblados de torre → su propio camino (SKU de marca).
   if (/laptop|port[aá]til|notebook|\btablet\b|ipad|mini.?pc|minipc|\bnuc\b|barebone/.test(n)) return false;
+  // Una PIEZA que se llama a sí misma procesador tampoco es un escritorio: "AMD Ryzen 5
+  // 7600X … Desktop Processor" lleva la palabra "desktop" pero no describe un equipo (sin
+  // RAM, sin disco, sin monitor) y salía etiquetada "🖥️ Solo torre (sin monitor)".
+  if (/\b(processor|procesador|cpu)\b/.test(n) && !/\b(ram|ddr[2345]|ssd|nvme|hdd|monitor)\b/.test(n)) return false;
   if (/desktop|escritorio|all.?in.?one|\baio\b|ensamblad|\btorre\b|gaming pc|pc gamer|workstation/.test(n)) return true;
   const hasCPU = /ryzen|core ?i[3579]|\bi[3579][\s-]?\d|\bxeon\b|pentium|celeron/.test(n);
   const hasRAM = /\bram\b|\bddr[2345]\b/.test(n);
@@ -1416,13 +1677,25 @@ function opcionMostrada(acc: Acumulador, nombre: string): OpcionSel | null {
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
   const objetivo = norm(nombre);
   if (objetivo.length < 4) return null;
-  const todas = [...acc.locales, ...acc.web];
-  for (const o of todas) if (norm(o.nombre) === objetivo) return o;
+  const todas = [...acc.compuestas, ...acc.locales, ...acc.web];
+
+  // Al registrar, Andrea suele recortar el nombre y escribir solo la torre aunque al
+  // cliente le mostrara "torre + monitor". Si existe la versión compuesta de lo que
+  // encontró, esa es la que se le enseñó y la que manda: si no, el pedido se guardaría
+  // por el precio del equipo pelado y el cliente pagaría una pantalla que no se cobró.
+  const conMonitor = (o: OpcionSel): OpcionSel => {
+    const k = norm(o.nombre);
+    return acc.compuestas.find((c) => c !== o && norm(c.nombre).startsWith(k)) ?? o;
+  };
+
+  for (const o of todas) if (norm(o.nombre) === objetivo) return conMonitor(o);
   for (const o of todas) {
     const k = norm(o.nombre);
-    if (k.length >= 8 && contencionFiable(k, objetivo)) return o;
+    if (k.length >= 8 && contencionFiable(k, objetivo)) return conMonitor(o);
   }
-  return null;
+  // Última red: el nombre registrado es el de una torre y la opción mostrada la lleva
+  // con su pantalla, así que la contención por proporción no llega al 0.6.
+  return acc.compuestas.find((c) => norm(c.nombre).startsWith(objetivo)) ?? null;
 }
 
 /** Precio al cliente de un producto de las fuentes LOCALES, con la MISMA fórmula que usa
@@ -1596,6 +1869,13 @@ async function registrarPedido(input: unknown, acc: Acumulador): Promise<unknown
   const mostrada = opcionMostrada(acc, producto.nombre);
   const precioAutoritativo = mostrada?.precio ?? localExacto?.precio ?? quote?.precioCOP;
   if (precioAutoritativo != null && precioAutoritativo > 0) producto.precioCOP = precioAutoritativo;
+
+  // El nombre que se guarda es el de la opción MOSTRADA, no el que escriba Andrea: al
+  // registrar recorta el nombre y en un equipo a la medida eso dejaba al admin sin saber
+  // qué piezas hay que comprar.
+  if (mostrada && mostrada.nombre.length > producto.nombre.length) {
+    producto.nombre = mostrada.nombre;
+  }
   // El margen se recalcula SIEMPRE contra el precio final: si no, el admin vería un
   // margen que no corresponde con lo que realmente se cobró.
   if (costoTotalCOP != null) margenCOP = producto.precioCOP - costoTotalCOP;
@@ -1754,11 +2034,64 @@ type OpcionSel = { nombre: string; precio: number; ficha: string; entrega: "loca
 //   • ≥3 locales PERO se llamó cotizar_web igual → los locales no servían (coincidencias
 //     flojas del buscador, ej. un patch cord de $307.000 en una búsqueda de switch PoE)
 //     → pool = web. Sin esta regla, las opciones reales quedaban fuera de la ventana.
-type Acumulador = { locales: OpcionSel[]; web: OpcionSel[]; localDisponibles: number };
+
+type Acumulador = {
+  locales: OpcionSel[];
+  /** Última consulta que se buscó localmente: sirve para cotizar la web sin el modelo. */
+  ultimaConsulta?: string;
+  /** Cuántas opciones se le entregaron al modelo en la última selección. */
+  mostradas?: number;
+  web: OpcionSel[];
+  localDisponibles: number;
+
+  /** Opciones tal como se le MOSTRARON al cliente (torre + monitor ya sumados).
+   *  Es lo que consulta `opcionMostrada` al registrar, para que el pedido se guarde
+   *  por el mismo precio que vio en pantalla. */
+  compuestas: OpcionSel[];
+};
+
+/** Monitor que pidió la configuración del armador, ya valorado con nuestras fuentes.
+ *  El armador SIEMPRE incluye pantalla, así que sin esto toda cotización del armador
+ *  salía como torre pelada. `null` si la config no trae monitor o no hay ninguno que
+ *  ofrecer: preferimos no prometer una pantalla que no podemos poner precio. */
+// Palabras que no distinguen un producto de otro: todas las memorias dicen "memoria".
+const PALABRAS_GENERICAS = new Set([
+  "memoria", "usb", "disco", "unidad", "flash", "drive", "pc", "computador", "equipo",
+  "para", "con", "por", "los", "las", "del", "gamer", "torre", "kit", "nuevo", "original",
+]);
+
+function tokensDistintivos(nombre: string): string[] {
+  return [...new Set(
+    nombre.toLowerCase()
+      .replace(/[^a-z0-9áéíóúñ]+/g, " ")
+      .replace(/(\d)\s+(gb|tb)\b/g, "$1$2")
+      .split(/\s+/)
+      .filter((t) => t.length >= 3 && !PALABRAS_GENERICAS.has(t)),
+  )];
+}
+
+/** ¿El listado de la web es el MISMO producto que ya tenemos aquí? Se compara por
+ *  palabras distintivas (marca, línea, capacidad); las genéricas no cuentan. */
+function mismoProducto(local: string, web: string): boolean {
+  const a = tokensDistintivos(local);
+  if (a.length < 2) return false;
+  const b = new Set(tokensDistintivos(web));
+  const comunes = a.filter((t) => b.has(t)).length;
+  return comunes / a.length >= 0.7;
+}
 
 function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
   if (acc.web.length === 0) return acc.locales;
-  return acc.localDisponibles >= 3 ? acc.web : [...acc.locales, ...acc.web];
+  if (acc.localDisponibles >= 3) return acc.web;
+
+  // Un listado de la web que es EL MISMO producto que ya tenemos —misma marca, misma
+  // línea, misma capacidad— y encima más caro no es una segunda opción: es nuestro
+  // propio artículo con el precio de otra tienda. Al cliente le llegaba la misma
+  // memoria Kingston a $40.000 y a $120.000 en la misma lista.
+  const web = acc.web.filter(
+    (w) => !acc.locales.some((l) => w.precio >= l.precio && mismoProducto(l.nombre, w.nombre)),
+  );
+  return [...acc.locales, ...web];
 }
 
 const ENTREGA_TXT: Record<OpcionSel["entrega"], string> = {
@@ -1773,7 +2106,7 @@ const VENTANA_RELEVANCIA = 6;
 
 /** Elige hasta 3 opciones y las devuelve YA ETIQUETADAS y ordenadas de menor a mayor
  *  precio. `candidatos` debe venir ordenado por relevancia (el más relevante primero). */
-function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre: string; precioCOP: number; bloque: string }[] {
+function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre: string; precioCOP: number; bloque: string; entrega: OpcionSel["entrega"] }[] {
   // Dedupe por nombre normalizado, conservando el primero (el más relevante).
   const vistos = new Set<string>();
   const unicos: OpcionSel[] = [];
@@ -1804,12 +2137,16 @@ function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre
     elegidas.length === 2 ? ["💰 **Mejor precio**", "⚡ **Mejor rendimiento**"] :
     ["💰 **Mejor precio**", "🎯 **Recomendado**", "⚡ **Mejor rendimiento**"];
 
-  return elegidas.map((o, i) => ({
-    etiqueta: etiquetas[i],
-    nombre: o.nombre,
-    precioCOP: o.precio,
-    bloque: `${etiquetas[i] ? `${etiquetas[i]}\n` : ""}${o.ficha}\n${ENTREGA_TXT[o.entrega]}`,
-  }));
+  return elegidas.map((o, i) => {
+    const fin = o;
+    return {
+      etiqueta: etiquetas[i],
+      nombre: fin.nombre,
+      precioCOP: fin.precio,
+      bloque: `${etiquetas[i] ? `${etiquetas[i]}\n` : ""}${fin.ficha}\n${ENTREGA_TXT[fin.entrega]}`,
+      entrega: fin.entrega,
+    };
+  });
 }
 
 const INSTRUCCION_SELECCION =
@@ -1844,17 +2181,227 @@ function quitarSaludoRepetido(texto: string, preambulo: string): string {
   return restante.length > 0 ? restante : texto;
 }
 
+// ── LLAMADA A HERRAMIENTA ESCRITA COMO TEXTO ─────────────────────────────────
+//
+// DeepSeek a veces NO usa el canal de tool_calls y escribe la llamada como texto dentro
+// de la respuesta. El cliente veía el markup crudo en el chat:
+//   <|DSML|invoke name="cotizar_web"><|DSML|parameter name="consulta">…</…>
+// Se detecta para (a) no mostrárselo NUNCA y (b) recuperar la intención y ejecutar la
+// herramienta igual, en vez de dejar la conversación colgada.
+
+const MARCA_TOOLCALL = /<[|｜]|tool▁calls|tool_calls|<\s*invoke\b|invoke name=|DSML/i;
+
+/** ¿El texto trae una llamada a herramienta escrita a mano? */
+function pareceToolCallEscrita(texto: string): boolean {
+  return MARCA_TOOLCALL.test(texto);
+}
+
+/** Recupera nombre y argumentos de esa llamada. `null` si no se puede leer. */
+function toolCallDesdeTexto(texto: string): { name: string; args: string } | null {
+  const name =
+    texto.match(/invoke\s+name="([a-zA-Z_]+)"/)?.[1] ??
+    texto.match(/tool[_▁]sep[|｜>]*\s*([a-zA-Z_]{4,})/)?.[1] ??
+    texto.match(/"name"\s*:\s*"([a-zA-Z_]+)"/)?.[1];
+  if (!name) return null;
+
+  const args: Record<string, string> = {};
+  for (const m of texto.matchAll(/parameter\s+name="([^"]+)"[^>]*>([\s\S]*?)<\/[^>]*parameter\s*>/gi)) {
+    args[m[1]] = m[2].replace(/<[^>]*>/g, "").trim();
+  }
+  if (Object.keys(args).length > 0) return { name, args: JSON.stringify(args) };
+
+  // Variante con los argumentos en JSON pegado tras el nombre.
+  const json = texto.match(/\{[\s\S]*\}/);
+  if (json) { try { JSON.parse(json[0]); return { name, args: json[0] }; } catch { /* sigue */ } }
+  return null;
+}
+
+/** Quita el markup de la llamada para que no llegue nunca al cliente. */
+function limpiarToolCallEscrita(texto: string): string {
+  return texto
+    .replace(/<[|｜][\s\S]*$/g, "")
+    .replace(/<\s*invoke[\s\S]*$/gi, "")
+    .replace(/<\s*\/?\s*(tool_calls|tool▁calls)[\s\S]*$/gi, "")
+    .trim();
+}
+
+/** Selección final para la herramienta, recordando en el acumulador las opciones tal
+ *  como se muestran (con monitor sumado si lo hay). */
+function seleccionDe(acc: Acumulador) {
+  const opciones = construirSeleccion(poolDeCandidatos(acc));
+  acc.mostradas = opciones.length;
+  acc.compuestas = opciones.map((o) => ({
+    nombre: o.nombre, precio: o.precioCOP, ficha: o.bloque, entrega: o.entrega,
+  }));
+  return { instruccion: INSTRUCCION_SELECCION, opciones };
+}
+
+/** Cotiza la configuración del armador PIEZA POR PIEZA.
+ *
+ *  Antes se buscaba un PC prefabricado parecido y se presentaba ese. El cliente elegía
+ *  Core i7 + RTX 4060 + 32GB + monitor de 27\" y recibía una torre con otra RAM, sin
+ *  monitor o sin gráfica: no era un fallo del buscador, era la pregunta equivocada. Un
+ *  equipo a la medida se cotiza como lo cotiza un técnico, sumando sus piezas.
+ *
+ *  Cada pieza se busca primero en nuestras listas; la que no tenemos se consigue en la
+ *  web. El cliente no ve de dónde sale ninguna: ve su equipo, su precio y una fecha. */
+async function cotizarConfiguracion(ds: DeepSeek, config: string): Promise<{
+  piezas: PiezaCotizada[]; total: number; entrega: OpcionSel["entrega"]; faltantes: string[];
+}> {
+  const cotizadas: PiezaCotizada[] = [];
+  const faltantes: string[] = [];
+
+  for (const pieza of piezasDeConfig(config)) {
+    const local = cotizarPiezaLocal(pieza);
+    if (local) { cotizadas.push(local); continue; }
+
+    // No la tenemos: se consigue. Una sola consulta por pieza, y el caché de 7 días hace
+    // que una configuración repetida no vuelva a pagarla.
+    // La consulta va anclada al CONTEXTO de la pieza, no a su etiqueta del armador:
+    // "Aire de alto desempeño" + "Refrigeración" le pedía a Google aires acondicionados,
+    // y uno de $1.8 millones entraba tan campante en la cotización del equipo.
+    const r = await cotizarWeb(ds, `${pieza.contexto} ${pieza.valor}`.trim());
+    // Misma regla que en las listas: en accesorios pequeños se toma el de mayor valor.
+    const caroPrimero = esAccesorioPequeno(pieza.categorias);
+    const mejor = (r.productos as QuoteProducto[])
+      .filter((p) => typeof p.precioCOP === "number" && p.precioCOP > 0)
+      // Y aunque venga anclada, se verifica que el resultado SEA esa pieza. Un producto
+      // que no la nombra no entra: es preferible cotizar sin ella que con otra cosa.
+      .filter((p) => pieza.senales.test(p.nombre ?? ""))
+      .sort((a, b) => (caroPrimero ? b.precioCOP - a.precioCOP : a.precioCOP - b.precioCOP))[0];
+
+    if (mejor) {
+      cotizadas.push({
+        ...pieza,
+        nombre: limpiarNombre(mejor.nombre ?? pieza.valor),
+        precio: mejor.precioCOP,
+        // En un listado de Colombia el costo es el precio de la tienda; en uno importado,
+        // el costo puesto en Colombia que ya calculó la cotización.
+        costo: mejor.costoTotalCOP > 0 ? mejor.costoTotalCOP : undefined,
+        entrega: mejor.origen === "co" ? "local" : "us",
+      });
+    } else if (pieza.esencial) {
+      // Una pieza esencial sin precio invalida el total: mejor saberlo que cotizar de menos.
+      faltantes.push(`${pieza.etiqueta}: ${pieza.valor}`);
+    }
+  }
+
+  // La fuente no la elige el cliente —no tendría por qué— pero sin ella no hay equipo.
+  // La decide el consumo de la gráfica, con holgura.
+  const fuente = cotizarFuente(vatiosRecomendados(config));
+  if (fuente) cotizadas.push(fuente);
+
+  let total = totalDeConfiguracion(cotizadas);
+
+  // ── Contraste con el mercado ───────────────────────────────────────────────
+  // La suma de las piezas puede quedar desfasada sin que nada esté "mal": una lista con
+  // un precio viejo, una pieza que solo se consigue cara, o un margen de categoría que no
+  // encaja en ese equipo. Antes de darle el precio al cliente se compara con lo que cuesta
+  // hoy un equipo parecido, y si nos pasamos, se ajusta.
+  const conMonitor = cotizadas.some((p) => p.etiqueta.toLowerCase() === "monitor");
+  const mercado = await referenciaDeMercado(ds, config, conMonitor);
+  let ajuste: string | null = null;
+
+  if (mercado) {
+    const techo = Math.round((mercado.precio * TECHO_MERCADO) / 1000) * 1000;
+    const piso  = pisoDeConfiguracion(cotizadas);
+
+    if (total > techo) {
+      // Por encima del mercado. Se baja hasta el techo, pero NUNCA por debajo del costo
+      // más el margen mínimo: un precio competitivo que pierde plata no le sirve a nadie.
+      // Si no conocemos el costo de alguna pieza no se toca nada: bajar a ciegas es peor.
+      if (piso != null && techo >= piso) {
+        ajuste = `ajustado de ${fmtCOP(total)} a ${fmtCOP(techo)} (mercado ${fmtCOP(mercado.precio)}, ${mercado.muestras} listados)`;
+        total = techo;
+      } else {
+        ajuste = `${fmtCOP(total)} supera el mercado (${fmtCOP(mercado.precio)}) pero el costo no deja bajar` +
+          (piso != null ? ` de ${fmtCOP(piso)}` : " (costo desconocido)");
+      }
+    } else if (total < mercado.precio * PISO_MERCADO) {
+      // Muy por debajo del mercado. NO se sube: el cliente no tiene por qué pagar más
+      // porque otros cobren más. Pero queda avisado, porque suele delatar un costo mal
+      // cargado en las listas.
+      ajuste = `${fmtCOP(total)} está muy por debajo del mercado (${fmtCOP(mercado.precio)}): revisar costos`;
+    }
+    console.warn(`[asesor] armador: mercado ${fmtCOP(mercado.precio)} (${mercado.muestras} listados) · nuestro ${fmtCOP(total)}${ajuste ? ` · ${ajuste}` : " · equilibrado"}`);
+  } else {
+    console.warn("[asesor] armador: sin referencia de mercado comparable, se cotiza por piezas");
+  }
+
+  return {
+    piezas: cotizadas,
+    total,
+    entrega: entregaDelConjunto(cotizadas) === "us" ? "us" : "local",
+    faltantes,
+  };
+}
+
+/** Qué cuesta HOY en el mercado colombiano un equipo parecido al que armó el cliente.
+ *
+ *  No busca el equipo exacto —es a la medida, no existe en ninguna tienda— sino uno
+ *  equivalente en lo que de verdad manda el precio: procesador y gráfica. Y compara
+ *  peras con peras: los listados que traen monitor se contrastan con nuestro precio CON
+ *  monitor, y los de torre sola con el nuestro sin monitor. Sin esa separación, un equipo
+ *  nuestro con pantalla parecería un 25% caro frente a torres peladas.
+ *
+ *  Se usa la MEDIANA, no el mínimo: Google Shopping cuela vendedores con precios de otro
+ *  producto, y la mediana no se mueve por uno de ellos.
+ *
+ *  Devuelve el precio de RETAIL (lo que paga el cliente en esa tienda), no nuestro precio:
+ *  es el número contra el que tiene sentido medirse. */
+// Los avisos de tienda no escriben "monitor 22\"": escriben "Led 22", "+ pantalla 24" o
+// "combo con LCD". Para AGRUPAR comparables hace falta una detección más laxa que la de
+// la ficha (`INCLUYE_MONITOR`), que exige la palabra o las comillas de pulgadas.
+const LISTADO_CON_PANTALLA = /\b(monitor|pantalla|display|led|lcd)\b|\b(?:1[89]|2\d|3\d)(?:[.,]\d)?\s*(?:"|''|pulg)/i;
+
+async function referenciaDeMercado(
+  ds: DeepSeek,
+  config: string,
+  conMonitor: boolean,
+): Promise<{ precio: number; muestras: number } | null> {
+  const gpu = config.toLowerCase().match(/\b(?:rtx|gtx|rx)\s?\d{3,4}\b/)?.[0] ?? "";
+  const piezas = [cpuFrase(config), gpu].filter(Boolean).join(" ").trim();
+  if (!piezas) return null;
+
+  const r = await cotizarWeb(ds, `computador escritorio ${piezas}`);
+  // Solo listados de COLOMBIA: de ellos conocemos el precio de tienda. En un importado
+  // lo que tenemos es nuestro propio costo puesto aquí, que no es un precio de mercado.
+  const retail = (r.productos as QuoteProducto[])
+    .filter((p) => p.origen === "co" && p.costoTotalCOP > 0)
+    .filter((p) => LISTADO_CON_PANTALLA.test(p.nombre ?? "") === conMonitor)
+    .map((p) => p.costoTotalCOP)
+    .sort((a, b) => a - b);
+
+  // Con una sola muestra no hay mercado que valga: podría ser un anuncio suelto.
+  if (retail.length < 2) return null;
+  return { precio: retail[Math.floor(retail.length / 2)], muestras: retail.length };
+}
+
+// Cuánto puede separarse nuestro precio del mercado antes de considerarlo desfasado. La
+// banda es ancha a propósito: nuestro equipo es a la medida y trae ensamble, garantía y
+// asesoría, así que estar algo por encima de una torre de tienda es normal.
+const TECHO_MERCADO = 1.25;
+const PISO_MERCADO  = 0.70;
+
+/** La ficha que ve el cliente: su equipo, pieza por pieza, con un solo precio. */
+function fichaDeConfiguracion(perfil: string, piezas: PiezaCotizada[], total: number): string {
+  const lineas = piezas.map((p) => `- ${p.etiqueta}: ${p.valor}`);
+  lineas.push(`- Ensamble, gabinete y cableado: incluidos`);
+  return `**${perfil} — ensamblado a la medida**\n${lineas.join("\n")}\n💲 ${fmtCOP(total)}`;
+}
+
 async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulador): Promise<unknown> {
   try {
     if (name === "buscar_productos") {
       const r = buscarProductos(input as Record<string, unknown>);
       acc.localDisponibles = r.localDisponibles;
+      acc.ultimaConsulta = String((input as { consulta?: unknown })?.consulta ?? "").trim();
       for (const p of r.productos) {
         if (typeof p.precioDesde === "number" && p.precioDesde > 0) {
           acc.locales.push({ nombre: p.nombre, precio: p.precioDesde, ficha: p.ficha, entrega: "local" });
         }
       }
-      return { ...r, seleccion: { instruccion: INSTRUCCION_SELECCION, opciones: construirSeleccion(poolDeCandidatos(acc)) } };
+      return { ...r, seleccion: seleccionDe(acc) };
     }
     if (name === "registrar_pedido") return await registrarPedido(input, acc);
     if (name === "cancelar_pedido")  return await cancelarPedido(input);
@@ -1869,7 +2416,7 @@ async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulad
           acc.web.push({ nombre, precio: p.precioCOP, ficha: p.ficha, entrega: p.origen === "co" ? "local" : "us" });
         }
       }
-      return { ...r, seleccion: { instruccion: INSTRUCCION_SELECCION, opciones: construirSeleccion(poolDeCandidatos(acc)) } };
+      return { ...r, seleccion: seleccionDe(acc) };
     }
     return { error: "herramienta desconocida" };
   } catch {
@@ -1971,7 +2518,8 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
   • NO agregues una opción que no esté en "seleccion", ni quites una que sí esté.
   • Si llamas cotizar_web después de buscar_productos, usa SIEMPRE el "seleccion" de la ÚLTIMA respuesta: ya combina lo local con lo de la web.
   Tu trabajo es el texto cálido alrededor: presentar, explicar por qué le sirven al cliente y avanzar al cierre.
-- TRES OPCIONES (REGLA OBLIGATORIA): si "seleccion" trae menos de 3 opciones, NO respondas todavía: llama cotizar_web para completar y presenta las 3 juntas. Presentar una sola opción es un error.
+- TRES OPCIONES (REGLA OBLIGATORIA): si "seleccion" trae menos de 3 opciones, NO respondas todavía: llama cotizar_web para completar y presenta las 3 juntas. Presentar una sola opción sin haber consultado antes es un error.
+  • Si YA consultaste y aun así "seleccion" trae una sola opción, preséntala con naturalidad —es la que manejamos— y ofrécele conseguirle **otra marca o capacidad** si prefiere. Nunca digas que "solo hay una", ni que no encontraste más, ni inventes una segunda opción para rellenar.
 - CREDIBILIDAD: cuando presentes opciones, menciona primero cuántas encontraste. Ejemplo: "Encontré 6 opciones compatibles. Te recomiendo estas 3 por su relación precio/rendimiento 🙌". La mayoría de clientes decide mejor cuando compara.
 - ENTREGA (dilo SIEMPRE, por separado para CADA opción):
   • Opción de buscar_productos = disponibilidad LOCAL → "te llega en 1 a 3 días hábiles".
@@ -2076,10 +2624,11 @@ export async function POST(req: Request): Promise<Response> {
   const system = isArmador
     // Llega del Armador de PC: el cliente ya eligió una configuración completa de ensamblado.
     ? `${SYSTEM}\n\nCONTEXTO ARMADOR DE PC: el cliente armó esta configuración a la medida y quiere cotizarla: "${ctx?.producto}". El chat ya mostró el saludo. Reglas para este caso:
-- NO hagas la pregunta de formato (torre de marca / AIO / ensamblado): el cliente YA eligió un ENSAMBLADO a la medida. Llama buscar_productos UNA vez con **formato="ensamblado"** más el perfil y las piezas clave (CPU, GPU, RAM); completa con cotizar_web si hace falta para llegar a 3 opciones.
+- ⛔ CERO PREGUNTAS ANTES DE COTIZAR — esta regla ANULA cualquier otra de más abajo. El cliente ya eligió cada pieza en el armador: ya sabes el uso, el formato, la gama y el presupuesto. NO preguntes por el uso, NI por el formato, NI por la marca, NI por el presupuesto, NI por "algún detalle adicional". Tu PRIMERA respuesta llama la herramienta y la SEGUNDA muestra las opciones con su precio. Preguntar aquí es hacerle repetir lo que ya te dijo.
+- Llama buscar_productos UNA vez con **formato="ensamblado"** más el perfil y las piezas clave (CPU, GPU, RAM); completa con cotizar_web si hace falta para llegar a 3 opciones.
 - PROHIBIDO REVELAR LA COCINA (igual de innegociable que siempre): JAMÁS digas que "no lo tenemos pre-ensamblado", "no está en configuración estándar", "lo coordinamos con un especialista", "precio real de cada pieza" ni nada que delate que la build exacta no está en stock. Para el cliente, armar su equipo a la medida es lo más normal del mundo y tú lo resuelves.
 - PRESENTA con seguridad las mejores opciones de ensamblado que consigas, COPIANDO su ficha TAL CUAL (specs y precio EXACTOS de buscar_productos/cotizar_web — nunca inventes un precio para la build exacta del cliente). Si la combinación ideal del cliente trae más de lo que hay listo, ofrece la opción real más cercana con su precio firme y entrega, presentada como su equipo a la medida — sin mencionar diferencias internas.
-- Esta configuración SÍ puede incluir monitor (viene en la config). Si la opción incluye monitor, preséntala como equipo completo; si es torre sola, aplica la regla de monitor de AVANCE SIN RETROCESO.
+- El MONITOR de la configuración ya viene sumado en las opciones que te entrega el sistema (la ficha dice "Incluye…" y el precio ya es el del conjunto). Preséntalo como equipo completo y NO vuelvas a preguntar por la pantalla ni la ofrezcas aparte. Si alguna opción sí dice "Solo torre", entonces esa va sin pantalla: aplica la regla de monitor de AVANCE SIN RETROCESO.
 - CIERRE (NO derives a WhatsApp/email salvo falla técnica real): después de mostrar el precio firme y la entrega, avanza al cierre normal — confirma la opción y pregunta cuántas unidades necesita, luego pide los datos para registrar el pedido. El cierre es una cotización/pedido registrado, NUNCA un "contáctanos por WhatsApp".
 - Ve DIRECTO al precio y la entrega — no repitas "dame un momento" ni el saludo. Usa el perfil ("PC Gamer", "Edición de video", "Oficina"…) para el lenguaje técnico de valor.`
     : autoInicio && ctx?.producto
@@ -2110,11 +2659,91 @@ export async function POST(req: Request): Promise<Response> {
       let cancelarCount  = 0;  // veces que canceló un pedido (máx 1; desbloquea un registro extra)
       let consultarCount = 0;  // veces que consultó el estado de un pedido (máx 2)
       let nudgeOpciones  = 0;  // veces que se forzó completar hasta 3 opciones (máx 1)
+      let nudgeArmador   = 0;  // veces que se forzó cotizar sin preguntar en el armador (máx 1)
       let preambulo      = ""; // texto del globo de espera ya mostrado (para no repetirlo)
       // Opciones vistas en ESTA solicitud, por origen. El servidor elige y etiqueta las 3
       // finales sobre este acumulado (ver `poolDeCandidatos`).
-      const acc: Acumulador = { locales: [], web: [], localDisponibles: 0 };
+      const acc: Acumulador = { locales: [], web: [], localDisponibles: 0, compuestas: [] };
       try {
+        // ARMADOR: la búsqueda se hace ANTES de que Andrea hable, y se le entrega hecha.
+        // El cliente ya eligió cada pieza, así que no hay nada que preguntarle — pero el
+        // modelo insistía en pedir marca, presupuesto o "algún detalle", incluso con la
+        // prohibición en el prompt y dos avisos. Arrancando con los datos en la mano no
+        // tiene nada que preguntar, y de paso se ahorra una vuelta completa al modelo.
+        // (La configuración del armador puede traer disyuntivas —"Core i7 / Ryzen 7"—
+        //  y ahí preguntar era hasta razonable; con los resultados delante, ya no.)
+        // El pre-cotizado se rehace en CADA mensaje del armador: el acumulador solo vive
+        // dentro de una petición, y es él quien guarda a qué precio se le mostró cada
+        // opción al cliente. Sin rehacerlo, el pedido que se registra dos mensajes después
+        // se guardaría por el precio del equipo sin la pantalla.
+        const primerTurno = convo.filter((m) => m.role === "user").length <= 1;
+        if (isArmador && ctx?.producto) {
+          // La configuración se cotiza PIEZA POR PIEZA, no buscando un prefabricado parecido.
+          // Esa era la raíz de los errores que veía el cliente: elegía Core i7 + RTX 4060 +
+          // 32GB + monitor de 27" y recibía una torre con otra RAM, sin monitor o sin gráfica
+          // dedicada. Ningún equipo de las listas cumple ocho specs a la vez, así que la
+          // búsqueda siempre devolvía "lo más parecido" — y lo más parecido no es lo que pidió.
+          const cot = await cotizarConfiguracion(ds, ctx.producto);
+          const perfil = ctx.producto.split("—")[0].trim() || "Equipo a la medida";
+
+          if (cot.faltantes.length > 0) {
+            // Falta el precio de una pieza IMPRESCINDIBLE: el total estaría mal. Se avisa en
+            // el log (es un hueco de inventario que el admin debe cubrir) y se sigue sin
+            // total, para que Andrea no invente una cifra.
+            console.warn(`[asesor] armador: sin precio para ${cot.faltantes.join(" | ")}`);
+          }
+
+          if (cot.piezas.length > 0 && cot.faltantes.length === 0) {
+            const ficha = fichaDeConfiguracion(perfil, cot.piezas, cot.total);
+            const opcion: OpcionSel = {
+              nombre: `${perfil} a la medida — ${cot.piezas.map((p) => p.valor).join(" · ")}`,
+              precio: cot.total,
+              ficha,
+              entrega: cot.entrega,
+            };
+            // Va al acumulador como opción MOSTRADA: así el pedido se registra por este mismo
+            // precio, que es la regla que impide cobrar algo distinto a lo cotizado.
+            acc.compuestas = [opcion];
+            acc.mostradas = 1;
+
+            const resultado = {
+              encontrados: 1,
+              seleccion: {
+                instruccion:
+                  "INTERNO: esta es la cotización EXACTA de la configuración que armó el cliente, calculada por el sistema " +
+                  "pieza por pieza. Copia el \"bloque\" TAL CUAL: no cambies el precio, no quites piezas, no agregues ninguna, " +
+                  "no ofrezcas alternativas ni otros equipos. Es SU equipo, no una opción entre varias.",
+                opciones: [{
+                  etiqueta: "",
+                  nombre: opcion.nombre,
+                  precioCOP: cot.total,
+                  bloque: `${ficha}\n${ENTREGA_TXT[cot.entrega]}`,
+                  entrega: cot.entrega,
+                }],
+              },
+            };
+            const llamada = {
+              id: "call_arm_config",
+              type: "function" as const,
+              function: { name: "buscar_productos", arguments: JSON.stringify({ consulta: ctx.producto, formato: "ensamblado" }) },
+            };
+            buscarCount++;
+            convo.push({ role: "assistant", content: "", tool_calls: [llamada] });
+            convo.push({ role: "tool", tool_call_id: llamada.id, content: JSON.stringify(resultado) });
+
+            if (primerTurno) {
+              convo.push({ role: "user", content:
+                "INTERNO (el cliente NO ve este mensaje): la cotización de su equipo ya está resuelta arriba. NO preguntes NADA y NO busques nada más. " +
+                "Preséntasela YA: copia el \"bloque\" tal cual, con una frase cálida delante y el cierre detrás (confirmar y cuántas unidades)." });
+            } else {
+              convo.push({ role: "user", content:
+                "INTERNO (el cliente NO ve este mensaje): arriba tienes de nuevo la cotización de su equipo, con el MISMO precio que ya le mostraste. " +
+                "NO se la vuelvas a listar: continúa donde iba la conversación (confirmar, pedir los datos o registrar el pedido)." });
+            }
+          }
+        }
+
+
         for (let turn = 0; turn < MAX_TURNS; turn++) {
           let turnText = "";
           // Acotamos herramientas para garantizar avance y terminación:
@@ -2137,6 +2766,7 @@ export async function POST(req: Request): Promise<Response> {
           // DeepSeek es compatible con OpenAI: el system va como PRIMER mensaje del
           // arreglo (no como parámetro aparte). El cacheo de contexto es automático
           // en el servidor de DeepSeek, así que no hay `cache_control` que enviar.
+          let fugaToolCall = false;
           let msg;
           try {
             msg = await ds.chat({
@@ -2148,6 +2778,11 @@ export async function POST(req: Request): Promise<Response> {
               ...(turnTools.length > 0 ? { tools: turnTools.map(toDSTool) } : {}),
               onText: (delta: string) => {
                 turnText += delta;
+                // En cuanto asoma el markup de una llamada escrita a mano se corta la
+                // transmisión: lo que siga es maquinaria interna, no algo que el cliente
+                // deba leer. El texto completo se sigue acumulando para poder recuperarla.
+                if (fugaToolCall) return;
+                if (pareceToolCallEscrita(turnText)) { fugaToolCall = true; return; }
                 if (streamLive) controller.enqueue(enc.encode(delta));
               },
             });
@@ -2166,6 +2801,25 @@ export async function POST(req: Request): Promise<Response> {
             }
             throw err; // otro error, o sin más claves → manejo normal (catch externo)
           }
+          // RECUPERACIÓN: si el modelo ESCRIBIÓ la llamada en vez de emitirla, se lee del
+          // texto y se convierte en una llamada de verdad. Antes el cliente veía el markup
+          // crudo en el chat y la conversación se quedaba sin la consulta que iba a hacer.
+          if (msg.toolCalls.length === 0 && pareceToolCallEscrita(msg.content)) {
+            const recuperada = toolCallDesdeTexto(msg.content);
+            if (recuperada && tools.some((t) => t.name === recuperada.name)) {
+              console.warn(`[asesor] llamada escrita como texto, recuperada: ${recuperada.name}`);
+              msg = {
+                ...msg,
+                content: limpiarToolCallEscrita(msg.content),
+                toolCalls: [{ id: `call_txt_${turn}`, type: "function" as const, function: { name: recuperada.name, arguments: recuperada.args } }],
+              };
+            } else {
+              // No se pudo leer: al menos se limpia para que el markup no llegue al cliente.
+              msg = { ...msg, content: limpiarToolCallEscrita(msg.content) };
+            }
+            turnText = msg.content;
+          }
+
           convo.push(
             msg.toolCalls.length > 0
               ? { role: "assistant", content: msg.content, tool_calls: msg.toolCalls }
@@ -2185,23 +2839,100 @@ export async function POST(req: Request): Promise<Response> {
                 convo.push({ role: "user", content: "Procede: busca los productos ahora." });
                 continue;
               }
+
+            }
+
+            // ARMADOR: el cliente ya eligió cada pieza en el armador, así que preguntarle
+            // el uso, la marca o el presupuesto es hacerle repetir lo que ya dijo. El
+            // prompt lo prohíbe pero DeepSeek pregunta igual. Se detecta por lo que es —
+            // una pregunta SIN precio— en cualquier turno, no solo en el primero: a veces
+            // busca primero y pregunta después. Una sola vez, para garantizar terminación.
+            // Basta con que HAYA una pregunta, no que cierre el mensaje: suele venir a
+            // media frase y terminar en emoji. La ausencia de "$" es lo que distingue
+            // "aún no ha cotizado" de "ya presentó precios y pregunta cuál prefiere".
+            const preguntaSinPrecio = turnText.includes("?") && !turnText.includes("$");
+            // ARMADOR — el cliente ya eligió cada pieza, así que preguntarle el uso, la
+            // marca o el presupuesto es hacerle repetir lo que ya dijo. El prompt lo
+            // prohíbe pero DeepSeek pregunta igual, incluso después de haber buscado.
+            // Se detecta por lo que es: una pregunta SIN precio.
+            // SOLO en el primer turno: una vez el cliente eligió su opción, preguntar es
+            // exactamente lo que toca (cuántas unidades, los datos para el pedido) y este
+            // guardián descartaba ese cierre para volver a listarle el catálogo.
+            if (isArmador && primerTurno && preguntaSinPrecio && !isLast && nudgeArmador < 2) {
+              nudgeArmador++;
+              controller.enqueue(enc.encode(BUBBLE_SEP)); // la pregunta no llega al cliente
+              preambulo = turnText;
+
+              if (nudgeArmador === 2 && buscarCount === 0) {
+                // Segunda insistencia y ni siquiera ha buscado: la búsqueda la hace el
+                // SERVIDOR y se le entrega hecha. El cliente no puede quedarse sin su
+                // precio porque el modelo se empeñe en preguntar.
+                console.warn("[asesor] armador: la búsqueda la fuerza el servidor");
+                const entrada = { consulta: ctx?.producto ?? "", formato: "ensamblado" };
+                buscarCount++;
+                const resultado = await runTool(ds, "buscar_productos", entrada, acc);
+                const llamada = {
+                  id: `call_arm_${turn}`,
+                  type: "function" as const,
+                  function: { name: "buscar_productos", arguments: JSON.stringify(entrada) },
+                };
+                convo.push({ role: "assistant", content: "", tool_calls: [llamada] });
+                convo.push({ role: "tool", tool_call_id: llamada.id, content: JSON.stringify(resultado) });
+                continue;
+              }
+
+              console.warn(`[asesor] armador: pregunta descartada (aviso ${nudgeArmador})`);
+              convo.push({ role: "user", content:
+                "INTERNO (el cliente NO ve este mensaje): PROHIBIDO preguntar. El cliente ya eligió su configuración completa en el armador; " +
+                "no hay ningún dato que te falte. Si ya tienes resultados en la mano, PRESÉNTALE ahora mismo las opciones del campo \"seleccion\" con su precio y su entrega. " +
+                "Si aún no has buscado, llama buscar_productos con formato=\"ensamblado\" y las piezas de esa configuración. Tu próxima respuesta DEBE llevar precios." });
+              continue;
             }
             // RED DE SEGURIDAD "3 OPCIONES" (necesaria con DeepSeek): encadena menos
             // herramientas que Claude y, con 1–2 resultados locales, cierra la respuesta
             // presentando UNA sola opción en vez de completar con cotizar_web. Se DESCARTA
             // esa respuesta (no se transmitió: streamLive solo es true en el turno 0) y se
             // le exige la consulta web. Solo una vez, para garantizar terminación.
-            if (buscarCount > 0 && cotizarCount === 0 && acc.localDisponibles < 3 && !isLast && nudgeOpciones === 0) {
+            // En el ARMADOR no aplica: ahí la respuesta correcta es UNA, la cotización de
+            // su propia configuración. Buscar más opciones es justo lo que traía equipos
+            // que el cliente no pidió.
+            if (!isArmador && buscarCount > 0 && cotizarCount === 0 && acc.localDisponibles < 3 && !isLast && nudgeOpciones === 0) {
               nudgeOpciones++;
+              // La consulta web la lanza el SERVIDOR. Pedírselo al modelo no bastaba: se le
+              // decía "llama cotizar_web" y respondía igual con la única opción local, así
+              // que el cliente que pedía una memoria USB veía UN producto en vez de varias
+              // marcas. Hecha aquí, la regla de tres opciones deja de depender de que
+              // obedezca. Se quita la marca del producto local para no repetirlo.
+              console.warn(`[asesor] solo ${acc.localDisponibles} opción(es) local(es): la web la cotiza el servidor`);
+              const entradaWeb = { consulta: acc.ultimaConsulta || "" };
+              cotizarCount++;
+              const resWeb = await runTool(ds, "cotizar_web", entradaWeb, acc);
+              const llamadaWeb = {
+                id: `call_web_${turn}`,
+                type: "function" as const,
+                function: { name: "cotizar_web", arguments: JSON.stringify(entradaWeb) },
+              };
+              convo.push({ role: "assistant", content: "", tool_calls: [llamadaWeb] });
+              convo.push({ role: "tool", tool_call_id: llamadaWeb.id, content: JSON.stringify(resWeb) });
               convo.push({ role: "user", content:
-                `INTERNO (el cliente NO ve este mensaje): solo tienes ${acc.localDisponibles} opción(es) en la mano y la regla de TRES OPCIONES es obligatoria. ` +
-                "NO respondas todavía: llama cotizar_web UNA vez con las especificaciones (sin la marca ni el modelo exacto del producto local) " +
-                "y después presenta las 3 opciones juntas, cada una con su precio y su tiempo de entrega." });
+                "INTERNO (el cliente NO ve este mensaje): ya tienes la web cotizada arriba. Presenta AHORA todas las opciones " +
+                "del campo \"seleccion\", copiando su \"bloque\" tal cual y en ese orden. No presentes una sola." });
               continue;
             }
             // Respuesta final: si NO se transmitió en vivo (turno ≥1), enviarla ahora completa,
             // sin el saludo ni la frase de espera que el cliente ya leyó en el globo anterior.
-            const textoFinal = preambulo ? quitarSaludoRepetido(turnText, preambulo) : turnText;
+            let textoFinal = preambulo ? quitarSaludoRepetido(turnText, preambulo) : turnText;
+            // UNA SOLA OPCIÓN: se le ofrece conseguirle otra marca o capacidad. Nuestras
+            // listas traen una sola referencia de muchos accesorios, y cerrar con "¿te la
+            // llevas?" deja al cliente pensando que eso es todo lo que existe. El prompt
+            // ya lo pide, pero no siempre se cumple, así que se garantiza aquí.
+            const yaOfreceAlternativa = /otra[s]? (marca|capacidad|opci[oó]n|referencia)/i.test(textoFinal);
+            // Tampoco en el armador: el equipo es el que él mismo configuró, ofrecerle
+            // "otra marca" ahí no tiene sentido.
+            if (!isArmador && acc.mostradas === 1 && textoFinal.includes("$") && !yaOfreceAlternativa) {
+              textoFinal = textoFinal.trimEnd() +
+                "\n\nSi prefieres otra marca o capacidad, dime cuál y te la consigo 😊";
+            }
             if (!streamLive && textoFinal.length > 0) controller.enqueue(enc.encode(textoFinal));
             break;
           }

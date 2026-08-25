@@ -1,6 +1,145 @@
 [
   {
     "cliente": {
+      "nombre": "Miguel Angel Torres",
+      "cedula": "1024563456",
+      "direccion": "Calle 12 No 10 - 24",
+      "ciudad": "Cali",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "USB 64GB Kingston DT Exodia",
+      "cantidad": 1,
+      "precioCOP": 40000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 28000,
+      "margenCOP": 12000,
+      "proveedorLocal": "ledacom",
+      "precioMercadoLocal": 39900,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=USB+64GB+Kingston+DT+Exodia&prds=localAnnotatedOfferId:1,catalogid:12675805511254191653,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Ledacom",
+          "tipo": "lista",
+          "costoCOP": 28000
+        },
+        {
+          "fuente": "Alkosto",
+          "tipo": "colombia_web",
+          "costoCOP": 39900,
+          "url": "https://www.google.com/search?ibp=oshop&q=USB+64GB+Kingston+DT+Exodia&prds=localAnnotatedOfferId:1,catalogid:12675805511254191653,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Falabella",
+          "tipo": "colombia_web",
+          "costoCOP": 55900,
+          "url": "https://www.google.com/search?ibp=oshop&q=USB+64GB+Kingston+DT+Exodia&prds=localAnnotatedOfferId:1,catalogid:8828291560950427096,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "a01e75f0-5598-4953-a746-e1e6cdec3517",
+    "orderNumber": "250826159",
+    "fecha": "2026-08-25T19:28:06.236Z",
+    "estado": "pendiente"
+  },
+  {
+    "cliente": {
+      "nombre": "Miguel Angel Torres",
+      "cedula": "1024563456",
+      "direccion": "Calle 12 No 10 - 24",
+      "ciudad": "Cali",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "PC AMD Ryzen 7 5700G 16GB 512GB + Monitor Acer 24\" 144Hz + Teclado y Mouse",
+      "cantidad": 1,
+      "precioCOP": 2950000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 2049000,
+      "margenCOP": 901000,
+      "proveedorLocal": "janus",
+      "precioMercadoLocal": 1884900,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,productid:2121116304890086434,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Falabella",
+          "tipo": "colombia_web",
+          "costoCOP": 1884900,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,productid:2121116304890086434,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        },
+        {
+          "fuente": "Janus",
+          "tipo": "lista",
+          "costoCOP": 2049000
+        },
+        {
+          "fuente": "Janus",
+          "tipo": "colombia_web",
+          "costoCOP": 2169000,
+          "url": "https://www.google.com/search?ibp=oshop&q=computador+escritorio+ryzen+7+5700g&prds=localAnnotatedOfferId:1,catalogid:20267576848972316,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+          "nota": "precio de mercado"
+        },
+        {
+          "fuente": "Ledacom",
+          "tipo": "lista",
+          "costoCOP": 2350000
+        }
+      ]
+    },
+    "id": "3e1f2fe2-44aa-4bc9-a826-ba5ae0378123",
+    "orderNumber": "250826156",
+    "fecha": "2026-08-25T15:40:40.610Z",
+    "estado": "pendiente"
+  },
+  {
+    "cliente": {
+      "nombre": "Miguel Angel Torres",
+      "cedula": "1024563456",
+      "direccion": "Calle 12 No 10 - 24 Cali",
+      "ciudad": "Cali",
+      "telefono": "3102878194",
+      "email": "luisferupegui@veas.tv"
+    },
+    "producto": {
+      "nombre": "MONITOR LG 27\" LG 27U411A-B RESOLUCIÓN 1920 x 1080/ PANEL IPS/ 120HZ / 5MS (GTG)",
+      "modelo": "LG 27U411A-B",
+      "cantidad": 2,
+      "precioCOP": 582000,
+      "proveedor": "colombia"
+    },
+    "proveedorDetalle": {
+      "costoTotalCOP": 465000,
+      "margenCOP": 117000,
+      "proveedorLocal": "infoshopcorp",
+      "precioMercadoLocal": 529900,
+      "fuenteLocal": "https://www.google.com/search?ibp=oshop&q=LG+27U411A-B&prds=localAnnotatedOfferId:1,productid:10059664771801661212,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2",
+      "comparacionProveedores": [
+        {
+          "fuente": "Infoshopcorp",
+          "tipo": "lista",
+          "costoCOP": 465000
+        },
+        {
+          "fuente": "Falabella",
+          "tipo": "colombia_web",
+          "costoCOP": 529900,
+          "url": "https://www.google.com/search?ibp=oshop&q=LG+27U411A-B&prds=localAnnotatedOfferId:1,productid:10059664771801661212,pvo:2,pvt:hg,rds:PC_6027158597472037202%7CPROD_PC_6027158597472037202&gl=co&udm=28&pvorigin=2"
+        }
+      ]
+    },
+    "id": "c6db132e-30c1-4e77-a4d2-8d521a909820",
+    "orderNumber": "250826155",
+    "fecha": "2026-08-25T13:44:10.709Z",
+    "estado": "pendiente"
+  },
+  {
+    "cliente": {
       "nombre": "Chaparron Bonaparte",
       "cedula": "1024563456",
       "direccion": "Calle 12 No 10 - 24 Ibague",
