@@ -1,1 +1,42 @@
-{}
+[
+  {
+    "id": "1",
+    "slug": "amd-ryzen-5-7600",
+    "nombre": "AMD Ryzen 5 7600",
+    "marca": "AMD",
+    "categoria": "procesadores",
+    "precio": 1099000,
+    "stock": 15,
+    "rating": 4.7,
+    "reviews": 80,
+    "imagen": "🧠",
+    "destacado": true,
+    "descripcion": "Procesador 6 núcleos para gaming",
+    "specs": {
+      "socket": "AM5",
+      "nucleos": 6,
+      "hilos": 12,
+      "tdp": "65W"
+    }
+  },
+  {
+    "id": "1",
+    "slug": "kingston-fury-beast-16gb-ddr4",
+    "nombre": "Kingston Fury Beast 16GB DDR4",
+    "marca": "Kingston",
+    "categoria": "memoria-ram",
+    "precio": 229000,
+    "precioAnterior": 279000,
+    "stock": 40,
+    "rating": 4.6,
+    "reviews": 150,
+    "imagen": "💾",
+    "destacado": false,
+    "descripcion": "Memoria DDR4 confiable",
+    "specs": {
+      "tipo": "DDR4",
+      "capacidad": "16 GB",
+      "velocidad": "3200 MHz"
+    }
+  }
+]

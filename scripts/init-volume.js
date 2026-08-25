@@ -42,13 +42,24 @@ if (process.env.ADMIN_RESEED === "1") {
   }
 }
 
-const DATA_FILES = [
+// Se siembra TODO lo que haya en data-defaults, no una lista escrita a mano.
+//
+// La lista fija ya falló una vez: al añadir el catálogo de categorías se creó
+// data-defaults/categories.json pero nadie lo agregó aquí, y como el volumen de
+// Railway monta SOBRE /app/data —tapando lo que trae el repositorio— el archivo no
+// llegaba nunca. No rompía nada: loadCategories() devuelve [] cuando falta, así que
+// el sitio arrancaba con el navbar, la tienda y el sitemap sin una sola categoría.
+// Un fallo silencioso es peor que uno ruidoso, y leer el directorio hace que el
+// próximo archivo de datos se siembre solo.
+const DATA_FILES = [...new Set([
+  ...(fs.existsSync(DATA_DEFAULTS) ? fs.readdirSync(DATA_DEFAULTS).filter((f) => f.endsWith(".json")) : []),
+  // Estos deben existir aunque no tengan default: la app los lee al arrancar.
   "products-business.json",
   "products.json",
   "supplier-lists.json",
   "margins.json",
   "supplier-catalog.json",
-];
+])];
 
 let copiados = 0;
 
