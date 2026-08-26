@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import {
   Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
   Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ListChecks, ChevronDown,
-  Star, Tag, Pencil, RefreshCw, ShieldCheck,
+  Star, Tag, Pencil, RefreshCw, ShieldCheck, ClipboardList,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";
 
@@ -165,6 +165,7 @@ export function SupplierListsManager() {
       <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
       <WebCachePanel flash={flash} />
       <SaneoPanel flash={flash} onDone={refreshLists} />
+      <FichasPanel flash={flash} onDone={refreshLists} />
 
       {/* Sub-tabs */}
       <div className="flex flex-wrap gap-1 rounded-xl border border-zinc-200 bg-white p-1 w-fit shadow-sm">
@@ -412,6 +413,136 @@ function SerperKeyPanel({ status, onChange, flash }: {
 }
 
 // ─── Panel: actualizar precios cacheados de EE.UU. ──────────────────────────────
+
+// ─── Completar fichas técnicas incompletas ─────────────────────────────────────
+//
+// Algunas listas llegan solo con marca, modelo y precio. Lo ideal es que el proveedor
+// mande las specs; esto es el plan B: buscar el modelo exacto en internet y completar la
+// ficha UNA vez, dejándola guardada. Se paga una consulta por producto, no una por
+// cotización, y nada se guarda sin que el admin vea antes qué se encontró.
+type Propuesta = { id: string; nombre: string; specs: Record<string, string>; fuente: string };
+type Hallazgos = { propuestas: Propuesta[]; consultados: number; pendientes: number };
+
+function FichasPanel({ flash, onDone }: { flash: (ok: boolean, msg: string) => void; onDone: () => void }) {
+  const [incompletos, setIncompletos] = useState<number | null>(null);
+  const [hallazgos, setHallazgos] = useState<Hallazgos | null>(null);
+  const [busy, setBusy] = useState<"contar" | "buscar" | "guardar" | null>(null);
+
+  const contar = useCallback(async () => {
+    try {
+      const r = await fetch("/api/admin/completar-fichas");
+      const d = await r.json();
+      if (r.ok) setIncompletos(d.incompletos);
+    } catch { /* el panel simplemente no muestra el conteo */ }
+  }, []);
+  useEffect(() => { contar(); }, [contar]);
+
+  async function buscar() {
+    setBusy("buscar");
+    try {
+      const r = await fetch("/api/admin/completar-fichas", { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) { flash(false, d.error ?? "No se pudo consultar"); return; }
+      setHallazgos(d);
+      if (d.propuestas.length === 0) flash(false, `Se consultaron ${d.consultados} modelos y no se pudo confirmar ninguna spec.`);
+    } catch {
+      flash(false, "Error de red");
+    } finally { setBusy(null); }
+  }
+
+  async function guardar() {
+    if (!hallazgos) return;
+    setBusy("guardar");
+    try {
+      const r = await fetch("/api/admin/completar-fichas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propuestas: hallazgos.propuestas }),
+      });
+      const d = await r.json();
+      if (!r.ok) { flash(false, d.error ?? "No se pudo guardar"); return; }
+      flash(true, `${d.aplicadas} ficha(s) completada(s) ✓`);
+      setHallazgos(null);
+      contar();
+      onDone();
+    } catch {
+      flash(false, "Error de red");
+    } finally { setBusy(null); }
+  }
+
+  // Si no falta nada, el panel no estorba.
+  if (incompletos === 0 && !hallazgos) return null;
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="flex items-start gap-3">
+        <ClipboardList className="h-5 w-5 shrink-0 mt-0.5 text-zinc-500" />
+        <div className="flex-1">
+          <p className="text-sm font-bold text-zinc-900">
+            Completar fichas técnicas{incompletos ? ` (${incompletos} incompletas)` : ""}
+          </p>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            Hay equipos que llegaron sin memoria, disco o tamaño de pantalla porque la lista del
+            proveedor no los trae. Se busca cada modelo exacto en internet y se completa la ficha
+            una sola vez. Lo ideal sigue siendo pedirle al proveedor la lista con esos campos.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              onClick={buscar}
+              disabled={busy !== null}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+            >
+              {busy === "buscar" ? "Consultando modelos…" : "Buscar y previsualizar"}
+            </button>
+
+            {hallazgos && hallazgos.propuestas.length > 0 && (
+              <button
+                onClick={guardar}
+                disabled={busy !== null}
+                className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {busy === "guardar" ? "Guardando…" : `Guardar ${hallazgos.propuestas.length} ficha(s)`}
+              </button>
+            )}
+          </div>
+
+          {busy === "buscar" && (
+            <p className="mt-2 text-[11px] text-zinc-500">
+              Se consulta un modelo cada vez para no disparar el gasto; puede tardar un par de minutos.
+            </p>
+          )}
+
+          {hallazgos && hallazgos.propuestas.length > 0 && (
+            <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
+              <p className="text-xs font-semibold text-indigo-900">
+                {hallazgos.propuestas.length} de {hallazgos.consultados} modelos consultados dieron datos
+                {hallazgos.pendientes > 0 ? ` · quedan ${hallazgos.pendientes} para una próxima tanda` : ""}
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {hallazgos.propuestas.map((p) => (
+                  <li key={p.id} className="text-[11px] leading-tight text-indigo-900">
+                    <span className="font-semibold">{p.nombre.slice(0, 62)}</span>
+                    <br />
+                    <span className="text-indigo-700">
+                      {Object.entries(p.specs).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                    </span>
+                    <br />
+                    <span className="text-indigo-500">según: {p.fuente.slice(0, 78)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] text-indigo-700">
+                Revísalas antes de guardar: un mismo código de modelo puede tener variantes según el
+                mercado. Lo que no se pueda confirmar se queda sin dato, y la ficha lo dirá.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Saneo de listas ya importadas ─────────────────────────────────────────────
 //
