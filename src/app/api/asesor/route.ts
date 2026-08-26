@@ -253,7 +253,15 @@ function formatoCPU(raw: string): string {
 function pantallaDesdeNombre(n: string): string | null {
   const explicita = n.match(/\b(1[1-7])(?:[.,](\d))?\s*(?:"|''|pulg)/i);
   if (explicita) return `${explicita[1]}${explicita[2] ? `.${explicita[2]}` : ""}"`;
-  const serie = n.match(/\b[A-Za-z]{1,4}(1[1-7])\b/);
+  // Los fabricantes ponen el tamaño en el nombre comercial: "Victus 15-fb3019la",
+  // "Legion 5 15AHP10", "Vivobook 16X". Sin leerlo, esos portátiles se presentaban SIN
+  // pantalla, que es de las tres cosas que un cliente mira antes de comprar. Se exige que
+  // el número esté pegado a un guion o a un código de modelo para no confundirlo con
+  // cualquier cifra suelta.
+  // El descarte de GB/TB es imprescindible: sin él, los "16GB" de la memoria se leían como
+  // una pantalla de 16 pulgadas.
+  const comercial = n.match(/\b(1[1-7])(?=-|(?![GT]B\b)[A-Z]{2,})/);
+  const serie = n.match(/\b[A-Za-z]{1,4}(1[1-7])\b/) ?? comercial;
   if (!serie) return null;
   // El código de serie da el tamaño redondeado: en portátiles un "15" es 15.6" y un "17"
   // es 17.3" (convención de todos los fabricantes). Los demás sí son exactos.
@@ -422,11 +430,21 @@ function notaGraficosCPU(nombre: string): string | null {
   return null;
 }
 
-function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string): string {
+/** Antepone la marca cuando el nombre no la trae. Las listas guardan la marca en su
+ *  propio campo y muchos nombres son solo el modelo ("Victus 15-fb3019la", "Legion 5"),
+ *  así que el cliente veía una ficha sin saber de quién era el equipo. */
+function conMarca(nombre: string, marca?: string): string {
+  const m = (marca ?? "").trim();
+  if (!m) return nombre;
+  const yaEsta = new RegExp(`\\b${m.replace(/[.*+?^${}()|[\]\\]/g, "\\function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string): string {")}\\b`, "i").test(nombre);
+  return yaEsta ? nombre : `${m} ${nombre}`;
+}
+
+function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string, marca?: string): string {
   // El nombre se limpia de ruido comercial ("+ Servicio", "Onsite", "194 AI TOPS") y las
   // specs que el producto no trae se deducen del propio nombre. Las estructuradas mandan:
   // solo se rellenan los huecos.
-  const nombre = limpiarNombre(nombreCrudo);
+  const nombre = conMarca(limpiarNombre(nombreCrudo), marca);
   const specs2 = { ...specsDesdeNombre(nombreCrudo, categoria), ...(specs ?? {}) };
   const lineas = fichaSpecLines(specs2);
   // La línea de monitor es SOLO para equipos completos. Un procesador suelto salía
@@ -437,8 +455,24 @@ function construirFicha(nombreCrudo: string, specs: Record<string, string> | und
     ? monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`, categoria)
     : null;
   const gpu = esEquipoCompleto ? null : notaGraficosCPU(nombre);
+  // Memoria y disco son decisivos en un equipo, y algunas listas traen solo el modelo
+  // comercial. Callarlo dejaba fichas de portátiles con procesador y gráfica y nada más,
+  // como si el equipo no tuviera memoria. Se dice que se confirman: es la verdad, y
+  // convierte un hueco en un paso de la venta.
+  const faltan = !esEquipoCompleto ? [] : ([
+    [!specs2.ram, "memoria"],
+    [!specs2.almacenamiento, "almacenamiento"],
+    // Se mira la CATEGORÍA, no el nombre: el detector por nombre necesita que la pantalla
+    // esté escrita, así que jamás avisaría de la que falta.
+    [!specs2.pantalla && !specs2.monitor && (categoria === "portatil" || categoria === "all-in-one"), "tamaño de pantalla"],
+  ] as [boolean, string][]).filter(([falta]) => falta).map(([, q]) => q);
+
+  const nota = faltan.length > 0
+    ? `📋 ${faltan.join(", ").replace(/, ([^,]+)$/, " y $1")}: te lo confirmo antes de cerrar`
+    : null;
+
   const cuerpo = lineas.length > 0 ? `\n${lineas.join("\n")}` : "";
-  const extra = [mon, gpu].filter(Boolean).map((l) => `\n${l}`).join("");
+  const extra = [mon, gpu, nota].filter(Boolean).map((l) => `\n${l}`).join("");
   const precioLinea = precio != null ? `\n💲 ${fmtCOP(precio)}` : "";
   return `**${nombre}**${cuerpo}${extra}${precioLinea}`;
 }
@@ -572,7 +606,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
         referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
         segmento: null, precioDesde: precio, precioIvaIncluido: false,
         specs: p.specs ?? {}, descripcion: "", url: "",
-        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria),
+        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria, p.marca),
       },
     };
   });
@@ -588,7 +622,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
         segmento: p.segmento ? SEGMENTO_LABEL[p.segmento] : null, precioDesde: precio,
         precioIvaIncluido: p.precioIvaIncluido ?? false, specs: p.specs ?? {}, descripcion: p.descripcionUso,
         url: `/conseguir?ref=${encodeURIComponent(p.referencia ?? p.slug)}`,
-        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria),
+        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria, p.marca),
       },
     };
   });
