@@ -239,18 +239,26 @@ export function CategoryCarousel() {
         </div>
 
         {/* ── Carrusel ──
-            md:px-14 reserva a cada lado el ancho de una flecha (44px) más aire. Las
-            flechas se posicionan contra la caja de relleno, o sea por FUERA de ese
-            espacio, así que dejan de taparse con las tarjetas. En teléfono no hay
-            ancho que reservar y se mantienen encima, como estaban. ── */}
-        <div className="relative md:px-14">
+            Dónde caben las flechas depende del ancho de la ventana, porque la sección
+            está limitada a max-w-7xl (1280px) y centrada:
+
+              · teléfono            no hay sitio → siguen encima de las tarjetas
+              · md … 1399px         el margen exterior no alcanza → md:px-14 reserva el
+                                    hueco por dentro, a costa del ancho de tarjeta
+              · desde 1400px        sobra margen FUERA del contenedor → se quita el
+                                    relleno y las flechas salen con -left-14/-right-14,
+                                    así las tarjetas recuperan los 112px
+
+            A 1400px el margen libre es (1400-1280)/2 = 60px más los 32px de lg:px-8,
+            o sea 92px para una flecha de 44px + 12px de aire. De ahí el corte. ── */}
+        <div className="relative md:max-[1400px]:px-14">
 
           {/* Flecha izquierda */}
           <button
             onClick={() => scroll("prev")}
             disabled={!canPrev}
             aria-label="Anterior"
-            className="absolute left-0 top-[42%] -translate-y-1/2 z-10
+            className="absolute left-0 min-[1400px]:-left-14 top-[42%] -translate-y-1/2 z-10
                        flex h-11 w-11 items-center justify-center rounded-full
                        border border-black/[0.07] text-[#0F172A]
                        transition-all duration-200
@@ -350,7 +358,7 @@ export function CategoryCarousel() {
             onClick={() => scroll("next")}
             disabled={!canNext}
             aria-label="Siguiente"
-            className="absolute right-0 top-[42%] -translate-y-1/2 z-10
+            className="absolute right-0 min-[1400px]:-right-14 top-[42%] -translate-y-1/2 z-10
                        flex h-11 w-11 items-center justify-center rounded-full
                        border border-black/[0.07] text-[#0F172A]
                        transition-all duration-200
