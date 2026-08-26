@@ -610,7 +610,11 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // el servidor elige por precio, salía un "JANUS **WORKSTATION** Pentium G7400 8GB" a
   // $2.339.000 para un cliente que pidió diseño gráfico: la palabra "workstation" del
   // nombre lo hacía puntuar alto, pero un Pentium con 8GB no sirve para ese trabajo.
-  const USO_EXIGENTE = /\b(dise[ñn]o|edici[oó]n|render|3d|modelado|gaming|gamer|juegos|streaming|\bia\b|inteligencia artificial|data science|autocad|photoshop|premiere|after\s?effects|solidworks|revit|workstation|alto rendimiento)\b/i;
+  // Se añaden DESARROLLO y SERVIDORES a los usos exigentes. Antes no tenían ningún piso:
+  // un "portátil para desarrollo" podía salir con un i3 y 8GB, cuando la guía técnica llama
+  // "fundamentales" los 32GB para Docker y emuladores. Y un "servidor para virtualización"
+  // podía salir con un NAS de 2GB de RAM, que es otra clase de equipo.
+  const USO_EXIGENTE = /\b(dise[ñn]o|edici[oó]n|render|3d|modelado|gaming|gamer|juegos|streaming|\bia\b|inteligencia artificial|data science|autocad|photoshop|premiere|after\s?effects|solidworks|revit|workstation|alto rendimiento|desarrollo de software|programaci[oó]n|devops|docker|kubernetes|servidor|server|virtualizaci[oó]n|hipervisor|vmware|proxmox|hyper-?v|base de datos|sql server|postgres)\b/i;
   const CPU_ENTRADA  = /\b(pentium|celeron|athlon|core\s?i3|\bi3-\d|ryzen\s?3)\b/i;
   const exigente = USO_EXIGENTE.test(consulta);
 
@@ -628,6 +632,13 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   const GPU_EN_FICHA = /\b(?:rtx|gtx)\s?\d{3,4}\b|\brx\s?\d{3,4}\b|\bquadro\b|\barc\s?a\d{3}\b|\bradeon\s+(?:rx|pro)\b/i;
   const exigeGpu = USO_GPU.test(consulta);
 
+  // PORTÁTILES: la guía técnica lo pone como LA diferencia clave del formato. Un mismo
+  // "Core i7" puede ser de bajo consumo (serie U, 15W, pensado para batería) o de alto
+  // rendimiento (series H / HS / HX, 45-55W). Para diseño, edición, juegos o compilar,
+  // un i7 de serie U no da la potencia sostenida por mucho que la etiqueta diga i7 — y
+  // hasta ahora nada lo impedía: si acertaba era por relevancia, no por regla.
+  const CPU_BAJO_CONSUMO = /\b(?:i[3579][\s-]?\d{4}|ryzen\s?[3579]\s?\d{4}|ultra\s?[579]\s?\d{3})\s?u\b/i;
+
   /** Para un uso exigente: fuera la gama de entrada, menos de 16GB de RAM y —cuando el
    *  trabajo se apoya en la GPU— los equipos completos sin gráfica dedicada. */
   const gamaSuficiente = (x: Row) => {
@@ -635,6 +646,11 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     if (CPU_ENTRADA.test(x.prod.nombre)) return false;
     const { ram } = ramYDisco(x.prod.nombre);
     if (ram != null && ram < 16) return false;
+    // Un portátil de bajo consumo no sostiene un trabajo exigente: se descarta aquí, no
+    // en el prompt, porque es una regla de hardware y no una cuestión de criterio.
+    const esPortatil = x.prod.categoria === "portatil" || esPortatilPorNombre(x.prod.nombre);
+    if (esPortatil && CPU_BAJO_CONSUMO.test(x.prod.nombre)) return false;
+
     // Solo se le exige GPU a un EQUIPO COMPLETO: quien busca "monitor para diseño" o
     // "RAM para edición" está pidiendo una pieza, no una máquina.
     if (exigeGpu && formatoDeProducto(x.prod.categoria, x.prod.nombre) !== null) {
@@ -2475,6 +2491,11 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). ⚠️ La consulta DEBE incluir TODAS las especificaciones que el cliente nombró, con sus cifras exactas: gama de procesador ("Ryzen 5", "Core i7"), modelo de gráfica ("RTX 5060"), RAM ("16GB"), almacenamiento ("1TB"), tamaño ("24 pulgadas"). Si las omites, el sistema no puede filtrar y salen productos de otra gama — un Ryzen 3 para quien pidió un Ryzen 5, o una RTX 3050 para quien pidió una 5060.
 - LO QUE PIDIÓ EL CLIENTE MANDA SOBRE EL PERFIL: si nombró piezas concretas (una gráfica, un procesador, una capacidad), búscalas TAL CUAL — no las sustituyas por lo que recomienda la tabla de perfiles de más abajo. Esa tabla es para cuando el cliente NO especifica. Si crees que otra pieza le conviene más, muéstrale primero lo que pidió y coméntale la alternativa después. Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
 - ESPECIFICACIONES OBLIGATORIAS (laptops, desktops y tablets): para cada opción incluye SIEMPRE: **Procesador** (marca + modelo, ej: Intel Core i5-1235U), **RAM** (capacidad, ej: 16GB DDR4), **Almacenamiento** (tipo + tamaño, ej: 512GB SSD NVMe), **Pantalla/Monitor** y **GPU** si es dedicada o si el cliente la pidió. La PANTALLA es OBLIGATORIA y nunca se omite: en laptops/tablets/Todo-en-Uno pon el tamaño (ej: 15.6" FHD, 24"); en un computador de escritorio que incluya monitor pon el tamaño del monitor; si es una torre SIN monitor, dilo explícitamente ("torre, no incluye monitor") para que el cliente lo sepa. Para productos Colombia web, estas specs vienen en el nombre completo del listado — léelas y preséntalas con formato limpio; si el tamaño de pantalla no aparece en un computador, indícalo con naturalidad y ofrece confirmarlo, no lo inventes.
+- PORTÁTILES — LA SERIE DEL PROCESADOR MANDA. Un mismo "Core i7" puede ser de dos mundos distintos:
+  • Serie **U** (15W: i5-1335U, Ryzen 5 7530U, Core Ultra 5 125U) → pensada para BATERÍA y peso. Perfecta para hogar, estudio y oficina; insuficiente para diseño, edición, juegos o compilar.
+  • Series **H / HS / HX** (45–55W+: i7-13620H, Ryzen 7 7840HS, i9-14900HX) → potencia sostenida. Es lo que hace falta para diseño, edición, desarrollo y juegos.
+  Nunca ofrezcas un portátil de serie U para un trabajo exigente, por mucho que su etiqueta diga i7. Y en un portátil menciona SIEMPRE pantalla (tamaño y tipo de panel) y, si el listado la trae, la batería en Wh: son las dos cosas que el cliente no puede cambiar después.
+
 - COMPUTADORES DE ESCRITORIO (HOGAR, GAMING, TRABAJO, ALTO RENDIMIENTO): cuando el cliente pida un "computador", "PC", "equipo de escritorio", "PC gaming", "computador para gaming", "equipo para diseño/edición/trabajo pesado/renderizado" o similar, ANTES de buscar hazle UNA sola pregunta adaptada al contexto:
 
   HOGAR / USO GENERAL — pregunta:
@@ -2494,11 +2515,16 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
   • **Workstation de marca** (Dell Precision, HP Z, Lenovo ThinkStation) — certificadas para software profesional, en torre (monitor aparte) 💼
   • **Ensamblado de alto rendimiento** — componentes profesionales (GPU RTX/Quadro, CPU Ryzen 9/Xeon/Threadripper), siempre en torre (monitor aparte), más flexible en precio 🔧"
 
-  EMPRESAS / SERVIDORES (NAS, CCTV, bases de datos, virtualización 24/7) — pregunta:
-  "¿Qué tipo de solución necesitas?
-  • **Servidor torre** — para oficina o sala de datos, sin monitor 🏢
-  • **NAS / almacenamiento en red** — para respaldos y archivos compartidos 💾
-  • **Solución a medida** — cuéntame el uso y lo configuramos juntos 🔧"
+  EMPRESAS / SERVIDORES — lo que decide el equipo es la CARGA y el NÚMERO DE USUARIOS, no el gusto. Pregunta:
+  "Para dimensionarlo bien, cuéntame dos cosas: ¿qué va a correr (archivos y contabilidad, base de datos, máquinas virtuales…) y cuántas personas lo van a usar a la vez? Con eso te propongo el equipo exacto 🏢"
+
+  Y con la respuesta, elige TÚ la clase (uso interno, no le recites la tabla):
+  • Archivos / ERP local, 5 a 20 usuarios → **servidor en TORRE** (Dell PowerEdge T150/T350, HPE ProLiant ML30). Xeon E o EPYC 4004, 16–32GB ECC, RAID 1.
+  • Base de datos / ERP corporativo, 20 a 100+ concurrentes → **RACK 1U/2U** (PowerEdge R450/R660, ProLiant DL360/DL380). Xeon Silver/Gold o EPYC, 64–256GB ECC, RAID 10 en SSD, doble fuente.
+  • Virtualización (VMware, Proxmox, Hyper-V) → **RACK 2U** (PowerEdge R760, DL380 Gen11). Doble Xeon Gold o EPYC, 256–512GB ECC, all-flash NVMe, 4x 10GbE.
+  • IA / cómputo GPU → **RACK 4U/8U** con GPU de centro de datos (L40S, RTX 6000 Ada, H100).
+
+  ⚠️ Un **NAS NO es un servidor** de base de datos ni de virtualización: es almacenamiento en red para respaldos y carpetas compartidas. Ofrécelo SOLO si lo que pide es justo eso. Y en cualquier servidor, tres cosas no son opcionales y conviene nombrarlas como valor: memoria **ECC** (corrige errores, evita corrupción de datos), **RAID** (tolerancia a fallo de disco) y **fuente redundante Hot-Plug** en los de rack (sigue encendido si una falla).
 
   Mapeo de perfiles → preguntas de formato (uso interno, no lo menciones): Hogar y Estudio/Oficina/Desarrollo de Software → pregunta HOGAR/USO GENERAL. Gaming/Gamer Premium/Streaming → pregunta GAMING/ALTO RENDIMIENTO. Diseño Gráfico/Edición de Video/IA y Data Science → pregunta TRABAJO PESADO/WORKSTATION. Servidores/NAS/CCTV → pregunta EMPRESAS/SERVIDORES.
   Si el uso no queda claro en el primer mensaje, HAZ PRIMERO UNA sola pregunta de uso: "¿Para qué lo vas a usar principalmente? (trabajo de oficina, diseño, gaming, edición de video, IA, servidor…) Así te consigo la mejor opción 😊" — espera la respuesta antes de hacer la pregunta de formato.
