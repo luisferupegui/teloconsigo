@@ -67,7 +67,12 @@ const SOCIAL = [
 export function Footer() {
   return (
     <footer className="relative bg-[#050a18] text-zinc-300 mt-auto overflow-hidden">
-      <div className="absolute inset-0 bg-tech-grid-footer opacity-55 pointer-events-none" />
+      {/* Costura de luz en el borde superior: una hebra de 1px que se enciende en el
+          centro y muere en los extremos. Separa la página del pie sin dibujar una
+          línea dura de lado a lado. */}
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none
+                      bg-gradient-to-r from-transparent via-[#1e6cff]/45 to-transparent" />
+      <div className="absolute inset-0 bg-tech-grid-footer opacity-62 pointer-events-none" />
       <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-[#1e6cff] opacity-10 blur-[120px] pointer-events-none" />
 
       {/* ── Main grid ── */}
