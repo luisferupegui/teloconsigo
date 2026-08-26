@@ -238,8 +238,12 @@ export function CategoryCarousel() {
           </p>
         </div>
 
-        {/* ── Carrusel ── */}
-        <div className="relative">
+        {/* ── Carrusel ──
+            md:px-14 reserva a cada lado el ancho de una flecha (44px) más aire. Las
+            flechas se posicionan contra la caja de relleno, o sea por FUERA de ese
+            espacio, así que dejan de taparse con las tarjetas. En teléfono no hay
+            ancho que reservar y se mantienen encima, como estaban. ── */}
+        <div className="relative md:px-14">
 
           {/* Flecha izquierda */}
           <button
