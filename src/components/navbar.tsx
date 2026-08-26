@@ -163,14 +163,18 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
 
         {/* ── Logo — abarca ambas filas ───────────────────────────── */}
         <div className="row-span-2 self-center py-3">
-          <Link href="/" className="group shrink-0 block mix-blend-lighten" style={{ transform: "translateY(-5%)", display: "block" }}>
+          {/* El archivo original gastaba el 61% de su alto en margen vacío, así que el logo
+              se dibujaba a 44px dentro de una caja de 115px: de ahí la falta de definición.
+              logo-header.png es el mismo arte recortado y a resolución completa. Sin efecto
+              al pasar el mouse: es la marca, no un control. */}
+          <Link href="/" className="shrink-0 block mix-blend-lighten">
             <Image
-              src="/Logo Oscuro Con Slogan.png"
+              src="/logo-header.png"
               alt="Te lo Consigo"
-              width={1774}
-              height={887}
+              width={1200}
+              height={276}
               quality={100}
-              className="h-[115px] w-auto transition-opacity duration-200 group-hover:opacity-80"
+              className="h-[56px] w-auto"
               priority
               unoptimized
             />
@@ -318,14 +322,18 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
 
             <div className="relative">
 
-              {/* Pill ─ overflow-hidden da forma de cápsula a sus hijos */}
-              <div className="flex items-center rounded-full border border-white/10 bg-white/5
+              {/* Pill ─ overflow-hidden da forma de cápsula a sus hijos.
+                  items-stretch, no items-center: el botón azul debe llenar la cápsula de
+                  arriba abajo. Centrado dejaba 2px de hueco encima y debajo del azul. */}
+              <div className="flex items-stretch rounded-full border border-white/10 bg-white/5
                               overflow-hidden hover:border-white/15
-                              focus-within:border-[#1e6cff]/50 focus-within:bg-[#1e6cff]/5
-                              transition-colors">
+                              focus-within:border-[#1e6cff] focus-within:bg-[#1e6cff]/[0.07]
+                              focus-within:shadow-[0_0_0_3px_rgba(30,108,255,0.3),0_0_22px_rgba(30,108,255,0.4)]
+                              transition-[border-color,background-color,box-shadow]
+                              duration-100 ease-out">
 
-                {/* Icono lupa */}
-                <Search className="ml-4 h-4 w-4 text-zinc-500 pointer-events-none shrink-0" />
+                {/* Icono lupa — self-center porque la cápsula ya no centra a sus hijos */}
+                <Search className="ml-4 self-center h-4 w-4 text-zinc-500 pointer-events-none shrink-0" />
 
                 {/* Input de texto */}
                 <input
@@ -343,7 +351,8 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
                 {/* Botón enviar */}
                 <button
                   type="submit"
-                  className="bg-[#1e6cff] hover:bg-[#1e6cff]/85 px-5 py-2.5
+                  className="bg-[#1e6cff] hover:bg-[#1e6cff]/85 px-5 rounded-r-full
+                             flex items-center justify-center
                              text-white transition-colors shrink-0"
                   aria-label="Buscar"
                 >
@@ -413,14 +422,14 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
           MOBILE — fila única: logo + acciones
          ══════════════════════════════════════════════════════════════ */}
       <div className="lg:hidden flex h-16 items-center gap-3 max-w-7xl mx-auto px-4">
-        <Link href="/" className="shrink-0 group">
+        <Link href="/" className="shrink-0">
           <Image
-            src="/Logo Oscuro Con Slogan.png"
+            src="/logo-header.png"
             alt="Te lo Consigo"
-            width={1774}
-            height={887}
+            width={1200}
+            height={276}
             quality={100}
-            className="h-12 w-auto mix-blend-lighten transition-opacity group-hover:opacity-80"
+            className="h-[26px] w-auto mix-blend-lighten"
             priority
             unoptimized
           />
