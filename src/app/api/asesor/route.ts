@@ -615,6 +615,15 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // para equipos con pantalla propia (portátiles); una torre o un combo con monitor no.
   const soloPortatil = PORTATIL_Q.test(consulta) && !ESCRITORIO_Q.test(consulta);
 
+  // Y lo mismo con los SERVIDORES, que es donde más caro sale equivocarse: al pedir un
+  // servidor de virtualización se colaba un "ThinkCentre neo 50q + Monitor 19.5\"" como
+  // tercera opción, junto a un PowerEdge y un ProLiant. Un equipo de oficina no es un
+  // servidor por mucho que comparta procesador: le faltan memoria ECC, RAID y fuente
+  // redundante, que es justo lo que se paga en un servidor.
+  const SERVIDOR_Q = /\b(servidor|server|virtualizaci[oó]n|hipervisor|vmware|proxmox|hyper-?v|esxi)\b/i;
+  const ES_SERVIDOR = /\b(server|servidor|poweredge|proliant|thinksystem|primergy|supermicro|synology|qnap|\bnas\b|rack|blade|xeon|epyc)\b/i;
+  const soloServidor = SERVIDOR_Q.test(consulta);
+
   const combinados = [...locales, ...catalogo]
     .filter((x) => x.score > 0)
     .filter((x) => (precioMax !== null ? x.precio !== null && x.precio <= precioMax : true))
@@ -631,7 +640,8 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     .filter((x) => !formato || formatoDeProducto(x.prod.categoria, x.prod.nombre) === formato)
     // Deducción por texto: solo actúa cuando Andrea NO mandó el formato.
     .filter((x) => !!formato || !soloEscritorio || (x.prod.categoria !== "portatil" && !esPortatilPorNombre(x.prod.nombre)))
-    .filter((x) => !!formato || !soloPortatil || x.prod.categoria === "portatil" || esPortatilPorNombre(x.prod.nombre));
+    .filter((x) => !!formato || !soloPortatil || x.prod.categoria === "portatil" || esPortatilPorNombre(x.prod.nombre))
+    .filter((x) => !soloServidor || x.prod.categoria === "servidor" || ES_SERVIDOR.test(x.prod.nombre));
 
   // ESPECIFICACIÓN EXIGIDA: como el servidor elige por PRECIO, sin esta guarda entraba
   // siempre lo más barato aunque fuera otro producto — una DDR4 para quien pidió DDR5, una
