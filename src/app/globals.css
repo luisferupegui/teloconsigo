@@ -34,16 +34,15 @@
    El resplandor azul del pie nace arriba, así que la máscara se ancla arriba
    para que los dos se refuercen en vez de competir. */
 .bg-tech-grid-footer {
-  /* Dos órdenes de línea, no uno. La retícula fina de 40px marca la textura y una
-     línea mayor cada 160px —cada cuatro celdas— le da jerarquía. Es la diferencia
-     entre papel cuadriculado y un plano técnico: el ojo lee profundidad porque hay
-     una estructura debajo del patrón, no solo repetición. */
+  /* Una sola retícula de 40px, pareja. Se probó añadir una línea mayor cada 160px
+     para dar jerarquía y quedó peor: al caer sobre las columnas de enlaces, esas
+     líneas cruzaban el texto y se lo comían. En un fondo que va DETRÁS de contenido
+     manda la legibilidad, no el efecto: el patrón tiene que ser tan parejo que el
+     ojo lo ignore. La profundidad la pone la caída de la máscara, no el contraste. */
   background-image:
-    linear-gradient(rgba(77, 141, 255, 0.26) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77, 141, 255, 0.26) 1px, transparent 1px),
     linear-gradient(rgba(77, 141, 255, 0.14) 1px, transparent 1px),
     linear-gradient(90deg, rgba(77, 141, 255, 0.14) 1px, transparent 1px);
-  background-size: 160px 160px, 160px 160px, 40px 40px, 40px 40px;
+  background-size: 40px 40px;
   --caida: radial-gradient(
     115% 85% at 50% 0%,
     rgb(0 0 0 / 1) 0%,
