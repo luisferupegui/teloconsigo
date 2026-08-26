@@ -1,5 +1,9 @@
 import "server-only";
 import JSZip from "jszip";
+// Se importa el módulo interno, NO la raíz "pdf-parse": su index.js corre un bloque de
+// debug al cargarse que lee un PDF de prueba inexistente y rompe el build.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 
 // Extracción DETERMINISTA de listas de proveedor en Word (.docx) y Excel (.xlsx).
 // No usa IA: lee directamente las celdas de las tablas, así que conserva el
@@ -30,12 +34,18 @@ function decodeXml(s: string): string {
 /** ¿La celda parece un PRECIO? Acepta "$ 1.432,000", "1.432,000" o un número
  *  puro ≥ 10.000. En Colombia . y , son separadores de miles. El umbral evita
  *  confundir los SKU de 3–4 dígitos (5195, 3010…) con precios. */
-function looksLikePrice(s: string): boolean {
+function looksLikePrice(s: string, escala = 1): boolean {
   if (!s) return false;
   const t = s.trim();
   if (/\$/.test(t) && /\d/.test(t)) return true;          // tiene símbolo $
   if (!/^[\d.,\s]+$/.test(t)) return false;               // no es numérico puro
   const digits = t.replace(/[^\d]/g, "");
+  // Hoja en MILES: la celda guarda 49 y Excel muestra "$ 49,000". Aquí dos cifras ya
+  // son un precio válido; lo que impide confundirlo con un código es que a un código
+  // le sigue el NOMBRE del producto (ver productsFromCells).
+  // Basta UNA cifra: un cable de $5.000 se guarda como "5". Lo que impide confundirlo
+  // con un código es la regla posicional, no la longitud.
+  if (escala > 1) return digits.length >= 1;
   if (digits.length < 4) return false;
   if (/[.,]/.test(t)) return true;                        // tiene separador de miles
   return parseInt(digits, 10) >= 10000;                   // número pelado → solo si ≥ 10.000
@@ -51,7 +61,10 @@ const HEADER_TOKENS = new Set([
 ]);
 
 /** Filtra productos NO tecnológicos (este proveedor mezcla café/alimentos). */
-const NON_TECH = /\b(caf[eé]|chemex|grano|molido|tostad|honey|alimento|az[uú]car|panela|bebida)\b/i;
+// ⚠️ Sin `\b` al FINAL: "CAFÉ" termina en una letra acentuada, que en JavaScript no
+// cuenta como carácter de palabra, así que el límite nunca se cumplía y "CAFÉ BLEND
+// BOURBON" se colaba al catálogo de tecnología. El límite inicial sí se conserva.
+const NON_TECH = /\b(caf[eé]|chemex|grano|molido|tostad|honey|alimento|az[uú]car|panela|bebida)/i;
 
 // ── Marca y categoría (deducidas del nombre) ───────────────────────────────────
 
@@ -78,6 +91,12 @@ const CAT_RULES: [RegExp, string][] = [
   [/(port[aá]til|laptop|notebook|ultrabook)/i, "portatil"],
   [/^(?=.*\b(ryzen|core\s?i[3579]|core\s?ultra|celeron|pentium|athlon|i[3579]-\d{3,4}[a-z])\b)(?=.*(pantalla\s*1[0-7]\b|\b1[0-7][.,]\d\s*("|''|pulg)))/i, "portatil"],
   [/(\brtx|\bgtx|\bradeon|\brx\s?\d|\barc\s?a\d|geforce)/i, "tarjeta-grafica"],
+  // Memoria USB / pendrive ANTES que almacenamiento: en el catálogo de la tienda vive
+  // en "Accesorios" (junto al hub USB-C y el Dual Drive), y de ahí sale su margen. Sin
+  // esta regla la clasificación dependía de los dígitos de la capacidad: "USB 128GB"
+  // encajaba en el patrón de 3-4 cifras y era almacenamiento, pero "USB 64GB" no y caía
+  // en accesorios — el mismo producto con dos márgenes distintos.
+  [/^(?=.*\b(usb|pendrive|flash\s?drive)\b)(?=.*\b\d{1,4}\s?[gt]b\b)(?!.*\b(ssd|nvme|hdd|m\.?2|disco|caja|adaptador|hub|cable|teclado|mouse|c[aá]mara|wifi|bluetooth)\b)/i, "accesorios"],
   [/(\bssd\b|\bnvme\b|\bm\.?2\b|\bhdd\b|\bdisco|barracuda|legend\s?\d|\bnv[123]\b|\b\d{3,4}\s?gb\b|\b\d\s?tb\b)/i, "almacenamiento"],
   [/(\bddr[345]\b|udimm|sodimm|\bram\b|memoria)/i, "memoria-ram"],
   [/(\bboard\b|motherboard|tarjeta madre|\blga\b|\bam4\b|\bam5\b|\b[bhz]\d{3}[a-z]?\b|\ba\d{3}m\b)/i, "motherboard"],
@@ -102,18 +121,21 @@ function inferCategoria(nombre: string): string {
 
 /** Recorre cada fila buscando celdas de precio; el nombre es la celda de texto
  *  inmediatamente a la izquierda y la referencia (SKU) la anterior si es un código. */
-function productsFromCells(rows: string[][]): ParsedProduct[] {
+function productsFromCells(rows: string[][], escala = 1): ParsedProduct[] {
   const out: ParsedProduct[] = [];
   const seen = new Set<string>();
 
   for (const cells of rows) {
     for (let i = 0; i < cells.length; i++) {
-      if (!looksLikePrice(cells[i])) continue;
-      // Si la celda siguiente también parece precio, esta es probablemente un
-      // código (no el precio) → la saltamos para no emparejar mal.
-      if (i + 1 < cells.length && looksLikePrice(cells[i + 1])) continue;
+      if (!looksLikePrice(cells[i], escala)) continue;
+      // A un CÓDIGO le sigue el nombre del producto; a un PRECIO no. Es lo que
+      // distingue "7024" (código) de "1398" (precio) cuando ambos son números pelados.
+      // La regla anterior —"si la siguiente también parece precio, esta es un código"—
+      // fallaba con tablas lado a lado: el código de la tabla vecina hacía descartar el
+      // precio de la anterior, y se perdían casi todos los productos.
+      if (/[a-zA-ZÁÉÍÓÚÑáéíóúñ]/.test(cells[i + 1] ?? "")) continue;
 
-      const precio = parsePrecio(cells[i]);
+      const precio = parsePrecio(cells[i]) * escala;
       if (precio < 1000) continue;
 
       // Nombre: celda de texto (con letras) hasta 2 posiciones a la izquierda.
@@ -238,15 +260,61 @@ function isHeaderRow(r: string[]): boolean {
   return low.includes("marca") && low.some((c) => /precio|valor/.test(c));
 }
 
+/** Índices de columna donde EMPIEZA cada tabla. Este proveedor pone 2 o 3 tablas lado a
+ *  lado en la misma hoja ("COD | PRODUCTO | VALOR" repetido), y sin separarlas el código
+ *  de la tabla vecina se confunde con el precio de la anterior. Los encabezados "COD"
+ *  marcan dónde empieza cada una. */
+function inicioDeTablas(rows: string[][]): number[] {
+  const inicios = new Set<number>();
+  for (const r of rows) {
+    r.forEach((c, i) => { if (/^(cod|c[oó]digo|ref)$/i.test((c ?? "").trim())) inicios.add(i); });
+  }
+  return [...inicios].sort((a, b) => a - b);
+}
+
+/** Parte cada fila en las tablas que conviven en ella. Con una sola tabla no toca nada. */
+function separarTablas(rows: string[][]): string[][] {
+  const inicios = inicioDeTablas(rows);
+  if (inicios.length <= 1) return rows;
+  const ancho = Math.max(...rows.map((r) => r.length));
+  const finales = [...inicios.slice(1), ancho];
+  const out: string[][] = [];
+  for (const r of rows) {
+    inicios.forEach((ini, k) => {
+      const trozo = r.slice(ini, finales[k]);
+      if (trozo.some((c) => (c ?? "").trim())) out.push(trozo);
+    });
+  }
+  return out;
+}
+
+/** ¿Los precios están en MILES? En el .xlsx la celda guarda 1398 y Excel lo MUESTRA como
+ *  "$ 1.398,000" — el formato es de presentación, el valor real es 1398. Se detecta por
+ *  magnitud: un precio real en pesos ronda los cientos de miles, así que una mediana por
+ *  debajo de 10.000 solo puede significar que la hoja está en miles. */
+function escalaDePrecios(rows: string[][]): number {
+  const vals: number[] = [];
+  for (const r of rows) {
+    for (const c of r) {
+      const t = (c ?? "").trim();
+      if (/^\d{2,7}$/.test(t)) vals.push(parseInt(t, 10));
+    }
+  }
+  if (vals.length < 10) return 1;
+  vals.sort((a, b) => a - b);
+  const mediana = vals[Math.floor(vals.length / 2)];
+  return mediana > 0 && mediana < 10000 ? 1000 : 1;
+}
+
 /**
  * Motor unificado: dado un conjunto de filas (de tabla Word, hoja Excel o CSV en
  * párrafos), si hay una fila de encabezado "Marca … Precio" parsea por COLUMNAS
  * EXPLÍCITAS (respeta marca/categoría y captura specs). Si no, cae a la heurística
  * posicional de siempre (precio + nombre a la izquierda) para proveedores sin encabezado.
  */
-function productsFromRows(rows: string[][]): ParsedProduct[] {
+function productsFromRows(rows: string[][], escala = 1): ParsedProduct[] {
   const headerIdx = rows.findIndex(isHeaderRow);
-  if (headerIdx === -1) return productsFromCells(rows);
+  if (headerIdx === -1) return productsFromCells(rows, escala);
 
   const header = rows[headerIdx];
   const low = header.map((c) => c.toLowerCase().trim());
@@ -270,8 +338,8 @@ function productsFromRows(rows: string[][]): ParsedProduct[] {
     const nombre = (cells[idxNombre] ?? "").trim();
     const precioRaw = (cells[idxPrecio] ?? cells[cells.length - 1] ?? "").trim();
     if (!nombre || nombre.length < 3 || nombre.toLowerCase() === "n/a") continue;
-    if (!looksLikePrice(precioRaw)) continue;
-    const precio = parsePrecio(precioRaw);
+    if (!looksLikePrice(precioRaw, escala)) continue;
+    const precio = parsePrecio(precioRaw) * escala;
     if (precio < 1000) continue;
     if (NON_TECH.test(nombre)) continue;
 
@@ -305,7 +373,9 @@ export async function parseDocx(buffer: Buffer): Promise<ParsedProduct[]> {
   const tableRows = rowsFromDocx(xml);
   // Con tablas → filas de tabla. Sin tablas → CSV en párrafos convertido a filas.
   const rows = tableRows.length > 0 ? tableRows : paragraphsFromDocx(xml).map(parseCsvLine);
-  return productsFromRows(rows);
+  // El Word trae los precios ya escritos ("$ 1.398,000"), así que no hay escala que
+  // corregir; separar las tablas lado a lado sí hace falta también aquí.
+  return productsFromRows(separarTablas(rows));
 }
 
 // ── .xlsx ───────────────────────────────────────────────────────────────────
@@ -355,12 +425,101 @@ export async function parseXlsx(buffer: Buffer): Promise<ParsedProduct[]> {
     .filter((f) => /^xl\/worksheets\/sheet\d+\.xml$/.test(f))
     .sort();
 
+  // Cada hoja se separa por su cuenta: pueden tener distinta cantidad de tablas.
   const allRows: string[][] = [];
   for (const sf of sheetNames) {
     const sx = await zip.file(sf)!.async("string");
-    allRows.push(...rowsFromXlsx(sx, shared));
+    allRows.push(...separarTablas(rowsFromXlsx(sx, shared)));
   }
-  return productsFromRows(allRows);
+  return productsFromRows(allRows, escalaDePrecios(allRows));
+}
+
+// ── .pdf ────────────────────────────────────────────────────────────────────
+//
+// El PDF de una lista de precios es la MISMA tabla que el Word y el Excel, solo que
+// dibujada. Se reconstruyen las filas a partir de las coordenadas del texto y se pasan
+// por el mismo motor, para que los tres formatos no puedan dar resultados distintos.
+//
+// (No confundir con `parse-janus-pdf.ts`, que tiene columnas fijas calibradas para el PDF
+//  concreto de Janus. Este es genérico: deduce las columnas del propio documento.)
+
+type PdfItem = { t: string; x: number; y: number };
+
+/** Texto del PDF con sus coordenadas, página por página. */
+async function itemsDelPdf(buffer: Buffer): Promise<PdfItem[][]> {
+  const paginas: PdfItem[][] = [];
+  await pdfParse(buffer, {
+    pagerender: async (pageData: {
+      getTextContent: (o: Record<string, boolean>) => Promise<{ items: Array<{ str: string; transform: number[] }> }>;
+    }) => {
+      const tc = await pageData.getTextContent({ normalizeWhitespace: false, disableCombineTextItems: false });
+      paginas.push(
+        tc.items
+          .map((i) => ({ t: (i.str ?? "").trim(), x: Math.round(i.transform[4]), y: Math.round(i.transform[5]) }))
+          .filter((i) => i.t),
+      );
+      return "";
+    },
+  });
+  return paginas;
+}
+
+/** Dónde empieza cada tabla, deducido de los encabezados "COD" del propio documento.
+ *  Las x se agrupan con tolerancia porque el mismo encabezado varía un pixel entre filas. */
+function columnasDeTablas(items: PdfItem[]): number[] {
+  const xs = items.filter((i) => /^(cod|c[oó]digo|ref)$/i.test(i.t)).map((i) => i.x).sort((a, b) => a - b);
+  const grupos: number[] = [];
+  for (const x of xs) {
+    if (grupos.length === 0 || x - grupos[grupos.length - 1] > 40) grupos.push(x);
+  }
+  return grupos;
+}
+
+// Precio tal como lo dibuja el PDF: "$ 1.398,000" (o sin el símbolo).
+const RE_PRECIO_PDF = /^\$?\s*[\d.]+,\d{3}$/;
+
+/** Filas [código, nombre, precio] reconstruidas de una página. */
+function filasDePagina(items: PdfItem[]): string[][] {
+  const inicios = columnasDeTablas(items);
+  if (inicios.length === 0) return [];
+  const limites = inicios.map((ini, k) => [ini - 6, k + 1 < inicios.length ? inicios[k + 1] - 6 : Infinity] as const);
+
+  // Agrupar por línea: los textos de una misma fila comparten la y salvo un pixel.
+  const porY = new Map<number, PdfItem[]>();
+  for (const it of items) {
+    const clave = Math.round(it.y / 3) * 3;
+    if (!porY.has(clave)) porY.set(clave, []);
+    porY.get(clave)!.push(it);
+  }
+
+  const filas: string[][] = [];
+  for (const y of [...porY.keys()].sort((a, b) => b - a)) {
+    const linea = porY.get(y)!;
+    for (const [ini, fin] of limites) {
+      const enGrupo = linea.filter((i) => i.x >= ini && i.x < fin).sort((a, b) => a.x - b.x);
+      if (enGrupo.length === 0) continue;
+
+      let codigo = "";
+      let precio = "";
+      const nombre: string[] = [];
+      for (const it of enGrupo) {
+        if (RE_PRECIO_PDF.test(it.t)) { precio = it.t; continue; }
+        // Código: número (o "0-0000") ANTES de que aparezca cualquier texto.
+        if (!codigo && nombre.length === 0 && /^[0-9][0-9-]{0,11}$/.test(it.t)) { codigo = it.t; continue; }
+        nombre.push(it.t);
+      }
+      const nom = nombre.join(" ").replace(/\s{2,}/g, " ").trim();
+      if (nom || precio) filas.push([codigo, nom, precio]);
+    }
+  }
+  return filas;
+}
+
+export async function parseListaPdf(buffer: Buffer): Promise<ParsedProduct[]> {
+  const paginas = await itemsDelPdf(buffer);
+  const filas: string[][] = [];
+  for (const p of paginas) filas.push(...filasDePagina(p));
+  return productsFromRows(filas);
 }
 
 // ── Dispatcher por extensión ───────────────────────────────────────────────────
@@ -369,5 +528,6 @@ export async function parseSupplierDoc(buffer: Buffer, filename: string): Promis
   const lower = filename.toLowerCase();
   if (lower.endsWith(".docx")) return parseDocx(buffer);
   if (lower.endsWith(".xlsx")) return parseXlsx(buffer);
-  throw new Error("Formato no soportado. Usa .docx o .xlsx (Word o Excel).");
+  if (lower.endsWith(".pdf"))  return parseListaPdf(buffer);
+  throw new Error("Formato no soportado. Usa .docx, .xlsx o .pdf.");
 }

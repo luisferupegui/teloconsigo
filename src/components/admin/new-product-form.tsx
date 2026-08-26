@@ -7,7 +7,7 @@ import {
   Save, Loader2, Eye, EyeOff, Star, Package, Tag, AlertCircle, ArrowLeft,
 } from "lucide-react";
 import type { Segmento } from "@/lib/products-types";
-import { SEGMENTOS } from "@/lib/products-types";
+import { SEGMENTOS, HOME_MAX } from "@/lib/products-types";
 import { ImageSlot } from "./image-slot";
 
 // Mapa segmento → usoCaso legacy, para que el nuevo producto caiga en una
@@ -37,8 +37,10 @@ const SEG_TO_CAT: Record<Segmento, string> = {
   "componentes":           "accesorio",
 };
 
-export function NewProductForm() {
+export function NewProductForm({ destCount = 0, accCount = 0 }: { destCount?: number; accCount?: number }) {
   const router = useRouter();
+  const destacadoFull  = destCount >= HOME_MAX;
+  const accesoriosFull = accCount  >= HOME_MAX;
 
   // Referencia generada una sola vez → identifica la carpeta de imágenes y el
   // producto. Subir imágenes ANTES de crear funciona porque ambos usan esta ref.
@@ -54,8 +56,9 @@ export function NewProductForm() {
   const [enAccesorios,setEnAccesorios]= useState(false);
   const [enPromocion, setEnPromocion] = useState(false);
 
+  // Una sola imagen para todo: se guarda como "card" y `resolveProductImage` la usa
+  // también donde antes iba la de detalle.
   const [cardUrl,    setCardUrl]    = useState<string | null>(null);
-  const [detalleUrl, setDetalleUrl] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
@@ -89,7 +92,7 @@ export function NewProductForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear el producto.");
       // Producto creado con la misma ref que las imágenes → aparece en la lista.
-      router.push("/admin/productos");
+      router.push("/admin/marketing");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
@@ -110,7 +113,7 @@ export function NewProductForm() {
           </p>
         </div>
         <Link
-          href="/admin/productos"
+          href="/admin/marketing"
           className="flex shrink-0 items-center gap-1 rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-600 hover:border-indigo-400 hover:text-indigo-600 transition"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Volver a la lista
@@ -159,7 +162,12 @@ export function NewProductForm() {
 
           {/* Toggles de publicación */}
           <div className="space-y-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Visibilidad y ubicación en el home</span>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Visibilidad y ubicación en el home</span>
+              <span className="text-[11px] text-zinc-400">
+                Destacados {destCount}/{HOME_MAX} · Accesorios {accCount}/{HOME_MAX}
+              </span>
+            </div>
             <div className="flex flex-wrap gap-3">
               <button type="button" onClick={() => setPublicado((v) => !v)}
                 className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition
@@ -167,28 +175,45 @@ export function NewProductForm() {
                 {publicado ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 {publicado ? "Publicado en web ✓" : "Oculto (solo admin)"}
               </button>
-              <button type="button" onClick={() => setDestacado((v) => !v)} disabled={!publicado}
-                className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
+              <button type="button" onClick={() => setDestacado((v) => !v)}
+                disabled={!destacado && destacadoFull}
+                title={!destacado && destacadoFull ? `Sección Destacados llena (${HOME_MAX}/${HOME_MAX})` : ""}
+                className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40
                   ${destacado ? "border-amber-300 bg-amber-50 text-amber-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-amber-200"}`}>
                 <Star className={`h-4 w-4 ${destacado ? "fill-amber-400 text-amber-400" : ""}`} />
-                {destacado ? "En Destacados (home) ✓" : "Agregar a Destacados"}
+                {destacado ? "En Destacados (home) ✓" : destacadoFull ? `Destacados lleno (${HOME_MAX}/${HOME_MAX})` : "Agregar a Destacados"}
               </button>
-              <button type="button" onClick={() => setEnAccesorios((v) => !v)} disabled={!publicado}
-                className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
+              <button type="button" onClick={() => setEnAccesorios((v) => !v)}
+                disabled={!enAccesorios && accesoriosFull}
+                title={!enAccesorios && accesoriosFull ? `Sección Accesorios llena (${HOME_MAX}/${HOME_MAX})` : ""}
+                className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40
                   ${enAccesorios ? "border-orange-300 bg-orange-50 text-orange-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-orange-200"}`}>
                 <Package className="h-4 w-4" />
-                {enAccesorios ? "En Accesorios & Esenciales ✓" : "Agregar a Accesorios & Esenciales"}
+                {enAccesorios ? "En Accesorios & Esenciales ✓" : accesoriosFull ? `Accesorios lleno (${HOME_MAX}/${HOME_MAX})` : "Agregar a Accesorios & Esenciales"}
               </button>
-              <button type="button" onClick={() => setEnPromocion((v) => !v)} disabled={!publicado}
+              <button type="button" onClick={() => setEnPromocion((v) => !v)}
                 className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
                   ${enPromocion ? "border-indigo-300 bg-indigo-50 text-indigo-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-indigo-200"}`}>
                 <Tag className={`h-4 w-4 ${enPromocion ? "fill-indigo-400 text-indigo-400" : ""}`} />
                 {enPromocion ? "En Promociones ✓" : "Agregar a Promociones"}
               </button>
             </div>
+            {(destacadoFull || accesoriosFull) && (
+              <p className="flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-700">
+                <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" />
+                <span>
+                  {destacadoFull && accesoriosFull
+                    ? `Destacados y Accesorios & Esenciales están llenos (${HOME_MAX}/${HOME_MAX}).`
+                    : destacadoFull
+                    ? `La sección Destacados está llena (${HOME_MAX}/${HOME_MAX}).`
+                    : `La sección Accesorios & Esenciales está llena (${HOME_MAX}/${HOME_MAX}).`}
+                  {" "}Quita una card desde Marketing para poder ubicar este producto ahí.
+                </span>
+              </p>
+            )}
             {!publicado && (
               <p className="text-[11px] text-zinc-400">
-                Por defecto el producto nace <strong>oculto</strong> (visible solo en el panel). Actívalo en “Publicado en web” para poder ubicarlo en el home.
+                El producto nace <strong>oculto</strong> (visible solo en el panel). Puedes dejar elegidas sus ubicaciones desde ya: se aplicarán en cuanto lo publiques.
               </p>
             )}
           </div>
@@ -206,7 +231,7 @@ export function NewProductForm() {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Crear producto
             </button>
-            <Link href="/admin/productos" className="text-sm font-semibold text-zinc-500 hover:text-zinc-800">
+            <Link href="/admin/marketing" className="text-sm font-semibold text-zinc-500 hover:text-zinc-800">
               Cancelar
             </Link>
           </div>
@@ -214,11 +239,11 @@ export function NewProductForm() {
 
         {/* Derecha: imágenes (se pueden subir antes de crear) */}
         <div className="space-y-4">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Imágenes del producto</p>
-          <ImageSlot identifier={referencia} tipo="card"    url={cardUrl}    onUrlChange={setCardUrl}    label="Card / Tarjeta" />
-          <ImageSlot identifier={referencia} tipo="detalle" url={detalleUrl} onUrlChange={setDetalleUrl} label="Detalle / Catálogo" />
+          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Imagen del producto</p>
+          <ImageSlot identifier={referencia} tipo="card" url={cardUrl} onUrlChange={setCardUrl} label="Imagen del producto" />
           <p className="text-[11px] leading-snug text-zinc-400">
-            Puedes subir las imágenes ahora; se asocian al producto al crearlo.
+            Una sola imagen para todo: tarjeta del home, catálogo y ficha del producto.
+            Puedes subirla ahora; se asocia al crearlo.
           </p>
         </div>
       </div>

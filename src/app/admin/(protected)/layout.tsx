@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "../components/logout-button";
+import { AdminNav } from "../components/admin-nav";
 
 export const metadata = { title: "Admin · Te lo Consigo" };
 
@@ -37,25 +38,7 @@ export default async function AdminLayout({
             <LogoutButton />
           </div>
         </div>
-        <div className="mx-auto flex max-w-7xl gap-1 px-4 sm:px-6 lg:px-8">
-          {[
-            ["/admin", "📦 Catálogo"],
-            ["/admin/productos", "📋 Productos y Promociones"],
-            ["/admin/nuevo", "➕ Nuevo"],
-            ["/admin/pedidos", "🛍️ Pedidos"],
-            ["/admin/historial", "📜 Historial"],
-            ["/admin/precios",  "💰 Precios"],
-            ["/admin/usuarios", "👤 Usuarios"],
-          ].map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              className="border-b-2 border-transparent px-4 py-2 text-sm font-medium text-zinc-600 hover:border-[#1e6cff] hover:text-[#1e6cff]"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        <AdminNav />
       </div>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {children}

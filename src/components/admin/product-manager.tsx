@@ -5,7 +5,7 @@ import Image from "next/image";
 import {
   Star, Tag, Package, ChevronDown, ChevronUp,
   CheckCircle2, AlertCircle, ImageIcon, Save, Loader2,
-  Eye, EyeOff, Globe,
+  Eye, EyeOff, Globe, Trash2,
 } from "lucide-react";
 import type { BusinessProduct, Segmento } from "@/lib/products-types";
 import { formatCOP, SEGMENTOS, SEGMENTO_LABEL, SEGMENTO_COLOR, HOME_MAX } from "@/lib/products-types";
@@ -86,7 +86,7 @@ function ProductRow({
   const [enPromocion, setEnPromocion] = useState(Boolean(product.enPromocion));
   // Estado de imágenes elevado a la fila → persiste al cerrar/reabrir el panel.
   const [cardUrl,     setCardUrl]     = useState(product.cardUrl);
-  const [detalleUrl,  setDetalleUrl]  = useState(product.detalleUrl);
+
 
   // Toggle de sección del home: mantiene el contador global sincronizado.
   function togglePlacement(flag: PlacementFlag, current: boolean, setter: (v: boolean) => void) {
@@ -97,6 +97,25 @@ function ProductRow({
 
   const destacadoFull   = destCount >= HOME_MAX;
   const accesoriosFull  = accCount  >= HOME_MAX;
+
+  const [borrando, startBorrar] = useTransition();
+  const [confirmarBorrado, setConfirmarBorrado] = useState(false);
+
+  // Borrar pide confirmación en el mismo botón (dos clics) en vez de un diálogo del
+  // navegador: es irreversible y conviene que se vea qué se va a borrar.
+  function handleDelete() {
+    setError(null);
+    startBorrar(async () => {
+      const res = await fetch("/api/admin/product", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ referencia: identifier }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) window.location.reload();
+      else setError((data as { error?: string }).error ?? "No se pudo borrar.");
+    });
+  }
 
   async function handleSave() {
     setError(null);
@@ -246,7 +265,7 @@ function ProductRow({
                 </button>
                 <button
                   onClick={() => togglePlacement("destacado", destacado, setDestacado)}
-                  disabled={!publicado || (!destacado && destacadoFull)}
+                  disabled={!destacado && destacadoFull}
                   title={!destacado && destacadoFull ? `Sección Destacados llena (${HOME_MAX}/${HOME_MAX})` : ""}
                   className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
                     ${destacado ? "border-amber-300 bg-amber-50 text-amber-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-amber-200"}`}
@@ -256,7 +275,7 @@ function ProductRow({
                 </button>
                 <button
                   onClick={() => togglePlacement("enAccesorios", enAccesorios, setEnAccesorios)}
-                  disabled={!publicado || (!enAccesorios && accesoriosFull)}
+                  disabled={!enAccesorios && accesoriosFull}
                   title={!enAccesorios && accesoriosFull ? `Sección Accesorios llena (${HOME_MAX}/${HOME_MAX})` : ""}
                   className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
                     ${enAccesorios ? "border-orange-300 bg-orange-50 text-orange-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-orange-200"}`}
@@ -266,8 +285,7 @@ function ProductRow({
                 </button>
                 <button
                   onClick={() => setEnPromocion((v) => !v)}
-                  disabled={!publicado}
-                  className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
+                                    className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition disabled:opacity-40
                     ${enPromocion ? "border-indigo-300 bg-indigo-50 text-indigo-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-indigo-200"}`}
                 >
                   <Tag className={`h-4 w-4 ${enPromocion ? "fill-indigo-400 text-indigo-400" : ""}`} />
@@ -291,6 +309,20 @@ function ProductRow({
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Guardar cambios
               </button>
+
+              <button
+                onClick={() => (confirmarBorrado ? handleDelete() : setConfirmarBorrado(true))}
+                onBlur={() => setConfirmarBorrado(false)}
+                disabled={borrando}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition disabled:opacity-60 ${
+                  confirmarBorrado
+                    ? "bg-red-600 text-white hover:bg-red-700"
+                    : "border border-red-200 text-red-600 hover:bg-red-50"
+                }`}
+              >
+                {borrando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {confirmarBorrado ? "¿Seguro? Borrar" : "Borrar"}
+              </button>
               {saved && (
                 <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
                   <CheckCircle2 className="h-4 w-4" /> Guardado
@@ -306,9 +338,8 @@ function ProductRow({
 
           {/* Derecha: imágenes */}
           <div className="space-y-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Imágenes del producto</p>
-            <ImageSlot identifier={identifier} tipo="card"    url={cardUrl}    onUrlChange={setCardUrl}    label="Card / Tarjeta" />
-            <ImageSlot identifier={identifier} tipo="detalle" url={detalleUrl} onUrlChange={setDetalleUrl} label="Detalle / Catálogo" />
+            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Imagen del producto</p>
+            <ImageSlot identifier={identifier} tipo="card" url={cardUrl} onUrlChange={setCardUrl} label="Imagen del producto" />
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categories } from "@/lib/categories";
+import { loadCategories } from "@/lib/categories";
 import type { Product } from "@/lib/products";
 
 export function ProductForm({
@@ -60,7 +60,7 @@ export function ProductForm({
               className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm"
             >
               <option value="">Selecciona…</option>
-              {categories.map((c) => (
+              {loadCategories().map((c) => (
                 <option key={c.slug} value={c.slug}>
                   {c.nombre}
                 </option>

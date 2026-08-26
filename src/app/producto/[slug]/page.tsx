@@ -5,7 +5,7 @@ import {
   getProductBySlug,
   formatCOP,
 } from "@/lib/products";
-import { categories } from "@/lib/categories";
+import { loadCategories } from "@/lib/categories";
 import { ProductCard } from "@/components/product-card";
 import { SmartImage } from "@/components/smart-image";
 import { AddToCartButton } from "@/components/add-to-cart";
@@ -38,7 +38,7 @@ export default async function ProductoPage({
   const p = getProductBySlug(slug);
   if (!p) notFound();
 
-  const cat = categories.find((c) => c.slug === p.categoria);
+  const cat = loadCategories().find((c) => c.slug === p.categoria);
   const related = getAllProducts()
     .filter((r) => r.categoria === p.categoria && r.id !== p.id)
     .slice(0, 4);

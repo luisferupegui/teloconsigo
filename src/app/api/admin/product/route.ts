@@ -121,3 +121,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
+
+// DELETE — borra un producto del catálogo publicado.
+// Faltaba: desde el panel solo se podía crear y editar, así que un producto importado
+// por error se quedaba para siempre (o había que editar el JSON a mano).
+export async function DELETE(req: NextRequest) {
+  try {
+    const { referencia } = (await req.json()) as { referencia?: string };
+    const ref = String(referencia ?? "").trim();
+    if (!ref) return NextResponse.json({ error: "Falta la referencia del producto." }, { status: 400 });
+
+    const products = loadBusinessProducts();
+    const idx = products.findIndex(
+      (p) => p.referencia === ref || p.slug === ref || p.id === ref,
+    );
+    if (idx === -1) return NextResponse.json({ error: "No encontré ese producto." }, { status: 404 });
+
+    const [borrado] = products.splice(idx, 1);
+    saveBusinessProducts(products);
+    return NextResponse.json({ ok: true, nombre: borrado.nombre });
+  } catch (err) {
+    console.error("[product DELETE]", err);
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  }
+}

@@ -3,7 +3,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { existsSync, statSync } from "fs";
 import path from "path";
-import { categories, type Linea } from "@/lib/categories";
+import { loadCategories, type Linea } from "@/lib/categories";
+import { conIconos } from "@/lib/categories-icons";
 import { ArrowLeft, ArrowRight, Search } from "lucide-react";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
@@ -184,6 +185,7 @@ export default async function TiendaPage({
   }
 
   // ── Vista normal por categorías ─────────────────────────────────────────────
+  const categories = conIconos(loadCategories());
   const catActiva = categoria
     ? categories.find((c) => c.slug === categoria)
     : null;

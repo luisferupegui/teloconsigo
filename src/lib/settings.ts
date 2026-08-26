@@ -6,8 +6,12 @@ import path from "path";
 // porque contiene la clave API). La clave puede venir del panel o del entorno.
 
 export type Settings = {
+  // Key de DeepSeek (platform.deepseek.com) — es el cerebro de Andrea.
+  deepseekApiKey?: string;
+  // Campo heredado de la etapa con Anthropic. Ya no se usa: se conserva en el tipo
+  // solo para poder borrarlo de data/settings.json al guardar (ver la ruta admin).
   anthropicApiKey?: string;
-  // Key de Serper (serper.dev) para la búsqueda de productos en EE.UU.
+  // Key de Serper (serper.dev) para la búsqueda de productos en EE.UU. y Colombia.
   serperApiKey?: string;
   // Dominios donde el buscador web tiene permitido buscar (ej: "mercadolibre.com.co").
   webSearchSites?: string[];
@@ -19,6 +23,8 @@ const SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const PLACEHOLDERS = new Set([
   "PEGA_AQUI_TU_API_KEY",
   "tu-api-key-aqui",
+  "tu-api-key-deepseek",
+  "sk-xxxxx",
   "sk-ant-xxxxx",
 ]);
 
@@ -39,13 +45,13 @@ export function saveSettings(settings: Settings): void {
   fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2), "utf-8");
 }
 
-/** Clave API efectiva: primero la del panel, si no la del entorno. `null` si
- *  no hay ninguna válida (ignora los marcadores de posición de .env.example). */
-export function getAnthropicApiKey(): string | null {
-  const fromPanel = loadSettings().anthropicApiKey;
+/** Clave API efectiva de DeepSeek: primero la del panel, si no la del entorno.
+ *  `null` si no hay ninguna válida (ignora los marcadores de .env.example). */
+export function getDeepseekApiKey(): string | null {
+  const fromPanel = loadSettings().deepseekApiKey;
   if (isRealKey(fromPanel)) return fromPanel.trim();
 
-  const fromEnv = process.env.ANTHROPIC_API_KEY;
+  const fromEnv = process.env.DEEPSEEK_API_KEY;
   if (isRealKey(fromEnv)) return fromEnv.trim();
 
   return null;
@@ -54,19 +60,19 @@ export function getAnthropicApiKey(): string | null {
 /** Claves candidatas en orden de preferencia [panel, entorno], sin duplicados ni
  *  marcadores. El asesor las usa para CAER a la del entorno si la del panel es
  *  rechazada (401/402) — así una clave vieja en el panel no tumba a Andrea. */
-export function getAnthropicApiKeys(): string[] {
+export function getDeepseekApiKeys(): string[] {
   const out: string[] = [];
-  const fromPanel = loadSettings().anthropicApiKey;
+  const fromPanel = loadSettings().deepseekApiKey;
   if (isRealKey(fromPanel)) out.push(fromPanel.trim());
-  const fromEnv = process.env.ANTHROPIC_API_KEY;
+  const fromEnv = process.env.DEEPSEEK_API_KEY;
   if (isRealKey(fromEnv) && fromEnv.trim() !== out[0]) out.push(fromEnv.trim());
   return out;
 }
 
 /** De dónde proviene la clave activa, para mostrarlo en el panel. */
 export function getKeySource(): "panel" | "env" | null {
-  if (isRealKey(loadSettings().anthropicApiKey)) return "panel";
-  if (isRealKey(process.env.ANTHROPIC_API_KEY)) return "env";
+  if (isRealKey(loadSettings().deepseekApiKey)) return "panel";
+  if (isRealKey(process.env.DEEPSEEK_API_KEY)) return "env";
   return null;
 }
 

@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter, JetBrains_Mono, Bebas_Neue } from "next/font/goog
 import { headers } from "next/headers";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
+import { loadCategories } from "@/lib/categories";
 import { Footer } from "@/components/footer";
 import { CartProvider } from "@/lib/cart";
 import { ToastProvider } from "@/components/toast";
@@ -100,7 +101,7 @@ export default async function RootLayout({
             <CompareProvider>
               <CartProvider>
                 <ScrollToTop />
-                {!isAdmin && <Navbar />}
+                {!isAdmin && <Navbar categories={loadCategories()} />}
                 <main className="flex-1">{children}</main>
                 {!isAdmin && <Footer />}
                 {!isAdmin && <FloatingWhatsApp />}

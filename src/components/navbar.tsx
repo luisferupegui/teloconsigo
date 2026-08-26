@@ -13,14 +13,17 @@ import {
   LayoutDashboard,
   LogOut,
 } from "lucide-react";
-import { categories } from "@/lib/categories";
+import { iconoDe } from "@/lib/categories-icons";
+import type { Category } from "@/lib/categories";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { SearchModal } from "./search-modal";
 import { formatCOP } from "@/lib/products-types";
 import { ProductQuickView, type QuickViewProduct } from "./product-quick-view";
 
-export function Navbar() {
+// Las categorías llegan por props: este componente es de CLIENTE y la taxonomía se lee
+// del disco en el servidor. El layout raíz las carga y las baja hasta aquí.
+export function Navbar({ categories = [] }: { categories?: Category[] }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -552,7 +555,7 @@ export function Navbar() {
               >
                 <div className="flex h-6 w-6 items-center justify-center rounded-full
                                 border border-[#1e6cff]/30 bg-[#1e6cff]/10 shrink-0">
-                  <cat.Icon className="h-3 w-3 text-[#4d8dff]" />
+                  {(() => { const Icon = iconoDe(cat.icon); return <Icon className="h-3 w-3 text-[#4d8dff]" />; })()}
                 </div>
                 {cat.nombre}
               </Link>

@@ -1,3 +1,5 @@
+import type { Plataforma, Entrega } from "./armador-plataformas";
+
 // ─── Armador de PC — datos de perfiles y configuraciones recomendadas ─────────
 //
 // FUENTE DE VERDAD: estas recomendaciones salen de los documentos técnicos
@@ -14,6 +16,11 @@ export type ArmadorTier = {
   label: string;
   /** Nivel recomendado por los documentos para ESTE perfil. */
   rec?: boolean;
+  /** Si está, la opción SOLO se muestra cuando el cliente eligió esa plataforma.
+   *  Es lo que impide armar un imposible (un Core i5 con una placa AM5). */
+  plataforma?: Plataforma;
+  /** Tiempo de entrega. El cliente nunca sabe si hay stock: solo ve la fecha. */
+  entrega?: Entrega;
 };
 
 export type ArmadorSlot = {
@@ -40,6 +47,19 @@ export type ArmadorPerfil = {
 };
 
 // Slots reutilizables ───────────────────────────────────────────────────────
+const DISCO_ADICIONAL: ArmadorSlot = {
+  key: "disco_adicional", label: "Disco adicional", icon: "HardDrive", opcional: true,
+  opciones: [
+    { label: "Sin disco adicional", rec: true },
+    { label: "+ SSD SATA 1TB" },
+    { label: "+ SSD M.2 NVMe 1TB" },
+    { label: "+ SSD M.2 NVMe 2TB" },
+    { label: "+ Disco duro 2TB" },
+    { label: "+ Disco duro 4TB" },
+    { label: "+ Unidad óptica DVD-RW" },
+  ],
+};
+
 const REFRIG_AIRE: ArmadorSlot = {
   key: "refrigeracion", label: "Refrigeración", icon: "Snowflake",
   opciones: [{ label: "Aire (incluida)", rec: true }],
@@ -92,9 +112,13 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "Para uso diario, 16GB de RAM y un SSD hacen que todo abra al instante. No necesitas tarjeta de video dedicada.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Intel Core i3 / Ryzen 3" },
-        { label: "Intel Core i5 / Ryzen 5", rec: true },
-        { label: "Intel Core i5-14600 / Ryzen 7 7700" },
+        { label: "Ryzen 3 5300G", plataforma: "amd" },
+        { label: "Ryzen 5 5600G", plataforma: "amd", rec: true },
+        { label: "Ryzen 7 5700G", plataforma: "amd" },
+        { label: "Core i3-12100", plataforma: "intel" },
+        { label: "Core i5-12400", plataforma: "intel", rec: true },
+        { label: "Core i5-14400", plataforma: "intel" },
+        { label: "Core Ultra 5 225", plataforma: "intel" },
       ]},
       GPU_INTEGRADA,
       { key: "ram", label: "Memoria RAM", icon: "MemoryStick", opciones: [
@@ -108,9 +132,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "1TB SSD NVMe" },
         { label: "+ Disco duro 1TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "A520 / H610", rec: true },
-        { label: "B550 / B660" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+", rec: true },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "21.5\" FHD" },
@@ -131,9 +165,13 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "Con 32GB corres el ERP, hojas de cálculo grandes y el navegador con muchas pestañas sin que el equipo se ponga lento.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Intel Core i5 / Ryzen 5", rec: true },
-        { label: "Intel Core i7 / Ryzen 7" },
-        { label: "Intel Core i7-14700" },
+        { label: "Ryzen 5 5600G", plataforma: "amd", rec: true },
+        { label: "Ryzen 7 5700G", plataforma: "amd" },
+        { label: "Ryzen 7 7700", plataforma: "amd" },
+        { label: "Core i5-12400", plataforma: "intel", rec: true },
+        { label: "Core i7-12700", plataforma: "intel" },
+        { label: "Core i7-14700", plataforma: "intel" },
+        { label: "Core Ultra 5 245K", plataforma: "intel" },
       ]},
       GPU_INTEGRADA,
       { key: "ram", label: "Memoria RAM", icon: "MemoryStick", opciones: [
@@ -147,9 +185,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "2TB SSD NVMe" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "B550 / B660", rec: true },
-        { label: "B650 / B760" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+", rec: true },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "24\" FHD", rec: true },
@@ -170,9 +218,13 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "La tarjeta de video acelera los filtros y el renderizado de Photoshop. Un monitor IPS calibrado es clave para que los colores sean fieles.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Intel Core i5 / Ryzen 5" },
-        { label: "Intel Core i7 / Ryzen 7", rec: true },
-        { label: "Intel Core i9 / Ryzen 9" },
+        { label: "Ryzen 5 7600", plataforma: "amd" },
+        { label: "Ryzen 7 7700", plataforma: "amd", rec: true },
+        { label: "Ryzen 9 7900X", plataforma: "amd" },
+        { label: "Core i5-14600K", plataforma: "intel" },
+        { label: "Core i7-14700K", plataforma: "intel", rec: true },
+        { label: "Core i9-14900K", plataforma: "intel" },
+        { label: "Core Ultra 7 265K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
         { label: "RTX 4060", rec: true },
@@ -190,9 +242,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "B650 / B760", rec: true },
-        { label: "X670 / Z790" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce", rec: true },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "24\" IPS" },
@@ -213,9 +275,13 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "Con 32GB tienes el IDE, varios contenedores Docker y el navegador abiertos a la vez. La tarjeta dedicada es opcional salvo que trabajes con IA.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Intel Core i5 / Ryzen 5" },
-        { label: "Intel Core i7 / Ryzen 7", rec: true },
-        { label: "Intel Core i9 / Ryzen 9" },
+        { label: "Ryzen 5 7600", plataforma: "amd" },
+        { label: "Ryzen 7 7700", plataforma: "amd", rec: true },
+        { label: "Ryzen 9 7900X", plataforma: "amd" },
+        { label: "Core i5-14600K", plataforma: "intel" },
+        { label: "Core i7-14700K", plataforma: "intel", rec: true },
+        { label: "Core i9-14900K", plataforma: "intel" },
+        { label: "Core Ultra 7 265K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opcional: true, opciones: [
         { label: "Gráficos integrados", rec: true },
@@ -233,9 +299,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "B650 / B760", rec: true },
-        { label: "X670 / Z790" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+", rec: true },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" FHD" },
@@ -256,9 +332,13 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "Los procesadores X3D eliminan los tirones en juegos competitivos. Con una RTX 50 y 32GB tienes FPS de sobra en cualquier título actual.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Ryzen 5 7600 / Core i5-13400F", rec: true },
-        { label: "Ryzen 7 7700 / Core i5-14600KF" },
-        { label: "Ryzen 7 7800X3D" },
+        { label: "Ryzen 5 7600", plataforma: "amd", rec: true },
+        { label: "Ryzen 7 7700", plataforma: "amd" },
+        { label: "Ryzen 7 7800X3D", plataforma: "amd" },
+        { label: "Core i5-13400F", plataforma: "intel", rec: true },
+        { label: "Core i5-14600KF", plataforma: "intel" },
+        { label: "Core i7-14700KF", plataforma: "intel" },
+        { label: "Core Ultra 7 265K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
         { label: "RTX 5060", rec: true },
@@ -276,9 +356,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "B650 / B760", rec: true },
-        { label: "X670 / Z790" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce", rec: true },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "24\" FHD 144Hz", rec: true },
@@ -299,9 +389,13 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "Tope de gama: X3D + RTX 5080/5090 para 4K sin concesiones. La refrigeración líquida mantiene el rendimiento estable en sesiones largas.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Ryzen 7 7800X3D", rec: true },
-        { label: "Ryzen 7 9800X3D" },
-        { label: "Ryzen 9 7950X3D" },
+        { label: "Ryzen 7 7800X3D", plataforma: "amd", rec: true },
+        { label: "Ryzen 7 9800X3D", plataforma: "amd" },
+        { label: "Ryzen 9 7950X3D", plataforma: "amd" },
+        { label: "Core i7-14700K", plataforma: "intel", rec: true },
+        { label: "Core i9-14900K", plataforma: "intel" },
+        { label: "Core i9-14900KS", plataforma: "intel" },
+        { label: "Core Ultra 9 285K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
         { label: "RTX 5070 Ti", rec: true },
@@ -317,9 +411,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "2TB SSD Gen4/Gen5" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "X670E / Z790", rec: true },
-        { label: "X870E" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold", rec: true },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" 1440p 165Hz", rec: true },
@@ -340,9 +444,12 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "La RTX codifica el stream por hardware (NVENC) sin robarle FPS al juego. Con 32–64GB el equipo mueve juego, OBS y chat sin trabarse.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Ryzen 7 7800X3D", rec: true },
-        { label: "Ryzen 9 7900X" },
-        { label: "Ryzen 9 7950X" },
+        { label: "Ryzen 7 7800X3D", plataforma: "amd", rec: true },
+        { label: "Ryzen 9 7900X", plataforma: "amd" },
+        { label: "Ryzen 9 7950X", plataforma: "amd" },
+        { label: "Core i7-14700K", plataforma: "intel", rec: true },
+        { label: "Core i9-14900K", plataforma: "intel" },
+        { label: "Core Ultra 9 285K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
         { label: "RTX 5070", rec: true },
@@ -358,9 +465,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "B650 / Z790", rec: true },
-        { label: "X670E" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce", rec: true },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" FHD 144Hz", rec: true },
@@ -381,9 +498,12 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "Más VRAM = más capas de efectos sin trabar la línea de tiempo. Con 64GB de RAM los proyectos 4K fluyen sin cortes.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Intel Core i7 / Ryzen 7" },
-        { label: "Ryzen 9 7900X", rec: true },
-        { label: "Ryzen 9 7950X" },
+        { label: "Ryzen 7 7700", plataforma: "amd" },
+        { label: "Ryzen 9 7900X", plataforma: "amd", rec: true },
+        { label: "Ryzen 9 7950X", plataforma: "amd" },
+        { label: "Core i7-14700K", plataforma: "intel" },
+        { label: "Core i9-14900K", plataforma: "intel", rec: true },
+        { label: "Core Ultra 9 285K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
         { label: "RTX 4070", rec: true },
@@ -401,9 +521,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "4TB SSD Gen4" },
         { label: "+ Disco duro 4TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "B650 / Z790", rec: true },
-        { label: "X670E / X870E" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce", rec: true },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" IPS" },
@@ -424,9 +554,12 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "La VRAM es el recurso crítico para correr modelos de IA localmente: a más VRAM, modelos más grandes sin depender de la nube.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Ryzen 9 7900X" },
-        { label: "Ryzen 9 7950X", rec: true },
-        { label: "Threadripper / Xeon" },
+        { label: "Ryzen 9 7900X", plataforma: "amd" },
+        { label: "Ryzen 9 7950X", plataforma: "amd", rec: true },
+        { label: "Threadripper 7960X", plataforma: "amd" },
+        { label: "Core i9-14900K", plataforma: "intel", rec: true },
+        { label: "Xeon W5-2455X", plataforma: "intel" },
+        { label: "Core Ultra 9 285K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
         { label: "RTX 5070 Ti (16GB)", rec: true },
@@ -443,9 +576,19 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "4TB SSD Gen4" },
         { label: "+ Disco duro 4TB adicional" },
       ]},
-      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [
-        { label: "X670E / Z790", rec: true },
-        { label: "X870E / WRX90" },
+      DISCO_ADICIONAL,
+      { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold", rec: true },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
       ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" 1440p" },
@@ -471,7 +614,11 @@ export function buildResumen(
     .filter((s) => s.opciones.length > 0) // omite los informativos (gráficos integrados)
     .map((s) => {
       const val = seleccion[s.key];
-      return val ? `${s.label}: ${val}` : null;
+      if (!val) return null;
+      // "Disco adicional: Sin disco adicional" es ruido en la cotización: si el cliente
+      // no quiso disco extra, la pieza simplemente no va en la lista que ve Andrea.
+      if (s.key === "disco_adicional" && /^sin /i.test(val)) return null;
+      return `${s.label}: ${val}`;
     })
     .filter(Boolean);
   return `${perfil.label} — ensamblado a la medida · ${partes.join(" · ")}`;

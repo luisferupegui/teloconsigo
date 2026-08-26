@@ -1636,5 +1636,25 @@
     "enPromocion": true,
     "id": "726537-B21SEDC600M",
     "slug": "unidad-dvd-rw-servidor-kingston-1920gb-sedc600m"
+  },
+  {
+    "referencia": "4399",
+    "nombre": "AMD RYZEN 5 5500",
+    "marca": "AMD",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "precio": 492000,
+    "precioDesde": 492000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Es un procesador de escritorio de gama media con excelente relación calidad-precio. Cuenta con 6 núcleos y 12 hilos, alcanzando una velocidad de hasta 4.2 GHz.",
+    "destacado": false,
+    "enAccesorios": false,
+    "enPromocion": true,
+    "id": "4399",
+    "slug": "amd-ryzen-5-5500"
   }
 ]

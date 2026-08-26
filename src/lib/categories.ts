@@ -1,9 +1,17 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  Cpu, Laptop, CircuitBoard, MemoryStick, Gamepad2, Zap, Monitor,
-  Thermometer, Box, Wifi, Mouse, Headphones, Video, HardDrive,
-  Shield, Keyboard, Printer, Package,
-} from "lucide-react";
+import "server-only";
+import fs from "fs";
+import path from "path";
+
+// Taxonomía de la tienda: las CATEGORÍAS que se ven en el navbar y en /categoria/[slug],
+// y las LÍNEAS (marca + familia) que cada una contiene.
+//
+// Antes vivía como código en este mismo archivo, así que crear o renombrar una categoría
+// exigía un despliegue. Ahora vive en `data/categories.json` — el mismo volumen persistente
+// que el resto de los datos — y se gestiona desde el panel (Admin → Productos).
+//
+// El icono se guarda como TEXTO ("Cpu"); `iconoDe()` en `categories-icons.ts` lo traduce
+// al componente. Ese módulo es apto para cliente; este NO (lee del disco), así que a los
+// componentes de cliente las categorías se les pasan por props desde el layout.
 
 export type Linea = {
   marca: string;
@@ -17,380 +25,125 @@ export type Category = {
   slug: string;
   nombre: string;
   descripcion: string;
-  Icon: LucideIcon;
-  lineas?: Linea[];
+  /** Nombre del icono en `ICONOS` (categories-icons.ts), no el componente. */
+  icon: string;
+  lineas: Linea[];
 };
 
-const L = "/lineas"; // prefijo base
+const CATEGORIES_PATH = path.join(process.cwd(), "data", "categories.json");
 
-export const categories: Category[] = [
-  {
-    slug: "procesadores",
-    nombre: "Procesadores",
-    descripcion: "CPUs Intel y AMD para todo presupuesto",
-    Icon: Cpu,
-    lineas: [
-      { marca: "Intel", nombre: "Core i3",      slug: "intel-core-i3",      imagen: `${L}/procesadores/intel-core-i3.png` },
-      { marca: "Intel", nombre: "Core i5",      slug: "intel-core-i5",      imagen: `${L}/procesadores/intel-core-i5.png` },
-      { marca: "Intel", nombre: "Core i7",      slug: "intel-core-i7",      imagen: `${L}/procesadores/intel-core-i7.png` },
-      { marca: "Intel", nombre: "Core i9",      slug: "intel-core-i9",      imagen: `${L}/procesadores/intel-core-i9.png` },
-      { marca: "Intel", nombre: "Core Ultra 5", slug: "intel-core-ultra-5", imagen: `${L}/procesadores/intel-core-ultra-5.png` },
-      { marca: "Intel", nombre: "Core Ultra 7", slug: "intel-core-ultra-7", imagen: `${L}/procesadores/intel-core-ultra-7.png` },
-      { marca: "Intel", nombre: "Xeon",         slug: "intel-xeon",         imagen: `${L}/procesadores/intel-xeon.png` },
-      { marca: "AMD",   nombre: "Ryzen 3",      slug: "amd-ryzen-3",        imagen: `${L}/procesadores/amd-ryzen-3.png` },
-      { marca: "AMD",   nombre: "Ryzen 5",      slug: "amd-ryzen-5",        imagen: `${L}/procesadores/amd-ryzen-5.png` },
-      { marca: "AMD",   nombre: "Ryzen 7",      slug: "amd-ryzen-7",        imagen: `${L}/procesadores/amd-ryzen-7.png` },
-      { marca: "AMD",   nombre: "Ryzen 9",      slug: "amd-ryzen-9",        imagen: `${L}/procesadores/amd-ryzen-9.png` },
-      { marca: "AMD",   nombre: "Ryzen PRO",    slug: "amd-ryzen-pro",      imagen: `${L}/procesadores/amd-ryzen-pro.png` },
-      { marca: "AMD",   nombre: "Threadripper", slug: "amd-threadripper",   imagen: `${L}/procesadores/amd-threadripper.png` },
-    ],
-  },
-  {
-    slug: "portatiles",
-    nombre: "Portátiles",
-    descripcion: "Movilidad y potencia para cada necesidad",
-    Icon: Laptop,
-    lineas: [
-      { marca: "Lenovo",            nombre: "IdeaPad",       slug: "lenovo-ideapad",    imagen: `${L}/portatiles/lenovo-ideapad.png` },
-      { marca: "Lenovo",            nombre: "ThinkPad",      slug: "lenovo-thinkpad",   imagen: `${L}/portatiles/lenovo-thinkpad.png` },
-      { marca: "Lenovo",            nombre: "Legion",        slug: "lenovo-legion",     imagen: `${L}/portatiles/lenovo-legion.png` },
-      { marca: "Lenovo",            nombre: "Yoga",          slug: "lenovo-yoga",       imagen: `${L}/portatiles/lenovo-yoga.png` },
-      { marca: "Lenovo",            nombre: "LOQ",           slug: "lenovo-loq",        imagen: `${L}/portatiles/lenovo-loq.png` },
-      { marca: "ASUS",              nombre: "VivoBook",      slug: "asus-vivobook",     imagen: `${L}/portatiles/asus-vivobook.png` },
-      { marca: "ASUS",              nombre: "ZenBook",       slug: "asus-zenbook",      imagen: `${L}/portatiles/asus-zenbook.png` },
-      { marca: "ASUS",              nombre: "TUF Gaming",    slug: "asus-tuf-gaming",   imagen: `${L}/portatiles/asus-tuf-gaming.png` },
-      { marca: "ASUS",              nombre: "ROG Strix",     slug: "asus-rog-strix",    imagen: `${L}/portatiles/asus-rog-strix.png` },
-      { marca: "ASUS",              nombre: "ExpertBook",    slug: "asus-expertbook",   imagen: `${L}/portatiles/asus-expertbook.png` },
-      { marca: "HP",                nombre: "Essential",     slug: "hp-essential",      imagen: `${L}/portatiles/hp-essential.png` },
-      { marca: "HP",                nombre: "Pavilion",      slug: "hp-pavilion",       imagen: `${L}/portatiles/hp-pavilion.png` },
-      { marca: "HP",                nombre: "Victus",        slug: "hp-victus",         imagen: `${L}/portatiles/hp-victus.png` },
-      { marca: "HP",                nombre: "OMEN",          slug: "hp-omen",           imagen: `${L}/portatiles/hp-omen.png` },
-      { marca: "HP",                nombre: "ProBook",       slug: "hp-probook",        imagen: `${L}/portatiles/hp-probook.png` },
-      { marca: "HP",                nombre: "EliteBook",     slug: "hp-elitebook",      imagen: `${L}/portatiles/hp-elitebook.png` },
-      { marca: "Acer",              nombre: "Aspire",        slug: "acer-aspire",       imagen: `${L}/portatiles/acer-aspire.png` },
-      { marca: "Acer",              nombre: "Nitro",         slug: "acer-nitro",        imagen: `${L}/portatiles/acer-nitro.png` },
-      { marca: "Acer",              nombre: "Predator",      slug: "acer-predator",     imagen: `${L}/portatiles/acer-predator.png` },
-      { marca: "Acer",              nombre: "Swift",         slug: "acer-swift",        imagen: `${L}/portatiles/acer-swift.png` },
-      { marca: "Acer",              nombre: "TravelMate",    slug: "acer-travelmate",   imagen: `${L}/portatiles/acer-travelmate.png` },
-      { marca: "MSI",               nombre: "Modern",        slug: "msi-modern",        imagen: `${L}/portatiles/msi-modern.png` },
-      { marca: "MSI",               nombre: "Katana",        slug: "msi-katana",        imagen: `${L}/portatiles/msi-katana.png` },
-      { marca: "MSI",               nombre: "Cyborg",        slug: "msi-cyborg", imagen: `${L}/portatiles/msi-cyborg.png` },
-      { marca: "MSI",               nombre: "Stealth",       slug: "msi-stealth", imagen: `${L}/portatiles/msi-stealth.png` },
-      { marca: "MSI",               nombre: "Raider",        slug: "msi-raider", imagen: `${L}/portatiles/msi-raider.png` },
-      { marca: "Dell",              nombre: "Inspiron",      slug: "dell-inspiron", imagen: `${L}/portatiles/dell-inspiron.png` },
-      { marca: "Dell",              nombre: "Latitude",      slug: "dell-latitude", imagen: `${L}/portatiles/dell-latitude.png` },
-      { marca: "Dell",              nombre: "Vostro",        slug: "dell-vostro", imagen: `${L}/portatiles/dell-vostro.png` },
-      { marca: "Dell",              nombre: "XPS",           slug: "dell-xps", imagen: `${L}/portatiles/dell-xps.png` },
-      { marca: "Dell",              nombre: "Alienware",     slug: "dell-alienware", imagen: `${L}/portatiles/dell-alienware.png` },
-      { marca: "Dell",              nombre: "Precision",     slug: "dell-precision", imagen: `${L}/portatiles/dell-precision.png` },
-      { marca: "Microsoft Surface", nombre: "Surface Laptop",slug: "surface-laptop", imagen: `${L}/portatiles/surface-laptop.png` },
-      { marca: "Microsoft Surface", nombre: "Surface Pro",   slug: "surface-pro", imagen: `${L}/portatiles/surface-pro.png` },
-      { marca: "Microsoft Surface", nombre: "Surface Studio", slug: "surface-studio", imagen: `${L}/portatiles/surface-studio.png` },
-    ],
-  },
-  {
-    slug: "motherboards",
-    nombre: "Motherboards",
-    descripcion: "Boards AM5, AM4, LGA1700 y más",
-    Icon: CircuitBoard,
-    lineas: [
-      { marca: "ASUS",     nombre: "Prime",          slug: "asus-prime", imagen: `${L}/motherboards/asus-prime.png` },
-      { marca: "ASUS",     nombre: "TUF Gaming",     slug: "asus-tuf-gaming-board", imagen: `${L}/motherboards/asus-tuf-gaming-board.png` },
-      { marca: "ASUS",     nombre: "ROG Strix",      slug: "asus-rog-strix-board",    imagen: `${L}/motherboards/asus-rog-strix.png` },
-      { marca: "ASUS",     nombre: "ProArt",         slug: "asus-proart", imagen: `${L}/motherboards/asus-proart.png` },
-      { marca: "MSI",      nombre: "PRO Series",     slug: "msi-pro-series", imagen: `${L}/motherboards/msi-pro-series.png` },
-      { marca: "MSI",      nombre: "MAG",            slug: "msi-mag",                 imagen: `${L}/motherboards/msi-mag.png` },
-      { marca: "MSI",      nombre: "MPG",            slug: "msi-mpg", imagen: `${L}/motherboards/msi-mpg.png` },
-      { marca: "MSI",      nombre: "MEG",            slug: "msi-meg", imagen: `${L}/motherboards/msi-meg.png` },
-      { marca: "GIGABYTE", nombre: "Ultra Durable",  slug: "gigabyte-ultra-durable", imagen: `${L}/motherboards/gigabyte-ultra-durable.png` },
-      { marca: "GIGABYTE", nombre: "Gaming X",       slug: "gigabyte-gaming-x", imagen: `${L}/motherboards/gigabyte-gaming-x.png` },
-      { marca: "GIGABYTE", nombre: "AORUS",          slug: "gigabyte-aorus",          imagen: `${L}/motherboards/gigabyte-aorus.png` },
-      { marca: "ASRock",   nombre: "Steel Legend",   slug: "asrock-steel-legend", imagen: `${L}/motherboards/asrock-steel-legend.png` },
-      { marca: "ASRock",   nombre: "Phantom Gaming", slug: "asrock-phantom-gaming",   imagen: `${L}/motherboards/asrock-phantom-gaming.png` },
-      { marca: "ASRock",   nombre: "Taichi",         slug: "asrock-taichi", imagen: `${L}/motherboards/asrock-taichi.png` },
-    ],
-  },
-  {
-    slug: "memoria-ram",
-    nombre: "Memoria RAM",
-    descripcion: "DDR4 y DDR5 de alto rendimiento",
-    Icon: MemoryStick,
-    lineas: [
-      { marca: "Kingston", nombre: "Fury Beast DDR4",    slug: "kingston-fury-beast-ddr4", imagen: `${L}/memoria-ram/kingston-fury.png` },
-      { marca: "Kingston", nombre: "Fury Beast DDR5",    slug: "kingston-fury-beast-ddr5", imagen: `${L}/memoria-ram/kingston-fury.png` },
-      { marca: "Kingston", nombre: "ValueRAM",           slug: "kingston-valueram" },
-      { marca: "ADATA",    nombre: "Premier DDR4",       slug: "adata-premier-ddr4",       imagen: `${L}/memoria-ram/adata.png` },
-      { marca: "ADATA",    nombre: "Premier DDR5",       slug: "adata-premier-ddr5",       imagen: `${L}/memoria-ram/adata.png` },
-      { marca: "Corsair",  nombre: "Vengeance DDR4",     slug: "corsair-vengeance-ddr4",   imagen: `${L}/memoria-ram/corsair-vengeance.png` },
-      { marca: "Corsair",  nombre: "Vengeance DDR5",     slug: "corsair-vengeance-ddr5",   imagen: `${L}/memoria-ram/corsair-vengeance.png` },
-      { marca: "Corsair",  nombre: "Dominator Platinum", slug: "corsair-dominator",        imagen: `${L}/memoria-ram/corsair-vengeance.png` },
-      { marca: "XPG",      nombre: "GAMMIX DDR4",        slug: "xpg-gammix-ddr4",          imagen: `${L}/memoria-ram/xpg.png` },
-      { marca: "XPG",      nombre: "Lancer DDR5",        slug: "xpg-lancer-ddr5",          imagen: `${L}/memoria-ram/xpg.png` },
-    ],
-  },
-  {
-    slug: "tarjetas-graficas",
-    nombre: "Tarjetas Gráficas",
-    descripcion: "GPU NVIDIA y AMD para gaming y diseño",
-    Icon: Gamepad2,
-    lineas: [
-      { marca: "NVIDIA", nombre: "GeForce RTX 3050",  slug: "nvidia-rtx-3050",   imagen: `${L}/tarjetas-graficas/nvidia-1.png` },
-      { marca: "NVIDIA", nombre: "GeForce RTX 4060",  slug: "nvidia-rtx-4060",   imagen: `${L}/tarjetas-graficas/nvidia-1.png` },
-      { marca: "NVIDIA", nombre: "GeForce RTX 4070",  slug: "nvidia-rtx-4070",   imagen: `${L}/tarjetas-graficas/nvidia-2.png` },
-      { marca: "NVIDIA", nombre: "GeForce RTX 4080",  slug: "nvidia-rtx-4080",   imagen: `${L}/tarjetas-graficas/nvidia-2.png` },
-      { marca: "NVIDIA", nombre: "GeForce RTX 4090",  slug: "nvidia-rtx-4090",   imagen: `${L}/tarjetas-graficas/nvidia-2.png` },
-      { marca: "AMD",    nombre: "Radeon RX 6600",    slug: "amd-rx-6600",       imagen: `${L}/tarjetas-graficas/amd-1.png` },
-      { marca: "AMD",    nombre: "Radeon RX 7600",    slug: "amd-rx-7600",       imagen: `${L}/tarjetas-graficas/amd-1.png` },
-      { marca: "AMD",    nombre: "Radeon RX 7700 XT", slug: "amd-rx-7700-xt",    imagen: `${L}/tarjetas-graficas/amd-2.png` },
-      { marca: "AMD",    nombre: "Radeon RX 7800 XT", slug: "amd-rx-7800-xt",    imagen: `${L}/tarjetas-graficas/amd-2.png` },
-      { marca: "AMD",    nombre: "Radeon RX 7900 XT", slug: "amd-rx-7900-xt",    imagen: `${L}/tarjetas-graficas/amd-2.png` },
-    ],
-  },
-  {
-    slug: "fuentes-de-poder",
-    nombre: "Fuentes de Poder",
-    descripcion: "PSU certificadas 80+ Bronze a Titanium",
-    Icon: Zap,
-    lineas: [
-      { marca: "Thermaltake",  nombre: "Smart Series", slug: "thermaltake-smart",     imagen: `${L}/fuentes-de-poder/thermaltake.png` },
-      { marca: "Thermaltake",  nombre: "Toughpower",   slug: "thermaltake-toughpower", imagen: `${L}/fuentes-de-poder/thermaltake.png` },
-      { marca: "Cooler Master", nombre: "MWE Bronze",  slug: "cm-mwe-bronze",          imagen: `${L}/fuentes-de-poder/cooler-master.png` },
-      { marca: "Cooler Master", nombre: "MWE Gold",    slug: "cm-mwe-gold",            imagen: `${L}/fuentes-de-poder/cooler-master.png` },
-      { marca: "Cooler Master", nombre: "GX Series",   slug: "cm-gx-series",           imagen: `${L}/fuentes-de-poder/cooler-master.png` },
-      { marca: "Seasonic",     nombre: "Core GX",      slug: "seasonic-core-gx",       imagen: `${L}/fuentes-de-poder/seasonic.png` },
-      { marca: "Seasonic",     nombre: "Focus GX",     slug: "seasonic-focus-gx",      imagen: `${L}/fuentes-de-poder/seasonic.png` },
-      { marca: "Seasonic",     nombre: "Prime Series", slug: "seasonic-prime",         imagen: `${L}/fuentes-de-poder/seasonic.png` },
-      { marca: "Corsair",      nombre: "CV Series",    slug: "corsair-cv",             imagen: `${L}/fuentes-de-poder/corsair.png` },
-      { marca: "Corsair",      nombre: "CX Series",    slug: "corsair-cx",             imagen: `${L}/fuentes-de-poder/corsair.png` },
-      { marca: "Corsair",      nombre: "RM Series",    slug: "corsair-rm",             imagen: `${L}/fuentes-de-poder/corsair.png` },
-      { marca: "Corsair",      nombre: "HX Series",    slug: "corsair-hx",             imagen: `${L}/fuentes-de-poder/corsair.png` },
-    ],
-  },
-  {
-    slug: "monitores",
-    nombre: "Monitores",
-    descripcion: "Gaming, profesionales y ultrawide",
-    Icon: Monitor,
-    lineas: [
-      { marca: "ViewSonic", nombre: "VA Series",     slug: "viewsonic-va",          imagen: `${L}/monitores/viewsonic.png` },
-      { marca: "ViewSonic", nombre: "VX Gaming",     slug: "viewsonic-vx",          imagen: `${L}/monitores/viewsonic.png` },
-      { marca: "AOC",       nombre: "Hero",          slug: "aoc-hero",              imagen: `${L}/monitores/aoc.png` },
-      { marca: "AOC",       nombre: "Gaming Series", slug: "aoc-gaming",            imagen: `${L}/monitores/aoc.png` },
-      { marca: "LG",        nombre: "UltraGear",     slug: "lg-ultragear",          imagen: `${L}/monitores/lg.png` },
-      { marca: "LG",        nombre: "UltraWide",     slug: "lg-ultrawide",          imagen: `${L}/monitores/lg.png` },
-      { marca: "LG",        nombre: "Smart Monitor", slug: "lg-smart-monitor",      imagen: `${L}/monitores/lg.png` },
-      { marca: "Samsung",   nombre: "Odyssey",       slug: "samsung-odyssey",       imagen: `${L}/monitores/samsung.png` },
-      { marca: "Samsung",   nombre: "Smart Monitor", slug: "samsung-smart-monitor", imagen: `${L}/monitores/samsung.png` },
-      { marca: "Samsung",   nombre: "ViewFinity",    slug: "samsung-viewfinity",    imagen: `${L}/monitores/samsung.png` },
-      { marca: "ROG",       nombre: "Strix Gaming",  slug: "rog-strix",             imagen: `${L}/monitores/rog.png` },
-      { marca: "ROG",       nombre: "Swift",         slug: "rog-swift",             imagen: `${L}/monitores/rog.png` },
-    ],
-  },
-  {
-    slug: "refrigeracion",
-    nombre: "Refrigeración",
-    descripcion: "Aire, líquida y ventiladores",
-    Icon: Thermometer,
-    lineas: [
-      { marca: "Thermaltake",   nombre: "TH Series",         slug: "tt-th-series",         imagen: `${L}/refrigeracion/thermaltake.png` },
-      { marca: "Thermaltake",   nombre: "UX Series",         slug: "tt-ux-series",         imagen: `${L}/refrigeracion/thermaltake.png` },
-      { marca: "Cooler Master", nombre: "Hyper 212",         slug: "cm-hyper-212",         imagen: `${L}/refrigeracion/cooler-master.png` },
-      { marca: "Cooler Master", nombre: "MasterLiquid",      slug: "cm-masterliquid",      imagen: `${L}/refrigeracion/cooler-master.png` },
-      { marca: "Corsair",       nombre: "iCUE H100",         slug: "corsair-h100",         imagen: `${L}/refrigeracion/corsair.png` },
-      { marca: "Corsair",       nombre: "iCUE H150",         slug: "corsair-h150",         imagen: `${L}/refrigeracion/corsair.png` },
-      { marca: "MSI",           nombre: "MAG CoreLiquid",    slug: "msi-coreliquid",       imagen: `${L}/refrigeracion/msi.png` },
-      { marca: "Arctic",        nombre: "Freezer 34",        slug: "arctic-freezer-34",    imagen: `${L}/refrigeracion/arctic.png` },
-      { marca: "Arctic",        nombre: "Liquid Freezer II", slug: "arctic-liquid-freezer", imagen: `${L}/refrigeracion/arctic.png` },
-    ],
-  },
-  {
-    slug: "equipos-escritorio",
-    nombre: "Equipos de Escritorio",
-    descripcion: "PCs completos listos para trabajar",
-    Icon: Box,
-    lineas: [
-      { marca: "Lenovo", nombre: "ThinkCentre", slug: "lenovo-thinkcentre",     imagen: `${L}/equipos-escritorio/lenovo.png` },
-      { marca: "Lenovo", nombre: "IdeaCentre",  slug: "lenovo-ideacentre",      imagen: `${L}/equipos-escritorio/lenovo.png` },
-      { marca: "Lenovo", nombre: "Legion",      slug: "lenovo-legion-desktop",  imagen: `${L}/equipos-escritorio/lenovo.png` },
-      { marca: "HP",     nombre: "ProDesk",     slug: "hp-prodesk",             imagen: `${L}/equipos-escritorio/hp.png` },
-      { marca: "HP",     nombre: "EliteDesk",   slug: "hp-elitedesk",           imagen: `${L}/equipos-escritorio/hp.png` },
-      { marca: "HP",     nombre: "OMEN",        slug: "hp-omen-desktop",        imagen: `${L}/equipos-escritorio/hp.png` },
-      { marca: "Dell",   nombre: "OptiPlex",    slug: "dell-optiplex",          imagen: `${L}/equipos-escritorio/dell.png` },
-      { marca: "Dell",   nombre: "Vostro",      slug: "dell-vostro-desktop",    imagen: `${L}/equipos-escritorio/dell.png` },
-      { marca: "Dell",   nombre: "Precision",   slug: "dell-precision-desktop", imagen: `${L}/equipos-escritorio/dell.png` },
-      { marca: "Dell",   nombre: "Alienware",   slug: "dell-alienware-desktop", imagen: `${L}/equipos-escritorio/dell.png` },
-    ],
-  },
-  {
-    slug: "redes",
-    nombre: "Redes",
-    descripcion: "Routers, switches y accesorios de red",
-    Icon: Wifi,
-    lineas: [
-      { marca: "TP-Link",  nombre: "Archer",     slug: "tplink-archer",     imagen: `${L}/redes/tplink.png` },
-      { marca: "TP-Link",  nombre: "Deco",       slug: "tplink-deco",       imagen: `${L}/redes/tplink.png` },
-      { marca: "TP-Link",  nombre: "Omada",      slug: "tplink-omada",      imagen: `${L}/redes/tplink.png` },
-      { marca: "NETGEAR",  nombre: "Nighthawk",  slug: "netgear-nighthawk", imagen: `${L}/redes/netgear.png` },
-      { marca: "NETGEAR",  nombre: "Orbi",       slug: "netgear-orbi",      imagen: `${L}/redes/netgear.png` },
-      { marca: "Linksys",  nombre: "Velop",      slug: "linksys-velop",     imagen: `${L}/redes/linksys.png` },
-      { marca: "Linksys",  nombre: "Hydra",      slug: "linksys-hydra",     imagen: `${L}/redes/linksys.png` },
-      { marca: "D-Link",   nombre: "DIR Series", slug: "dlink-dir",         imagen: `${L}/redes/dlink.png` },
-      { marca: "D-Link",   nombre: "Eagle Pro",  slug: "dlink-eagle-pro",   imagen: `${L}/redes/dlink.png` },
-    ],
-  },
-  {
-    slug: "mouse-pad",
-    nombre: "Mouse & Pad Mouse",
-    descripcion: "Precisión y control en cada movimiento",
-    Icon: Mouse,
-    lineas: [
-      { marca: "Logitech", nombre: "G203",       slug: "logitech-g203",      imagen: `${L}/mouse-pad/logitech-g.png` },
-      { marca: "Logitech", nombre: "G305",       slug: "logitech-g305",      imagen: `${L}/mouse-pad/logitech-g.png` },
-      { marca: "Logitech", nombre: "MX Master",  slug: "logitech-mx-master", imagen: `${L}/mouse-pad/logitech-mx.png` },
-      { marca: "Logitech", nombre: "PRO Series", slug: "logitech-pro",       imagen: `${L}/mouse-pad/logitech-g.png` },
-      { marca: "Genius",   nombre: "NX Series",  slug: "genius-nx",          imagen: `${L}/mouse-pad/genius-nx.png` },
-      { marca: "Genius",   nombre: "DX Series",  slug: "genius-dx",          imagen: `${L}/mouse-pad/genius-dx.png` },
-    ],
-  },
-  {
-    slug: "auriculares-audio",
-    nombre: "Auriculares & Audio",
-    descripcion: "Sonido inmersivo de alta calidad",
-    Icon: Headphones,
-    lineas: [
-      { marca: "Sennheiser",     nombre: "HD Series",    slug: "sennheiser-hd",       imagen: `${L}/auriculares-audio/sennheiser.png` },
-      { marca: "Sennheiser",     nombre: "Momentum",     slug: "sennheiser-momentum", imagen: `${L}/auriculares-audio/sennheiser.png` },
-      { marca: "JBL",            nombre: "Quantum",      slug: "jbl-quantum",         imagen: `${L}/auriculares-audio/jbl.png` },
-      { marca: "JBL",            nombre: "Tune",         slug: "jbl-tune",            imagen: `${L}/auriculares-audio/jbl.png` },
-      { marca: "Audio-Technica", nombre: "ATH Series",   slug: "at-ath",              imagen: `${L}/auriculares-audio/audio-technica.png` },
-      { marca: "Bose",           nombre: "QuietComfort", slug: "bose-quietcomfort",   imagen: `${L}/auriculares-audio/bose.png` },
-      { marca: "Sonos",          nombre: "Beam",         slug: "sonos-beam",          imagen: `${L}/auriculares-audio/sonos.png` },
-      { marca: "Sonos",          nombre: "Era",          slug: "sonos-era",           imagen: `${L}/auriculares-audio/sonos.png` },
-      { marca: "Shure",          nombre: "MV7",          slug: "shure-mv7",           imagen: `${L}/auriculares-audio/shure-mv7.png` },
-      { marca: "Shure",          nombre: "SM7B",         slug: "shure-sm7b",          imagen: `${L}/auriculares-audio/shure-sm7b.png` },
-    ],
-  },
-  {
-    slug: "kits-streaming",
-    nombre: "Kits de Streaming",
-    descripcion: "Todo lo que necesitas para crear contenido",
-    Icon: Video,
-    lineas: [
-      { marca: "Elgato",   nombre: "Stream Deck",         slug: "elgato-stream-deck",  imagen: `${L}/kits-streaming/elgato.png` },
-      { marca: "Elgato",   nombre: "Wave Mic",            slug: "elgato-wave",         imagen: `${L}/kits-streaming/elgato.png` },
-      { marca: "Elgato",   nombre: "Cam Link",            slug: "elgato-cam-link",     imagen: `${L}/kits-streaming/elgato.png` },
-      { marca: "Logitech", nombre: "StreamCam",           slug: "logitech-streamcam",  imagen: `${L}/kits-streaming/logitech.png` },
-      { marca: "Logitech", nombre: "Blue Yeti",           slug: "logitech-blue-yeti",  imagen: `${L}/kits-streaming/logitech.png` },
-      { marca: "Rode",     nombre: "NT-USB",              slug: "rode-nt-usb",         imagen: `${L}/kits-streaming/rode.png` },
-      { marca: "Rode",     nombre: "RodeCaster",          slug: "rode-rodecaster",     imagen: `${L}/kits-streaming/rode.png` },
-      { marca: "Razer",    nombre: "Seiren",              slug: "razer-seiren",        imagen: `${L}/kits-streaming/razer.png` },
-      { marca: "Razer",    nombre: "Kiyo",                slug: "razer-kiyo",          imagen: `${L}/kits-streaming/razer.png` },
-      { marca: "Shure",    nombre: "MV7",                 slug: "shure-mv7-stream",    imagen: `${L}/kits-streaming/shure.png` },
-      { marca: "Redragon", nombre: "Gaming Streaming Kits", slug: "redragon-streaming", imagen: `${L}/kits-streaming/redragon.png` },
-    ],
-  },
-  {
-    slug: "almacenamiento",
-    nombre: "Almacenamiento",
-    descripcion: "SSD NVMe, SATA y discos duros",
-    Icon: HardDrive,
-    lineas: [
-      { marca: "WD",      nombre: "Blue",       slug: "wd-blue",           imagen: `${L}/almacenamiento/wd-blue.png` },
-      { marca: "WD",      nombre: "Black",      slug: "wd-black",          imagen: `${L}/almacenamiento/wd-black.png` },
-      { marca: "WD",      nombre: "Purple",     slug: "wd-purple",         imagen: `${L}/almacenamiento/wd-purple.png` },
-      { marca: "Seagate", nombre: "Barracuda",  slug: "seagate-barracuda", imagen: `${L}/almacenamiento/seagate-barracuda.png` },
-      { marca: "Seagate", nombre: "FireCuda",   slug: "seagate-firecuda",  imagen: `${L}/almacenamiento/seagate-firecuda.png` },
-      { marca: "Seagate", nombre: "SkyHawk",    slug: "seagate-skyhawk",   imagen: `${L}/almacenamiento/seagate-skyhawk.png` },
-      { marca: "ADATA",   nombre: "Legend SSD", slug: "adata-legend",      imagen: `${L}/almacenamiento/adata.png` },
-      { marca: "ADATA",   nombre: "SU Series",  slug: "adata-su",          imagen: `${L}/almacenamiento/adata.png` },
-      { marca: "SanDisk", nombre: "Ultra",      slug: "sandisk-ultra",     imagen: `${L}/almacenamiento/sandisk.png` },
-      { marca: "SanDisk", nombre: "Extreme",    slug: "sandisk-extreme",   imagen: `${L}/almacenamiento/sandisk.png` },
-    ],
-  },
-  {
-    slug: "proteccion",
-    nombre: "Protección Eléctrica",
-    descripcion: "UPS y reguladores para proteger tus equipos",
-    Icon: Shield,
-    lineas: [
-      { marca: "APC", nombre: "Back-UPS",  slug: "apc-back-ups",  imagen: `${L}/proteccion-accesorios/apc.png` },
-      { marca: "APC", nombre: "Smart-UPS", slug: "apc-smart-ups", imagen: `${L}/proteccion-accesorios/apc.png` },
-    ],
-  },
-  {
-    slug: "accesorios",
-    nombre: "Accesorios",
-    descripcion: "Almacenamiento, conectividad, periféricos, audio y energía para tu equipo",
-    Icon: Package,
-    lineas: [
-      // ── Almacenamiento y Memoria ──────────────────────────────────────
-      { marca: "SanDisk",  nombre: "USB Dual Drive Go",       slug: "sandisk-usb-dual",   imagen: `${L}/accesorios/usb-dual-drive.png`,      tipo: "almacenamiento-mem" },
-      { marca: "Seagate",  nombre: "HDD Externo Portátil",    slug: "seagate-hdd-ext",    imagen: `${L}/accesorios/hdd-externo.png`,          tipo: "almacenamiento-mem" },
-      { marca: "Kingston", nombre: "SSD Portátil XS2000",     slug: "kingston-ssd-port",  imagen: `${L}/accesorios/ssd-portatil.png`,         tipo: "almacenamiento-mem" },
-      { marca: "SanDisk",  nombre: "Micro SD + Adaptador",    slug: "sandisk-microsd",    imagen: `${L}/accesorios/micro-sd.png`,             tipo: "almacenamiento-mem" },
-      // ── Conectividad y Expansión ──────────────────────────────────────
-      { marca: "Anker",    nombre: "Hub USB-C 7-en-1",        slug: "anker-hub-usbc",     imagen: `${L}/accesorios/hub-usbc.png`,             tipo: "conectividad" },
-      { marca: "Belkin",   nombre: "Adaptador USB-C a HDMI",  slug: "belkin-usbc-hdmi",   imagen: `${L}/accesorios/adaptador-usbc-hdmi.png`,  tipo: "conectividad" },
-      { marca: "TP-Link",  nombre: "Tarjeta Wi-Fi USB",       slug: "tplink-wifi-usb",    imagen: `${L}/accesorios/wifi-usb.png`,             tipo: "conectividad" },
-      { marca: "Ugreen",   nombre: "Cable Ethernet CAT6",     slug: "ugreen-ethernet",    imagen: `${L}/accesorios/ethernet-cat6.png`,        tipo: "conectividad" },
-      // ── Periféricos de Entrada ────────────────────────────────────────
-      { marca: "Logitech", nombre: "Combo Inalámbrico MK295", slug: "logitech-mk295",     imagen: `${L}/accesorios/combo-teclado-mouse.png`,  tipo: "perifericos" },
-      { marca: "Redragon", nombre: "Teclado Mecánico Gaming", slug: "redragon-teclado",   imagen: `${L}/accesorios/teclado-mecanico.png`,     tipo: "perifericos" },
-      { marca: "Anker",    nombre: "Mouse Ergonómico Vertical",slug: "anker-mouse-erg",   imagen: `${L}/accesorios/mouse-ergonomico.png`,     tipo: "perifericos" },
-      { marca: "Logitech", nombre: "Desk Mat Studio 70×30",   slug: "logitech-desk-mat",  imagen: `${L}/accesorios/mousepad-desk-mat.png`,    tipo: "perifericos" },
-      // ── Audio, Video y Streaming ──────────────────────────────────────
-      { marca: "HyperX",   nombre: "Headset Gaming Cloud",    slug: "hyperx-cloud",       imagen: `${L}/accesorios/headset-gaming.png`,       tipo: "audio-video" },
-      { marca: "Logitech", nombre: "Webcam C920 Full HD",     slug: "logitech-c920",      imagen: `${L}/accesorios/webcam.png`,               tipo: "audio-video" },
-      { marca: "Creative", nombre: "Barra de Sonido Stage",   slug: "creative-stage",     imagen: `${L}/accesorios/barra-sonido.png`,         tipo: "audio-video" },
-      // ── Energía, Soporte y Mantenimiento ──────────────────────────────
-      { marca: "Anker",    nombre: "Cargador GaN 65W USB-C",  slug: "anker-gan-65w",      imagen: `${L}/accesorios/cargador-gan.png`,         tipo: "energia-soporte" },
-      { marca: "Nexstand", nombre: "Soporte Elevador K7",     slug: "nexstand-k7",        imagen: `${L}/accesorios/soporte-laptop.png`,       tipo: "energia-soporte" },
-      { marca: "Belkin",   nombre: "Multitoma 6+3 USB",       slug: "belkin-multitoma",   imagen: `${L}/accesorios/multitoma-usb.png`,        tipo: "energia-soporte" },
-      { marca: "MECO",     nombre: "Soplador Eléctrico Mini", slug: "meco-soplador",      imagen: `${L}/accesorios/soplador-electrico.png`,   tipo: "energia-soporte" },
-      { marca: "iFixit",   nombre: "Kit Herramientas 16 pzs", slug: "ifixit-kit",         imagen: `${L}/accesorios/kit-herramientas.png`,     tipo: "energia-soporte" },
-    ],
-  },
-  {
-    slug: "teclados",
-    nombre: "Teclados",
-    descripcion: "Comodidad y precisión para cada uso",
-    Icon: Keyboard,
-    lineas: [
-      { marca: "Logitech", nombre: "K380",      slug: "logitech-k380",      imagen: `${L}/teclados/logitech-mx.png` },
-      { marca: "Logitech", nombre: "MX Keys",   slug: "logitech-mx-keys",   imagen: `${L}/teclados/logitech-mx.png` },
-      { marca: "Logitech", nombre: "G Series",  slug: "logitech-g-teclado", imagen: `${L}/teclados/logitech-g.png` },
-      { marca: "Genius",   nombre: "SlimStar",  slug: "genius-slimstar",    imagen: `${L}/teclados/genius-slimstar.png` },
-      { marca: "Genius",   nombre: "KB Series", slug: "genius-kb",          imagen: `${L}/teclados/genius-kb.png` },
-    ],
-  },
-  {
-    slug: "impresoras",
-    nombre: "Impresoras",
-    descripcion: "Impresiones nítidas para hogar y oficina",
-    Icon: Printer,
-    lineas: [
-      /* ── Impresoras Láser ── */
-      { marca: "HP",      nombre: "LaserJet Pro",      slug: "hp-laserjet-pro", imagen: `${L}/impresoras/hp-laserjet-pro.png`,      tipo: "laser" },
-      { marca: "HP",      nombre: "LaserJet Pro MFP",  slug: "hp-laserjet-pro-mfp", imagen: `${L}/impresoras/hp-laserjet-pro-mfp.png`,  tipo: "laser" },
-      { marca: "Brother", nombre: "HL-L Series",       slug: "brother-hl-l", imagen: `${L}/impresoras/brother-hl-l.png`,         tipo: "laser" },
-      { marca: "Brother", nombre: "MFC-L Series",      slug: "brother-mfc-l", imagen: `${L}/impresoras/brother-mfc-l.png`,        tipo: "laser" },
-      { marca: "Canon",   nombre: "imageCLASS LBP",    slug: "canon-imageclass-lbp", imagen: `${L}/impresoras/canon-imageclass-lbp.png`, tipo: "laser" },
-      { marca: "Canon",   nombre: "imageCLASS MF",     slug: "canon-imageclass-mf", imagen: `${L}/impresoras/canon-imageclass-mf.png`,  tipo: "laser" },
-      { marca: "Kyocera", nombre: "ECOSYS PA",         slug: "kyocera-ecosys-pa", imagen: `${L}/impresoras/kyocera-ecosys-pa.png`,    tipo: "laser" },
-      { marca: "Kyocera", nombre: "ECOSYS MA",         slug: "kyocera-ecosys-ma", imagen: `${L}/impresoras/kyocera-ecosys-ma.png`,    tipo: "laser" },
-      { marca: "Kyocera", nombre: "ECOSYS Color",      slug: "kyocera-ecosys-color", imagen: `${L}/impresoras/kyocera-ecosys-color.png`, tipo: "laser" },
-      { marca: "Kyocera", nombre: "TASKalfa",          slug: "kyocera-taskalfa", imagen: `${L}/impresoras/kyocera-taskalfa.png`,     tipo: "laser" },
-      /* ── Impresoras de Inyección de Tinta ── */
-      { marca: "HP",      nombre: "DeskJet",           slug: "hp-deskjet", imagen: `${L}/impresoras/hp-deskjet.png`,           tipo: "inyeccion" },
-      { marca: "HP",      nombre: "Smart Tank",        slug: "hp-smart-tank", imagen: `${L}/impresoras/hp-smart-tank.png`,        tipo: "inyeccion" },
-      { marca: "Brother", nombre: "MFC-J Series",      slug: "brother-mfc-j", imagen: `${L}/impresoras/brother-mfc-j.png`,        tipo: "inyeccion" },
-      { marca: "Brother", nombre: "DCP-T InkBenefit",  slug: "brother-dcp-t", imagen: `${L}/impresoras/brother-dcp-t.png`,        tipo: "inyeccion" },
-      { marca: "Canon",   nombre: "PIXMA",             slug: "canon-pixma", imagen: `${L}/impresoras/canon-pixma.png`,          tipo: "inyeccion" },
-      { marca: "Canon",   nombre: "PIXMA G MegaTank",  slug: "canon-pixma-g", imagen: `${L}/impresoras/canon-pixma-g.png`,        tipo: "inyeccion" },
-      { marca: "Epson",   nombre: "EcoTank L3000",     slug: "epson-ecotank-l3000", imagen: `${L}/impresoras/epson-ecotank-l3000.png`,  tipo: "inyeccion" },
-      { marca: "Epson",   nombre: "EcoTank L5000",     slug: "epson-ecotank-l5000", imagen: `${L}/impresoras/epson-ecotank-l5000.png`,  tipo: "inyeccion" },
-      { marca: "Epson",   nombre: "WorkForce Pro",     slug: "epson-workforce-pro", imagen: `${L}/impresoras/epson-workforce-pro.png`,  tipo: "inyeccion" },
-      { marca: "Epson",   nombre: "Expression",        slug: "epson-expression", imagen: `${L}/impresoras/epson-expression.png`,     tipo: "inyeccion" },
-    ],
-  },
-];
+export function loadCategories(): Category[] {
+  try {
+    const raw = JSON.parse(fs.readFileSync(CATEGORIES_PATH, "utf-8"));
+    if (!Array.isArray(raw)) return [];
+    return raw.map((c: Partial<Category>) => ({
+      slug: String(c.slug ?? ""),
+      nombre: String(c.nombre ?? ""),
+      descripcion: String(c.descripcion ?? ""),
+      icon: String(c.icon ?? "Package"),
+      lineas: Array.isArray(c.lineas) ? (c.lineas as Linea[]) : [],
+    })).filter((c) => c.slug && c.nombre);
+  } catch {
+    return [];
+  }
+}
+
+export function saveCategories(cats: Category[]): void {
+  fs.writeFileSync(CATEGORIES_PATH, JSON.stringify(cats, null, 2), "utf-8");
+}
+
+export function getCategory(slug: string): Category | null {
+  return loadCategories().find((c) => c.slug === slug) ?? null;
+}
+
+/** Slug web a partir de un texto libre ("Tarjetas Gráficas" → "tarjetas-graficas"). */
+export function slugCategoria(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// ─── CRUD de categorías ──────────────────────────────────────────────────────
+
+export function crearCategoria(datos: { nombre: string; descripcion: string; icon: string }): { ok: true; slug: string } | { ok: false; error: string } {
+  const nombre = datos.nombre.trim();
+  if (!nombre) return { ok: false, error: "El nombre es obligatorio." };
+  const slug = slugCategoria(nombre);
+  if (!slug) return { ok: false, error: "Ese nombre no genera una dirección web válida." };
+
+  const cats = loadCategories();
+  if (cats.some((c) => c.slug === slug)) return { ok: false, error: `Ya existe una categoría con la dirección "${slug}".` };
+
+  cats.push({ slug, nombre, descripcion: datos.descripcion.trim(), icon: datos.icon || "Package", lineas: [] });
+  saveCategories(cats);
+  return { ok: true, slug };
+}
+
+export function editarCategoria(slug: string, datos: { nombre: string; descripcion: string; icon: string }): { ok: boolean; error?: string } {
+  const cats = loadCategories();
+  const cat = cats.find((c) => c.slug === slug);
+  if (!cat) return { ok: false, error: "No encontré esa categoría." };
+  if (!datos.nombre.trim()) return { ok: false, error: "El nombre es obligatorio." };
+  // El slug NO se toca al editar: es la dirección pública de la categoría y cambiarlo
+  // rompería los enlaces que ya estén compartidos o indexados.
+  cat.nombre = datos.nombre.trim();
+  cat.descripcion = datos.descripcion.trim();
+  cat.icon = datos.icon || cat.icon;
+  saveCategories(cats);
+  return { ok: true };
+}
+
+export function borrarCategoria(slug: string): { ok: boolean; error?: string } {
+  const cats = loadCategories();
+  const i = cats.findIndex((c) => c.slug === slug);
+  if (i === -1) return { ok: false, error: "No encontré esa categoría." };
+  cats.splice(i, 1);
+  saveCategories(cats);
+  return { ok: true };
+}
+
+// ─── CRUD de líneas dentro de una categoría ──────────────────────────────────
+
+export function crearLinea(catSlug: string, datos: { marca: string; nombre: string }): { ok: boolean; error?: string } {
+  const cats = loadCategories();
+  const cat = cats.find((c) => c.slug === catSlug);
+  if (!cat) return { ok: false, error: "No encontré esa categoría." };
+
+  const marca = datos.marca.trim();
+  const nombre = datos.nombre.trim();
+  if (!marca || !nombre) return { ok: false, error: "La marca y el nombre son obligatorios." };
+
+  const slug = slugCategoria(`${marca} ${nombre}`);
+  if (cat.lineas.some((l) => l.slug === slug)) return { ok: false, error: `"${marca} ${nombre}" ya existe en esta categoría.` };
+
+  cat.lineas.push({ marca, nombre, slug });
+  saveCategories(cats);
+  return { ok: true };
+}
+
+export function editarLinea(catSlug: string, lineaSlug: string, datos: { marca: string; nombre: string }): { ok: boolean; error?: string } {
+  const cats = loadCategories();
+  const cat = cats.find((c) => c.slug === catSlug);
+  const linea = cat?.lineas.find((l) => l.slug === lineaSlug);
+  if (!cat || !linea) return { ok: false, error: "No encontré ese producto." };
+  if (!datos.marca.trim() || !datos.nombre.trim()) return { ok: false, error: "La marca y el nombre son obligatorios." };
+  // Igual que con la categoría, el slug se conserva: es la clave de su imagen subida.
+  linea.marca = datos.marca.trim();
+  linea.nombre = datos.nombre.trim();
+  saveCategories(cats);
+  return { ok: true };
+}
+
+export function borrarLinea(catSlug: string, lineaSlug: string): { ok: boolean; error?: string } {
+  const cats = loadCategories();
+  const cat = cats.find((c) => c.slug === catSlug);
+  if (!cat) return { ok: false, error: "No encontré esa categoría." };
+  const i = cat.lineas.findIndex((l) => l.slug === lineaSlug);
+  if (i === -1) return { ok: false, error: "No encontré ese producto." };
+  cat.lineas.splice(i, 1);
+  saveCategories(cats);
+  return { ok: true };
+}
