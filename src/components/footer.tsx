@@ -67,7 +67,7 @@ const SOCIAL = [
 export function Footer() {
   return (
     <footer className="relative bg-[#050a18] text-zinc-300 mt-auto overflow-hidden">
-      <div className="absolute inset-0 bg-tech-grid-dark opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-tech-grid-footer opacity-55 pointer-events-none" />
       <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-[#1e6cff] opacity-10 blur-[120px] pointer-events-none" />
 
       {/* ── Main grid ── */}

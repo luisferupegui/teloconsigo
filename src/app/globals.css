@@ -23,6 +23,31 @@
   background-size: 40px 40px;
 }
 
+/* ── Cuadrícula del pie ───────────────────────────────────────────────────
+   La misma retícula de 40px que .bg-tech-grid-dark, un punto más viva y con
+   caída. No se modifica aquella porque la comparten otras nueve secciones.
+
+   La clave no es solo subir el brillo: una cuadrícula plana de borde a borde
+   parece papel milimetrado. Con la máscara se apaga hacia abajo y hacia los
+   lados, así lee como profundidad y deja limpia la franja legal del final.
+
+   El resplandor azul del pie nace arriba, así que la máscara se ancla arriba
+   para que los dos se refuercen en vez de competir. */
+.bg-tech-grid-footer {
+  background-image:
+    linear-gradient(rgba(77, 141, 255, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 141, 255, 0.16) 1px, transparent 1px);
+  background-size: 40px 40px;
+  --caida: radial-gradient(
+    115% 85% at 50% 0%,
+    rgb(0 0 0 / 1) 0%,
+    rgb(0 0 0 / 0.6) 45%,
+    rgb(0 0 0 / 0) 82%
+  );
+  -webkit-mask-image: var(--caida);
+  mask-image: var(--caida);
+}
+
 /* Dots pattern */
 .bg-dots {
   background-image: radial-gradient(circle, rgba(30, 108, 255, 0.12) 1px, transparent 1px);
