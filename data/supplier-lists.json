@@ -7803,7 +7803,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-expertbook-p3406cka-ryzen-7-35-1781542011375"
+        "id": "ledacom-expertbook-p3406cka-ryzen-7-35-1781542011375",
+        "specs": {
+          "pantalla": "14\" WQXGA"
+        }
       },
       {
         "nombre": "AV14-52P-55EB i5-1335U (16/512) Win 11 Pro",
@@ -8241,7 +8244,11 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-rog-strix-g16-ryzen-9-8940hx-r-1781542011375"
+        "id": "ledacom-rog-strix-g16-ryzen-9-8940hx-r-1781542011375",
+        "specs": {
+          "ram": "32GB",
+          "almacenamiento": "1TB SSD"
+        }
       },
       {
         "nombre": "ROG Flow Z13 Ryzen AI MAX+ 395 NPU 50TOPS (32/1TB)",
@@ -8537,7 +8544,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-ideacentre-3-24alc6-ryzen-7-77-1781542011376"
+        "id": "ledacom-ideacentre-3-24alc6-ryzen-7-77-1781542011376",
+        "specs": {
+          "pantalla": "23.8\" FHD"
+        }
       },
       {
         "nombre": "Pro QC24250 Core Ultra 7 265 (16/512) 23.8\" FHD",

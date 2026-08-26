@@ -54,11 +54,14 @@ export function ramYDisco(nombre: string): { ram: number | null; disco: number |
 }
 
 /** Tamaño de pantalla SOLO si el nombre lo dice: en pulgadas explícitas ("15,6\"",
- *  "PANTALLA 16\"") o en el código de serie pegado a las letras (E14, V14, A15). Ese
+ *  "23.8\" FHD") o en el código de serie pegado a las letras (E14, V14, A15). Ese
  *  código es la convención del fabricante. NO se deduce de nada más: "Win 11" lleva un
  *  11 que no es una pantalla, y preferimos no poner el dato antes que inventarlo. */
 export function pantallaDesdeNombre(n: string): string | null {
-  const explicita = n.match(/\b(1[1-7])(?:[.,](\d))?\s*(?:"|''|pulg)/i);
+  // Cuando las pulgadas van ESCRITAS se admite todo el rango de equipos con pantalla
+  // integrada, no solo el de portátiles: un todo-en-uno es de 21 a 27 pulgadas, y por
+  // limitar esto a 11-17 se quedaban sin pantalla cinco AIO cuyo nombre decía 23.8".
+  const explicita = n.match(/\b([12]\d|3[0-4])(?:[.,](\d))?\s*(?:"|''|pulg)/i);
   if (explicita) return `${explicita[1]}${explicita[2] ? `.${explicita[2]}` : ""}"`;
   // Los fabricantes ponen el tamaño en el nombre comercial: "Victus 15-fb3019la",
   // "Legion 5 15AHP10", "Vivobook 16X". Sin leerlo, esos portátiles se presentaban SIN
@@ -66,8 +69,13 @@ export function pantallaDesdeNombre(n: string): string | null {
   // el número esté pegado a un guion o a un código de modelo para no confundirlo con
   // cualquier cifra suelta.
   // El descarte de GB/TB es imprescindible: sin él, los "16GB" de la memoria se leían como
-  // una pantalla de 16 pulgadas.
-  const comercial = n.match(/\b(1[1-7])(?=-|(?![GT]B\b)[A-Z]{2,})/);
+  // una pantalla de 16 pulgadas. Se admite un espacio antes del código ("Zenbook S 16 OLED",
+  // "Pro 14 PC14250"), lo que también hace coincidir a un par de antivirus vendidos por
+  // equipos ("Security 15 EQ"): son inofensivos porque esta función solo se consulta para
+  // portátiles y todo-en-uno, nunca para software.
+  // El guion vale por sí solo ("Victus 15-fb3019la"); el espacio necesita además un código
+  // en mayúsculas detrás, para no confundir cualquier cifra suelta con un tamaño.
+  const comercial = n.match(/\b(1[1-7])(?=-|\s?(?![GT]B\b)[A-Z]{2,})/);
   const serie = n.match(/\b[A-Za-z]{1,4}(1[1-7])\b/) ?? comercial;
   if (!serie) return null;
   // El código de serie da el tamaño redondeado: en portátiles un "15" es 15.6" y un "17"
