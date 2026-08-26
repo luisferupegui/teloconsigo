@@ -1161,6 +1161,43 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
 
 // Ficha web (cotizar_web): las specs vienen como string con "|" (EE.UU.) o dentro del
 // nombre (Colombia). Arma la tarjeta exacta con el precioCOP autoritativo. Andrea la copia.
+/** Specs legibles sacadas del TÍTULO de un listado de tienda.
+ *
+ *  Los resultados de EE.UU. pasan por el modelo, que los devuelve ya estructurados; los
+ *  de Colombia llegaban con specs vacías, así que su ficha era el nombre y el precio y
+ *  nada más. Al cliente le aparecía la opción MÁS BARATA sin una sola característica,
+ *  junto a otras que sí las traían: parecía la peor de las tres por falta de datos.
+ *
+ *  Solo se afirma lo que el título dice, y en el orden en que se lee una ficha. */
+function specsDeTitulo(titulo: string): string {
+  const t = titulo.toLowerCase();
+  const partes: string[] = [];
+
+  const cap = t.match(/\b(\d{1,4})\s?(tb|gb)\b/);
+  if (cap) partes.push(`${cap[1]}${cap[2].toUpperCase()}`);
+
+  if (/\b(ssd|estado s[oó]lido|nvme)\b/.test(t)) partes.push("SSD");
+  else if (/\b(hdd|disco duro|mec[aá]nico)\b/.test(t)) partes.push("Disco duro (HDD)");
+
+  const usb = t.match(/usb\s?(\d(?:\.\d)?)/);
+  if (usb) partes.push(`USB ${usb[1]}`);
+  else if (/type-?c|usb-?c/.test(t)) partes.push("USB-C");
+
+  const pulg = t.match(/\b(\d{1,2}(?:[.,]\d)?)\s*(?:"|''|pulg)/);
+  if (pulg) partes.push(`${pulg[1].replace(",", ".")}\"`);
+
+  const ram = t.match(/\b(\d{1,3})\s?gb\s+(?:de\s+)?ram\b/);
+  if (ram) {
+    // Si la capacidad que se leyó arriba es esa misma RAM, no se repite: "16GB | 16GB RAM"
+    // se lee como si el equipo tuviera dos memorias.
+    const i = partes.indexOf(`${ram[1]}GB`);
+    if (i !== -1) partes.splice(i, 1);
+    partes.push(`${ram[1]}GB RAM`);
+  }
+
+  return partes.join(" | ");
+}
+
 function fichaWeb(p: QuoteProducto): string {
   const partes = (p.specs ?? "").split("|").map((s) => s.trim()).filter(Boolean);
   const cuerpo = partes.length > 0 ? "\n" + partes.map((s) => `- ${s}`).join("\n") : "";
@@ -1178,6 +1215,30 @@ function fichaWeb(p: QuoteProducto): string {
  *  capacidad). Se aplica tanto a los resultados frescos como a los que salen del caché:
  *  una entrada guardada antes de este filtro seguía ofreciendo un 7600X a quien pedía un
  *  5600G. Si la consulta no trae cifras, no filtra nada. */
+/** Un SSD y un disco duro no son el mismo producto, aunque ambos digan "2TB externo".
+ *
+ *  Uno cuesta el doble por la misma capacidad y el otro es diez veces más lento: ponerlos
+ *  juntos ordenados por precio le dice al cliente que el SSD es "la opción barata", que es
+ *  justo lo contrario. Si pidió uno de los dos, el otro no es una alternativa.
+ *
+ *  Solo actúa cuando el cliente lo dijo. Si no distinguió, se le muestran ambos. */
+function filtrarPorTipoDisco(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
+  const c = consulta.toLowerCase();
+  const pideSsd = /\b(ssd|estado s[oó]lido|nvme)\b/.test(c);
+  const pideHdd = /\b(disco duro|hdd|mec[aá]nico)\b/.test(c) && !pideSsd;
+  if (!pideSsd && !pideHdd) return productos;
+
+  return productos.filter((p) => {
+    const t = `${p.nombre ?? ""} ${p.specs ?? ""}`.toLowerCase();
+    const esSsd = /\b(ssd|estado s[oó]lido|nvme)\b/.test(t);
+    const esHdd = /\b(hdd|disco duro|mec[aá]nico)\b/.test(t);
+    // Un título que no dice ni una cosa ni otra no se descarta: no hay motivo para creer
+    // que sea el tipo equivocado.
+    if (!esSsd && !esHdd) return true;
+    return pideSsd ? esSsd : !esSsd;
+  });
+}
+
 function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
   // Las tiendas escriben "64 GB" y el cliente "64gb": se pega la cifra a su unidad en
   // ambos lados para que un espacio no descarte el producto correcto.
@@ -1242,7 +1303,7 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
     const catKey   = inferirCategoriaMargen(p.nombre ?? "", clasificacion);
     const margen   = margins[catKey] ?? margins.default ?? 0.35;
     return {
-      nombre: p.nombre, specs: "",
+      nombre: p.nombre, specs: specsDeTitulo(p.nombre ?? ""),
       precioCOP:     Math.ceil(copLocal * (1 + margen) / 10000) * 10000,
       costoUSD:      0,
       costoTotalCOP: copLocal,
@@ -1332,7 +1393,7 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
 async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
   const cached = getCachedQuery(consulta);
-  if (cached) return respuestaCotizar(filtrarPorSpecs(cached.productos, consulta));
+  if (cached) return respuestaCotizar(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos, consulta), consulta));
 
   const serperKey = getSerperApiKey();
   const categoria = clasificarConsulta(consulta);
@@ -1374,6 +1435,25 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     }
   }
 
+  // PRECIO IMPLAUSIBLE. Google Shopping mezcla en los resultados cosas que no son el
+  // producto: una funda, un cable, una unidad usada o un "desde". A quien pedía un disco
+  // externo de 2TB le salía como MEJOR PRECIO un "Seagate Expansion 2 TB" a $140.000
+  // cuando el mismo disco importado costaba $432.000: no es una ganga, es otra cosa.
+  //
+  // Un producto conseguido aquí SÍ debe ser más barato que uno importado —el flete pesa—
+  // pero no puede costar menos de la mitad. Cuando hay opciones de EE.UU. sirven de
+  // referencia de cuánto vale de verdad ese producto.
+  const refUS = productosUS.map((p) => p.precioCOP).filter((n) => n > 0).sort((a, b) => a - b);
+  if (refUS.length > 0) {
+    const medianaUS = refUS[Math.floor(refUS.length / 2)];
+    const piso = medianaUS * 0.4;
+    const antes = productosCO.length;
+    productosCO = productosCO.filter((p) => p.precioCOP >= piso);
+    if (productosCO.length < antes) {
+      console.warn(`[cotizar] ${antes - productosCO.length} listado(s) de Colombia por debajo de ${fmtCOP(piso)}: no son ese producto`);
+    }
+  }
+
   // Armar lista final: el mercado prioritario primero.
   // Se recortan a tres DESPUÉS de filtrar: si no, los tres huecos se los llevaban
   // listados que no cumplían lo pedido y las opciones buenas se quedaban fuera.
@@ -1395,7 +1475,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // quien pedía un Ryzen 5 5600G le salía un 7600X como "mejor precio". Se exigen los
   // términos con cifra (modelo, capacidad); si ninguno encaja se devuelve vacío y Andrea
   // pide marca o modelo — es más honesto que ofrecerle otro producto.
-  const finales = filtrarPorSpecs(productosFinales, consulta);
+  const finales = filtrarPorTipoDisco(filtrarPorSpecs(productosFinales, consulta), consulta);
 
   if (finales.length > 0) saveQuote(consulta, finales, localData);
 
@@ -2577,6 +2657,18 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 - BÚSQUEDA INTELIGENTE: cuando el cliente pida un producto, convierte su solicitud en atributos específicos antes de buscar (categoría, capacidad, formato, uso, marca si la mencionó). ⚠️ La consulta DEBE incluir TODAS las especificaciones que el cliente nombró, con sus cifras exactas: gama de procesador ("Ryzen 5", "Core i7"), modelo de gráfica ("RTX 5060"), RAM ("16GB"), almacenamiento ("1TB"), tamaño ("24 pulgadas"). Si las omites, el sistema no puede filtrar y salen productos de otra gama — un Ryzen 3 para quien pidió un Ryzen 5, o una RTX 3050 para quien pidió una 5060.
 - LO QUE PIDIÓ EL CLIENTE MANDA SOBRE EL PERFIL: si nombró piezas concretas (una gráfica, un procesador, una capacidad), búscalas TAL CUAL — no las sustituyas por lo que recomienda la tabla de perfiles de más abajo. Esa tabla es para cuando el cliente NO especifica. Si crees que otra pieza le conviene más, muéstrale primero lo que pidió y coméntale la alternativa después. Ejemplo: "SSD de 2TB para escritorio" → busca con: SSD, 2TB, SATA/NVMe, desktop. Esto mejora los resultados.
 - ESPECIFICACIONES OBLIGATORIAS (laptops, desktops y tablets): para cada opción incluye SIEMPRE: **Procesador** (marca + modelo, ej: Intel Core i5-1235U), **RAM** (capacidad, ej: 16GB DDR4), **Almacenamiento** (tipo + tamaño, ej: 512GB SSD NVMe), **Pantalla/Monitor** y **GPU** si es dedicada o si el cliente la pidió. La PANTALLA es OBLIGATORIA y nunca se omite: en laptops/tablets/Todo-en-Uno pon el tamaño (ej: 15.6" FHD, 24"); en un computador de escritorio que incluya monitor pon el tamaño del monitor; si es una torre SIN monitor, dilo explícitamente ("torre, no incluye monitor") para que el cliente lo sepa. Para productos Colombia web, estas specs vienen en el nombre completo del listado — léelas y preséntalas con formato limpio; si el tamaño de pantalla no aparece en un computador, indícalo con naturalidad y ofrece confirmarlo, no lo inventes.
+- DISCOS EXTERNOS — SSD O DISCO DURO, ESA ES LA PREGUNTA. No preguntes "portátil o de
+  escritorio": al cliente no le dice nada y la diferencia real es otra. Pregunta:
+  "¿Lo prefieres SSD o disco duro? Te explico la diferencia:
+  • **SSD externo** — sin partes móviles: arranca al instante, aguanta golpes y copia un
+    video de 50GB en un par de minutos. Cuesta más por cada TB ⚡
+  • **Disco duro (HDD) externo** — mucha más capacidad por el mismo dinero. Perfecto para
+    respaldos y archivo, donde la velocidad no es lo que importa 💾"
+  Y si te dice para qué lo quiere, recomiéndale tú: edición de video o trabajar DESDE el
+  disco → SSD; respaldos, fotos y archivo → disco duro. Incluye el tipo en la búsqueda
+  ("ssd externo 2tb" o "disco duro externo 2tb"): son productos distintos y mezclarlos
+  pone al lado precios que no se pueden comparar.
+
 - MONITORES — EL TAMAÑO PRIMERO. Un monitor de 22" y uno de 32" son productos distintos y
   cuestan el doble uno que otro, así que cotizar sin saber el tamaño es cotizar a ciegas.
   Cuando el cliente pida un monitor sin decir pulgadas, pregunta ANTES de buscar:
