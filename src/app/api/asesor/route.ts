@@ -21,6 +21,7 @@ import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type 
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
 import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
+import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
@@ -578,7 +579,9 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   const margins = loadMargins();
   const locales: Row[] = loadActiveProducts().map((p) => {
     const precio = applyMargin(p.precio_costo, p.categoria, margins);
-    const haystack = [p.nombre, p.marca, p.categoria, Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
+    // Se añaden las formas de nombrar la categoría ("placa", "cpu", "pantalla"): el nombre
+    // de un producto casi nunca las dice, y el cliente casi siempre usa una de ellas.
+    const haystack = [p.nombre, p.marca, p.categoria, palabrasDeCategoria(p.categoria), Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
     return {
       score: score(haystack), precio, prioridad: 0, haystack,
       prod: {
@@ -593,7 +596,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // 2) CATÁLOGO PUBLICADO — también disponibilidad local.
   const catalogo: Row[] = loadPublishedBusinessProducts().map((p) => {
     const precio = p.precioDesde ?? p.precio;
-    const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
+    const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, palabrasDeCategoria(p.categoria), p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
     return {
       score: score(haystack), precio, prioridad: 1, haystack,
       prod: {
