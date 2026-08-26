@@ -35,6 +35,21 @@ const TARGET_SIZE   = 600;     // px finales (cuadrado)
    o "refrigeración" (anchos planos).
    ─ Solución: forzar la MISMA ÁREA a todos los productos. ── */
 const TARGET_AREA   = 150_000; // px² uniformes para todos los productos
+
+/* ── Ajustes finos por imagen ────────────────────────────────────────────
+   El área uniforme resuelve el 95% de los casos, pero no todo lo que ocupa
+   la misma caja se percibe igual de grande: una ilustración con varios
+   objetos sueltos deja huecos entre ellos y "pesa" menos en el ojo que un
+   producto macizo del mismo tamaño. Medido sobre el set, la tinta real
+   dentro de la caja va del 38% (kits de streaming) al 87% (motherboards).
+
+   El factor multiplica el área objetivo SOLO de la imagen indicada. Los
+   topes MAX_W/MAX_H se siguen respetando, así que un factor alto no puede
+   romper el encuadre. Sin entrada aquí, el factor es 1. ── */
+const AJUSTES = {
+  "accesorios.png": 1.20, // +20% de área ≈ +10% de tamaño lineal
+};
+
 const MAX_W         = TARGET_SIZE * 0.90; // 540 px - tope ancho
 const MAX_H         = TARGET_SIZE * 0.72; // 432 px - tope alto
 const WHITE_THR     = 240;     // umbral para detectar fondo blanco
@@ -126,7 +141,8 @@ async function normalize(file) {
   //    Si la escala calculada hace que alguna dimensión supere su tope,
   //    se aplica un factor de ajuste para mantener el aspect ratio
   //    pero quedar dentro de los límites del canvas.
-  let scale  = Math.sqrt(TARGET_AREA / (m.width * m.height));
+  const areaObjetivo = TARGET_AREA * (AJUSTES[file] ?? 1);
+  let scale  = Math.sqrt(areaObjetivo / (m.width * m.height));
   let newW   = m.width  * scale;
   let newH   = m.height * scale;
 
