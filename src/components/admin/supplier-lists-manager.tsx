@@ -34,7 +34,8 @@ type SearchMatch = {
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
-const PROVEEDORES = ["ledacom", "infoshopcorp", "otro"];
+// Sugerencias, no una lista cerrada: el campo admite cualquier proveedor nuevo.
+const PROVEEDORES = ["ledacom", "infoshopcorp", "janus"];
 
 // Mapea la categoría del proveedor a los campos del catálogo público.
 const CAT_MAP: Record<string, { categoria: string; usoCaso: string; segmento: string }> = {
@@ -132,8 +133,16 @@ const TARGET_LABEL: Record<PublishTarget, string> = {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
-export function SupplierListsManager() {
-  const [tab, setTab] = useState<"cargar" | "listas" | "buscar">("cargar");
+/** Cada vista es una pestaña del panel.
+ *
+ *  Antes vivían todas dentro de "Listas Word/Excel": los paneles de mantenimiento arriba y
+ *  tres sub-pestañas debajo, así que para llegar a "Buscar productos" había que entrar en la
+ *  sección de cargar listas. Ahora cada una es su propio encabezado y este componente
+ *  muestra solo la que le pidan, conservando en un único sitio la carga de listas y claves
+ *  que todas comparten. */
+export type VistaListas = "cargar" | "listas" | "buscar" | "herramientas";
+
+export function SupplierListsManager({ vista }: { vista: VistaListas }) {
   const [toast, setToast] = useState<Toast | null>(null);
   const flash = useCallback((ok: boolean, msg: string) => {
     setToast({ ok, msg });
@@ -161,41 +170,26 @@ export function SupplierListsManager() {
 
   return (
     <div className="space-y-5">
-      <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
-      <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
-      <WebCachePanel flash={flash} />
-      <SaneoPanel flash={flash} onDone={refreshLists} />
-      <FichasPanel flash={flash} onDone={refreshLists} />
+      {vista === "herramientas" && (
+        <>
+          <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
+          <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
+          <WebCachePanel flash={flash} />
+          <SaneoPanel flash={flash} onDone={refreshLists} />
+          <FichasPanel flash={flash} onDone={refreshLists} />
+        </>
+      )}
 
-      {/* Sub-tabs */}
-      <div className="flex flex-wrap gap-1 rounded-xl border border-zinc-200 bg-white p-1 w-fit shadow-sm">
-        {([
-          ["cargar", Upload,     "Cargar lista"],
-          ["listas", ListChecks, `Listas cargadas${totals.listas ? ` (${totals.listas})` : ""}`],
-          ["buscar", Search,     "Buscar productos"],
-        ] as const).map(([id, Icon, label]) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-              tab === id ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-900"
-            }`}
-          >
-            <Icon className="h-4 w-4" /> {label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "cargar" && (
+      {vista === "cargar" && (
         <CargarTab
-          onImported={(n) => { flash(true, `${n} productos importados como nueva lista`); refreshLists(); setTab("listas"); }}
+          onImported={(n) => flash(true, `${n} productos importados como nueva lista`)}
           flash={flash}
         />
       )}
-      {tab === "listas" && (
+      {vista === "listas" && (
         <ListasTab lists={lists} totals={totals} onRefresh={refreshLists} flash={flash} />
       )}
-      {tab === "buscar" && (
+      {vista === "buscar" && (
         <BuscarTab totals={totals} flash={flash} />
       )}
 
@@ -714,7 +708,7 @@ function CargarTab({ onImported, flash }: {
   onImported: (n: number) => void; flash: (ok: boolean, msg: string) => void;
 }) {
   const [fileName, setFileName] = useState("");
-  const [proveedor, setProveedor] = useState("ledacom");
+  const [proveedor, setProveedor] = useState("");
   const [importing, setImporting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<File | null>(null);
@@ -800,15 +794,22 @@ function CargarTab({ onImported, flash }: {
       </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
+        {/* Campo LIBRE, no una lista cerrada: era un desplegable con tres opciones fijas, y
+            sumar un proveedor nuevo obligaba a tocar código. Las conocidas quedan como
+            sugerencia. */}
         <label className="flex flex-col gap-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Proveedor</span>
-          <select
+          <input
+            type="text"
+            list="proveedores-doc"
             value={proveedor}
             onChange={(e) => setProveedor(e.target.value)}
+            placeholder="Nombre del proveedor"
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-          >
-            {PROVEEDORES.map((p) => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
-          </select>
+          />
+          <datalist id="proveedores-doc">
+            {PROVEEDORES.map((p) => <option key={p} value={p} />)}
+          </datalist>
         </label>
 
         <button
@@ -831,6 +832,69 @@ function CargarTab({ onImported, flash }: {
 }
 
 // ─── Tab: Listas cargadas ──────────────────────────────────────────────────────
+
+/** Etiqueta del proveedor, editable en el sitio. Un clic y se cambia: el nombre se
+ *  escribe al importar y equivocarse obligaba a borrar la lista entera y volver a
+ *  subirla. Dejarlo vacío la marca como "sin-proveedor", que no es lo mismo que borrarla. */
+function ProveedorTag({ lista, onRefresh, flash }: {
+  lista: ListMeta; onRefresh: () => void; flash: (ok: boolean, msg: string) => void;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [valor, setValor] = useState(lista.proveedor);
+  const [guardando, setGuardando] = useState(false);
+
+  async function guardar() {
+    if (valor.trim().toLowerCase() === lista.proveedor) { setEditando(false); return; }
+    setGuardando(true);
+    try {
+      const res = await fetch("/api/admin/supplier-lists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setProveedor", listId: lista.id, proveedor: valor }),
+      });
+      const data = await res.json();
+      if (!res.ok) { flash(false, data.error ?? "No se pudo cambiar el proveedor"); return; }
+      flash(true, `Proveedor: ${data.proveedor}`);
+      setEditando(false);
+      onRefresh();
+    } catch {
+      flash(false, "Error de red");
+    } finally { setGuardando(false); }
+  }
+
+  if (!editando) {
+    return (
+      <button
+        onClick={() => { setValor(lista.proveedor); setEditando(true); }}
+        title="Cambiar el proveedor de esta lista"
+        className="rounded-full bg-zinc-100 px-2 py-0.5 font-semibold text-zinc-600 capitalize transition hover:bg-indigo-100 hover:text-indigo-700"
+      >
+        {lista.proveedor}
+      </button>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1">
+      <input
+        autoFocus
+        value={valor}
+        list="proveedores-doc"
+        onChange={(e) => setValor(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") guardar(); if (e.key === "Escape") setEditando(false); }}
+        placeholder="sin proveedor"
+        className="w-36 rounded-full border border-indigo-300 px-2 py-0.5 text-xs focus:outline-none"
+      />
+      <button onClick={guardar} disabled={guardando} className="text-[11px] font-bold text-indigo-600 hover:underline disabled:opacity-50">
+        {guardando ? "…" : "guardar"}
+      </button>
+      <button onClick={() => setEditando(false)} className="text-[11px] text-zinc-400 hover:text-zinc-600">cancelar</button>
+      <datalist id="proveedores-doc">
+        {PROVEEDORES.map((p) => <option key={p} value={p} />)}
+      </datalist>
+    </span>
+  );
+}
 
 function ListasTab({ lists, totals, onRefresh, flash }: {
   lists: ListMeta[]; totals: Totals; onRefresh: () => void; flash: (ok: boolean, msg: string) => void;
@@ -1083,7 +1147,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                   <p className="truncate text-sm font-bold text-zinc-900">{l.nombre}</p>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-semibold text-zinc-600 capitalize">{l.proveedor}</span>
+                  <ProveedorTag lista={l} onRefresh={onRefresh} flash={flash} />
                   <span><strong className="text-zinc-700">{l.productos}</strong> productos</span>
                   {l.paginas > 0 && <span>{l.paginas} págs.</span>}
                   <span>{formatDate(l.fecha)}</span>

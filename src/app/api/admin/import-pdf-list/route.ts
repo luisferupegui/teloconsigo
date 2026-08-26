@@ -23,6 +23,7 @@ async function parseMultipart(req: NextRequest): Promise<{
   fileBuffer: Buffer;
   fileName: string;
   nombre: string;
+  proveedor: string;
   aplicarIva: boolean;
 }> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -39,7 +40,8 @@ if (rawBody.length > MAX_BYTES) {
     const busboy = Busboy({ headers: { "content-type": contentType } });
     const chunks: Buffer[] = [];
     let fileName = "";
-    let nombre = "Lista Janus PDF";
+    let nombre = "Lista PDF";
+    let proveedor = "";
     let aplicarIva = false;
     let gotFile = false;
 
@@ -55,12 +57,13 @@ if (rawBody.length > MAX_BYTES) {
 
     busboy.on("field", (name: string, value: string) => {
       if (name === "nombre") nombre = value;
+      if (name === "proveedor") proveedor = value;
       if (name === "aplicarIva") aplicarIva = value === "true";
     });
 
     busboy.on("finish", () => {
       if (!gotFile) return reject(new Error("No se recibió archivo"));
-      resolve({ fileBuffer: Buffer.concat(chunks), fileName, nombre, aplicarIva });
+      resolve({ fileBuffer: Buffer.concat(chunks), fileName, nombre, proveedor, aplicarIva });
     });
 
     busboy.on("error", reject);
@@ -81,10 +84,11 @@ export async function POST(req: NextRequest) {
     let fileBuffer: Buffer;
     let fileName: string;
     let nombre: string;
+    let proveedor: string;
     let aplicarIva: boolean;
 
     try {
-      ({ fileBuffer, fileName, nombre, aplicarIva } = await parseMultipart(req));
+      ({ fileBuffer, fileName, nombre, proveedor, aplicarIva } = await parseMultipart(req));
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Error leyendo el archivo";
       return NextResponse.json({ error: msg }, { status: 400 });
@@ -104,7 +108,7 @@ export async function POST(req: NextRequest) {
     let generico: Awaited<ReturnType<typeof parseListaPdf>> = [];
     const errores: string[] = [];
     try { parsed = await parseJanusPdf(fileBuffer, { aplicarIva }); }
-    catch (e) { errores.push(e instanceof Error ? e.message : "lector Janus"); }
+    catch (e) { errores.push(e instanceof Error ? e.message : "lector por bloques"); }
     try { generico = await parseListaPdf(fileBuffer); }
     catch (e) { errores.push(e instanceof Error ? e.message : "lector genérico"); }
 
@@ -126,25 +130,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const proveedor = "janus";
+    // El proveedor lo escribe quien importa. Estaba fijo en "janus", lo que impedía
+    // distinguir listas de proveedores distintos en el mismo panel.
+    const proveedorFinal = (proveedor || "").trim().toLowerCase() || "sin-proveedor";
     const now = new Date().toISOString();
     const usedIds = new Set<string>();
 
     const productos: SupplierProduct[] = parsed.map((p) => {
-      let id = generateProductId(p.nombre, proveedor, p.referencia);
+      let id = generateProductId(p.nombre, proveedorFinal, p.referencia);
       if (usedIds.has(id)) {
         let n = 2;
         while (usedIds.has(`${id}-${n}`)) n++;
         id = `${id}-${n}`;
       }
       usedIds.add(id);
-      return { ...p, proveedor, importedAt: now, id };
+      return { ...p, proveedor: proveedorFinal, importedAt: now, id };
     });
 
     const list: SupplierList = {
-      id: generateListId(proveedor),
+      id: generateListId(proveedorFinal),
       nombre,
-      proveedor,
+      proveedor: proveedorFinal,
       fecha: now,
       paginas: 0,
       caracteres: 0,
@@ -154,7 +160,7 @@ export async function POST(req: NextRequest) {
     addList(list);
 
     console.log(
-      `[import-janus-pdf] "${nombre}": ${productos.length} productos`,
+      `[import-pdf-list] "${nombre}": ${productos.length} productos`,
     );
 
     return NextResponse.json({
@@ -169,7 +175,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[import-janus-pdf]", msg);
+    console.error("[import-pdf-list]", msg);
     return NextResponse.json(
       { error: `Error al procesar el PDF: ${msg}` },
       { status: 500 },

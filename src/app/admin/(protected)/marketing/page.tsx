@@ -4,18 +4,28 @@ import { loadBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
 import { ProductManager, type ManagedBusinessProduct } from "@/components/admin/product-manager";
 import { SupplierListsManager } from "@/components/admin/supplier-lists-manager";
-import { JanusImporter } from "@/components/admin/janus-importer";
+import { PdfListImporter } from "@/components/admin/pdf-list-importer";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Productos · Admin" };
 
+// Cada sección del panel es su propio encabezado. Antes, "Listas cargadas" y "Buscar
+// productos" eran sub-pestañas escondidas dentro de Word/Excel, y los paneles de claves y
+// mantenimiento se apilaban encima de ellas: para consultar una lista había que pasar por
+// la pantalla de importar. Ahora se llega a cada cosa directamente.
+//
+// Los ids "pdf" y "janus" son históricos y se conservan para no romper los enlaces con
+// ?tab= que ya estén guardados o en un marcador.
 const TABS = [
-  { id: "productos", label: "📋 Gestionar productos" },
-  // El id "pdf" es histórico (era la pestaña de PDF) y quedó apuntando al importador de
-  // Word/Excel; se conserva para no romper los enlaces con ?tab= que ya estén guardados.
-  { id: "pdf",       label: "📄 Listas Word/Excel" },
-  { id: "janus",     label: "🖥️ Listas PDF" },
+  { id: "productos",    label: "📋 Gestionar productos" },
+  { id: "pdf",          label: "📄 Listas Word/Excel" },
+  { id: "listas-pdf",   label: "🖥️ Listas PDF" },
+  { id: "listas",       label: "📚 Listas cargadas" },
+  { id: "buscar",       label: "🔍 Buscar productos" },
+  { id: "herramientas", label: "🛠️ Herramientas" },
 ] as const;
+
+type TabId = (typeof TABS)[number]["id"];
 
 export default async function ProductosAdminPage({
   searchParams,
@@ -23,9 +33,10 @@ export default async function ProductosAdminPage({
   searchParams: Promise<{ tab?: string; filter?: string }>;
 }) {
   const { tab = "productos", filter = "all" } = await searchParams;
-  const activeTab = (
-    tab === "pdf" ? "pdf" : tab === "janus" ? "janus" : "productos"
-  ) as "productos" | "pdf" | "janus";
+  // "janus" era el id de la pestaña de PDF; se acepta como alias para no romper enlaces
+  // guardados antes de generalizar el importador.
+  const pedida = tab === "janus" ? "listas-pdf" : tab;
+  const activeTab: TabId = TABS.some((t) => t.id === pedida) ? (pedida as TabId) : "productos";
 
   const raw = loadBusinessProducts();
 
@@ -76,9 +87,12 @@ export default async function ProductosAdminPage({
         ))}
       </div>
 
-      {activeTab === "productos" && <ProductManager products={products} initialFilter={filter} />}
-      {activeTab === "pdf"       && <SupplierListsManager />}
-      {activeTab === "janus"     && <JanusImporter />}
+      {activeTab === "productos"    && <ProductManager products={products} initialFilter={filter} />}
+      {activeTab === "pdf"          && <SupplierListsManager vista="cargar" />}
+      {activeTab === "listas-pdf"   && <PdfListImporter />}
+      {activeTab === "listas"       && <SupplierListsManager vista="listas" />}
+      {activeTab === "buscar"       && <SupplierListsManager vista="buscar" />}
+      {activeTab === "herramientas" && <SupplierListsManager vista="herramientas" />}
     </div>
   );
 }

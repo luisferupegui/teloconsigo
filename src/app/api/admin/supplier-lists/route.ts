@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadLists, setListActive, deleteList, deleteProductsFromList, loadMargins, applyMargin, restoreListsFromBackup } from "@/lib/supplier-catalog";
+import { loadLists, saveLists, setListActive, deleteList, deleteProductsFromList, loadMargins, applyMargin, restoreListsFromBackup } from "@/lib/supplier-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +85,7 @@ export async function DELETE(req: NextRequest) {
 //   { action: "deleteProducts", listId, productIds: string[] }
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { action?: string; listId?: string; productIds?: string[] };
+    const body = (await req.json()) as { action?: string; listId?: string; productIds?: string[]; proveedor?: string };
     const { action } = body;
 
     if (action === "restore") {
@@ -94,6 +94,23 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No hay backup disponible para restaurar" }, { status: 404 });
       }
       return NextResponse.json({ ok: true, restored });
+    }
+
+    // El proveedor se escribe al importar, pero se equivoca uno o cambia de nombre; sin
+    // esto había que borrar la lista entera y volver a subirla para corregir una palabra.
+    if (action === "setProveedor") {
+      const { listId, proveedor } = body;
+      if (!listId) return NextResponse.json({ error: "Falta listId" }, { status: 400 });
+      const nombre = (proveedor ?? "").trim().toLowerCase();
+      const lists = loadLists();
+      const lista = lists.find((l) => l.id === listId);
+      if (!lista) return NextResponse.json({ error: "Lista no encontrada" }, { status: 404 });
+      // Vacío = sin proveedor asignado, que es distinto de borrar la lista.
+      const valor = nombre || "sin-proveedor";
+      lista.proveedor = valor;
+      for (const prod of lista.productos) prod.proveedor = valor;
+      saveLists(lists);
+      return NextResponse.json({ ok: true, proveedor: valor });
     }
 
     if (action === "deleteProducts") {

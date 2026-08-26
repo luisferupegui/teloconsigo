@@ -22,7 +22,12 @@ const CAT_LABELS: Record<string, string> = {
   "escritorio-alto-rendimiento": "Alto rendimiento",
 };
 
-export function JanusImporter() {
+/** Proveedores ya conocidos, como atajo. El campo es libre: cualquier nombre nuevo vale,
+ *  que es justo lo que permite ir sumando proveedores sin tocar código. */
+const SUGERENCIAS = ["ledacom", "infoshopcorp", "janus"];
+
+export function PdfListImporter() {
+  const [proveedor, setProveedor] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [nombre, setNombre] = useState("");
   const [aplicarIva, setAplicarIva] = useState(false);
@@ -47,8 +52,9 @@ export function JanusImporter() {
       const form = new FormData();
       form.append("file", file);
       form.append("nombre", nombre || file.name.replace(/\.pdf$/i, ""));
+      form.append("proveedor", proveedor.trim());
       form.append("aplicarIva", String(aplicarIva));
-      const res = await fetch("/api/admin/import-janus-pdf", {
+      const res = await fetch("/api/admin/import-pdf-list", {
         method: "POST",
         body: form,
       });
@@ -72,11 +78,12 @@ export function JanusImporter() {
     <div className="max-w-2xl space-y-6">
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="mb-1 text-base font-semibold text-zinc-900">
-          Importar lista de precios Janus (PDF)
+          Importar lista de precios en PDF
         </h2>
         <p className="mb-5 text-sm text-zinc-500">
-          Sube el PDF con configuraciones de escritorio Janus. Se extraen los precios
-          EFECTIVO. Activa IVA si el PDF cotiza sin impuesto (ver opción abajo).
+          Sube el PDF de cualquier proveedor. El lector prueba los dos formatos que
+          conocemos y se queda con el que extraiga más productos. Activa el IVA si ese
+          proveedor cotiza sin impuesto (ver opción abajo).
         </p>
 
         <div className="space-y-4">
@@ -102,7 +109,7 @@ export function JanusImporter() {
                   </>
                 ) : (
                   <p className="text-sm text-zinc-500">
-                    Haz clic para seleccionar el PDF de Janus
+                    Haz clic para seleccionar el PDF
                   </p>
                 )}
               </div>
@@ -126,9 +133,29 @@ export function JanusImporter() {
                 type="text"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Lista Janus Junio 2026"
+                placeholder="Lista Ledacom Junio 2026"
                 className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
+            </div>
+          )}
+
+          {/* Proveedor: libre, para poder sumar proveedores sin tocar código */}
+          {file && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-zinc-700">
+                Proveedor
+              </label>
+              <input
+                type="text"
+                list="proveedores-pdf"
+                value={proveedor}
+                onChange={(e) => setProveedor(e.target.value)}
+                placeholder="Nombre del proveedor"
+                className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+              <datalist id="proveedores-pdf">
+                {SUGERENCIAS.map((p) => <option key={p} value={p} />)}
+              </datalist>
             </div>
           )}
 
@@ -148,7 +175,7 @@ export function JanusImporter() {
               <p className="text-sm font-medium text-zinc-800">Aplicar IVA (19%)</p>
               <p className="text-xs text-zinc-500">
                 Activa si los precios del PDF <strong>no incluyen IVA</strong>.
-                Janus cotiza sin IVA los equipos sobre $2.618.000.
+                Algunos proveedores cotizan sin IVA los equipos por encima de cierto valor.
               </p>
             </div>
           </label>
@@ -203,7 +230,7 @@ export function JanusImporter() {
               {result.ok ? (
                 <>
                   <p className="text-sm font-semibold text-emerald-800">
-                    Se importaron {result.count} productos de Janus
+                    Se importaron {result.count} productos
                   </p>
                   <p className="mt-0.5 text-xs text-emerald-700">
                     La lista está activa y disponible para el asesor.
