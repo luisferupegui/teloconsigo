@@ -7594,7 +7594,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-thinkbook-14-g8-core-ultra-5-2-1781542011375"
+        "id": "ledacom-thinkbook-14-g8-core-ultra-5-2-1781542011375",
+        "specs": {
+          "pantalla": "14\" WUXGA"
+        }
       },
       {
         "nombre": "V14 Gen 4 IRU i5-13420H (8/512) FHD No Vpro",
@@ -7734,7 +7737,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-pro-14-pc14250-core-ultra-5-22-1781542011375"
+        "id": "ledacom-pro-14-pc14250-core-ultra-5-22-1781542011375",
+        "specs": {
+          "pantalla": "14\" FHD"
+        }
       },
       {
         "nombre": "Pro 15 Essential PV15250 i7-1355U (16/512) + Servicio",
@@ -7754,7 +7760,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-inspiron-5000-5440-core-7-150u-1781542011375"
+        "id": "ledacom-inspiron-5000-5440-core-7-150u-1781542011375",
+        "specs": {
+          "pantalla": "14\" FHD"
+        }
       },
       {
         "nombre": "ExpertBook S65014X i5-13420H (8/512) Puerto RJ45",
@@ -7854,7 +7863,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-zenbook-14-oled-ryzen-ai-7-350-1781542011375"
+        "id": "ledacom-zenbook-14-oled-ryzen-ai-7-350-1781542011375",
+        "specs": {
+          "pantalla": "14\" OLED"
+        }
       },
       {
         "nombre": "Zenbook S 16 OLED Ryzen AI 7-350 NPU 50TOPS (24/1TB)",
@@ -7934,7 +7946,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-vivobook-15-x1504va-core-5-120-1781542011375"
+        "id": "ledacom-vivobook-15-x1504va-core-5-120-1781542011375",
+        "specs": {
+          "pantalla": "15.6\" FHD"
+        }
       },
       {
         "nombre": "Vivobook B1403CVA Core 5-210H (16/512) EndLess",
@@ -7944,7 +7959,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-vivobook-b1403cva-core-5-210h--1781542011375"
+        "id": "ledacom-vivobook-b1403cva-core-5-210h--1781542011375",
+        "specs": {
+          "pantalla": "14\" FHD"
+        }
       },
       {
         "nombre": "Vivobook X1605VA i5-13420H (16/1TB) 16\"",
@@ -7984,7 +8002,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-vivobook-go-15-ryzen-5-7520u-1-1781542011375"
+        "id": "ledacom-vivobook-go-15-ryzen-5-7520u-1-1781542011375",
+        "specs": {
+          "pantalla": "15.6\""
+        }
       },
       {
         "nombre": "IdeaPad Slim 3 15IRH8 i3-1315U (8/512) FreeDOS",
@@ -8134,7 +8155,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-255-g10-ryzen-3-7320u-16-512-l-1781542011375"
+        "id": "ledacom-255-g10-ryzen-3-7320u-16-512-l-1781542011375",
+        "specs": {
+          "pantalla": "15.6\" HD"
+        }
       },
       {
         "nombre": "15-FC0256LA Ryzen 5-7520U (16/512) FreeDOS",
@@ -8164,7 +8188,11 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-tuf-gaming-a15-ryzen-5-7535hs--1781542011375"
+        "id": "ledacom-tuf-gaming-a15-ryzen-5-7535hs--1781542011375",
+        "specs": {
+          "ram": "16GB DDR5",
+          "almacenamiento": "512GB SSD"
+        }
       },
       {
         "nombre": "TUF Gaming A15 Ryzen 7 7445HS RTX 3050 4GB + Servicio",
@@ -8174,7 +8202,11 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-tuf-gaming-a15-ryzen-7-7445hs--1781542011375"
+        "id": "ledacom-tuf-gaming-a15-ryzen-7-7445hs--1781542011375",
+        "specs": {
+          "ram": "8GB DDR5",
+          "almacenamiento": "512GB SSD"
+        }
       },
       {
         "nombre": "TUF Gaming FX607VJ i5-210H RTX 3050 6GB EndLess",
@@ -8194,7 +8226,12 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-tuf-gaming-fa607nug-ryzen-7-rt-1781542011375"
+        "id": "ledacom-tuf-gaming-fa607nug-ryzen-7-rt-1781542011375",
+        "specs": {
+          "ram": "16GB",
+          "almacenamiento": "512GB SSD",
+          "pantalla": "16\" FHD+"
+        }
       },
       {
         "nombre": "ROG Strix G16 Ryzen 9 8940HX RTX 5060 8GB GDDR7",
@@ -8244,7 +8281,11 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-loq-15ahp10-ryzen-7-250-rtx-50-1781542011375"
+        "id": "ledacom-loq-15ahp10-ryzen-7-250-rtx-50-1781542011375",
+        "specs": {
+          "ram": "16GB",
+          "almacenamiento": "512GB SSD"
+        }
       },
       {
         "nombre": "Legion 5 15AHP10 Ryzen 7 260 RTX 5060 8GB 572 AI TOPS",
@@ -8254,7 +8295,11 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-legion-5-15ahp10-ryzen-7-260-r-1781542011375"
+        "id": "ledacom-legion-5-15ahp10-ryzen-7-260-r-1781542011375",
+        "specs": {
+          "ram": "16GB DDR5",
+          "almacenamiento": "512GB SSD"
+        }
       },
       {
         "nombre": "Victus 15-@3019la Ryzen 7 7445H RTX 3050 6GB",
@@ -8264,7 +8309,11 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-victus-15-3019la-ryzen-7-7445h-1781542011375"
+        "id": "ledacom-victus-15-3019la-ryzen-7-7445h-1781542011375",
+        "specs": {
+          "ram": "8GB DDR5",
+          "almacenamiento": "512GB SSD"
+        }
       },
       {
         "nombre": "Cyborg 17 B2 Core 7-240H RTX 5060 8GB GDDR7",
@@ -8274,7 +8323,12 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-cyborg-17-b2-core-7-240h-rtx-5-1781542011375"
+        "id": "ledacom-cyborg-17-b2-core-7-240h-rtx-5-1781542011375",
+        "specs": {
+          "ram": "16GB DDR5",
+          "almacenamiento": "512GB SSD",
+          "pantalla": "17.3\" FHD"
+        }
       },
       {
         "nombre": "ProOne 240 G10 Core Ultra 5-125U (8/512) + Servicio",
@@ -8284,7 +8338,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-proone-240-g10-core-ultra-5-12-1781542011375"
+        "id": "ledacom-proone-240-g10-core-ultra-5-12-1781542011375",
+        "specs": {
+          "pantalla": "23.8\" FHD"
+        }
       },
       {
         "nombre": "ProOne 240 G10 Core Ultra 5-125U (8/512) 23.8\" FHD",
@@ -8304,7 +8361,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-proone-240-g10-core-ultra-7-15-1781542011375"
+        "id": "ledacom-proone-240-g10-core-ultra-7-15-1781542011375",
+        "specs": {
+          "pantalla": "23.8\" FHD"
+        }
       },
       {
         "nombre": "22-DG0205LA Intel N100 (8/512) 21.5\" Linux",
@@ -8464,7 +8524,10 @@
         "referencia": "",
         "proveedor": "ledacom",
         "importedAt": "2026-06-15T16:46:51.375Z",
-        "id": "ledacom-ideacentre-3-24alc6-ryzen-5-74-1781542011375"
+        "id": "ledacom-ideacentre-3-24alc6-ryzen-5-74-1781542011375",
+        "specs": {
+          "pantalla": "23.8\" FHD"
+        }
       },
       {
         "nombre": "IdeaCentre 3 24ALC6 Ryzen 7 7730U (8/512) No OS",
