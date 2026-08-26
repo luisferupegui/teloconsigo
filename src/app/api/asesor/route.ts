@@ -631,6 +631,10 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true))
     .filter((x) => !soloEquipos || TIENE_CPU.test(x.prod.nombre))
     .filter((x) => !!formato || !soloPiezas || formatoDeProducto(x.prod.categoria, x.prod.nombre) === null)
+    // Y tampoco vale un equipo completo que INCLUYA la pieza: a quien pedía audífonos le
+    // salía una "Tab 10\" (4GB/128GB) + Combo Case/Audífonos", que es una tablet. El filtro
+    // de arriba no la atrapa porque una tablet no es ninguno de los formatos de computador.
+    .filter((x) => !soloPiezas || !CATEGORIA_EQUIPO.has(x.prod.categoria))
     // FORMATO EXPLÍCITO (lo manda Andrea): manda sobre cualquier deducción del texto.
     // La coincidencia es ESTRICTA: si el cliente pidió un equipo completo de cierto
     // formato, un producto que no es ese formato nunca es una respuesta válida — ni
@@ -711,18 +715,27 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     return gamasPedidas.some((g) => plano.includes(g));
   };
   // MISMA FAMILIA: un disco duro EXTERNO no es la respuesta para quien pide un SSD NVMe
-  // interno, por mucho que ambos digan "1TB". Se reutiliza el mismo clasificador de la
-  // consulta sobre el nombre + categoría del producto y se exige que coincidan.
+  // interno, por mucho que ambos digan "1TB". Ni una diadema para quien pide un monitor,
+  // ni un combo de teclado para quien pide una memoria USB.
+  //
+  // Se compara la familia FINA. Antes se comparaba la clase gruesa, y como monitor,
+  // teclado, diadema y memoria USB son todos "accesorio", el filtro los daba por
+  // equivalentes y no filtraba nada.
+  const familiaPedida = soloPiezas ? familiaDe(consulta) : null;
   const mismaFamilia = (x: Row) =>
-    !soloPiezas || clasificarConsulta(`${x.prod.nombre} ${x.prod.categoria}`) === clase;
+    familiaPedida === null || familiaDe(`${x.prod.nombre} ${x.prod.categoria}`) === familiaPedida;
 
   // Se afloja por pasos antes que dejar al cliente sin opciones: specs + familia →
   // solo specs → sin filtrar (las listas abrevian, p. ej. "(16/512)" en vez de "16GB").
   // La gama mínima NO se afloja en ningún paso: ofrecerle un Pentium a quien pide un
   // equipo de diseño es peor que no ofrecerle nada, y para eso está la cotización web.
-  const conGama = combinados.filter(gamaSuficiente);
-  const estricto = conGama.filter((x) => cumpleSpecs(x) && mismaFamilia(x));
-  const soloEspecs = estricto.length > 0 ? estricto : conGama.filter(cumpleSpecs);
+  // Ya no hay pasos de relajación: las tres guardas son innegociables y por la misma razón.
+  // La GAMA, porque ofrecer un Pentium a quien pide un equipo de diseño es peor que no
+  // ofrecer nada. La FAMILIA, porque al que pide un monitor es mejor no darle nada que
+  // darle una diadema. Y las SPECS, porque devolver lo que sea ofrecía un Ryzen 3 a quien
+  // pidió un Ryzen 5 con RTX 5060. Si nada local cumple, la respuesta correcta es que no
+  // hay disponibilidad local y que Andrea lo consiga por web.
+  const soloEspecs = combinados.filter(gamaSuficiente).filter(mismaFamilia).filter(cumpleSpecs);
   // NO se afloja más allá de esto: si nada local cumple lo que pidió el cliente, la
   // respuesta correcta es "no hay disponibilidad local" y que Andrea lo consiga por web.
   // Devolver lo que sea era peor — ofrecía un Ryzen 3 a quien pidió un Ryzen 5 con RTX 5060.
@@ -877,6 +890,53 @@ const COMPONENT_QUERY = /\b(motherboard|placa( base| madre)?|tarjeta madre|mainb
 // solo último recurso (importarlos no compensa el flete). Tienen PRECEDENCIA sobre
 // componente para que "memoria USB", "disco externo", "tarjeta SD" no vayan a EE.UU.
 const ACCESSORY_QUERY = /\b(teclado|mouse|rat[oó]n|mousepad|pad ?mouse|memoria usb|usb|pen ?drive|flash drive|micro ?sd|tarjeta sd|sd card|memoria sd|disco (duro )?externo|ssd externo|monitor|antivirus|kaspersky|eset|norton|mcafee|avast|bitdefender|webcam|c[aá]mara web|aud[ií]fonos|auriculares|diadema|parlante|altavoz|hub usb|adaptador|cargador|hdmi|docking|dock)\b/i;
+
+// FAMILIA DE PRODUCTO — fina, no la clase gruesa de arriba.
+//
+// `clasificarConsulta` mete en el mismo saco "accesorio" a un monitor, una diadema, un
+// teclado y una memoria USB, así que el filtro de familia los daba por equivalentes: a
+// quien pedía una memoria USB le salía un "Combo Teclado y Mouse USB" (comparten la
+// palabra USB) y a quien pedía un monitor le salía una diadema. Para el cliente no tiene
+// ningún sentido, y con razón.
+//
+// El ORDEN importa: un "Combo Teclado y Mouse" es teclado antes que mouse, y una
+// "memoria USB" es memoria antes que cualquier cosa que lleve USB en el nombre.
+const FAMILIAS: [string, RegExp][] = [
+  ["memoria-usb",    /\b(memoria\s+usb|pen\s?drive|flash\s?drive|usb\s?\d{1,4}\s?[gt]b|\d{1,4}\s?[gt]b\s+usb)\b/i],
+  ["monitor",        /\b(monitor|pantalla)\b/i],
+  ["teclado",        /\b(teclado|keyboard)\b/i],
+  ["mouse",          /\b(mouse|rat[oó]n|mousepad|pad\s?mouse)\b/i],
+  ["audio",          /\b(aud[ií]fonos?|auriculares?|diadema|headset|parlante|altavoz|micr[oó]fono|barra de sonido)\b/i],
+  ["camara",         /\b(webcam|c[aá]mara)\b/i],
+  ["impresora",      /\b(impresora|multifuncional|t[oó]ner|cartucho)\b/i],
+  ["red",            /\b(router|switch|access\s?point|punto de acceso|repetidor|antena|firewall)\b/i],
+  ["memoria-ram",    /\b(ddr[2345]|sodimm|udimm|memoria\s+ram|\bram\b)\b/i],
+  // Interno y externo NO son la misma familia: quien pide un SSD NVMe para su equipo no
+  // quiere un disco portátil que se conecta por USB, aunque ambos digan "1TB". Va primero
+  // porque un externo también dice "disco" y "ssd".
+  ["almacenamiento-externo", /\b(disco\s+(duro\s+)?externo|ssd\s+externo|disco\s+port[aá]til)\b/i],
+  ["almacenamiento", /\b(ssd|nvme|hdd|disco\s+(duro|s[oó]lido)|m\.?2)\b/i],
+  ["tarjeta-grafica",/\b(tarjeta\s+(de\s+)?(video|gr[aá]fica)|rtx|gtx|radeon|geforce|\bgpu\b)\b/i],
+  ["procesador",     /\b(procesador|\bcpu\b|ryzen|core\s?i[3579]|xeon|threadripper)\b/i],
+  ["motherboard",    /\b(motherboard|mainboard|placa\s+(base|madre)|tarjeta\s+madre)\b/i],
+  ["fuente",         /\b(fuente\s+de\s+poder|\bpsu\b|80\s?plus)\b/i],
+  ["refrigeracion",  /\b(cooler|disipador|ventilador|refrigeraci[oó]n)\b/i],
+  ["gabinete",       /\b(gabinete|chasis|\bcase\b)\b/i],
+  ["software",       /\b(antivirus|kaspersky|eset|norton|mcafee|avast|bitdefender|licencia|office\s?\d)\b/i],
+];
+
+// Categorías que son un EQUIPO, no una pieza. Se listan aparte de `formatoDeProducto`
+// porque esa función solo conoce los formatos de computador (torre, AIO, portátil), y
+// una tablet o un servidor tampoco son piezas sueltas.
+const CATEGORIA_EQUIPO = new Set([
+  "portatil", "tableta", "escritorio", "escritorio-alto-rendimiento",
+  "all-in-one", "todo-en-uno", "mini-pc", "servidor", "pc-equipos-de-marca",
+]);
+
+/** Familia concreta a la que pertenece un texto. `null` si no se reconoce ninguna. */
+function familiaDe(texto: string): string | null {
+  return FAMILIAS.find(([, re]) => re.test(texto))?.[0] ?? null;
+}
 
 type Categoria = "equipo" | "componente" | "accesorio" | "otro";
 // Gana el término que aparece ANTES (producto principal). Reglas:
