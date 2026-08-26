@@ -161,7 +161,10 @@ async function normalize(file) {
       right:  Math.max(0, rightPad),
       background: { r: 255, g: 255, b: 255, alpha: 0 },
     })
-    .png({ compressionLevel: 9 })
+    // Paleta de 192 colores: sobre la ilustración más compleja del set baja el archivo
+    // de 175 KB a 54 KB con un error medio de 0,27 sobre 255 — invisible incluso en los
+    // degradados oscuros, que es donde se notaría.
+    .png({ compressionLevel: 9, palette: true, colors: 192 })
     .toFile(inputPath);
 
   return {
@@ -173,9 +176,16 @@ async function normalize(file) {
 }
 
 /* ─── Main ─── */
-const files = (await fs.readdir(CAROUSEL_DIR)).filter((f) =>
-  f.endsWith(".png")
+// Con un nombre de archivo como argumento se normaliza SOLO esa imagen. Sirve para
+// reemplazar una sin volver a tocar las otras diecisiete.
+const soloEste = process.argv[2];
+const files = (await fs.readdir(CAROUSEL_DIR)).filter(
+  (f) => f.endsWith(".png") && (!soloEste || f === soloEste),
 );
+if (soloEste && files.length === 0) {
+  console.error(`No existe public/carousel/${soloEste}`);
+  process.exit(1);
+}
 
 console.log(`Normalizando ${files.length} imágenes a ${TARGET_SIZE}×${TARGET_SIZE}px (área uniforme ${TARGET_AREA} px²)…`);
 console.log(`Backup → ${BACKUP_DIR}`);
