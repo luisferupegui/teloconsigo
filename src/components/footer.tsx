@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import type { CSSProperties } from "react";
 import { ShieldCheck, Truck, CreditCard, Award, ArrowUp, Mail, MapPin } from "lucide-react";
 
@@ -77,16 +76,19 @@ export function Footer() {
 
           {/* Logo + tagline */}
           <div className="lg:col-span-2">
-            <Link href="/" className="group relative inline-block" aria-label="Te lo Consigo · Inicio">
-              <div className="absolute inset-0 -m-6 rounded-3xl bg-[#1e6cff] opacity-20 blur-3xl group-hover:opacity-40 transition duration-500" />
-              <Image
-                src="/Logo%20Oscuro%20Con%20Slogan.png"
+            <Link href="/" className="relative inline-block cursor-default" aria-label="Te lo Consigo · Inicio">
+              {/* El resplandor es ambiente, no reacciona al mouse: el logo es la marca. */}
+              <div className="absolute inset-0 -m-6 rounded-3xl bg-[#1e6cff] opacity-20 blur-3xl" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-footer.png"
+                srcSet="/logo-footer.png 1x, /logo-footer@2x.png 2x"
                 alt="Te lo Consigo"
-                width={1200}
-                height={450}
-                quality={100}
-                className="relative h-40 w-auto mix-blend-lighten transition group-hover:scale-105"
-                unoptimized
+                width={339}
+                height={78}
+                className="relative h-[78px] w-[339px] mix-blend-lighten"
+                loading="lazy"
+                decoding="async"
               />
             </Link>
             <p className="mt-5 max-w-xs text-sm text-zinc-400 leading-loose">

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
@@ -167,16 +166,17 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
               se dibujaba a 44px dentro de una caja de 115px: de ahí la falta de definición.
               logo-header.png es el mismo arte recortado y a resolución completa. Sin efecto
               al pasar el mouse: es la marca, no un control. */}
-          <Link href="/" className="shrink-0 block mix-blend-lighten">
-            <Image
+          <Link href="/" className="shrink-0 block mix-blend-lighten cursor-default">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo-header.png"
+              srcSet="/logo-header.png 1x, /logo-header@2x.png 2x"
               alt="Te lo Consigo"
-              width={1200}
-              height={276}
-              quality={100}
-              className="h-[56px] w-auto"
-              priority
-              unoptimized
+              width={244}
+              height={56}
+              className="h-[56px] w-[244px]"
+              fetchPriority="high"
+              decoding="sync"
             />
           </Link>
         </div>
@@ -326,9 +326,9 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
                   items-stretch, no items-center: el botón azul debe llenar la cápsula de
                   arriba abajo. Centrado dejaba 2px de hueco encima y debajo del azul. */}
               <div className="flex items-stretch rounded-full border border-white/10 bg-white/5
-                              overflow-hidden hover:border-white/15
-                              focus-within:border-[#1e6cff] focus-within:bg-[#1e6cff]/[0.07]
-                              focus-within:shadow-[0_0_0_3px_rgba(30,108,255,0.3),0_0_22px_rgba(30,108,255,0.4)]
+                              overflow-hidden [&:hover:not(:focus-within)]:border-white/15
+                              focus-within:border-[#1e6cff]/70 focus-within:bg-[#1e6cff]/[0.06]
+                              focus-within:shadow-[0_0_0_1px_rgba(30,108,255,0.35),0_0_8px_rgba(30,108,255,0.22)]
                               transition-[border-color,background-color,box-shadow]
                               duration-100 ease-out">
 
@@ -422,16 +422,17 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
           MOBILE — fila única: logo + acciones
          ══════════════════════════════════════════════════════════════ */}
       <div className="lg:hidden flex h-16 items-center gap-3 max-w-7xl mx-auto px-4">
-        <Link href="/" className="shrink-0">
-          <Image
+        <Link href="/" className="shrink-0 cursor-default">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/logo-header.png"
+            srcSet="/logo-header.png 1x, /logo-header@2x.png 2x"
             alt="Te lo Consigo"
-            width={1200}
-            height={276}
-            quality={100}
-            className="h-[26px] w-auto mix-blend-lighten"
-            priority
-            unoptimized
+            width={113}
+            height={26}
+            className="h-[26px] w-[113px] mix-blend-lighten"
+            fetchPriority="high"
+            decoding="sync"
           />
         </Link>
 
