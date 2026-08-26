@@ -64,6 +64,17 @@ const REFRIG_AIRE: ArmadorSlot = {
   key: "refrigeracion", label: "Refrigeración", icon: "Snowflake",
   opciones: [{ label: "Aire (incluida)", rec: true }],
 };
+// Gama entusiasta: la guía técnica exige AIO de 280mm o 360mm como MÍNIMO para un
+// Ryzen 9 o un Core i9. Una de 240mm no disipa lo que producen esos procesadores.
+const REFRIG_PREMIUM: ArmadorSlot = {
+  key: "refrigeracion", label: "Refrigeración", icon: "Snowflake",
+  opciones: [
+    { label: "Líquida 280mm" },
+    { label: "Líquida 360mm", rec: true },
+    { label: "Líquida 420mm alto rendimiento" },
+  ],
+};
+
 const REFRIG_LIQ240: ArmadorSlot = {
   key: "refrigeracion", label: "Refrigeración", icon: "Snowflake",
   opciones: [
@@ -127,7 +138,6 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "32GB DDR4" },
       ]},
       { key: "almacenamiento", label: "Almacenamiento", icon: "HardDrive", opciones: [
-        { label: "256GB SSD" },
         { label: "512GB SSD NVMe", rec: true },
         { label: "1TB SSD NVMe" },
         { label: "+ Disco duro 1TB adicional" },
@@ -237,7 +247,6 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "64GB DDR5" },
       ]},
       { key: "almacenamiento", label: "Almacenamiento", icon: "HardDrive", opciones: [
-        { label: "512GB SSD Gen4" },
         { label: "1TB SSD Gen4", rec: true },
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
@@ -289,12 +298,10 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "RTX 5060 Ti" },
       ]},
       { key: "ram", label: "Memoria RAM", icon: "MemoryStick", opciones: [
-        { label: "16GB DDR5" },
         { label: "32GB DDR5", rec: true },
         { label: "64GB DDR5" },
       ]},
       { key: "almacenamiento", label: "Almacenamiento", icon: "HardDrive", opciones: [
-        { label: "512GB SSD Gen4" },
         { label: "1TB SSD Gen4", rec: true },
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
@@ -351,7 +358,6 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "64GB DDR5" },
       ]},
       { key: "almacenamiento", label: "Almacenamiento", icon: "HardDrive", opciones: [
-        { label: "512GB SSD Gen4" },
         { label: "1TB SSD NVMe Gen4", rec: true },
         { label: "2TB SSD Gen4" },
         { label: "+ Disco duro 2TB adicional" },
@@ -407,17 +413,16 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "64GB DDR5" },
       ]},
       { key: "almacenamiento", label: "Almacenamiento", icon: "HardDrive", opciones: [
-        { label: "1TB SSD Gen4", rec: true },
-        { label: "2TB SSD Gen4/Gen5" },
+        { label: "2TB SSD Gen4", rec: true },
+        { label: "4TB SSD Gen5" },
         { label: "+ Disco duro 2TB adicional" },
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
       { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
-        { label: "500W 80+" },
-        { label: "650W 80+ Bronce" },
-        { label: "750W 80+ Bronce" },
         { label: "850W 80+ Gold", rec: true },
+        { label: "1000W 80+ Platinum" },
+        { label: "1200W 80+ Titanium" },
       ]},
       { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
         { label: "Torre estándar (incluida)", rec: true },
@@ -430,7 +435,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "27\" 1440p 240Hz" },
         { label: "32\" 4K 144Hz" },
       ]},
-      REFRIG_LIQ240,
+      REFRIG_PREMIUM,
       PERIF_GAMER,
     ],
   },
@@ -444,7 +449,7 @@ export const PERFILES: ArmadorPerfil[] = [
     tip: "La RTX codifica el stream por hardware (NVENC) sin robarle FPS al juego. Con 32–64GB el equipo mueve juego, OBS y chat sin trabarse.",
     slots: [
       { key: "cpu", label: "Procesador", icon: "Cpu", opciones: [
-        { label: "Ryzen 7 7800X3D", plataforma: "amd", rec: true },
+        { label: "Ryzen 7 7700", plataforma: "amd", rec: true },
         { label: "Ryzen 9 7900X", plataforma: "amd" },
         { label: "Ryzen 9 7950X", plataforma: "amd" },
         { label: "Core i7-14700K", plataforma: "intel", rec: true },
@@ -558,7 +563,6 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "Ryzen 9 7950X", plataforma: "amd", rec: true },
         { label: "Threadripper 7960X", plataforma: "amd" },
         { label: "Core i9-14900K", plataforma: "intel", rec: true },
-        { label: "Xeon W5-2455X", plataforma: "intel" },
         { label: "Core Ultra 9 285K", plataforma: "intel" },
       ]},
       { key: "gpu", label: "Tarjeta gráfica", icon: "Component", opciones: [
@@ -571,7 +575,6 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "128GB DDR5" },
       ]},
       { key: "almacenamiento", label: "Almacenamiento", icon: "HardDrive", opciones: [
-        { label: "1TB SSD Gen4" },
         { label: "2TB SSD Gen4", rec: true },
         { label: "4TB SSD Gen4" },
         { label: "+ Disco duro 4TB adicional" },
@@ -579,10 +582,9 @@ export const PERFILES: ArmadorPerfil[] = [
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
       { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
-        { label: "500W 80+" },
-        { label: "650W 80+ Bronce" },
-        { label: "750W 80+ Bronce" },
-        { label: "850W 80+ Gold", rec: true },
+        { label: "850W 80+ Gold" },
+        { label: "1000W 80+ Platinum", rec: true },
+        { label: "1200W 80+ Titanium" },
       ]},
       { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
         { label: "Torre estándar (incluida)", rec: true },
