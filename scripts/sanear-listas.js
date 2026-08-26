@@ -24,6 +24,11 @@
  *
  * Es IDEMPOTENTE: pasarlo dos veces no cambia nada la segunda vez.
  *
+ * NOTA: el panel admin tiene el mismo saneo como botón (Marketing → Listas PDF), que es la
+ * vía cómoda en producción. Las reglas viven en src/lib/sanear-listas.ts y este script las
+ * reimplementa en JS plano por una razón concreta: poder ejecutarse con "node" a secas,
+ * sin compilar TypeScript, dentro del contenedor. Si cambias una regla, cámbiala en ambos.
+ *
  * Uso:
  *   node scripts/sanear-listas.js              → solo informa, NO escribe
  *   node scripts/sanear-listas.js --aplicar    → escribe, con copia de seguridad previa

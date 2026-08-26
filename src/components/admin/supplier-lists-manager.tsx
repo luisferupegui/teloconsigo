@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import {
   Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
   Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ListChecks, ChevronDown,
-  Star, Tag, Pencil, RefreshCw,
+  Star, Tag, Pencil, RefreshCw, ShieldCheck,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";
 
@@ -164,6 +164,7 @@ export function SupplierListsManager() {
       <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
       <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
       <WebCachePanel flash={flash} />
+      <SaneoPanel flash={flash} onDone={refreshLists} />
 
       {/* Sub-tabs */}
       <div className="flex flex-wrap gap-1 rounded-xl border border-zinc-200 bg-white p-1 w-fit shadow-sm">
@@ -411,6 +412,105 @@ function SerperKeyPanel({ status, onChange, flash }: {
 }
 
 // ─── Panel: actualizar precios cacheados de EE.UU. ──────────────────────────────
+
+// ─── Saneo de listas ya importadas ─────────────────────────────────────────────
+//
+// Los lectores de listas se han ido corrigiendo, pero los datos que se importaron ANTES
+// de esas correcciones siguen como estaban: el volumen conserva sus propios archivos y no
+// recibe los del repositorio. Este panel aplica las mismas reglas sobre lo ya importado.
+// Primero enseña qué encontró y solo corrige cuando el usuario lo confirma: es un cambio
+// destructivo sobre datos de producción.
+type Saneo = { descartados: number; recategorizados: number; ejemplos: { nombre: string; detalle: string }[] };
+
+function SaneoPanel({ flash, onDone }: { flash: (ok: boolean, msg: string) => void; onDone: () => void }) {
+  const [previo, setPrevio] = useState<Saneo | null>(null);
+  const [busy, setBusy] = useState<"ver" | "aplicar" | null>(null);
+
+  async function revisar() {
+    setBusy("ver");
+    try {
+      const res = await fetch("/api/admin/sanear-listas");
+      const data = await res.json();
+      if (!res.ok) { flash(false, data.error ?? "No se pudo revisar"); return; }
+      setPrevio(data);
+      if (data.descartados + data.recategorizados === 0) flash(true, "Las listas ya están al día ✓");
+    } catch {
+      flash(false, "Error de red");
+    } finally { setBusy(null); }
+  }
+
+  async function aplicar() {
+    setBusy("aplicar");
+    try {
+      const res = await fetch("/api/admin/sanear-listas", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { flash(false, data.error ?? "No se pudo aplicar"); return; }
+      flash(true, data.aplicado
+        ? `Listo: ${data.descartados} equipo(s) descartado(s) y ${data.recategorizados} producto(s) recategorizado(s).`
+        : "Las listas ya estaban al día ✓");
+      setPrevio(null);
+      onDone();
+    } catch {
+      flash(false, "Error de red");
+    } finally { setBusy(null); }
+  }
+
+  const total = previo ? previo.descartados + previo.recategorizados : 0;
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="flex items-start gap-3">
+        <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5 text-zinc-500" />
+        <div className="flex-1">
+          <p className="text-sm font-bold text-zinc-900">Sanear listas importadas</p>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            Revisa las listas ya cargadas y corrige lo que los lectores actuales ya no dejarían pasar:
+            equipos cuyo tamaño de monitor no cuadra con su precio, y memorias USB con la categoría
+            —y por tanto el margen— equivocada. Primero te muestra qué encontró.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              onClick={revisar}
+              disabled={busy !== null}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+            >
+              {busy === "ver" ? "Revisando…" : "Revisar listas"}
+            </button>
+
+            {total > 0 && (
+              <button
+                onClick={aplicar}
+                disabled={busy !== null}
+                className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
+              >
+                {busy === "aplicar" ? "Corrigiendo…" : `Corregir ${total} producto(s)`}
+              </button>
+            )}
+          </div>
+
+          {previo && total > 0 && (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-semibold text-amber-900">
+                {previo.descartados} equipo(s) se descartarían · {previo.recategorizados} producto(s) cambiarían de categoría
+              </p>
+              <ul className="mt-1.5 space-y-0.5">
+                {previo.ejemplos.map((e) => (
+                  <li key={e.nombre} className="text-[11px] leading-tight text-amber-800">
+                    <span className="font-medium">{e.nombre.slice(0, 70)}</span> — {e.detalle}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] text-amber-700">
+                Se guarda una copia previa: si algo sale mal, «Restaurar listas» la recupera.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function WebCachePanel({ flash }: { flash: (ok: boolean, msg: string) => void }) {
   const [term, setTerm] = useState("");
