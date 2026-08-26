@@ -279,8 +279,7 @@ function specsDesdeNombre(nombre: string, categoria?: string): Record<string, st
 
   // La memoria de la GRÁFICA no es la RAM del equipo: en "RTX 3050 4GB" ese 4GB se
   // colaba como "RAM 4GB". Se recorta el tramo de la gráfica antes de leer capacidades.
-  const sinGpu = n.replace(/\b(?:rtx|gtx|radeon\s*rx|rx)\s*\d{3,4}\s*(?:ti|super)?\s*\d{0,2}\s*gb?/gi, " ");
-  const { ram, disco } = ramYDisco(sinGpu);
+  const { ram, disco } = ramYDisco(sinVram(n));
   // En una memoria USB o una tarjeta SD la única capacidad del nombre es SU capacidad,
   // no la RAM de un equipo: la ficha de "USB 64GB KINGSTON" decía "RAM: 64GB".
   if (ram != null) {
@@ -506,8 +505,42 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   const FORMATOS = new Set<Formato>(["ensamblado", "torre-marca", "todo-en-uno", "portatil"]);
   const formatoRaw = input?.formato as Formato | undefined;
   const formato = formatoRaw && FORMATOS.has(formatoRaw) ? formatoRaw : null;
+  // EL CLIENTE HABLA DE USO; LOS PRODUCTOS, DE HARDWARE.
+  //
+  // Una consulta como "computador ensamblado torre diseño grafico Photoshop Illustrator"
+  // no comparte NI UNA palabra con "JANUS GAMER Ryzen 5 5600GT 16GB DDR4 + GPU RX 9060".
+  // La relevancia daba cero para todos, el primer filtro los eliminaba y la búsqueda
+  // devolvía nada — mientras que si el modelo mencionaba "ryzen" o "rtx" salían tres
+  // opciones. La misma pregunta contestada de dos formas según cómo redactara la consulta.
+  //
+  // El puente se tiende aquí, en el servidor, y SOLO para puntuar relevancia: los términos
+  // añadidos nunca son exigibles (no llevan cifras), así que amplían lo que se considera
+  // parecido sin estrechar lo que se considera válido.
+  const PUENTE_USO: [RegExp, string][] = [
+    [/\b(dise[ñn]o|photoshop|illustrator|coreldraw|indesign|maquetaci[oó]n)\b/i, "rtx radeon geforce gpu ryzen core intel amd gamer"],
+    [/\b(edici[oó]n|premiere|davinci|after\s?effects|render|postproducci[oó]n)\b/i, "rtx geforce gpu ryzen core intel amd"],
+    [/\b(gaming|gamer|juegos|videojuegos)\b/i, "rtx radeon geforce gamer gpu ryzen core intel amd"],
+    [/\b(streaming|obs|twitch)\b/i, "rtx geforce gpu ryzen core gamer"],
+    [/\b(\bia\b|inteligencia artificial|data science|machine learning)\b/i, "rtx geforce gpu ryzen core xeon threadripper"],
+    [/\b(oficina|erp|siigo|helisa|contabilidad|excel|hogar|estudio|office)\b/i, "ryzen core intel amd"],
+    [/\b(desarrollo|programaci[oó]n|docker|devops|kubernetes)\b/i, "ryzen core intel amd"],
+    [/\b(servidor|server|virtualizaci[oó]n|hipervisor|vmware|proxmox)\b/i, "server servidor xeon epyc proliant poweredge thinksystem rack"],
+  ];
+  // Palabras de FORMATO que tampoco aparecen en los nombres, pero cuyos sinónimos sí.
+  const PUENTE_FORMATO: [RegExp, string][] = [
+    [/\b(ensamblad\w*|computador|equipo|escritorio|desktop)\b/i, "pc torre gamer equipo"],
+    [/\b(port[aá]til|laptop|notebook)\b/i, "portatil laptop notebook thinkpad ideapad inspiron vivobook aspire"],
+  ];
+
+  const extras = [...PUENTE_USO, ...PUENTE_FORMATO]
+    .filter(([re]) => re.test(consulta))
+    .map(([, palabras]) => palabras)
+    .join(" ");
+
   const terms = consulta.split(/\s+/).filter((t) => t.length > 1);
-  const score = (haystack: string) => (terms.length === 0 ? 1 : terms.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0));
+  // Los términos del puente puntúan, pero NO se exigen: van aparte de `terms`.
+  const termsScore = [...new Set([...terms, ...extras.toLowerCase().split(/\s+/).filter(Boolean)])];
+  const score = (haystack: string) => (termsScore.length === 0 ? 1 : termsScore.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0));
 
   // prioridad 0 = listas de proveedor (disponibilidad local), 1 = catálogo publicado
   type Row = { score: number; precio: number | null; prioridad: number; haystack: string; prod: CustomerProduct };
@@ -644,7 +677,8 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   const gamaSuficiente = (x: Row) => {
     if (!exigente) return true;
     if (CPU_ENTRADA.test(x.prod.nombre)) return false;
-    const { ram } = ramYDisco(x.prod.nombre);
+    // Sin recortar la gráfica, sus GB de VRAM se leen como RAM del equipo.
+    const { ram } = ramYDisco(sinVram(x.prod.nombre));
     if (ram != null && ram < 16) return false;
     // Un portátil de bajo consumo no sostiene un trabajo exigente: se descarta aquí, no
     // en el prompt, porque es una regla de hardware y no una cuestión de criterio.
@@ -1375,6 +1409,17 @@ const GPU_DEDICADA = /\b(rtx|gtx|radeon|geforce|quadro)\b|\brx\s?\d{3,4}\b/;
  *    "(16/512)"                  → 16 / 512   (abreviatura de Ledacom)
  *    "SSD 2TB"                   → · / 2048
  *  Sin esto no se puede saber si dos equipos con el mismo CPU son la misma configuración. */
+/** Quita del nombre el tramo de la tarjeta gráfica.
+ *
+ *  La VRAM no es la RAM del equipo, y confundirlas tiene consecuencias: un portátil
+ *  "TUF Gaming A15 Ryzen 5 7535HS RTX 3050 4GB" se leía como si tuviera 4GB de memoria,
+ *  no llegaba al mínimo de 16GB que se le exige a un equipo de trabajo pesado y quedaba
+ *  FUERA de las búsquedas de diseño o edición. De los diez portátiles con gráfica
+ *  dedicada de las listas, nueve desaparecían por esto. */
+function sinVram(nombre: string): string {
+  return nombre.replace(/\b(?:rtx|gtx|radeon\s*rx|rx)\s*\d{3,4}\s*(?:ti|super)?\s*\d{0,2}\s*gb?/gi, " ");
+}
+
 function ramYDisco(nombre: string): { ram: number | null; disco: number | null } {
   const n = nombre.toLowerCase();
 
