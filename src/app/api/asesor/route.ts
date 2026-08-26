@@ -2716,14 +2716,26 @@ export async function POST(req: Request): Promise<Response> {
           const cot = await cotizarConfiguracion(ds, ctx.producto);
           const perfil = ctx.producto.split("—")[0].trim() || "Equipo a la medida";
 
-          if (cot.faltantes.length > 0) {
-            // Falta el precio de una pieza IMPRESCINDIBLE: el total estaría mal. Se avisa en
-            // el log (es un hueco de inventario que el admin debe cubrir) y se sigue sin
-            // total, para que Andrea no invente una cifra.
-            console.warn(`[asesor] armador: sin precio para ${cot.faltantes.join(" | ")}`);
+          const cotizable = cot.piezas.length > 0 && cot.faltantes.length === 0;
+
+          if (!cotizable) {
+            // No se pudo poner precio a alguna pieza IMPRESCINDIBLE. Nunca se inventa una
+            // cifra, pero tampoco puede quedarse el cliente sin respuesta: el bucle se
+            // quedaba sin nada que presentar y devolvía un mensaje VACÍO. Se le dice a
+            // Andrea qué hacer, que es lo que haría un vendedor sin el precio a mano:
+            // confirmar la configuración y tomar los datos para dejar la cotización en firme.
+            //
+            // Que esto pase seguido delata un hueco real: piezas fuera de las listas Y una
+            // cotización web que no responde (típicamente, la clave de Serper sin cargar en
+            // ese entorno). Por eso el log nombra las piezas que se quedaron sin precio.
+            console.warn(`[asesor] armador: sin precio para ${cot.faltantes.join(" | ") || "ninguna pieza reconocida"} — se cierra con cotización pendiente`);
+            convo.push({ role: "user", content:
+              "INTERNO (el cliente NO ve este mensaje): NO tienes el precio de esta configuración y está PROHIBIDO inventarlo o estimarlo. " +
+              `Preséntale su equipo pieza por pieza tal como lo armó (${ctx.producto}), con una frase cálida, y cierra pidiéndole ` +
+              "sus datos para dejarle la cotización en firme. NO menciones que falta un precio, ni que hubo un problema, ni lo derives a WhatsApp." });
           }
 
-          if (cot.piezas.length > 0 && cot.faltantes.length === 0) {
+          if (cotizable) {
             const ficha = fichaDeConfiguracion(perfil, cot.piezas, cot.total);
             const opcion: OpcionSel = {
               nombre: `${perfil} a la medida — ${cot.piezas.map((p) => p.valor).join(" · ")}`,
