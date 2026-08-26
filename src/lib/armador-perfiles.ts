@@ -134,6 +134,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+", rec: true },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "21.5\" FHD" },
         { label: "24\" FHD", rec: true },
@@ -175,6 +187,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+", rec: true },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "24\" FHD", rec: true },
         { label: "27\" FHD" },
@@ -220,6 +244,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce", rec: true },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "24\" IPS" },
         { label: "27\" IPS calibrado", rec: true },
@@ -265,6 +301,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+", rec: true },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" FHD" },
         { label: "Doble 24\" FHD", rec: true },
@@ -310,6 +358,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce", rec: true },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "24\" FHD 144Hz", rec: true },
         { label: "27\" FHD 165Hz" },
@@ -353,6 +413,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold", rec: true },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" 1440p 165Hz", rec: true },
         { label: "27\" 1440p 240Hz" },
@@ -395,6 +467,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce", rec: true },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" FHD 144Hz", rec: true },
         { label: "Doble 27\" (juego + chat)" },
@@ -439,6 +523,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce", rec: true },
+        { label: "850W 80+ Gold" },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" IPS" },
         { label: "27\" 4K IPS", rec: true },
@@ -482,6 +578,18 @@ export const PERFILES: ArmadorPerfil[] = [
       ]},
       DISCO_ADICIONAL,
       { key: "motherboard", label: "Motherboard", icon: "CircuitBoard", opciones: [] },
+      { key: "fuente", label: "Fuente de poder", icon: "Zap", opciones: [
+        { label: "500W 80+" },
+        { label: "650W 80+ Bronce" },
+        { label: "750W 80+ Bronce" },
+        { label: "850W 80+ Gold", rec: true },
+      ]},
+      { key: "gabinete", label: "Gabinete", icon: "Box", opcional: true, opciones: [
+        { label: "Torre estándar (incluida)", rec: true },
+        { label: "Torre con vidrio templado" },
+        { label: "Torre gaming RGB" },
+        { label: "Torre compacta mATX" },
+      ]},
       { key: "monitor", label: "Monitor", icon: "Monitor", opciones: [
         { label: "27\" 1440p" },
         { label: "Doble 27\" 1440p", rec: true },

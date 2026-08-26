@@ -764,6 +764,13 @@ const escritorioTier = (n: string): string =>
 
 /** Infiere la clave de margen (`margins.json`) a partir del nombre del producto
  *  y la clasificación de la consulta. Si no hay coincidencia usa "default". */
+/** ¿El producto es un accesorio pequeño? Se deduce de su nombre, porque en la web no hay
+ *  categoría: es lo único que tenemos para aplicarle la regla del negocio (entre
+ *  candidatos que sirven igual, en accesorios pequeños se toma el de mayor valor). */
+function esAccesorioPorNombre(nombre: string): boolean {
+  return esAccesorioPequeno([inferirCategoriaMargen(nombre, "componente")]);
+}
+
 function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): string {
   const n = (nombre ?? "").toLowerCase();
   // "monitor" solo si NO es un equipo completo: un PC combo dice "+ Monitor 24\"" pero lleva CPU
@@ -1117,8 +1124,16 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
   // donde la tienda NO aparece en la URL, así que sin este respaldo el admin veía "Sitio
   // local" y no sabía de dónde había salido el precio.
   const porUrl = siteNameFromUrl(fuenteRef);
+  // Referencia de mercado para el admin. En general la más económica —es contra la que
+  // hay que competir— pero en accesorios pequeños la más alta, por la misma razón que
+  // en el resto del sistema: ahí el precio de referencia útil no es el del más barato.
+  const porPrecio = [...locales].sort((a, b) => (a.copLocal as number) - (b.copLocal as number));
+  const referencia = esAccesorioPorNombre(locales[0].nombre ?? "")
+    ? porPrecio[porPrecio.length - 1]
+    : porPrecio[0];
+
   const localData: LocalData = {
-    precioMercadoLocal: locales[0].copLocal as number,  // la más barata (referencia admin)
+    precioMercadoLocal: referencia.copLocal as number,
     fuenteLocal:        fuenteRef,
     cantidadListados:   locales.length,
     siteLocal:          porUrl !== "Sitio local" ? porUrl : ((locales[0].vendedor ?? "").trim() || "Sitio local"),
@@ -1161,7 +1176,13 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
     // es la operación. Se descarta antes de que llegue al cliente.
     if (c.usdEnvio > p.usd) continue;
     const prev = seenUS.get(key);
-    if (!prev || p.usd < (prev.costoUSD ?? Infinity)) {
+    // Entre varios vendedores del MISMO modelo se guarda el más barato, salvo en
+    // accesorios pequeños: ahí el negocio prefiere el de mayor valor, porque unos miles
+    // de pesos de diferencia no compensan la calidad ni el riesgo de una devolución.
+    const mejorQuePrevio = esAccesorioPorNombre(p.nombre ?? "")
+      ? p.usd > (prev?.costoUSD ?? 0)
+      : p.usd < (prev?.costoUSD ?? Infinity);
+    if (!prev || mejorQuePrevio) {
       seenUS.set(key, {
         nombre: p.nombre, marca: p.marca, modelo: p.modelo, specs: p.specs,
         precioCOP:     c.copEstimado,
@@ -2286,10 +2307,14 @@ async function cotizarConfiguracion(ds: DeepSeek, config: string): Promise<{
     }
   }
 
-  // La fuente no la elige el cliente —no tendría por qué— pero sin ella no hay equipo.
-  // La decide el consumo de la gráfica, con holgura.
-  const fuente = cotizarFuente(vatiosRecomendados(config));
-  if (fuente) cotizadas.push(fuente);
+  // Si el cliente eligió fuente en el armador, esa manda. Si no —configuraciones
+  // antiguas, enlaces guardados— la decide el consumo de la gráfica, con holgura,
+  // porque sin fuente no hay equipo.
+  const yaTieneFuente = cotizadas.some((p) => p.categorias.includes("fuente-poder"));
+  if (!yaTieneFuente) {
+    const fuente = cotizarFuente(vatiosRecomendados(config));
+    if (fuente) cotizadas.push(fuente);
+  }
 
   let total = totalDeConfiguracion(cotizadas);
 
@@ -2386,7 +2411,12 @@ const PISO_MERCADO  = 0.70;
 /** La ficha que ve el cliente: su equipo, pieza por pieza, con un solo precio. */
 function fichaDeConfiguracion(perfil: string, piezas: PiezaCotizada[], total: number): string {
   const lineas = piezas.map((p) => `- ${p.etiqueta}: ${p.valor}`);
-  lineas.push(`- Ensamble, gabinete y cableado: incluidos`);
+  // Si el cliente eligió un gabinete concreto, ya aparece en su línea: repetir
+  // "gabinete incluido" aquí sonaría a que lleva dos.
+  const gabinetePropio = piezas.some((p) => p.etiqueta.toLowerCase() === "gabinete");
+  lineas.push(gabinetePropio
+    ? `- Ensamble y cableado: incluidos`
+    : `- Ensamble, gabinete y cableado: incluidos`);
   return `**${perfil} — ensamblado a la medida**\n${lineas.join("\n")}\n💲 ${fmtCOP(total)}`;
 }
 

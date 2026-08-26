@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Home, Briefcase, Palette, Terminal, Gamepad2, Trophy, Radio, Clapperboard, BrainCircuit,
-  Cpu, Component, MemoryStick, HardDrive, CircuitBoard, Monitor, Snowflake, Keyboard,
+  Cpu, Component, MemoryStick, HardDrive, CircuitBoard, Monitor, Snowflake, Keyboard, Zap, Box,
   ChevronRight, ChevronLeft, Check, Lightbulb, MessageCircle, Sparkles, ShieldCheck, Truck,
   type LucideIcon,
 } from "lucide-react";
@@ -20,7 +20,7 @@ import {
 
 const ICONS: Record<string, LucideIcon> = {
   Home, Briefcase, Palette, Terminal, Gamepad2, Trophy, Radio, Clapperboard, BrainCircuit,
-  Cpu, Component, MemoryStick, HardDrive, CircuitBoard, Monitor, Snowflake, Keyboard,
+  Cpu, Component, MemoryStick, HardDrive, CircuitBoard, Monitor, Snowflake, Keyboard, Zap, Box,
 };
 
 function Icon({ name, className }: { name: string; className?: string }) {

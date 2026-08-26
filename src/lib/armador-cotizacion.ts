@@ -82,14 +82,24 @@ const MAPA: Record<string, DefPieza> = {
     categorias: ["refrigeracion"], esencial: false,
     contexto: "cooler cpu disipador", senales: /\b(cooler|disipador|ventilador|refrigeraci[oó]n\s+l[ií]quida|water\s?cooling|aio)\b/i,
   },
+  "fuente de poder": {
+    categorias: ["fuente-poder"], esencial: true,
+    contexto: "fuente de poder", senales: /\b(fuente|psu|power\s?supply|80\s?plus|80\+)\b/i,
+  },
+  "gabinete": {
+    categorias: ["escritorio", "accesorios"], esencial: false,
+    contexto: "gabinete torre pc", senales: /\b(gabinete|chasis|case|torre)\b/i,
+  },
   "teclado y mouse": {
     categorias: ["teclado", "mouse", "perifericos", "accesorios"], esencial: false,
     contexto: "combo teclado y mouse", senales: /\b(teclado|mouse|combo|keyboard)\b/i,
   },
 };
 
-/** Valores que significan "no lleva esta pieza". */
-const NO_LLEVA = /^(sin\b|no\b|solo torre|gráficos integrados|graficos integrados|aire \(incluida\))/i;
+/** Valores que significan "no lleva esta pieza" o "ya va incluida en el ensamble".
+ *  El gabinete estándar y el cooler de caja entran aquí: son lo que permite que un
+ *  equipo salga en 1 a 3 días, y cobrarlos aparte sería cobrar dos veces. */
+const NO_LLEVA = /^(sin\b|no\b|solo torre|gráficos integrados|graficos integrados)|\(inclu[ií]d[oa]\)\s*$/i;
 
 /** Descompone el resumen del armador en piezas cotizables. */
 export function piezasDeConfig(config: string): PiezaPedida[] {
