@@ -1,5 +1,6 @@
 import "server-only";
 import JSZip from "jszip";
+import { sinVram, ramYDisco, pantallaDesdeNombre } from "./specs-nombre";
 // Se importa el módulo interno, NO la raíz "pdf-parse": su index.js corre un bloque de
 // debug al cargarse que lee un PDF de prueba inexistente y rompe el build.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -117,6 +118,96 @@ function inferCategoria(nombre: string): string {
   return "accesorios";
 }
 
+// ── Correcciones que se aplican SIEMPRE, incluso cuando el documento trae su propia
+//    categoría en la cabecera de sección ────────────────────────────────────────
+//
+// Los proveedores archivan por donde les conviene comercialmente, no por lo que la cosa
+// es. Estas dos correcciones vienen de errores que llegaron hasta el cliente:
+//
+//   • Cinco PC COMPLETOS venían bajo "almacenamiento" (por su SSD), y al cotizar el disco
+//     de una configuración se elegía el equipo entero: $2.628.000 por un SSD de 512GB.
+//   • Un GABINETE vacío venía como "escritorio", y entraba en las búsquedas de equipos
+//     completos como si fuera un computador.
+
+/** Un equipo completo NOMBRA su procesador y al menos otras dos piezas. Una pieza suelta
+ *  no: un SSD no menciona un Ryzen, y un procesador no menciona una board. */
+function esEquipoCompleto(nombre: string): boolean {
+  const n = nombre.toLowerCase();
+  if (!/\b(ryzen|core\s?i[3579]|core\s?ultra|pentium|celeron|athlon|xeon|epyc)\b/.test(n)) return false;
+  const piezas = [
+    /\b(board|placa|motherboard|prime|[abxzh]\d{3}m?)\b/,   // placa madre
+    /\b(ddr[45]|\d{1,2}\s?gb\s?(ram|ddr))\b/,               // memoria
+    /\b(ssd|nvme|hdd|\d{3,4}\s?gb|\d\s?tb)\b/,             // almacenamiento
+  ].filter((re) => re.test(n)).length;
+  return piezas >= 2;
+}
+
+/** Una caja sin componentes: dice gabinete o chasis, o empieza por "torre".
+ *
+ *  NO vale buscar "case" a secas: una tablet vendida con funda se llama "Tab 10 (4/128) +
+ *  Combo Case/Audífonos" y acababa reclasificada como accesorio, dejando de ser una tablet. */
+function esGabinete(nombre: string): boolean {
+  const n = nombre.toLowerCase().trim();
+  if (/\b(ryzen|core\s?i[3579]|pentium|celeron|xeon|snapdragon|mediatek)\b/.test(n)) return false;
+  return /\b(gabinete|chasis)\b/.test(n) || /^torre\b/.test(n);
+}
+
+/** Última palabra sobre la categoría de un producto importado. Corrige lo que el
+ *  documento dice cuando el propio nombre lo desmiente. */
+/** Specs que el NOMBRE ya declara, listas para guardar.
+ *
+ *  Hasta ahora se deducían en cada consulta, con dos costes: repetir el mismo trabajo en
+ *  cada búsqueda y —peor— que un dato pareciera faltar cuando en realidad estaba escrito.
+ *  Guardarlas al importar deja la lista buena desde el primer día y hace que el completador
+ *  por web sepa de verdad qué falta y no gaste consultas de más.
+ *
+ *  Solo se guarda lo que el nombre AFIRMA; lo que no, se queda vacío. */
+export function specsDelNombre(nombre: string, categoria: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  // Cada spec solo se guarda donde SIGNIFICA algo. Sin esta separación, a una "ASROCK RX
+  // 7600 CHALLENGER 8GB" se le guardaba "ram: 8GB" — esos 8GB son la VRAM de la gráfica, no
+  // la memoria de ningún equipo.
+  const esEquipo = EQUIPO_CON_SPECS.has(categoria);
+  const { ram, disco } = ramYDisco(sinVram(nombre));
+
+  if (ram != null && (esEquipo || categoria === "memoria-ram")) out.ram = `${ram}GB`;
+  if (disco != null && (esEquipo || categoria === "almacenamiento")) {
+    out.almacenamiento = disco >= 1024 && disco % 1024 === 0 ? `${disco / 1024}TB` : `${disco}GB`;
+  }
+
+  // La pantalla, solo para los equipos que la llevan integrada: en una torre, unas pulgadas
+  // en el nombre son las del monitor que la acompaña, no las suyas.
+  if (PANTALLA_INTEGRADA.has(categoria)) {
+    const p = pantallaDesdeNombre(nombre);
+    if (p) out.pantalla = p;
+  }
+  return out;
+}
+
+const EQUIPO_CON_SPECS = new Set([
+  "portatil", "escritorio", "escritorio-alto-rendimiento",
+  "all-in-one", "todo-en-uno", "mini-pc", "tableta", "servidor",
+]);
+const PANTALLA_INTEGRADA = new Set(["portatil", "all-in-one", "todo-en-uno", "tableta"]);
+
+export function corregirCategoria(nombre: string, categoria: string): string {
+  if (esGabinete(nombre)) return "accesorios";
+  // Un equipo completo archivado como pieza: se manda a escritorio, y a la gama alta si
+  // trae gráfica dedicada, que es lo que decide su margen.
+  const esPieza = PIEZAS.has(categoria);
+  if (esPieza && esEquipoCompleto(nombre)) {
+    return /\b(rtx|gtx|radeon\s+rx|\brx\s?\d{3,4})\b/i.test(nombre)
+      ? "escritorio-alto-rendimiento"
+      : "escritorio";
+  }
+  return categoria;
+}
+
+const PIEZAS = new Set([
+  "almacenamiento", "memoria-ram", "tarjeta-grafica", "motherboard",
+  "fuente-poder", "refrigeracion", "monitor", "accesorios",
+]);
+
 // ── Núcleo: filas de celdas → productos ────────────────────────────────────────
 
 /** Recorre cada fila buscando celdas de precio; el nombre es la celda de texto
@@ -162,12 +253,17 @@ function productsFromCells(rows: string[][], escala = 1): ParsedProduct[] {
       if (seen.has(key)) continue;
       seen.add(key);
 
+      // La categoría se corrige si el nombre desmiente lo deducido, y las specs que el
+      // nombre declara se guardan ya: la lista entra buena, no se repara después.
+      const categoria = corregirCategoria(nombre, inferCategoria(nombre));
+      const specs = specsDelNombre(nombre, categoria);
       out.push({
         nombre,
         marca: inferMarca(nombre),
-        categoria: inferCategoria(nombre),
+        categoria,
         precio_costo: precio,
         referencia,
+        specs: Object.keys(specs).length ? specs : undefined,
       });
     }
   }
@@ -345,7 +441,11 @@ function productsFromRows(rows: string[][], escala = 1): ParsedProduct[] {
 
     const marca = (cells[idxMarca] ?? "").trim() || inferMarca(nombre);
     const catLabel = (cells[idxCat] ?? "").trim();
-    const categoria = catLabel ? slugCategoria(catLabel) : inferCategoria(nombre);
+    // La categoría del documento manda… salvo cuando el nombre la desmiente.
+    const categoria = corregirCategoria(
+      nombre,
+      catLabel ? slugCategoria(catLabel) : inferCategoria(nombre),
+    );
 
     // Specs estructuradas (las trae el .xlsx; el .docx CSV no, van en el nombre).
     const specs: Record<string, string> = {};
@@ -358,9 +458,11 @@ function productsFromRows(rows: string[][], escala = 1): ParsedProduct[] {
     if (seen.has(key)) continue;
     seen.add(key);
 
+    // Las columnas del documento mandan; el nombre solo rellena lo que ellas no traigan.
+    const completas = { ...specsDelNombre(nombre, categoria), ...specs };
     out.push({
       nombre, marca, categoria, precio_costo: precio, referencia: "",
-      specs: Object.keys(specs).length ? specs : undefined,
+      specs: Object.keys(completas).length ? completas : undefined,
     });
   }
   return out;

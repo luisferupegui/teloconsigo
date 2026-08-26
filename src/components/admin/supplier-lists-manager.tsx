@@ -595,9 +595,10 @@ function SaneoPanel({ flash, onDone }: { flash: (ok: boolean, msg: string) => vo
         <div className="flex-1">
           <p className="text-sm font-bold text-zinc-900">Sanear listas importadas</p>
           <p className="mt-0.5 text-xs text-zinc-500">
-            Revisa las listas ya cargadas y corrige lo que los lectores actuales ya no dejarían pasar:
-            equipos cuyo tamaño de monitor no cuadra con su precio, y memorias USB con la categoría
-            —y por tanto el margen— equivocada. Primero te muestra qué encontró.
+            Pasa las listas ya cargadas por las MISMAS reglas que hoy se aplican al importar: descarta
+            equipos cuyo tamaño de monitor no cuadra con su precio, corrige categorías equivocadas —memorias
+            USB, PC completos archivados como si fueran un disco, gabinetes vacíos— y guarda las specs que
+            el nombre ya declara. Primero te muestra qué encontró.
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">

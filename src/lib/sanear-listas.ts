@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupplierList, SupplierProduct } from "./supplier-catalog";
+import { corregirCategoria, specsDelNombre } from "./parse-supplier-doc";
 
 // ─── Saneo de listas ya importadas ────────────────────────────────────────────
 //
@@ -12,8 +13,12 @@ import type { SupplierList, SupplierProduct } from "./supplier-catalog";
 // botón del panel y `scripts/sanear-listas.js`. Con la lógica en un solo sitio no pueden
 // desincronizarse y dar resultados distintos.
 
+// Las reglas del IMPORTADOR se reutilizan tal cual. El saneo no es una lista aparte de
+// arreglos: es aplicar a lo ya importado exactamente lo que hoy se aplicaría al entrar,
+// que es lo que evita que las dos se separen con el tiempo.
+
 export type Hallazgo = {
-  motivo: "monitor" | "categoria";
+  motivo: "monitor" | "categoria" | "specs";
   nombre: string;
   detalle: string;
 };
@@ -88,17 +93,46 @@ export function diagnosticar(listas: SupplierList[]): Diagnostico {
     }
 
     for (const p of lista.productos) {
-      if (p.categoria === "accesorios") continue;
-      if (!ES_MEMORIA_USB.test(p.nombre)) continue;
-      recategorizados.push({
-        motivo: "categoria",
-        nombre: p.nombre,
-        detalle: `${p.categoria} → accesorios`,
-      });
+      // Categoría: se pasa por las MISMAS reglas del importador (memoria USB → accesorio,
+      // equipo completo archivado como pieza → escritorio, gabinete vacío → accesorio).
+      const corregida = categoriaCorrecta(p);
+      if (corregida !== p.categoria) {
+        recategorizados.push({
+          motivo: "categoria",
+          nombre: p.nombre,
+          detalle: `${p.categoria} → ${corregida}`,
+        });
+        continue;
+      }
+
+      // Specs que el nombre declara y no están guardadas. No cambian el producto: lo
+      // completan, y evitan que el completador por web gaste una consulta en un dato que
+      // ya estaba escrito.
+      const nuevas = specsNuevas(p);
+      if (nuevas.length > 0) {
+        recategorizados.push({
+          motivo: "specs",
+          nombre: p.nombre,
+          detalle: `añade ${nuevas.join(", ")}`,
+        });
+      }
     }
   }
 
   return { descartados, recategorizados };
+}
+
+/** La categoría que le correspondería a este producto si se importara hoy. */
+function categoriaCorrecta(p: SupplierProduct): string {
+  // La regla de memoria USB va primero porque es más específica que las del importador.
+  if (p.categoria !== "accesorios" && ES_MEMORIA_USB.test(p.nombre)) return "accesorios";
+  return corregirCategoria(p.nombre, p.categoria);
+}
+
+/** Specs que el nombre declara y al producto le faltan, por nombre de campo. */
+function specsNuevas(p: SupplierProduct): string[] {
+  const delNombre = specsDelNombre(p.nombre, p.categoria);
+  return Object.keys(delNombre).filter((k) => !p.specs?.[k]);
 }
 
 /** Aplica las correcciones y devuelve las listas ya saneadas, junto al diagnóstico de lo
@@ -111,11 +145,12 @@ export function sanear(listas: SupplierList[]): { listas: SupplierList[]; diagno
     if (!Array.isArray(lista.productos)) return lista;
     const productos = lista.productos
       .filter((p) => !aDescartar.has(p.nombre))
-      .map((p) =>
-        p.categoria !== "accesorios" && ES_MEMORIA_USB.test(p.nombre)
-          ? { ...p, categoria: "accesorios" }
-          : p,
-      );
+      .map((p) => {
+        const categoria = categoriaCorrecta(p);
+        // Las specs guardadas mandan sobre las deducidas: el saneo COMPLETA, no reescribe.
+        const specs = { ...specsDelNombre(p.nombre, categoria), ...(p.specs ?? {}) };
+        return { ...p, categoria, specs: Object.keys(specs).length ? specs : undefined };
+      });
     return { ...lista, productos };
   });
 
