@@ -22,6 +22,7 @@ import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
 import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
+import { marcasEnConsulta, esDeMarca } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
@@ -553,12 +554,22 @@ const sinTildes = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-�
  *  por una palabra que las listas escriben de otra forma. */
 function filtrarPorAtributos<T>(items: T[], textoDe: (x: T) => string, consulta: string): T[] {
   const q = sinTildes(consulta);
-  return ATRIBUTOS
+  const porAtributo = ATRIBUTOS
     .filter(([pedido]) => pedido.test(q))
     .reduce((quedan, [, enProducto]) => {
       const cumplen = quedan.filter((x) => enProducto.test(sinTildes(textoDe(x))));
       return cumplen.length > 0 ? cumplen : quedan;
     }, items);
+
+  // LA MARCA TAMBIÉN ES PARTE DE LO QUE PIDIÓ. Tampoco lleva cifra, así que a quien
+  // pedía un morral TARGUS le salían un Totto, un Lugano y un genérico de Oxford. Quien
+  // nombra la marca ya decidió; ofrecerle otras tres es no haberlo escuchado.
+  // Misma exigencia blanda: si no hay NADA de esa marca, no se filtra y se sigue el
+  // camino normal (que acaba en conseguirlo por web o en pedirle el modelo).
+  const marcas = marcasEnConsulta(consulta);
+  if (marcas.length === 0) return porAtributo;
+  const deLaMarca = porAtributo.filter((x) => marcas.some((m) => esDeMarca(textoDe(x), m)));
+  return deLaMarca.length > 0 ? deLaMarca : porAtributo;
 }
 
 function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; localDisponibles: number; productos: CustomerProduct[]; nota: string } {
@@ -938,6 +949,13 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
   // "monitor" solo si NO es un equipo completo: un PC combo dice "+ Monitor 24\"" pero lleva CPU
   // → debe ir a escritorio, no a la categoría monitor (si no, un gaming con monitor no recibe su margen).
   if (/\bmonitor\b/.test(n) && !TIENE_CPU.test(n))                 return "monitor";
+  // BOLSOS ANTES QUE PORTÁTILES. Un morral se anuncia como "Porta Laptop" o "Laptop
+  // Backpack", así que la regla de portátil se lo llevaba y le aplicaba el margen de un
+  // computador (20%) en vez del de accesorio (40%). El efecto era absurdo: en una misma
+  // lista de tres morrales, el que se llamaba "Porta Laptop" salía $10.000 más barato
+  // que sus dos hermanos, solo por cómo lo había bautizado la tienda.
+  // Un portátil de verdad nunca se llama "morral", y `TIENE_CPU` descarta los combos.
+  if (/\b(morral|mochila|malet[ií]n|maleta|backpack|bolso|canguro)\b/.test(n) && !TIENE_CPU.test(n)) return "accesorios";
   if (/laptop|port[aá]til|notebook/.test(n))                       return "portatil";
   if (/\btablet\b|ipad|galaxy.?tab/.test(n))                       return "tablet";
   if (/antivirus|kaspersky|bitdefender|\beset\b|norton|avast/.test(n)) return "antivirus";
@@ -1051,7 +1069,10 @@ const FAMILIAS: [string, RegExp][] = [
   ["gabinete",       /\b(gabinete|chasis|\bcase\b)\b/i],
   ["software",       /\b(antivirus|kaspersky|eset|norton|mcafee|avast|bitdefender|licencia|office\s?\d)\b/i],
   ["energia",        /\b(cargador|power\s?bank|bater[ií]a externa|adaptador de corriente)\b/i],
-  ["soporte",        /\b(soporte|base refrigerante|elevador|brazo para monitor|mochila|morral|malet[ií]n)\b/i],
+  // Un morral y un soporte elevador NO son la misma familia, por mucho que ambos sean
+  // "cosas para el portátil". Estaban juntos y el filtro los daba por intercambiables.
+  ["maleta",         /\b(morral|mochila|malet[ií]n|maleta|backpack|bolso|canguro|estuche|funda)\b/i],
+  ["soporte",        /\b(soporte|base refrigerante|elevador|brazo para monitor)\b/i],
   ["cable",          /\b(cable|patch\s?cord|extensi[oó]n el[eé]ctrica)\b/i],
 ];
 
