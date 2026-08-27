@@ -51,19 +51,6 @@ function buildFromForm(formData: FormData, existing?: Product): Product {
   };
 }
 
-export async function createProduct(formData: FormData) {
-  const list = loadProducts();
-  const product = buildFromForm(formData);
-  if (!product.nombre) throw new Error("El nombre es obligatorio");
-  if (list.some((p) => p.slug === product.slug)) {
-    product.slug = `${product.slug}-${product.id}`;
-  }
-  list.push(product);
-  saveProducts(list);
-  revalidatePath("/", "layout");
-  redirect("/admin");
-}
-
 export async function updateProduct(id: string, formData: FormData) {
   const list = loadProducts();
   const existing = list.find((p) => p.id === id);
@@ -73,13 +60,6 @@ export async function updateProduct(id: string, formData: FormData) {
   saveProducts(newList);
   revalidatePath("/", "layout");
   redirect("/admin");
-}
-
-export async function deleteProduct(formData: FormData) {
-  const id = String(formData.get("id"));
-  const list = loadProducts().filter((p) => p.id !== id);
-  saveProducts(list);
-  revalidatePath("/", "layout");
 }
 
 export async function importCSV(formData: FormData) {

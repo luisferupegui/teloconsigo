@@ -31,10 +31,6 @@ export const products: Product[] = loadProducts();
 export const getAllProducts = () => loadProducts();
 export const getProductBySlug = (slug: string) =>
   loadProducts().find((p) => p.slug === slug);
-export const getProductsByCategory = (categoria: string) =>
-  loadProducts().filter((p) => p.categoria === categoria);
-export const getFeaturedProducts = () =>
-  loadProducts().filter((p) => p.destacado);
 export const getProductById = (id: string) =>
   loadProducts().find((p) => p.id === id);
 
@@ -85,19 +81,6 @@ export function pickHomeCards(
   pool.sort((a, b) => rank(a) - rank(b));
 
   return [...chosen, ...pool.slice(0, HOME_MIN - chosen.length)];
-}
-
-export function getBusinessByUseCase(usoCaso: BusinessProduct["usoCaso"]) {
-  return loadBusinessProducts().filter((p) => p.usoCaso === usoCaso);
-}
-
-export function getBusinessByCategoria(cat: BusinessProduct["categoria"]) {
-  return loadBusinessProducts().filter((p) => p.categoria === cat);
-}
-
-export function getPrecioMinimo(usoCaso: BusinessProduct["usoCaso"]): number | null {
-  const items = getBusinessByUseCase(usoCaso).map((p) => p.precioDesde).filter((v): v is number => v !== null);
-  return items.length ? Math.min(...items) : null;
 }
 
 // ─── Legacy helpers ───────────────────────────────────────────────────────────

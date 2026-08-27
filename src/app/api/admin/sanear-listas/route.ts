@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { loadLists, saveLists } from "@/lib/supplier-catalog";
 import { diagnosticar, sanear } from "@/lib/sanear-listas";
 
@@ -16,7 +16,7 @@ export async function GET() {
 
 // POST — aplica las correcciones. `saveLists` deja copia del estado anterior en
 // supplier-lists.json.bak, así que hay marcha atrás desde "Restaurar listas".
-export async function POST(_req: NextRequest) {
+export async function POST() {
   try {
     const { listas, diagnostico } = sanear(loadLists());
     const total = diagnostico.descartados.length + diagnostico.recategorizados.length;

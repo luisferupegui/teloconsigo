@@ -13,8 +13,6 @@ export type Settings = {
   anthropicApiKey?: string;
   // Key de Serper (serper.dev) para la búsqueda de productos en EE.UU. y Colombia.
   serperApiKey?: string;
-  // Dominios donde el buscador web tiene permitido buscar (ej: "mercadolibre.com.co").
-  webSearchSites?: string[];
 };
 
 const SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
@@ -100,13 +98,3 @@ export function maskKey(key: string): string {
 
 // ─── Sitios del buscador web ──────────────────────────────────────────────────
 
-export function loadWebSearchSites(): string[] {
-  const s = loadSettings().webSearchSites;
-  return Array.isArray(s) ? s : [];
-}
-
-export function saveWebSearchSites(sites: string[]): void {
-  const settings = loadSettings();
-  settings.webSearchSites = sites;
-  saveSettings(settings);
-}

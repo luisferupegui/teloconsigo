@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import {
   Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
-  Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ListChecks, ChevronDown,
+  Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ChevronDown,
   Star, Tag, Pencil, RefreshCw, ShieldCheck, ClipboardList,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";

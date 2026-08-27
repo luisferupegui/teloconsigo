@@ -58,7 +58,6 @@ const DATA_FILES = [...new Set([
   "products.json",
   "supplier-lists.json",
   "margins.json",
-  "supplier-catalog.json",
 ])];
 
 let copiados = 0;

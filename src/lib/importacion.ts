@@ -2,13 +2,14 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 
-// Precios "puesto en Colombia" — DETERMINISTA, nunca los calcula el modelo.
+// Precio de un producto IMPORTADO DE EE.UU., puesto en Colombia.
+// DETERMINISTA: nunca lo calcula el modelo.
 //
-// Dos flujos:
-//   A) Importación EE.UU.: (usdProducto / DIVISOR + fleteUS) × TRM
-//   B) Local Colombia:     precioBase × (1 + margen) + fleteCOP
-
-// ── A) IMPORTACIÓN EE.UU. ────────────────────────────────────────────────────
+//   (usdProducto / DIVISOR + fleteUS) × TRM
+//
+// El precio de lo que se consigue EN COLOMBIA no se calcula aquí: sale del costo de
+// la lista de proveedor por el margen de su categoría (`applyMargin`, en
+// supplier-catalog.ts), que es el que se edita en Admin → Precios.
 
 export type ShippingTier = "component" | "laptop" | "desktop";
 
@@ -76,47 +77,5 @@ export function cotizarImportacion(usdProducto: number, tier: ShippingTier = "co
     usdTotal:    Math.round(usdTotal * 100) / 100,
     trm:         cfg.trm,
     copEstimado: Math.round((usdTotal * cfg.trm) / 1000) * 1000,
-  };
-}
-
-// ── B) DISPONIBILIDAD LOCAL COLOMBIA ─────────────────────────────────────────
-//
-// Márgenes y fletes locales según categoría de producto.
-// Flete local (COP): producto pequeño $15.000 | GPU/portátil $60.000 | escritorio $80.000
-
-export type LocalCategoria =
-  | "tablet" | "portatil" | "all_in_one" | "equipo_corporativo"
-  | "servidor" | "nas" | "tarjeta_grafica" | "procesador"
-  | "accesorio" | "licencia" | "antivirus";
-
-const LOCAL_PRICING: Record<LocalCategoria, { margen: number; flete: number }> = {
-  tablet:             { margen: 0.15, flete:  15_000 },
-  portatil:           { margen: 0.15, flete:  60_000 },
-  all_in_one:         { margen: 0.20, flete:  80_000 },
-  equipo_corporativo: { margen: 0.25, flete:  80_000 },
-  servidor:           { margen: 0.20, flete:  80_000 },
-  nas:                { margen: 0.25, flete:  60_000 },
-  tarjeta_grafica:    { margen: 0.15, flete:  60_000 },
-  procesador:         { margen: 0.15, flete:  15_000 },
-  accesorio:          { margen: 0.20, flete:  15_000 },
-  licencia:           { margen: 0.20, flete:       0 },
-  antivirus:          { margen: 0.35, flete:       0 },
-};
-
-export type CotizacionLocal = {
-  precioBase:  number;
-  margen:      number;
-  flete:       number;
-  precioFinal: number;
-};
-
-/** Precio de venta en COP para producto conseguido localmente en Colombia. */
-export function cotizarLocal(precioBase: number, categoria: LocalCategoria): CotizacionLocal {
-  const { margen, flete } = LOCAL_PRICING[categoria] ?? LOCAL_PRICING.accesorio;
-  return {
-    precioBase,
-    margen,
-    flete,
-    precioFinal: Math.round((precioBase * (1 + margen) + flete) / 1000) * 1000,
   };
 }
