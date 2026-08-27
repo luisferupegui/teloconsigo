@@ -186,10 +186,17 @@ export default function PreciosPage() {
     setTimeout(() => setIStatus("idle"), 3000);
   }
 
-  // Construir lista de categorías a mostrar
+  // Categorías a mostrar: SIEMPRE todas las conocidas, estén o no en margins.json.
+  //
+  // Antes solo se listaban las claves que ya existían en el archivo, y eso creaba una
+  // trampa cerrada: `margins.json` vive en el volumen y solo se siembra en el PRIMER
+  // deploy, así que una categoría nueva nunca llegaba a producción — y como no estaba en
+  // el archivo, tampoco salía en el panel para poder añadirla. La categoría quedaba
+  // cobrando el margen "default" sin forma de tocarla. Ahora aparece con el valor que
+  // está usando de verdad y basta con guardarla para fijarlo.
   const catKeys = [
-    ...CAT_ORDER.filter((k) => k in margins),
-    ...Object.keys(margins).filter((k) => !CAT_ORDER.includes(k) && k !== "default"),
+    ...CAT_ORDER,
+    ...Object.keys(margins).filter((k) => !CAT_ORDER.includes(k)),
   ];
 
   if (loading) {
@@ -250,7 +257,9 @@ export default function PreciosPage() {
             <tbody className="divide-y divide-zinc-100">
               {catKeys.map((key) => {
                 const meta    = CAT_LABELS[key];
-                const margen  = margins[key] ?? 0.35;
+                // Una categoría que aún no está en margins.json usa el margen "default":
+                // se muestra ese, que es el que está cobrando de verdad.
+                const margen  = margins[key] ?? margins.default ?? 0.35;
                 const pct     = Math.round(margen * 100);
                 const ejemplo = Math.ceil(500_000 * (1 + margen) / 1000) * 1000;
                 const isDefault = key === "default";
