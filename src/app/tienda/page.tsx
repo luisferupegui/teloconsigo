@@ -1,13 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { existsSync, statSync } from "fs";
-import path from "path";
 import { loadCategories, type Linea } from "@/lib/categories";
 import { conIconos } from "@/lib/categories-icons";
 import { ArrowLeft, ArrowRight, Search } from "lucide-react";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
+import { resolveLineImage } from "@/lib/line-images";
 import { TiendaSearchResults } from "@/components/tienda-search-results";
 import type { QuickViewProduct } from "@/components/product-quick-view";
 
@@ -19,32 +18,17 @@ export const metadata = {
     "Explora todas las líneas de productos: procesadores, portátiles, memorias, almacenamiento, impresoras y más.",
 };
 
-const EXTS = ["webp", "jpg", "jpeg", "png"] as const;
-
-function resolveLineImg(catSlug: string, linea: Linea): string | null {
-  // Slug-specific file (admin upload) takes priority over brand-level fallback
-  for (const ext of EXTS) {
-    const rel = `/lineas/${catSlug}/${linea.slug}.${ext}`;
-    const abs = path.join(process.cwd(), "public", rel);
-    if (existsSync(abs)) return `${rel}?v=${Math.floor(statSync(abs).mtimeMs)}`;
-  }
-  if (linea.imagen) {
-    const abs = path.join(process.cwd(), "public", linea.imagen.replace(/^\//, ""));
-    if (existsSync(abs)) return `${linea.imagen}?v=${Math.floor(statSync(abs).mtimeMs)}`;
-  }
-  return null;
-}
+const resolveLineImg = (catSlug: string, linea: Linea) =>
+  resolveLineImage(catSlug, linea.slug, linea.imagen);
 
 // ─── Card de línea (igual que en /categoria/[slug]) ───────────────────────────
 
 function LineaCard({
   linea,
-  catSlug,
   CatIcon,
   imageUrl,
 }: {
   linea: Linea;
-  catSlug: string;
   CatIcon: React.ComponentType<{ className?: string }>;
   imageUrl: string | null;
 }) {
@@ -302,7 +286,6 @@ export default async function TiendaPage({
                       <LineaCard
                         key={linea.slug}
                         linea={linea}
-                        catSlug={catActiva.slug}
                         CatIcon={catActiva.Icon}
                         imageUrl={resolveLineImg(catActiva.slug, linea)}
                       />

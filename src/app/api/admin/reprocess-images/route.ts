@@ -25,6 +25,7 @@ export async function POST() {
   const scanDirs  = [
     path.join(publicDir, "productos"),
     path.join(publicDir, "lineas"),
+    path.join(process.cwd(), "data", "lineas-img"),
   ];
 
   const files = scanDirs.flatMap(collectImages);

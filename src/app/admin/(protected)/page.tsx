@@ -1,30 +1,12 @@
-import { existsSync, statSync } from "fs";
-import path from "path";
 import Link from "next/link";
 import { loadCategories } from "@/lib/categories";
+import { resolveLineImage } from "@/lib/line-images";
 import { conIconos } from "@/lib/categories-icons";
 import { LineImageUploader } from "@/components/admin/line-image-uploader";
-import { AccionesCategoria, NuevaLinea, AccionesLinea } from "@/components/admin/categoria-crud";
+import { NuevaCategoria, AccionesCategoria, NuevaLinea, AccionesLinea } from "@/components/admin/categoria-crud";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Catálogo · Admin" };
-
-const EXTS = ["webp", "jpg", "jpeg", "png"];
-
-function resolveLineImage(categoria: string, slug: string, imagenPath?: string): string | null {
-  // Slug-specific upload takes priority (deliberate admin override)
-  for (const ext of EXTS) {
-    const rel = `/lineas/${categoria}/${slug}.${ext}`;
-    const abs = path.join(process.cwd(), "public", rel);
-    if (existsSync(abs)) return `${rel}?v=${Math.floor(statSync(abs).mtimeMs)}`;
-  }
-  // Fall back to the shared brand-level image defined in categories.ts
-  if (imagenPath) {
-    const abs = path.join(process.cwd(), "public", imagenPath.replace(/^\//, ""));
-    if (existsSync(abs)) return `${imagenPath}?v=${Math.floor(statSync(abs).mtimeMs)}`;
-  }
-  return null;
-}
 
 export default async function CatalogoAdminPage({
   searchParams,
@@ -127,6 +109,13 @@ export default async function CatalogoAdminPage({
               </span>
             </Link>
           ))}
+
+          {/* Crear categoría. El formulario, su API y el CRUD ya existían completos;
+              lo único que faltaba era este botón, así que crear una categoría desde el
+              panel no era posible aunque todo estuviera hecho. */}
+          <div className="pt-3">
+            <NuevaCategoria />
+          </div>
         </aside>
 
         {/* Content */}

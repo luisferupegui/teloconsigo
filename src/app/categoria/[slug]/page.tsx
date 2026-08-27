@@ -1,23 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { existsSync, statSync } from "fs";
-import path from "path";
 import { loadCategories, type Linea } from "@/lib/categories";
 import { conIconos } from "@/lib/categories-icons";
+import { resolveLineImage } from "@/lib/line-images";
 
 // La taxonomía se lee del disco en cada render (vive en data/categories.json y se
 // gestiona desde el panel), y `conIconos` le devuelve el `cat.Icon` que ya usaba el JSX.
 const categorias = () => conIconos(loadCategories());
 import type React from "react";
-
-// Cache-busting dinámico basado en mtime del archivo — cambia automáticamente
-// cada vez que se reprocesa una imagen, sin necesidad de subir ASSET_V manualmente.
-function withV(src: string): string {
-  const abs = path.join(process.cwd(), "public", src.replace(/^\//, "").split("?")[0]);
-  if (existsSync(abs)) return `${src.split("?")[0]}?v=${Math.floor(statSync(abs).mtimeMs)}`;
-  return src;
-}
 
 export async function generateStaticParams() {
   return categorias().map((c) => ({ slug: c.slug }));
@@ -47,6 +38,10 @@ function LineaCard({
   catSlug: string;
   CatIcon: React.ComponentType<{ className?: string }>;
 }) {
+  // Misma resolución que en /tienda y en el panel: primero lo subido desde el admin,
+  // luego la imagen que trae el repositorio. Esta página solo miraba `linea.imagen`,
+  // así que una imagen cambiada desde el panel no llegaba a verse aquí.
+  const imageUrl = resolveLineImage(catSlug, linea.slug, linea.imagen);
   const href = `/conseguir?cat=${catSlug}&marca=${encodeURIComponent(linea.marca)}&linea=${encodeURIComponent(linea.nombre)}`;
   return (
     <Link
@@ -60,9 +55,9 @@ function LineaCard({
     >
       {/* Imagen o ícono fallback */}
       <div className="relative flex items-center justify-center bg-white h-36 border-b border-zinc-100">
-        {linea.imagen ? (
+        {imageUrl ? (
           <Image
-            src={withV(linea.imagen)}
+            src={imageUrl}
             alt={`${linea.marca} ${linea.nombre}`}
             fill
             sizes="(max-width:640px) 45vw, (max-width:1024px) 28vw, 180px"

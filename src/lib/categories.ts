@@ -137,6 +137,23 @@ export function editarLinea(catSlug: string, lineaSlug: string, datos: { marca: 
   return { ok: true };
 }
 
+/** Fija (o quita) la imagen de una línea.
+ *
+ *  Hace falta porque la imagen vive en DOS sitios: el archivo en `public/lineas/…` y este
+ *  campo, que es el que se usa cuando no hay archivo con el slug. Al subir una imagen solo
+ *  se escribía el archivo, y al borrarla solo se borraba el archivo — así que "Eliminar
+ *  imagen" decía "hecho", el panel la quitaba de la vista, y al recargar reaparecía: la
+ *  que seguía apuntada aquí. Manteniendo los dos lados sincronizados, borrar borra. */
+export function setLineaImagen(catSlug: string, lineaSlug: string, imagen: string | null): boolean {
+  const cats = loadCategories();
+  const linea = cats.find((c) => c.slug === catSlug)?.lineas.find((l) => l.slug === lineaSlug);
+  if (!linea) return false;
+  if (imagen) linea.imagen = imagen;
+  else delete linea.imagen;
+  saveCategories(cats);
+  return true;
+}
+
 export function borrarLinea(catSlug: string, lineaSlug: string): { ok: boolean; error?: string } {
   const cats = loadCategories();
   const cat = cats.find((c) => c.slug === catSlug);
