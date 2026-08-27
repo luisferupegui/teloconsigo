@@ -475,7 +475,11 @@ function AsesorContent() {
                   marca medía 21,6px reales —al lado de un avatar de 90px— y el eslogan
                   quedaba ilegible. Ahora se usa una versión recortada al contenido y con
                   fondo transparente, así los píxeles que se piden son todos logo. */}
-              <div className="z-10 ml-auto self-center pl-4">
+              {/* `relative -top-3.5`: 14px hacia arriba. Centrado a plomo, el logo queda
+                  ópticamente bajo — su masa está en el carrito, abajo a la izquierda, y
+                  el ojo lo lee más pesado de lo que es. Se compensa a mano, no con
+                  `items-start`, para no depender del alto del bloque de texto. */}
+              <div className="relative -top-3.5 z-10 ml-auto self-center pl-4">
                 <Image
                   src="/asesor/logo-chat.png"
                   alt="teloconsigo.co"
