@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         categoria: p.categoria,
         referencia: p.referencia ?? "",
         precio_costo: p.precio_costo,
-        precio_final: applyMargin(p.precio_costo, p.categoria, margins),
+        precio_final: applyMargin(p.precio_costo, p.categoria, margins, p.nombre),
       })),
     });
   }

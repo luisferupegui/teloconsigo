@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     referencia: p.referencia ?? "",
     specs: p.specs ?? {},
     precio_costo: p.precio_costo,
-    precio_final: applyMargin(p.precio_costo, p.categoria, margins),
+    precio_final: applyMargin(p.precio_costo, p.categoria, margins, p.nombre),
     margen: margins[p.categoria] ?? margins.default ?? 0.35,
     proveedor: p.proveedor,
     listaId: p.listaId,

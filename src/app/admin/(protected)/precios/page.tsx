@@ -45,7 +45,8 @@ const CAT_LABELS: Record<string, { label: string; desc: string }> = {
   "auriculares":     { label: "Auriculares / Headsets",           desc: "Diademas, in-ear, USB-C" },
   "streaming":       { label: "Streaming / Capturadoras",         desc: "Elgato, Razer, OBS compatible" },
   "impresora":       { label: "Impresoras",                       desc: "Láser, inkjet, multifuncionales" },
-  "accesorios":      { label: "Accesorios generales",             desc: "Hubs, cables, adaptadores…" },
+  "accesorios":      { label: "Accesorios generales",             desc: "Hubs, cables, adaptadores, periféricos sueltos…" },
+  "proteccion":      { label: "Protección eléctrica",             desc: "UPS, reguladores, multitomas, supresores de picos" },
   "teclado":         { label: "Teclados",                         desc: "Mecánicos, membrana, inalámbrico" },
   "motherboard":     { label: "Motherboards / Placas madre",      desc: "AM5, LGA1700, HEDT…" },
   "escritorio-alto-rendimiento": { label: "Escritorio alto rendimiento", desc: "Gaming, edición de video, producción (GPU dedicada / CPU tope). Margen competitivo" },
@@ -71,6 +72,7 @@ const CAT_ORDER = [
   "mouse",           // Mouse / Ratones
   "portatil",        // Portátiles / Notebooks
   "procesador",      // Procesadores / CPU
+  "proteccion",      // Protección eléctrica (UPS, reguladores)
   "redes",           // Redes (switches, routers, APs)
   "refrigeracion",   // Refrigeración / Coolers
   "servidor",        // Servidores

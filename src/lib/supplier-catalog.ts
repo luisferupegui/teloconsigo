@@ -1,7 +1,6 @@
 import "server-only";
 import fs from "fs";
 import path from "path";
-import type { SupplierProductWithMargin } from "./supplier-catalog-client";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -35,7 +34,6 @@ export type ActiveProduct = SupplierProduct & {
   listaNombre: string;
 };
 
-export type { SupplierProductWithMargin };
 
 export type Margins = Record<string, number>;
 
@@ -137,11 +135,6 @@ export function loadActiveProducts(): ActiveProduct[] {
     );
 }
 
-/** Compat: todos los productos de todas las listas (activas o no), aplanados. */
-export function loadSupplierCatalog(): SupplierProduct[] {
-  return loadLists().flatMap((l) => l.productos);
-}
-
 // ─── Márgenes ───────────────────────────────────────────────────────────────
 
 export function loadMargins(): Margins {
@@ -156,20 +149,54 @@ export function saveMargins(margins: Margins): void {
   fs.writeFileSync(MARGINS_PATH, JSON.stringify(margins, null, 2), "utf-8");
 }
 
-export function applyMargin(costPrice: number, categoria: string, margins: Margins): number {
-  const margin = margins[categoria] ?? margins.default ?? 0.35;
-  return Math.ceil((costPrice * (1 + margin)) / 1000) * 1000;
+// ─── De la categoría de la LISTA a la categoría de PRECIO ────────────────────
+//
+// Las listas de proveedor archivan con su propia nomenclatura ("all-in-one",
+// "perifericos", "tableta", "software"…) mientras que los márgenes del panel
+// (Admin → Precios) usan la taxonomía de la tienda. Cuando una no encajaba con la
+// otra, `margins[categoria]` era `undefined` y el producto caía en el margen
+// "default" (35%) SIN QUE NADIE LO VIERA: la categoría tampoco salía en el panel,
+// porque el panel solo lista las claves que ya están en margins.json.
+//
+// El daño era real y siempre en la misma dirección: 25 todo-en-uno y 5 torres de
+// marca —computadores completos, margen 20%— se cotizaban al 35%, y lo mismo las
+// 12 tabletas. El cliente veía un precio más alto que el del equipo equivalente
+// de la categoría "escritorio".
+//
+// La categoría GUARDADA no se toca: sigue diciendo "all-in-one" porque de ahí sale
+// el FORMATO del equipo (torre / AIO / portátil), que no es lo mismo que el margen.
+const ALIAS_MARGEN: Record<string, string> = {
+  "all-in-one":           "escritorio",
+  "todo-en-uno":          "escritorio",
+  "pc-equipos-de-marca":  "escritorio",
+  "tableta":              "tablet",
+  "perifericos":          "accesorios",
+  "camara":               "streaming",
+  "software":             "licencia",
+  "fuente":               "fuente-poder",
+  "psu":                  "fuente-poder",
+  "grafica":              "tarjeta-grafica",
+  "tarjeta-video":        "tarjeta-grafica",
+  "proteccion-electrica": "proteccion",
+  "ups":                  "proteccion",
+};
+
+// Dentro de "software" conviven dos márgenes distintos del panel: las licencias de
+// Microsoft (25%) y los antivirus (35%). Con el nombre a la vista se distinguen.
+const ES_ANTIVIRUS = /\b(antivirus|kaspersky|bitdefender|eset|norton|mcafee|avast|small business security|endpoint)\b/i;
+
+/** Clave de margen que le corresponde a un producto: la categoría tal cual cuando
+ *  el panel la conoce, y su equivalente cuando la lista la nombra de otra forma.
+ *  `nombre` solo desempata dentro de una misma categoría. */
+export function categoriaMargen(categoria: string, nombre?: string): string {
+  const c = (categoria ?? "").toLowerCase().trim();
+  if (c === "software" && nombre && ES_ANTIVIRUS.test(nombre)) return "antivirus";
+  return ALIAS_MARGEN[c] ?? c;
 }
 
-export function withMargins(
-  products: SupplierProduct[],
-  margins: Margins,
-): SupplierProductWithMargin[] {
-  return products.map((p) => ({
-    ...p,
-    precio_final: applyMargin(p.precio_costo, p.categoria, margins),
-    margen: margins[p.categoria] ?? margins.default ?? 0.35,
-  }));
+export function applyMargin(costPrice: number, categoria: string, margins: Margins, nombre?: string): number {
+  const margin = margins[categoriaMargen(categoria, nombre)] ?? margins.default ?? 0.35;
+  return Math.ceil((costPrice * (1 + margin)) / 1000) * 1000;
 }
 
 // ─── Utilidades ─────────────────────────────────────────────────────────────

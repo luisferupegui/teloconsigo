@@ -511,6 +511,56 @@ type CustomerProduct = {
 // (p. ej. "CHASIS ANTEC + 5 FANS" colado por "color", o un cooler con "PANTALLA RGB").
 const TIENE_CPU = /\b(ryzen|core\s?i[3579]|core\s?ultra|xeon|pentium|celeron|athlon|threadripper|i[3579]-\d{3,4})\b/i;
 
+// ── ATRIBUTOS PEDIDOS: lo que el cliente dice con PALABRAS, no con cifras ─────
+//
+// Los filtros de specs —tanto el local como el de la web— solo retienen los términos CON
+// CIFRA (16gb, 5060, 1tb), así que "inalámbrico" o "mecánico" no pesaban nada: a quien
+// pedía un mouse INALÁMBRICO para oficina le salía de "mejor precio" un G203 con cable, y
+// a quien pedía un teclado MECÁNICO, un Genius de membrana de $33.000. Para el cliente eso
+// no es una opción más barata: es otra cosa.
+//
+// Cada entrada es [lo que dice el CLIENTE, lo que tiene que decir el PRODUCTO].
+const ATRIBUTOS: [RegExp, RegExp][] = [
+  [/\b(inalambric\w+|wireless|bluetooth)\b/, /\b(inalambric\w+|wireless|bluetooth|bt|lightspeed|2\.4\s?ghz|receptor usb)\b/],
+  // "Mech-Dome" (Logitech) NO entra aquí a propósito: es una membrana con tacto mecánico,
+  // y venderla como teclado mecánico es exactamente la media verdad que se quiere evitar.
+  [/\b(mecanic\w+|mechanical)\b/,            /\b(mecanic\w+|mechanical|switch (red|blue|brown|azul|rojo|cafe))\b/],
+  [/\b(con cable|alambric\w+|cableado|wired)\b/, /\b(alambric\w+|con cable|wired|cableado|3\.5\s?mm)\b/],
+  [/\b(ergonomic\w+|vertical)\b/,            /\b(ergonomic\w+|vertical)\b/],
+  [/\b(curvo|curva|curved)\b/,               /\b(curvo|curva|curved)\b/],
+  [/\b(multifuncional|multifuncion)\b/,      /\b(multifuncional|multifuncion|mfp|3 en 1|todo en uno)\b/],
+  [/\b(laser)\b/,                            /\b(laser)\b/],
+  [/\b(tinta|inyeccion|inkjet)\b/,           /\b(tinta|inyeccion|inkjet|ecotank|deskjet)\b/],
+  // Resoluciones: "full hd" no lleva cifra, así que el filtro de specs no la veía y a
+  // quien pedía una cámara Full HD le salía de "mejor precio" una Genius de 720p.
+  [/\b(full ?hd|1080p?)\b/,                  /\b(full ?hd|fhd|1080)\b/],
+  [/\b(4k|ultra ?hd)\b/,                     /\b(4k|uhd|2160)\b/],
+  [/\b(2k|qhd|1440p?)\b/,                    /\b(2k|qhd|1440)\b/],
+  // Marca de gráfica: "RTX" y "Radeon" no llevan cifra, así que a quien pedía un
+  // ensamblado "con RTX" le salía de mejor precio uno con RX 9060, que es AMD.
+  [/\b(rtx|geforce|nvidia)\b/,               /\b(rtx|gtx|geforce|nvidia)\b/],
+  [/\b(radeon)\b/,                           /\b(radeon|rx\s?\d{3,4})\b/],
+];
+
+/** Sin tildes: la consulta dice "inalámbrico" y la lista "Inalámbrica". */
+const sinTildes = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/** Deja solo las opciones que tienen los atributos que el cliente pidió con palabras.
+ *
+ *  Es una exigencia BLANDA, atributo por atributo: si al menos una opción lo cumple, se
+ *  descartan las que no; si NINGUNA lo cumple, ese atributo no filtra y la búsqueda sigue
+ *  su curso normal (que acaba en cotizar por web). Así nunca deja al cliente sin respuesta
+ *  por una palabra que las listas escriben de otra forma. */
+function filtrarPorAtributos<T>(items: T[], textoDe: (x: T) => string, consulta: string): T[] {
+  const q = sinTildes(consulta);
+  return ATRIBUTOS
+    .filter(([pedido]) => pedido.test(q))
+    .reduce((quedan, [, enProducto]) => {
+      const cumplen = quedan.filter((x) => enProducto.test(sinTildes(textoDe(x))));
+      return cumplen.length > 0 ? cumplen : quedan;
+    }, items);
+}
+
 function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; localDisponibles: number; productos: CustomerProduct[]; nota: string } {
   const consulta = String(input?.consulta ?? "").toLowerCase().trim();
   const segmento = input?.segmento as Segmento | undefined;
@@ -519,6 +569,20 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   const FORMATOS = new Set<Formato>(["ensamblado", "torre-marca", "todo-en-uno", "portatil"]);
   const formatoRaw = input?.formato as Formato | undefined;
   const formato = formatoRaw && FORMATOS.has(formatoRaw) ? formatoRaw : null;
+
+  // ¿Qué CLASE de cosa pidió el cliente? Se resuelve antes que nada porque de ella
+  // dependen tanto el puente de uso (abajo) como las tres guardas del final.
+  const clase = clasificarConsulta(consulta);
+  // FAMILIA FINA de lo pedido ("monitor", "impresora", "proteccion"…). Vale también
+  // cuando la clase gruesa es "otro": si la consulta nombra una familia concreta, el
+  // cliente está pidiendo una PIEZA aunque ninguna de las tres listas la reconozca.
+  // Sin este respaldo, cualquier categoría que faltara en las listas apagaba todas las
+  // guardas a la vez y la búsqueda devolvía lo primero que puntuara.
+  const familiaConsulta = familiaDe(consulta);
+  const soloEquipos = clase === "equipo";
+  const soloPiezas  = clase === "componente" || clase === "accesorio"
+                   || (clase === "otro" && familiaConsulta !== null);
+
   // EL CLIENTE HABLA DE USO; LOS PRODUCTOS, DE HARDWARE.
   //
   // Una consulta como "computador ensamblado torre diseño grafico Photoshop Illustrator"
@@ -546,14 +610,25 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     [/\b(port[aá]til|laptop|notebook)\b/i, "portatil laptop notebook thinkpad ideapad inspiron vivobook aspire"],
   ];
 
-  const extras = [...PUENTE_USO, ...PUENTE_FORMATO]
-    .filter(([re]) => re.test(consulta))
-    .map(([, palabras]) => palabras)
-    .join(" ");
+  // Los dos puentes solo valen cuando lo que se busca es un EQUIPO. En una consulta de
+  // pieza o accesorio hacen daño: "una impresora multifuncional para la oficina" activaba
+  // el puente de "oficina" y sumaba "ryzen core intel amd" a la puntuación, con lo que
+  // ganaban los PROCESADORES — que fue exactamente lo que vio el cliente. El uso solo
+  // ayuda a traducir "diseño gráfico" a hardware cuando se está eligiendo una MÁQUINA.
+  const extras = soloPiezas
+    ? ""
+    : [...PUENTE_USO, ...PUENTE_FORMATO]
+        .filter(([re]) => re.test(consulta))
+        .map(([, palabras]) => palabras)
+        .join(" ");
 
-  const terms = consulta.split(/\s+/).filter((t) => t.length > 1);
+  // SIN TILDES A LOS DOS LADOS. La comparación es por substring, así que "audífonos" no
+  // encontraba "audifonos" ni "gráfica" encontraba "grafica" — y las listas escriben unas
+  // veces con tilde y otras sin ella. Es una diferencia que el cliente no puede adivinar
+  // y que decidía si veía o no un producto que sí tenemos.
+  const terms = sinTildes(consulta).split(/\s+/).filter((t) => t.length > 1);
   // Los términos del puente puntúan, pero NO se exigen: van aparte de `terms`.
-  const termsScore = [...new Set([...terms, ...extras.toLowerCase().split(/\s+/).filter(Boolean)])];
+  const termsScore = [...new Set([...terms, ...sinTildes(extras).split(/\s+/).filter(Boolean)])];
   const score = (haystack: string) => (termsScore.length === 0 ? 1 : termsScore.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0));
 
   // prioridad 0 = listas de proveedor (disponibilidad local), 1 = catálogo publicado
@@ -578,10 +653,10 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // 1) LISTAS DE PROVEEDOR ACTIVAS — disponibilidad local, precio = costo + margen de categoría.
   const margins = loadMargins();
   const locales: Row[] = loadActiveProducts().map((p) => {
-    const precio = applyMargin(p.precio_costo, p.categoria, margins);
+    const precio = applyMargin(p.precio_costo, p.categoria, margins, p.nombre);
     // Se añaden las formas de nombrar la categoría ("placa", "cpu", "pantalla"): el nombre
     // de un producto casi nunca las dice, y el cliente casi siempre usa una de ellas.
-    const haystack = [p.nombre, p.marca, p.categoria, palabrasDeCategoria(p.categoria), Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
+    const haystack = sinTildes([p.nombre, p.marca, p.categoria, palabrasDeCategoria(p.categoria), Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase());
     return {
       score: score(haystack), precio, prioridad: 0, haystack,
       prod: {
@@ -596,7 +671,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // 2) CATÁLOGO PUBLICADO — también disponibilidad local.
   const catalogo: Row[] = loadPublishedBusinessProducts().map((p) => {
     const precio = p.precioDesde ?? p.precio;
-    const haystack = [p.nombre, p.marca, p.descripcionUso, p.categoria, palabrasDeCategoria(p.categoria), p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase();
+    const haystack = sinTildes([p.nombre, p.marca, p.descripcionUso, p.categoria, palabrasDeCategoria(p.categoria), p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase());
     return {
       score: score(haystack), precio, prioridad: 1, haystack,
       prod: {
@@ -609,15 +684,13 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     };
   });
 
-  // Si el cliente pide un EQUIPO completo, exige que el producto nombre un CPU: así se
-  // descartan piezas/accesorios sueltos que el scoring por palabras cuela (chasis, cooler…).
-  const clase = clasificarConsulta(consulta);
-  const soloEquipos = clase === "equipo";
-  // INVERSO: si el cliente pide una PIEZA o un ACCESORIO, un equipo COMPLETO nunca es la
-  // respuesta. Un combo de escritorio se llama "… + Monitor Janus 24\"" y por eso entraba
-  // en la búsqueda de "monitor"; lo mismo pasaba con RAM, disco o procesador, que también
-  // aparecen en el nombre de cualquier PC. Se excluye todo lo que sea un equipo completo.
-  const soloPiezas = clase === "componente" || clase === "accesorio";
+  // `soloEquipos` / `soloPiezas` se calcularon arriba, junto a la clase de la consulta:
+  //   • EQUIPO completo → se exige que el producto nombre un CPU, para descartar piezas
+  //     y accesorios sueltos que el scoring por palabras cuela (chasis, cooler…).
+  //   • PIEZA o ACCESORIO → un equipo COMPLETO nunca es la respuesta. Un combo de
+  //     escritorio se llama "… + Monitor Janus 24\"" y por eso entraba en la búsqueda de
+  //     "monitor"; lo mismo con RAM, disco o procesador, que también aparecen en el
+  //     nombre de cualquier PC. Se excluye todo lo que sea un equipo completo.
   // Búsqueda explícita de escritorio/ensamblado (sin mencionar portátil) → excluir portátiles.
   // TIENE_CPU descarta periféricos pero NO laptops (tienen CPU). Sin este filtro un DELL INSPIRON
   // aparece en búsquedas de "ensamblado para edición" porque su Core i7 pasa el filtro de CPU.
@@ -737,7 +810,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // Se compara la familia FINA. Antes se comparaba la clase gruesa, y como monitor,
   // teclado, diadema y memoria USB son todos "accesorio", el filtro los daba por
   // equivalentes y no filtraba nada.
-  const familiaPedida = soloPiezas ? familiaDe(consulta) : null;
+  const familiaPedida = soloPiezas ? familiaConsulta : null;
   const mismaFamilia = (x: Row) =>
     familiaPedida === null || familiaDe(`${x.prod.nombre} ${x.prod.categoria}`) === familiaPedida;
 
@@ -755,7 +828,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // NO se afloja más allá de esto: si nada local cumple lo que pidió el cliente, la
   // respuesta correcta es "no hay disponibilidad local" y que Andrea lo consiga por web.
   // Devolver lo que sea era peor — ofrecía un Ryzen 3 a quien pidió un Ryzen 5 con RTX 5060.
-  const conSpecs = soloEspecs;
+  const conSpecs = filtrarPorAtributos(soloEspecs, (x) => x.haystack, consulta);
 
   // Orden: primero local, luego por relevancia y precio. Dedupe por referencia/nombre
   // conservando la primera (la versión local con prioridad).
@@ -869,6 +942,10 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
   if (/\btablet\b|ipad|galaxy.?tab/.test(n))                       return "tablet";
   if (/antivirus|kaspersky|bitdefender|\beset\b|norton|avast/.test(n)) return "antivirus";
   if (/licencia|windows\s*\d|office\s*\d|microsoft\s*365|ms365/.test(n)) return "licencia";
+  // Protección eléctrica ANTES que servidor y que fuente: una "UPS Rack 3000VA para
+  // servidor" no es un servidor, y una UPS tampoco es una fuente de PC aunque ambas
+  // se midan en vatios.
+  if (/\bups\b|regulador de voltaje|\bregulador\b|multitoma|supresor de picos|no.?break|\d{3,4}\s?va\b/.test(n)) return "proteccion";
   if (/servidor|server|\bpoweredge\b|\bproliant\b/.test(n))        return "servidor";
   // Mini-PC ANTES que escritorio: es su propia categoría (NUC, barebone, mini computador).
   if (/mini.?pc|minipc|\bnuc\b|mini.?computador|barebone/.test(n))  return "mini-pc";
@@ -881,13 +958,23 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
   if (clasificacion === "equipo") return escritorioTier(n);
   if (/procesador|\bcpu\b|ryzen|core i[3579]|xeon/.test(n))        return "procesador";
   if (/\bram\b|ddr[2345]/.test(n))                                  return "memoria-ram";
+  // Memoria USB / micro SD ANTES que almacenamiento: en la tienda viven en Accesorios
+  // (mismo criterio que el importador de listas), y de ahí sale su margen.
+  if (/memoria usb|pen ?drive|flash ?drive|micro ?sd|tarjeta sd|\busb\s?\d{1,4}\s?[gt]b\b/.test(n)) return "accesorios";
   if (/\bssd\b|nvme|\bhdd\b/.test(n))                              return "almacenamiento";
   if (/\bgpu\b|\brtx\b|\bgtx\b|radeon|geforce/.test(n))            return "tarjeta-grafica";
   if (/motherboard|placa.*(madre|base)/.test(n))                   return "motherboard";
+  // FUENTE ANTES QUE REFRIGERACIÓN: "Cooler Master MWE 650W" es una fuente, no un cooler,
+  // y con el orden inverso se le aplicaba el margen de refrigeración (40% en vez de 30%).
+  if (/fuente de (poder|alimentaci[oó]n)|\bpsu\b|80\s?plus/.test(n)) return "fuente-poder";
+  if (/cooler|disipador|refrigeraci[oó]n|water\s?cooling|\bventilador\b/.test(n)) return "refrigeracion";
+  // Kits de streaming: cámara web, micrófono, capturadora, aro de luz.
+  if (/webcam|c[aá]mara web|capturadora|capture ?card|aro de luz|ring ?light|micr[oó]fono|stream ?deck/.test(n)) return "streaming";
+  if (/gabinete|chasis/.test(n))                                    return "accesorios";
   if (/\bmouse\b|rat[oó]n/.test(n))                                return "mouse";
   if (/\bteclado\b/.test(n))                                        return "teclado";
-  if (/auricular|aud[ií]fono|headset/.test(n))                     return "auriculares";
-  if (/impresora/.test(n))                                          return "impresora";
+  if (/auricular|aud[ií]fono|headset|diadema/.test(n))             return "auriculares";
+  if (/impresora|multifuncional|t[oó]ner|cartucho de tinta/.test(n)) return "impresora";
   if (/router|\bswitch\b|access.?point/.test(n))                   return "redes";
   if (clasificacion === "accesorio") return "accesorios";
   return "default";
@@ -905,7 +992,14 @@ const COMPONENT_QUERY = /\b(motherboard|placa( base| madre)?|tarjeta madre|mainb
 // Accesorios / consumo masivo: baratos y abundantes local → Colombia primero, EE.UU.
 // solo último recurso (importarlos no compensa el flete). Tienen PRECEDENCIA sobre
 // componente para que "memoria USB", "disco externo", "tarjeta SD" no vayan a EE.UU.
-const ACCESSORY_QUERY = /\b(teclado|mouse|rat[oó]n|mousepad|pad ?mouse|memoria usb|usb|pen ?drive|flash drive|micro ?sd|tarjeta sd|sd card|memoria sd|disco (duro )?externo|ssd externo|monitor|antivirus|kaspersky|eset|norton|mcafee|avast|bitdefender|webcam|c[aá]mara web|aud[ií]fonos|auriculares|diadema|parlante|altavoz|hub usb|adaptador|cargador|hdmi|docking|dock)\b/i;
+//
+// COBERTURA: esta lista, la de componentes y la de equipos tienen que nombrar TODAS las
+// categorías del carrusel de la tienda. Lo que no cae en ninguna se clasifica "otro", y
+// "otro" apaga las tres guardas de `buscar_productos` (piezas, familia y equipos). Así
+// es como a un cliente que pedía "una impresora multifuncional para la oficina" le
+// salieron PROCESADORES: "impresora" no estaba en ninguna lista, el puente de uso metía
+// "ryzen core intel amd" por la palabra "oficina" y nada impedía que ganaran.
+const ACCESSORY_QUERY = /\b(teclado|mouse|rat[oó]n|mousepad|pad ?mouse|memoria usb|usb|pen ?drive|flash drive|micro ?sd|tarjeta sd|sd card|memoria sd|disco (duro )?externo|ssd externo|monitor|antivirus|kaspersky|eset|norton|mcafee|avast|bitdefender|webcam|c[aá]mara web|aud[ií]fonos|auriculares|diadema|parlante|altavoz|hub usb|adaptador|cargador|hdmi|docking|dock|impresora|multifuncional|t[oó]ner|cartucho|ups|regulador|multitoma|supresor|power ?bank|bater[ií]a externa|micr[oó]fono|capturadora|aro de luz|tr[ií]pode|gabinete|chasis|mochila|morral|malet[ií]n|estuche|funda|soporte|base refrigerante|cable|kit de herramientas|soplador|lector de (tarjetas|memorias))\b/i;
 
 // FAMILIA DE PRODUCTO — fina, no la clase gruesa de arriba.
 //
@@ -919,11 +1013,28 @@ const ACCESSORY_QUERY = /\b(teclado|mouse|rat[oó]n|mousepad|pad ?mouse|memoria 
 // "memoria USB" es memoria antes que cualquier cosa que lleve USB en el nombre.
 const FAMILIAS: [string, RegExp][] = [
   ["memoria-usb",    /\b(memoria\s+usb|pen\s?drive|flash\s?drive|usb\s?\d{1,4}\s?[gt]b|\d{1,4}\s?[gt]b\s+usb)\b/i],
+  // Un hub/dock no es una memoria USB por llevar "USB" en el nombre, ni un cable.
+  ["hub",            /\b(hub|docking\s?station|\bdock\b|replicador de puertos)\b/i],
+  // Protección eléctrica: una UPS no es un regulador, pero frente a cualquier OTRA cosa
+  // (un monitor, una fuente de PC) sí son la misma familia. Va antes que "fuente" porque
+  // una UPS también se describe como fuente de respaldo.
+  ["proteccion",     /\b(\bups\b|regulador(es)? de voltaje|regulador(es)?|multitoma|supresor de picos|no.?break)\b/i],
   ["monitor",        /\b(monitor|pantalla)\b/i],
   ["teclado",        /\b(teclado|keyboard)\b/i],
   ["mouse",          /\b(mouse|rat[oó]n|mousepad|pad\s?mouse)\b/i],
-  ["audio",          /\b(aud[ií]fonos?|auriculares?|diadema|headset|parlante|altavoz|micr[oó]fono|barra de sonido)\b/i],
+  // El micrófono sale de "audio": quien pide un micrófono de streaming no quiere una
+  // diadema, por mucho que ambos vayan al mismo conector. Pero "audio" va PRIMERO: unos
+  // "audífonos CON MICRÓFONO" son una diadema, no un micrófono, y con el orden inverso
+  // el filtro de familia dejaba fuera todas las diademas de la lista.
+  ["audio",          /\b(aud[ií]fonos?|auriculares?|diadema|headset|parlante|altavoz|barra de sonido)\b/i],
+  ["microfono",      /\b(micr[oó]fonos?)\b/i],
+  // Una cámara de seguridad o una de carro NO son una cámara web. Iba todo junto en
+  // "camara", así que a quien pedía una cámara para videoconferencias le salía de
+  // "recomendado" una "Cámara Seguridad Para Carro CAR DVR". Va primero por ser la
+  // más específica de las dos.
+  ["camara-seguridad", /\b(c[aá]mara\s+(de\s+)?(seguridad|vigilancia)|videovigilancia|\bdvr\b|dash\s?cam|c[aá]mara\s+(para\s+)?(carro|auto|veh[ií]culo)|ip\s?cam)\b/i],
   ["camara",         /\b(webcam|c[aá]mara)\b/i],
+  ["captura",        /\b(capturadora|capture\s?card|aro de luz|ring\s?light|tr[ií]pode)\b/i],
   ["impresora",      /\b(impresora|multifuncional|t[oó]ner|cartucho)\b/i],
   ["red",            /\b(router|switch|access\s?point|punto de acceso|repetidor|antena|firewall)\b/i],
   ["memoria-ram",    /\b(ddr[2345]|sodimm|udimm|memoria\s+ram|\bram\b)\b/i],
@@ -939,6 +1050,9 @@ const FAMILIAS: [string, RegExp][] = [
   ["refrigeracion",  /\b(cooler|disipador|ventilador|refrigeraci[oó]n)\b/i],
   ["gabinete",       /\b(gabinete|chasis|\bcase\b)\b/i],
   ["software",       /\b(antivirus|kaspersky|eset|norton|mcafee|avast|bitdefender|licencia|office\s?\d)\b/i],
+  ["energia",        /\b(cargador|power\s?bank|bater[ií]a externa|adaptador de corriente)\b/i],
+  ["soporte",        /\b(soporte|base refrigerante|elevador|brazo para monitor|mochila|morral|malet[ií]n)\b/i],
+  ["cable",          /\b(cable|patch\s?cord|extensi[oó]n el[eé]ctrica)\b/i],
 ];
 
 // Categorías que son un EQUIPO, no una pieza. Se listan aparte de `formatoDeProducto`
@@ -1247,11 +1361,13 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
   // ambos lados para que un espacio no descarte el producto correcto.
   const pegar = (t: string) => t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2");
   const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
-  if (exig.length === 0) return productos;
-  return productos.filter((p) => {
+  const porCifras = exig.length === 0 ? productos : productos.filter((p) => {
     const hs = pegar(`${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`);
     return exig.every((t) => hs.includes(t));
   });
+  // Y los atributos que el cliente pidió con palabras (inalámbrico, mecánico, láser…),
+  // que las cifras no cubren. Ver `filtrarPorAtributos`.
+  return filtrarPorAtributos(porCifras, (p) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`, consulta);
 }
 
 // Respuesta estándar de cotizar_web hacia Andrea.
@@ -1741,7 +1857,7 @@ function buscarCostoLocal(
   let best = candidatos[0];
   let bestDiff = Infinity;
   for (const c of candidatos) {
-    const precioCli = applyMargin(c.precio_costo, c.categoria, margins);
+    const precioCli = applyMargin(c.precio_costo, c.categoria, margins, c.nombre);
     const diff = Math.abs(precioCli - precioCliente);
     if (diff < bestDiff) { bestDiff = diff; best = c; }
   }
@@ -1920,7 +2036,7 @@ function fichaLocalDeCatalogo(nombre: string): FichaLocal | null {
   // Mismo orden de preferencia que buscar_productos: listas de proveedor antes que catálogo.
   const candidatos: { key: string; ficha: FichaLocal }[] = [];
   for (const p of loadActiveProducts()) {
-    const precio = applyMargin(p.precio_costo, p.categoria, margins);
+    const precio = applyMargin(p.precio_costo, p.categoria, margins, p.nombre);
     if (precio > 0) {
       candidatos.push({ key: norm(p.nombre), ficha: { precio, costo: p.precio_costo, proveedor: p.proveedor } });
     }

@@ -201,7 +201,7 @@ export function cotizarPiezaLocal(pieza: PiezaPedida): PiezaCotizada | null {
     // coincidencia real, o cualquier producto de la categoría valdría.
     const puntos = opcionales.filter((t) => contieneToken(h, t)).length;
     if (exigidos.length === 0 && puntos === 0) continue;
-    candidatos.push({ nombre: p.nombre, precio: applyMargin(p.precio_costo, p.categoria, margins), costo: p.precio_costo, puntos });
+    candidatos.push({ nombre: p.nombre, precio: applyMargin(p.precio_costo, p.categoria, margins, p.nombre), costo: p.precio_costo, puntos });
   }
   if (candidatos.length === 0) return null;
 
@@ -240,7 +240,7 @@ export function cotizarFuente(vatios: number): PiezaCotizada | null {
     if (p.categoria !== "fuente-poder") continue;
     const w = Number(p.nombre.match(/(\d{3,4})\s*w\b/i)?.[1] ?? 0);
     if (w < vatios) continue;
-    candidatos.push({ nombre: p.nombre, precio: applyMargin(p.precio_costo, p.categoria, margins), costo: p.precio_costo, puntos: 0 });
+    candidatos.push({ nombre: p.nombre, precio: applyMargin(p.precio_costo, p.categoria, margins, p.nombre), costo: p.precio_costo, puntos: 0 });
   }
   if (candidatos.length === 0) return null;
 
