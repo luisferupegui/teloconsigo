@@ -469,13 +469,20 @@ function AsesorContent() {
                 </p>
               </div>
 
-              <div className="z-10 ml-auto self-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/asesor/logo-slogan.png"
-                  alt="Te lo Consigo"
-                  style={{ height: 52, width: "auto" }}
-                  className="hidden md:block"
+              {/* Logo de la marca.
+                  El archivo anterior (logo-slogan.png) era un lienzo de 1774×887 donde el
+                  logo real ocupaba 1600×368: un 63% de aire. Pintado a 52px de alto, la
+                  marca medía 21,6px reales —al lado de un avatar de 90px— y el eslogan
+                  quedaba ilegible. Ahora se usa una versión recortada al contenido y con
+                  fondo transparente, así los píxeles que se piden son todos logo. */}
+              <div className="z-10 ml-auto self-center pl-4">
+                <Image
+                  src="/asesor/logo-chat.png"
+                  alt="teloconsigo.co"
+                  width={574}
+                  height={132}
+                  priority
+                  className="hidden h-11 w-auto md:block"
                 />
               </div>
             </div>
