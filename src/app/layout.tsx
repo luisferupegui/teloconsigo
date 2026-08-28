@@ -13,6 +13,7 @@ import { CompareProvider } from "@/lib/compare";
 import { CompareBar } from "@/components/compare-bar";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { JsonLd } from "@/components/json-ld";
+import { WebMcpTools } from "@/components/webmcp-tools";
 import { organizationSchema, websiteSchema } from "@/lib/seo";
 
 const inter = Inter({
@@ -111,6 +112,8 @@ export default async function RootLayout({
             las páginas concretas solo añaden lo suyo (Product, ItemList…). */}
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
+        {/* Herramientas del sitio para un agente en el navegador (solo lectura). */}
+        <WebMcpTools />
         <ToastProvider>
           <WishlistProvider>
             <CompareProvider>

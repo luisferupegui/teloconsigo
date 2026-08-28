@@ -13,9 +13,50 @@ const nextConfig: NextConfig = {
   // dinámicas y los archivos estáticos, justo antes del 404. Así lo que vino con el
   // build se sigue sirviendo estático y solo lo subido después pasa por el handler,
   // que mira el disco. Ver src/app/api/media/[...ruta]/route.ts.
+  // Enlaces de descubrimiento (RFC 8288). Un agente que hace HEAD a la portada
+  // ve, sin descargar el HTML, dónde están el catálogo de APIs, el manifiesto de
+  // recursos y el mapa del sitio.
+  async headers() {
+    return [
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Link",
+            value: [
+              '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
+              '</.well-known/ai-catalog.json>; rel="describedby"; type="application/json"',
+              '</sitemap.xml>; rel="sitemap"; type="application/xml"',
+              '</faq>; rel="help"; type="text/html"',
+            ].join(", "),
+          },
+        ],
+      },
+    ];
+  },
+
   async rewrites() {
     return {
-      beforeFiles: [],
+      // Markdown para agentes: si la petición dice `Accept: text/markdown`, la
+      // respuesta la genera /api/md en vez del HTML. El navegador nunca manda esa
+      // cabecera, así que para una persona no cambia nada.
+      //
+      // Las rutas están enumeradas a propósito y no con un comodín: si un agente
+      // pide en markdown una página que no sabemos generar, es mejor que reciba
+      // el HTML —que sí tiene el contenido— que un 404.
+      beforeFiles: [
+        "/",
+        "/tienda",
+        "/catalogo",
+        "/contacto",
+        "/envios",
+        "/categoria/:slug",
+        "/producto/:slug",
+      ].map((source) => ({
+        source,
+        has: [{ type: "header" as const, key: "accept", value: ".*text/markdown.*" }],
+        destination: source === "/" ? "/api/md" : `/api/md${source}`,
+      })),
       afterFiles: [],
       fallback: [
         { source: "/productos/:ruta*",       destination: "/api/media/productos/:ruta*" },
