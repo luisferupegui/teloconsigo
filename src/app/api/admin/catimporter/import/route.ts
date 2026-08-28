@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
     if (!/\.(pdf|docx|xlsx)$/i.test(file.name)) return NextResponse.json({ error: "Formatos permitidos: PDF, DOCX y XLSX" }, { status: 400 });
     const provider = String(fd.get("proveedor") || "sin-proveedor").trim().toLowerCase();
     const aplicarIva = fd.get("aplicarIva") === "true";
-    const products = await importCatalog(Buffer.from(await file.arrayBuffer()), file.name, provider, aplicarIva);
+    const { motor, productos: products, descartados } = await importCatalog(Buffer.from(await file.arrayBuffer()), file.name, provider, aplicarIva);
     if (!products.length) return NextResponse.json({ error: "No se encontraron productos" }, { status: 422 });
-    return NextResponse.json({ ok: true, count: products.length, products, reviewCount: products.filter(p => p.requiresReview).length });
+    return NextResponse.json({ ok: true, motor, count: products.length, products, descartados, reviewCount: products.filter(p => p.requiresReview).length });
   } catch (e) { return NextResponse.json({ error: e instanceof Error ? e.message : "Error importando catálogo" }, { status: 500 }); }
 }
