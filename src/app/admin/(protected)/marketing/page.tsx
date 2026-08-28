@@ -5,6 +5,7 @@ import { resolveProductImage } from "@/lib/product-images";
 import { ProductManager, type ManagedBusinessProduct } from "@/components/admin/product-manager";
 import { SupplierListsManager } from "@/components/admin/supplier-lists-manager";
 import { PdfListImporter } from "@/components/admin/pdf-list-importer";
+import { CatimporterPanel } from "@/components/admin/catimporter/catimporter-panel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Productos · Admin" };
@@ -20,6 +21,7 @@ const TABS = [
   { id: "productos",    label: "📋 Gestionar productos" },
   { id: "pdf",          label: "📄 Listas Word/Excel" },
   { id: "listas-pdf",   label: "🖥️ Listas PDF" },
+  { id: "catimporter",  label: "🧪 Catimporter (pruebas)" },
   { id: "listas",       label: "📚 Listas cargadas" },
   { id: "buscar",       label: "🔍 Buscar productos" },
   { id: "herramientas", label: "🛠️ Herramientas" },
@@ -90,6 +92,7 @@ export default async function ProductosAdminPage({
       {activeTab === "productos"    && <ProductManager products={products} initialFilter={filter} />}
       {activeTab === "pdf"          && <SupplierListsManager vista="cargar" />}
       {activeTab === "listas-pdf"   && <PdfListImporter />}
+      {activeTab === "catimporter"  && <CatimporterPanel />}
       {activeTab === "listas"       && <SupplierListsManager vista="listas" />}
       {activeTab === "buscar"       && <SupplierListsManager vista="buscar" />}
       {activeTab === "herramientas" && <SupplierListsManager vista="herramientas" />}
