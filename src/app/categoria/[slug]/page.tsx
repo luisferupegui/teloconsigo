@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { loadCategories, type Linea } from "@/lib/categories";
 import { conIconos } from "@/lib/categories-icons";
 import { resolveLineImage } from "@/lib/line-images";
+import { JsonLd } from "@/components/json-ld";
+import { siteConfig, breadcrumbSchema, itemListSchema } from "@/lib/seo";
 
 // La taxonomía se lee del disco en cada render (vive en data/categories.json y se
 // gestiona desde el panel), y `conIconos` le devuelve el `cat.Icon` que ya usaba el JSX.
@@ -22,9 +24,28 @@ export async function generateMetadata({
   const { slug } = await params;
   const cat = categorias().find((c) => c.slug === slug);
   if (!cat) return {};
+  // La descripción nombra las marcas reales de la categoría: es lo que la gente
+  // escribe en Google ("monitores samsung medellín") y lo que hace que el
+  // resultado se lea como una respuesta y no como un título genérico.
+  const marcas = [...new Set((cat.lineas ?? []).map((l) => l.marca))].slice(0, 6);
+  const descripcion = [
+    cat.descripcion,
+    marcas.length ? `Encuentra ${marcas.join(", ")} y más.` : "",
+    "Envío a toda Colombia con garantía y asesoría personalizada.",
+  ].filter(Boolean).join(" ").slice(0, 300);
+
   return {
-    title: `${cat.nombre} | teloconsigo.co`,
-    description: cat.descripcion,
+    title: `${cat.nombre} en Colombia`,
+    description: descripcion,
+    alternates: { canonical: `/categoria/${cat.slug}` },
+    openGraph: {
+      title: `${cat.nombre} en Colombia | ${siteConfig.nombre}`,
+      description: descripcion,
+      type: "website",
+      locale: "es_CO",
+      url: `/categoria/${cat.slug}`,
+      siteName: siteConfig.nombre,
+    },
   };
 }
 
@@ -139,9 +160,23 @@ export default async function CategoriaPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      {/* Lo que la página muestra, también para Google: la ruta de navegación y
+          el listado de líneas de esta categoría. */}
+      <JsonLd data={breadcrumbSchema([
+        { nombre: "Inicio", ruta: "/" },
+        { nombre: "Catálogo", ruta: "/catalogo" },
+        { nombre: cat.nombre, ruta: `/categoria/${cat.slug}` },
+      ])} />
+      <JsonLd data={itemListSchema(
+        cat.nombre,
+        lineas.map((l) => ({
+          nombre: `${l.marca} ${l.nombre}`,
+          ruta: `/asesor?producto=${encodeURIComponent(`${l.marca} ${l.nombre}`)}`,
+        })),
+      )} />
 
       {/* Breadcrumb */}
-      <nav className="text-xs text-zinc-500 mb-5">
+      <nav aria-label="Ruta de navegación" className="text-xs text-zinc-500 mb-5">
         <Link href="/" className="hover:underline">Inicio</Link>
         <span className="mx-2">/</span>
         <Link href="/catalogo" className="hover:underline">Catálogo</Link>

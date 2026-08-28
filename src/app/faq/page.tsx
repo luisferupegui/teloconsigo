@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { Truck, CreditCard, Shield, RotateCcw, Package, MessageCircle } from "lucide-react";
+import { JsonLd } from "@/components/json-ld";
+
+export const metadata = {
+  title: "Preguntas frecuentes",
+  description:
+    "Envíos a toda Colombia, métodos de pago, garantía, cambios y devoluciones. Resolvemos las dudas más comunes antes de tu compra.",
+  alternates: { canonical: "/faq" },
+};
 
 const CATEGORIAS = [
   {
@@ -124,9 +132,25 @@ const CATEGORIAS = [
   },
 ];
 
+// Las preguntas que ya están escritas en la página, declaradas también para
+// Google: es de los pocos schemas que aún dan resultado enriquecido, y aquí el
+// contenido es real y visible, que es la única condición que Google exige.
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: CATEGORIAS.flatMap((c) =>
+    c.preguntas.map((p) => ({
+      "@type": "Question",
+      name: p.q,
+      acceptedAnswer: { "@type": "Answer", text: p.a },
+    })),
+  ),
+};
+
 export default function FaqPage() {
   return (
     <div className="bg-zinc-50 min-h-screen">
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0d1e3a] via-[#13294b] to-[#1e6cff] text-white">

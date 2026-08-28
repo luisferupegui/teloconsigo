@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Promociones | teloconsigo.co",
+  alternates: { canonical: "/soluciones" },
+  title: "Promociones en tecnología",
   description:
     "Soluciones tecnológicas para hogar, gaming, oficina, movilidad, redes, creadores y más. Cotización rápida con asesoría experta.",
 };

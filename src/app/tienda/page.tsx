@@ -13,7 +13,8 @@ import type { QuickViewProduct } from "@/components/product-quick-view";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Catálogo | teloconsigo.co",
+  alternates: { canonical: "/tienda" },
+  title: "Catálogo de tecnología",
   description:
     "Explora todas las líneas de productos: procesadores, portátiles, memorias, almacenamiento, impresoras y más.",
 };

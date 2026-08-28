@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/terminos" },
   title: "Términos y Condiciones",
   description: "Términos y condiciones de uso del sitio web y servicios de Te lo Consigo.",
 };

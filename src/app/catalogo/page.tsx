@@ -9,7 +9,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 export const metadata = {
-  title: "Soluciones a medida | teloconsigo.co",
+  alternates: { canonical: "/catalogo" },
+  title: "Soluciones a medida",
   description:
     "Tecnología para cada necesidad: hogar, gaming, productividad, movilidad, redes, creadores y smart home. Encuentra tu solución ideal con atención personalizada.",
 };

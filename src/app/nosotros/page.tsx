@@ -16,6 +16,7 @@ import {
 import { StatsSection } from "@/components/counter";
 
 export const metadata = {
+  alternates: { canonical: "/nosotros" },
   title: "Sobre nosotros",
   description:
     "Somos Te lo Consigo: el equipo apasionado por la tecnología que conecta a Colombia con el mejor hardware del mundo. Conoce nuestra historia, misión y valores.",

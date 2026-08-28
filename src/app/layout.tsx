@@ -12,6 +12,8 @@ import { WishlistProvider } from "@/lib/wishlist";
 import { CompareProvider } from "@/lib/compare";
 import { CompareBar } from "@/components/compare-bar";
 import { ScrollToTop } from "@/components/scroll-to-top";
+import { JsonLd } from "@/components/json-ld";
+import { organizationSchema, websiteSchema } from "@/lib/seo";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -79,6 +81,14 @@ export const metadata: Metadata = {
     description: "Tecnología con atención personalizada. Si no lo encuentras, te lo conseguimos.",
     images: ["/hero-banner.png"],
   },
+  // Sin canonical el mismo contenido servido desde varias URLs (con y sin www,
+  // con parámetros de campaña) se cuenta como contenido duplicado.
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
 };
 
 export default async function RootLayout({
@@ -96,6 +106,11 @@ export default async function RootLayout({
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrains.variable} ${bebasNeue.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#e8edf5] text-zinc-900 font-sans">
+        {/* Identidad del negocio para Google: quiénes somos, dónde estamos, cómo
+            contactarnos y cuál es el buscador del sitio. Va una sola vez, aquí:
+            las páginas concretas solo añaden lo suyo (Product, ItemList…). */}
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
         <ToastProvider>
           <WishlistProvider>
             <CompareProvider>

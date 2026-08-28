@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Productos | teloconsigo.co",
+  alternates: { canonical: "/productos" },
+  title: "Equipos corporativos",
   description:
     "Equipos tecnológicos corporativos: portátiles ejecutivos, PCs empresariales, monitores, tablets, accesorios y licencias. Cotización rápida.",
 };
