@@ -2,6 +2,7 @@ import "server-only";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado, ResultadoParser } from "./tipos";
 import { fragmentosDePdf, type Fragmento } from "./coordenadas";
+import { fichasDePagina } from "./ledacom-fichas";
 
 // ─── Ledacom ─────────────────────────────────────────────────────────────────
 //
@@ -108,6 +109,16 @@ export async function parseLedacom(buffer: Buffer): Promise<ResultadoParser> {
   const vistos = new Set<string>();
 
   for (const fragmentos of paginas) {
+    // El MISMO PDF trae dos maquetaciones. Las fichas de tres columnas
+    // (celulares, tablets, portátiles) las lee su propio motor; sin él se
+    // perdían familias enteras, que es justo lo que se veía mal agrupado.
+    for (const p of fichasDePagina(fragmentos, descartados)) {
+      const clave = `${p.referencia}|${p.nombre.toLowerCase()}`;
+      if (vistos.has(clave)) continue;
+      vistos.add(clave);
+      productos.push(p);
+    }
+
     // Secciones vigentes por columna. Se actualizan al encontrar una cabecera y
     // valen hasta la siguiente, que es como se lee la página.
     let secciones: { x: number; titulo: string }[] = [];
