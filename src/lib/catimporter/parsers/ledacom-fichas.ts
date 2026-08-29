@@ -53,14 +53,43 @@ function categoriaDeFicha(nombre: string, specs: Record<string, string>): string
   // A minúsculas TODO: las etiquetas vienen del PDF con su capitalización
   // ("Cámara Frontal", "Carga turbo") y comparadas en crudo no casaban nunca.
   const texto = `${n} ${Object.keys(specs).join(" ")} ${Object.values(specs).join(" ")}`.toLowerCase();
-  if (/\btab\b|tablet|ipad|\bpad\b/.test(n)) return "tablet";
-  if (/portátil|portatil|laptop|notebook|thinkpad|ideapad|vivobook|inspiron|latitude/.test(n)) return "portatil";
+
+  // Las pulgadas del nombre son la PANTALLA, y son el dato que más separa a un
+  // equipo de otro: de 20" para arriba no existe un portátil.
+  const pulgadas = Number(n.match(/(\d{2}(?:[.,]\d)?)\s*["”]/)?.[1]?.replace(",", ".") ?? 0);
+
+  // SERVIDOR primero: tiene procesador y memoria como un portátil, así que
+  // cualquier regla estructural se lo llevaría por delante.
+  if (/servidor|thinksystem|proliant|poweredge|formato rack|\brack\b|\bxeon\b|\bepyc\b/.test(texto)) return "servidor";
+  if (/tableta|\btab\b|tablet|ipad/.test(n)) return "tablet";
   if (/todo en uno|all.?in.?one|\baio\b/.test(n)) return "all-in-one";
   // Un teléfono se delata por la cámara frontal y la carga rápida; un portátil
   // nunca trae "Carga turbo" ni "Cámara Post.".
   if (/c[aá]mara post|c[aá]mara frontal|carga turbo|hyperos|dual sim/.test(texto)) return "celular";
-  if (/procesador/.test(texto) && /bater[ií]a/.test(texto)) return "portatil";
+  // Torre de marca o ensamblado: lo dice el formato, no la potencia.
+  if (/\bsff\b|\btorre\b|\bmini.?pc\b|optiplex|thinkcentre|prodesk|elitedesk/.test(n)) return "escritorio";
+  // Familias de portátil por nombre comercial. La lista es larga a propósito:
+  // "Lenovo V14 G5" no dice "portátil" por ningún lado y caía en accesorios.
+  if (/port[aá]til|laptop|notebook|thinkpad|thinkbook|ideapad|vivobook|zenbook|expertbook|inspiron|latitude|probook|elitebook|pavilion|aspire|nitro|swift|\btuf\b|\brog\b|legion|victus|\bomen\b|macbook|\bv1[3-6]\b|dell pro \d/.test(n)) {
+    return pulgadas >= 20 ? "all-in-one" : "portatil";
+  }
+  // Y si nada de lo anterior encaja, manda la ESTRUCTURA de la ficha: procesador
+  // + pantalla es un equipo con pantalla propia. Menos de 20", un portátil.
+  if (/procesador/.test(texto) && (pulgadas > 0 || /pantalla/.test(texto))) {
+    return pulgadas >= 20 ? "all-in-one" : "portatil";
+  }
   return "accesorios";
+}
+
+/** Limpia del nombre lo que es condición de servicio, no producto.
+ *  "Garantía 1 año Onsite" → "Garantía 1 año": el tipo de atención de la
+ *  garantía no distingue un producto de otro en el catálogo. */
+function limpiarNombre(nombre: string): string {
+  return nombre
+    .replace(/\s+on[\s-]?site\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([/,])/g, "$1")
+    .trim();
 }
 
 /** Las X donde empieza cada columna de fichas: las de la palabra "Referencias:". */
@@ -125,10 +154,15 @@ export function fichasDePagina(
       // Términos y Condiciones AIO HP PROONE 240" o "1x ranura para tarjetas
       // Tableta Lenovo…". Un título de ficha ocupa entre una y cuatro líneas.
       const titulo = lineas.slice(0, iRef).filter((l) => !ES_PIE(l)).slice(-4);
-      const nombre = titulo.join(" ").replace(/\s{2,}/g, " ").trim();
+      const nombre = limpiarNombre(titulo.join(" "));
       // En los portátiles el código va en la MISMA línea ("Referencia: 82X700FTLM");
       // en los celulares va debajo, una referencia por color.
-      const enLinea = lineas[iRef].replace(/^referencias?\s*:\s*/i, "").trim();
+      // La referencia se queda con el código, no con el sufijo de variante:
+      // "Referencia: YJ9PX - Torre" es la referencia YJ9PX.
+      const enLinea = lineas[iRef]
+        .replace(/^referencias?\s*:\s*/i, "")
+        .split(/\s+[-–]\s+/)[0]
+        .trim();
       const resto = lineas.slice(iRef + 1);
 
       // Variantes de color y specs etiquetadas.
