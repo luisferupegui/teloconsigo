@@ -3,6 +3,7 @@ import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado, ResultadoParser } from "./tipos";
 import { fragmentosDePdf, type Fragmento } from "./coordenadas";
 import { fichasDePagina } from "./ledacom-fichas";
+import { categoriaDeProducto } from "./categorias";
 
 // ─── Ledacom ─────────────────────────────────────────────────────────────────
 //
@@ -30,38 +31,6 @@ const precioNumero = (t: string): number | null => {
   const n = Number(t.replace(/[^\d]/g, ""));
   return Number.isFinite(n) && n >= 1000 ? n : null;
 };
-
-/** Secciones del catálogo → categoría de la tienda. El título manda sobre el
- *  nombre: "Mouses y PadMouses" es más fiable que adivinar por la palabra. */
-const SECCIONES: [RegExp, string][] = [
-  // El software va primero y separado: antivirus y licencias tienen márgenes
-  // distintos en el panel (35% y 25%), y cayendo en "accesorios" se cobraban al
-  // 40%. Una licencia de Office no es un accesorio.
-  [/antivirus|\beset\b|kaspersky|norton|mcafee|avast|bitdefender/i, "antivirus"],
-  [/licencia|\blic\.|windows|office|microsoft 365/i, "licencia"],
-  [/teclado|combo/i,                    "teclado"],
-  [/mouse|padmouse/i,                   "mouse"],
-  [/sonido|parlante|audio|diadema/i,    "auriculares"],
-  [/c[aá]mara/i,                        "camara"],
-  [/monitor|pantalla/i,                 "monitor"],
-  [/impresor|t[oó]ner|tinta/i,          "impresora"],
-  [/memoria|ram|ddr/i,                  "memoria-ram"],
-  [/disco|almacenamiento|ssd|nvme/i,    "almacenamiento"],
-  [/procesador|cpu/i,                   "procesador"],
-  [/board|tarjeta madre|mainboard/i,    "motherboard"],
-  [/video|gr[aá]fica|gpu/i,             "tarjeta-grafica"],
-  [/fuente|poder/i,                     "fuente-poder"],
-  [/red|router|switch|wifi/i,           "redes"],
-  [/port[aá]til|laptop/i,               "portatil"],
-  [/ups|regulador|energ[ií]a/i,         "proteccion"],
-];
-
-/** Cuando la sección no dice nada útil ("Otros Productos"), manda el nombre. */
-function categoriaDe(seccion: string | undefined, nombre: string): string {
-  for (const [re, cat] of SECCIONES) if (seccion && re.test(seccion)) return cat;
-  for (const [re, cat] of SECCIONES) if (re.test(nombre)) return cat;
-  return "accesorios";
-}
 
 /** Filas: fragmentos que comparten la misma banda vertical. La tolerancia es de
  *  3 puntos porque una celda con el nombre en dos renglones desplaza su precio
@@ -168,7 +137,7 @@ export async function parseLedacom(buffer: Buffer): Promise<ResultadoParser> {
         productos.push({
           nombre,
           marca: "Ledacom",
-          categoria: categoriaDe(seccion, nombre),
+          categoria: categoriaDeProducto(nombre, seccion),
           precio_costo: precio,
           referencia,
           specs: seccion ? { seccion } : undefined,

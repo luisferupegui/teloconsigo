@@ -2,6 +2,7 @@ import "server-only";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado } from "./tipos";
 import type { Fragmento } from "./coordenadas";
+import { categoriaDeProducto } from "./categorias";
 
 // ─── Ledacom, segundo formato: FICHAS DE PRODUCTO ────────────────────────────
 //
@@ -78,7 +79,11 @@ function categoriaDeFicha(nombre: string, specs: Record<string, string>): string
   if (/procesador/.test(texto) && (pulgadas > 0 || /pantalla/.test(texto))) {
     return pulgadas >= 20 ? "all-in-one" : "portatil";
   }
-  return "accesorios";
+  // No es un equipo. Y no todo lo que va en ficha lo es: el catálogo publica
+  // también tarjetas de video, mouses gamer y teclados en este formato, y
+  // devolver "accesorios" los metía a todos en el mismo cajón. Manda entonces la
+  // misma tabla que usan las tablas del catálogo — la que lee el NOMBRE.
+  return categoriaDeProducto(nombre);
 }
 
 /** Limpia del nombre lo que es condición de servicio, no producto.
