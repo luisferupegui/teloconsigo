@@ -1134,8 +1134,8 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                               <td className="px-4 py-2">
                                 <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">{p.categoria}</span>
                               </td>
-                              <td className="px-4 py-2 text-right text-zinc-500">{formatCOP(p.precio_costo)}</td>
-                              <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{formatCOP(p.precio_final)}</td>
+                              <td className="px-4 py-2 text-right text-zinc-500">{p.precio_costo > 0 ? formatCOP(p.precio_costo) : <span className="font-bold text-amber-600">sin precio</span>}</td>
+                              <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{p.precio_final > 0 ? formatCOP(p.precio_final) : "—"}</td>
                               <td className="px-4 py-2 text-right whitespace-nowrap">
                                 {published[rowKey] ? (
                                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
@@ -1158,7 +1158,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                                     {/* Publicación rápida */}
                                     <button
                                       onClick={() => doPublish(p, "catalogo", rowKey)}
-                                      disabled={publishingId === rowKey}
+                                      disabled={publishingId === rowKey || p.precio_final <= 0}
                                       title="Publicar rápido al catálogo"
                                       className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                                     >
@@ -1167,7 +1167,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                                     </button>
                                     <button
                                       onClick={() => doPublish(p, "destacado", rowKey)}
-                                      disabled={publishingId === rowKey}
+                                      disabled={publishingId === rowKey || p.precio_final <= 0}
                                       title="Publicar y marcar como Destacado"
                                       className="rounded-md border border-amber-300 p-1 text-amber-500 hover:bg-amber-50 disabled:opacity-50 transition"
                                     >
@@ -1175,7 +1175,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                                     </button>
                                     <button
                                       onClick={() => doPublish(p, "promocion", rowKey)}
-                                      disabled={publishingId === rowKey}
+                                      disabled={publishingId === rowKey || p.precio_final <= 0}
                                       title="Publicar y marcar como Promoción"
                                       className="rounded-md border border-indigo-300 p-1 text-indigo-500 hover:bg-indigo-50 disabled:opacity-50 transition"
                                     >
@@ -1480,13 +1480,25 @@ function BuscarTab({ totals, flash }: { totals: Totals; flash: (ok: boolean, msg
                       <p className="font-semibold text-zinc-700 capitalize">{m.proveedor}</p>
                       <p className="text-zinc-400 max-w-[180px] truncate">{m.listaNombre}</p>
                     </td>
-                    <td className="px-4 py-2.5 text-right text-zinc-500">{formatCOP(m.precio_costo)}</td>
-                    <td className="px-4 py-2.5 text-right font-bold text-[#1e6cff]">{formatCOP(m.precio_final)}</td>
+                    {/* Sin costo no hay precio de venta, y sin precio de venta no
+                        se publica. El botón lo dice antes de intentarlo: la API
+                        lo rechaza igual, pero enterarse al hacer clic es peor. */}
+                    <td className="px-4 py-2.5 text-right text-zinc-500">
+                      {m.precio_costo > 0
+                        ? formatCOP(m.precio_costo)
+                        : <span className="font-bold text-amber-600">sin precio</span>}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-bold text-[#1e6cff]">
+                      {m.precio_final > 0 ? formatCOP(m.precio_final) : "—"}
+                    </td>
                     <td className="px-4 py-2.5 text-right">
                       <button
                         onClick={() => publish(m, rowKey)}
-                        disabled={publishing === rowKey}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                        disabled={publishing === rowKey || m.precio_final <= 0}
+                        title={m.precio_final <= 0
+                          ? "Este producto llegó sin precio en la lista del proveedor. Pídeselo y complétalo antes de publicarlo."
+                          : "Publicar al catálogo"}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition"
                       >
                         {publishing === rowKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Store className="h-3 w-3" />}
                         Publicar
