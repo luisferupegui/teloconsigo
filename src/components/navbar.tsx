@@ -8,9 +8,7 @@ import {
   ShoppingCart,
   Menu,
   Heart,
-  UserCircle,
   LayoutDashboard,
-  LogOut,
 } from "lucide-react";
 import { iconoDe } from "@/lib/categories-icons";
 import type { Category } from "@/lib/categories";
@@ -25,7 +23,6 @@ import { ProductQuickView, type QuickViewProduct } from "./product-quick-view";
 export function Navbar({ categories = [] }: { categories?: Category[] }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [products, setProducts] = useState<QuickViewProduct[]>([]);
   const [searchQ, setSearchQ] = useState("");
@@ -36,7 +33,6 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
   const { count: wishCount } = useWishlist();
   const badgeRef = useRef<HTMLSpanElement>(null);
   const prev = useRef(cartCount);
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -91,17 +87,6 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
       prev.current = cartCount;
     }
   }, [cartCount]);
-
-  // Cerrar menú usuario al clic fuera
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-    if (userMenuOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [userMenuOpen]);
 
   // Cerrar dropdown de contacto al clic fuera
   useEffect(() => {
@@ -161,7 +146,39 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
       <div className="hidden lg:grid grid-cols-[auto_1fr_auto] gap-x-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Logo — abarca ambas filas ───────────────────────────── */}
-        <div className="row-span-2 self-center py-3">
+        <div className="row-span-2 self-center py-3 relative">
+          {/* ── Entrada al panel, escondida a la izquierda del logo ──
+              Antes era un icono de usuario permanente arriba a la derecha: un
+              control que el cliente ve, no entiende y a veces pulsa, para una
+              puerta que no es suya. Ahora vive en el margen izquierdo de la
+              cabecera, transparente hasta que el mouse entra en la zona.
+
+              `opacity-0` no impide el clic —un elemento transparente sigue
+              recibiendo el puntero— así que la zona está siempre ahí; solo se
+              revela al acercarse.
+
+              Va en `absolute` con `right-full` para que ocupe el hueco del
+              padding que ya tiene la cabecera y NO desplace el logo ni un
+              píxel. 28px de ancho contra 32px de padding: cabe justo, sin
+              asomarse fuera del viewport ni crear scroll horizontal.
+
+              Fuera del orden de tabulación a propósito: esconderlo del cliente y
+              dejarlo a un tabulador de distancia sería esconderlo a medias. Esto
+              es comodidad, no seguridad — /admin sigue protegido por su login y
+              bloqueado en robots.txt. */}
+          <Link
+            href="/admin"
+            aria-hidden="true"
+            tabIndex={-1}
+            title="Panel de administración"
+            className="absolute right-full top-1/2 mr-0.5 -translate-y-1/2 flex h-7 w-7
+                       items-center justify-center rounded-full border border-white/15
+                       text-zinc-500 opacity-0 transition-opacity duration-200
+                       hover:border-[#1e6cff]/50 hover:text-[#4d8dff] hover:opacity-100"
+          >
+            <LayoutDashboard className="h-3.5 w-3.5" />
+          </Link>
+
           {/* Logo SIN eslogan: en el header no se lee a ese tamaño y le robaba alto al
               logotipo. El arte se recorta de "Logo Oscuro Sin Slogan.png" quitándole el
               64% de margen vacío que trae el lienzo, y se genera a resolución completa.
@@ -280,48 +297,6 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
           </Link>
 
           {/* Usuario / Admin */}
-          <div ref={userMenuRef} className="relative">
-            <button
-              onClick={() => setUserMenuOpen((v) => !v)}
-              className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                userMenuOpen
-                  ? "border-[#1e6cff]/60 bg-[#1e6cff]/15 text-[#4d8dff]"
-                  : "border-white/15 text-zinc-400 hover:text-white hover:border-white/30"
-              }`}
-              aria-label="Menú de usuario"
-            >
-              <UserCircle className="h-5 w-5" />
-            </button>
-
-            {userMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-white/10
-                              bg-[#0f1626] shadow-2xl shadow-black/60 py-1 z-50">
-                <div className="px-4 py-3 border-b border-white/8">
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-500 mb-0.5">
-                    Modo desarrollo
-                  </p>
-                  <p className="text-sm font-semibold text-white">Administrador</p>
-                </div>
-                <Link
-                  href="/admin"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300
-                             hover:text-white hover:bg-white/5 transition"
-                >
-                  <LayoutDashboard className="h-4 w-4 text-[#4d8dff]" />
-                  Panel Admin
-                </Link>
-                <button
-                  onClick={() => setUserMenuOpen(false)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-400
-                             hover:text-red-400 hover:bg-red-500/5 transition"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Salir
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ── Fila 2: Barra de búsqueda ───────────────────────────── */}
