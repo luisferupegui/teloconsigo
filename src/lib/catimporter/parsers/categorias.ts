@@ -38,7 +38,9 @@ const REGLAS: [RegExp, string][] = [
   [/impresora|multifuncional|t[oó]ner|cartucho|plotter/i,                      "impresora"],
   // También en inglés: los catálogos mezclan idiomas dentro de la misma línea
   // ("Xiaomi Type-C Earphones"), y con reglas solo en español caían en accesorios.
-  [/parlante|altavoz|barra\s*de\s*sonido|aud[ií]fono|auricular|diadema|headset|micr[oó]fono|earphone|earbud|headphone|speaker/i, "auriculares"],
+  // "Cabina" es como se llama en Colombia a un parlante amplificado. Sin ella,
+  // una "Cabina Jaltech BT 6.5\"" caía en accesorios.
+  [/parlante|altavoz|cabina|barra\s*de\s*sonido|aud[ií]fono|auricular|diadema|headset|micr[oó]fono|earphone|earbud|headphone|speaker/i, "auriculares"],
   [/webcam|c[aá]mara\s*web|c[aá]mara/i,                                        "camara"],
   // "Combo" en estas listas es siempre teclado + mouse. Va con teclado, que es
   // como lo trata el resto del sistema; el margen de ambos es el mismo, así que

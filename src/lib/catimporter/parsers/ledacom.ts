@@ -36,15 +36,36 @@ const precioNumero = (t: string): number | null => {
  *  3 puntos porque una celda con el nombre en dos renglones desplaza su precio
  *  un par de puntos respecto a la referencia. */
 function filasDe(fragmentos: Fragmento[]): Fragmento[][] {
-  const bandas = new Map<number, Fragmento[]>();
-  for (const f of fragmentos) {
-    const banda = Math.round(f.y / 3) * 3;
-    if (!bandas.has(banda)) bandas.set(banda, []);
-    bandas.get(banda)!.push(f);
+  // POR CERCANÍA, no por bandas fijas. Dentro de una misma fila los fragmentos
+  // no están perfectamente alineados: el nombre suele ir un punto por encima de
+  // su referencia y su precio.
+  //
+  //   y=379 x=212 | 910-007456
+  //   y=379 x=379 | $40.000
+  //   y=380 x=255 | Mouse Logitech M196 Bluetooth Graffito   ← 1pt más arriba
+  //
+  // Con bandas fijas (redondeando y/3) ese punto caía justo en el corte y partía
+  // la fila en dos: la referencia y el precio quedaban sin nombre, y el producto
+  // se descartaba. Agrupando por distancia no hay corte donde partir.
+  //
+  // La tolerancia es 3 porque las filas del catálogo van separadas 6 puntos:
+  // suficiente para absorber el desalineado y demasiado poco para fundir dos.
+  const TOLERANCIA = 3;
+  const orden = [...fragmentos].sort((a, b) => b.y - a.y);
+  const filas: Fragmento[][] = [];
+  let actual: Fragmento[] = [];
+  let yFila = Number.POSITIVE_INFINITY;
+
+  for (const f of orden) {
+    if (actual.length > 0 && yFila - f.y > TOLERANCIA) {
+      filas.push(actual.sort((a, b) => a.x - b.x));
+      actual = [];
+    }
+    if (actual.length === 0) yFila = f.y;
+    actual.push(f);
   }
-  return [...bandas.entries()]
-    .sort((a, b) => b[0] - a[0])            // de arriba abajo
-    .map(([, fs]) => fs.sort((a, b) => a.x - b.x));
+  if (actual.length > 0) filas.push(actual.sort((a, b) => a.x - b.x));
+  return filas;
 }
 
 /** ¿Esta fila es la cabecera de una tabla ("Ref … Valor")? Si lo es, el texto
