@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importCatalog } from "@/lib/catimporter/orchestrator";
-import { avisosDeImportacion } from "@/lib/supplier-catalog";
+import { avisosDeImportacion, nombreDeProveedor } from "@/lib/supplier-catalog";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -30,7 +30,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Archivo muy grande (máx. 50 MB)" }, { status: 400 });
     }
 
-    const proveedor = String(fd.get("proveedor") || "").trim().toLowerCase() || "sin-proveedor";
+    // Se guarda como nombre propio ("Compuoriente"), no en minúscula: es lo que
+    // se lee en el panel y en las fichas. Las comparaciones entre listas y los
+    // ids van por su lado en minúscula, así que escribirlo con mayúscula no
+    // rompe el emparejamiento con las listas anteriores del mismo proveedor.
+    const proveedor = nombreDeProveedor(String(fd.get("proveedor") || "")) || "Sin proveedor";
     const aplicarIva = fd.get("aplicarIva") === "true";
 
     const { motor, productos, descartados } = await importCatalog(

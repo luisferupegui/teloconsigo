@@ -711,7 +711,7 @@ function ProveedorTag({ lista, onRefresh, flash }: {
   const [guardando, setGuardando] = useState(false);
 
   async function guardar() {
-    if (valor.trim().toLowerCase() === lista.proveedor) { setEditando(false); return; }
+    if (valor.trim().toLowerCase() === lista.proveedor.trim().toLowerCase()) { setEditando(false); return; }
     setGuardando(true);
     try {
       const res = await fetch("/api/admin/supplier-lists", {
@@ -1477,7 +1477,7 @@ function BuscarTab({ totals, flash }: { totals: Totals; flash: (ok: boolean, msg
                       <p className="text-zinc-400">{m.marca}{m.referencia ? ` · ${m.referencia}` : ""}</p>
                     </td>
                     <td className="px-4 py-2.5">
-                      <p className="font-semibold text-zinc-700 capitalize">{m.proveedor}</p>
+                      <p className="font-semibold text-zinc-700">{m.proveedor}</p>
                       <p className="text-zinc-400 max-w-[180px] truncate">{m.listaNombre}</p>
                     </td>
                     {/* Sin costo no hay precio de venta, y sin precio de venta no

@@ -5,6 +5,7 @@ import {
   generateProductId,
   type SupplierProduct,
   type SupplierList,
+  nombreDeProveedor,
 } from "@/lib/supplier-catalog";
 
 export const runtime = "nodejs";
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const productosEntrantes: Entrante[] = Array.isArray(body?.productos) ? body.productos : [];
-    const proveedor = texto(body?.proveedor, "sin-proveedor").toLowerCase();
+    const proveedor = nombreDeProveedor(texto(body?.proveedor)) || "Sin proveedor";
     const nombre = texto(body?.nombre, "Lista sin nombre");
 
     if (productosEntrantes.length === 0) {

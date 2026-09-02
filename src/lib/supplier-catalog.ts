@@ -170,7 +170,7 @@ export function loadActiveProducts(): ActiveProduct[] {
   // Por proveedor y producto, cuál es la lista más nueva que lo trae.
   const vigente = new Map<string, number>();
   for (const p of todos) {
-    const clave = `${p.proveedor}|${claveDeProducto(p)}`;
+    const clave = `${claveProveedor(p.proveedor)}|${claveDeProducto(p)}`;
     const fecha = fechaDe.get(p.listaId) ?? 0;
     if (fecha > (vigente.get(clave) ?? -1)) vigente.set(clave, fecha);
   }
@@ -179,7 +179,7 @@ export function loadActiveProducts(): ActiveProduct[] {
   // dentro de una misma lista puede haber varios productos con la misma clave
   // (el caso A) y esos no se tocan.
   return todos.filter(
-    (p) => (fechaDe.get(p.listaId) ?? 0) === vigente.get(`${p.proveedor}|${claveDeProducto(p)}`),
+    (p) => (fechaDe.get(p.listaId) ?? 0) === vigente.get(`${claveProveedor(p.proveedor)}|${claveDeProducto(p)}`),
   );
 }
 
@@ -248,9 +248,9 @@ export function avisosDeImportacion(
   }
 
   // La lista más reciente de este proveedor es contra la que se compara.
-  const prov = proveedor.trim().toLowerCase();
+  const prov = claveProveedor(proveedor);
   const anterior = loadLists()
-    .filter((l) => l.proveedor.trim().toLowerCase() === prov)
+    .filter((l) => claveProveedor(l.proveedor) === prov)
     .sort((a, b) => (Date.parse(b.fecha) || 0) - (Date.parse(a.fecha) || 0))[0];
 
   if (anterior) {
@@ -300,7 +300,7 @@ export function preciosDesactualizados(): {
 
   for (const lista of activas) {
     for (const p of lista.productos) {
-      const clave = `${p.proveedor}|${claveDeProducto(p)}`;
+      const clave = `${claveProveedor(p.proveedor)}|${claveDeProducto(p)}`;
       const lst = porClave.get(clave);
       if (lst) lst.push({ p, lista });
       else porClave.set(clave, [{ p, lista }]);
@@ -396,16 +396,35 @@ export function applyMargin(costPrice: number, categoria: string, margins: Margi
 
 // ─── Utilidades ─────────────────────────────────────────────────────────────
 
+/** El nombre del proveedor como se escribe: "compuoriente" → "Compuoriente".
+ *
+ *  Solo toca la primera letra y deja el resto como lo escribió quien importa,
+ *  para no estropear lo que ya venía bien puesto ("Grupo Ledacom", "HP", "SAS").
+ *
+ *  Es un nombre para leer, no una clave: los ids y las comparaciones van en
+ *  minúscula aparte, así que escribirlo distinto no rompe el emparejamiento
+ *  entre listas del mismo proveedor. */
+export function nombreDeProveedor(entrada: string): string {
+  const limpio = entrada.trim().replace(/\s{2,}/g, " ");
+  return limpio ? limpio[0].toUpperCase() + limpio.slice(1) : "";
+}
+
+/** La forma con la que se compara y se construyen los ids. */
+export const claveProveedor = (p: string) => p.trim().toLowerCase();
+
 export function generateProductId(
   nombre: string,
   proveedor: string,
   referencia?: string,
 ): string {
-  if (referencia) return `${proveedor}-${referencia}`;
+  // El id va SIEMPRE en minúscula aunque el proveedor se muestre capitalizado:
+  // es una clave, y acaba en enlaces.
+  const prov = claveProveedor(proveedor);
+  if (referencia) return `${prov}-${referencia}`;
   const slug = nombre.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 30);
-  return `${proveedor}-${slug}-${Date.now()}`;
+  return `${prov}-${slug}-${Date.now()}`;
 }
 
 export function generateListId(proveedor: string): string {
-  return `lista-${proveedor}-${Date.now()}`;
+  return `lista-${claveProveedor(proveedor)}-${Date.now()}`;
 }
