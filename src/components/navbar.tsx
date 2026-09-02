@@ -162,19 +162,27 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
 
         {/* ── Logo — abarca ambas filas ───────────────────────────── */}
         <div className="row-span-2 self-center py-3">
-          {/* El archivo original gastaba el 61% de su alto en margen vacío, así que el logo
-              se dibujaba a 44px dentro de una caja de 115px: de ahí la falta de definición.
-              logo-header.png es el mismo arte recortado y a resolución completa. Sin efecto
-              al pasar el mouse: es la marca, no un control. */}
+          {/* Logo SIN eslogan: en el header no se lee a ese tamaño y le robaba alto al
+              logotipo. El arte se recorta de "Logo Oscuro Sin Slogan.png" quitándole el
+              64% de margen vacío que trae el lienzo, y se genera a resolución completa.
+
+              52px de alto, no 56: el carrito medía 52px en pantalla con el logo anterior
+              y se conserva, así el header no cambia de peso visual. Al quitar el eslogan
+              el logotipo gana el alto que este ocupaba, que es justo lo que se busca.
+
+              `mix-blend-lighten` es lo que hace desaparecer el fondo del PNG: el del arte
+              es rgb(1,8,21) y el del header #0b0f1c, más claro en los tres canales, así
+              que el máximo entre ambos ES el header. Sin efecto al pasar el mouse: es la
+              marca, no un control. */}
           <Link href="/" className="shrink-0 block mix-blend-lighten cursor-default">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-header.png"
               srcSet="/logo-header.png 1x, /logo-header@2x.png 2x"
               alt="Te lo Consigo"
-              width={244}
-              height={56}
-              className="h-[56px] w-[244px]"
+              width={233}
+              height={52}
+              className="h-[52px] w-[233px]"
               fetchPriority="high"
               decoding="sync"
             />
@@ -428,9 +436,9 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
             src="/logo-header.png"
             srcSet="/logo-header.png 1x, /logo-header@2x.png 2x"
             alt="Te lo Consigo"
-            width={113}
-            height={26}
-            className="h-[26px] w-[113px] mix-blend-lighten"
+            width={108}
+            height={24}
+            className="h-[24px] w-[108px] mix-blend-lighten"
             fetchPriority="high"
             decoding="sync"
           />
