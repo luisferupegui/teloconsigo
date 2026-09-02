@@ -289,46 +289,6 @@ export function avisosDeImportacion(
   });
 }
 
-/** Los productos que quedaron tapados por una lista más nueva, con los dos
- *  precios. Sirve para ver qué subió y qué bajó entre una lista y la siguiente. */
-export function preciosDesactualizados(): {
-  proveedor: string; nombre: string; referencia: string;
-  precioViejo: number; precioNuevo: number; listaVieja: string; listaNueva: string;
-}[] {
-  const activas = loadLists().filter((l) => l.activa);
-  const porClave = new Map<string, { p: SupplierProduct; lista: SupplierList }[]>();
-
-  for (const lista of activas) {
-    for (const p of lista.productos) {
-      const clave = `${claveProveedor(p.proveedor)}|${claveDeProducto(p)}`;
-      const lst = porClave.get(clave);
-      if (lst) lst.push({ p, lista });
-      else porClave.set(clave, [{ p, lista }]);
-    }
-  }
-
-  const out = [];
-  for (const entradas of porClave.values()) {
-    const listas = new Set(entradas.map((e) => e.lista.id));
-    if (listas.size < 2) continue;
-    const ordenadas = [...entradas].sort(
-      (a, b) => (Date.parse(a.lista.fecha) || 0) - (Date.parse(b.lista.fecha) || 0),
-    );
-    const vieja = ordenadas[0];
-    const nueva = ordenadas[ordenadas.length - 1];
-    if (vieja.p.precio_costo === nueva.p.precio_costo) continue;
-    out.push({
-      proveedor: nueva.p.proveedor,
-      nombre: nueva.p.nombre,
-      referencia: nueva.p.referencia ?? "",
-      precioViejo: vieja.p.precio_costo,
-      precioNuevo: nueva.p.precio_costo,
-      listaVieja: vieja.lista.nombre,
-      listaNueva: nueva.lista.nombre,
-    });
-  }
-  return out.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.nombre.localeCompare(b.nombre));
-}
 
 // ─── Márgenes ───────────────────────────────────────────────────────────────
 

@@ -512,26 +512,20 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
       {open && (
         <div className="lg:hidden border-t border-white/10 bg-[#080c14] px-4 py-4">
 
-          {/* Links secundarios (no están en las pills) */}
-          <div className="flex gap-2 mb-4">
+          {/* Link secundario (no está en las pills).
+              Aquí había también un botón "Panel Admin" bien visible: en el móvil
+              no hay mouse que pasar por encima, así que esconderlo en el header
+              y dejarlo anunciado en el menú era esconderlo a medias. Se entra
+              escribiendo /admin. */}
+          <div className="mb-4">
             <Link
               href="/nosotros"
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg
                          border border-white/10 bg-white/5 px-3 py-2.5
                          text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition"
               onClick={() => setOpen(false)}
             >
               Sobre Nosotros
-            </Link>
-            <Link
-              href="/admin"
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg
-                         border border-[#1e6cff]/30 bg-[#1e6cff]/10 px-3 py-2.5
-                         text-sm font-medium text-[#4d8dff] hover:bg-[#1e6cff]/20 transition"
-              onClick={() => setOpen(false)}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Panel Admin
             </Link>
           </div>
 
