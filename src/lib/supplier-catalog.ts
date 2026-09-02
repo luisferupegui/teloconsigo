@@ -126,13 +126,102 @@ export function deleteList(id: string): boolean {
   return true;
 }
 
-/** Productos de todas las listas ACTIVAS, aplanados y con contexto de lista. */
+// ─── Repetidos entre listas ─────────────────────────────────────────────────
+//
+// "Repetido" son cuatro cosas distintas y solo una se resuelve descartando:
+//
+//   A. Mismo nombre, MISMA lista, precio distinto. Los seis "Ryzen 5 5600GT +
+//      Monitor 23,8"" de Compuoriente entre $1.899.000 y $2.049.000 no son el
+//      mismo producto: cambian el chasis y la board. Se quedan los seis.
+//   B. Misma referencia, MISMO proveedor, listas de fechas distintas. Es el
+//      precio de siempre, actualizado. Manda el de la lista más nueva.
+//   C. Mismo producto en proveedores distintos. Manda el más barato, que es
+//      una decisión de abastecimiento y ya la toma el buscador.
+//   D. Repetido literal dentro de una lista. Se descarta al leer el documento.
+//
+// Aquí se resuelve SOLO el caso B, y hacía falta: sin esto, con la lista de
+// junio y la de agosto activas a la vez, el buscador ordenaba por costo y ganaba
+// junio por ser más barata. Se cotizaba un precio que el proveedor ya no sostiene.
+
+/** La identidad de un producto entre listas. La referencia manda cuando la hay:
+ *  es lo único que el proveedor mantiene estable de un mes al siguiente, porque
+ *  el nombre lo reescriben. */
+function claveDeProducto(p: SupplierProduct): string {
+  const ref = (p.referencia ?? "").trim().toUpperCase();
+  if (ref.length >= 4) return `ref:${ref}`;
+  return `nom:${p.nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim()}`;
+}
+
+/** Productos de todas las listas ACTIVAS, aplanados y con contexto de lista.
+ *
+ *  Cuando el mismo producto del mismo proveedor está en varias listas activas,
+ *  solo cuenta el de la más reciente. Las otras no se borran —la lista sigue
+ *  ahí y se puede consultar—, simplemente dejan de competir por precio. */
 export function loadActiveProducts(): ActiveProduct[] {
-  return loadLists()
-    .filter((l) => l.activa)
-    .flatMap((l) =>
-      l.productos.map((p) => ({ ...p, listaId: l.id, listaNombre: l.nombre })),
+  const activas = loadLists().filter((l) => l.activa);
+
+  // Fecha de cada lista, para saber cuál es la vigente de cada proveedor.
+  const fechaDe = new Map(activas.map((l) => [l.id, Date.parse(l.fecha) || 0]));
+
+  const todos: ActiveProduct[] = activas.flatMap((l) =>
+    l.productos.map((p) => ({ ...p, listaId: l.id, listaNombre: l.nombre })),
+  );
+
+  // Por proveedor y producto, cuál es la lista más nueva que lo trae.
+  const vigente = new Map<string, number>();
+  for (const p of todos) {
+    const clave = `${p.proveedor}|${claveDeProducto(p)}`;
+    const fecha = fechaDe.get(p.listaId) ?? 0;
+    if (fecha > (vigente.get(clave) ?? -1)) vigente.set(clave, fecha);
+  }
+
+  // Se conserva todo lo que venga de la lista vigente. En plural a propósito:
+  // dentro de una misma lista puede haber varios productos con la misma clave
+  // (el caso A) y esos no se tocan.
+  return todos.filter(
+    (p) => (fechaDe.get(p.listaId) ?? 0) === vigente.get(`${p.proveedor}|${claveDeProducto(p)}`),
+  );
+}
+
+/** Los productos que quedaron tapados por una lista más nueva, con los dos
+ *  precios. Sirve para ver qué subió y qué bajó entre una lista y la siguiente. */
+export function preciosDesactualizados(): {
+  proveedor: string; nombre: string; referencia: string;
+  precioViejo: number; precioNuevo: number; listaVieja: string; listaNueva: string;
+}[] {
+  const activas = loadLists().filter((l) => l.activa);
+  const porClave = new Map<string, { p: SupplierProduct; lista: SupplierList }[]>();
+
+  for (const lista of activas) {
+    for (const p of lista.productos) {
+      const clave = `${p.proveedor}|${claveDeProducto(p)}`;
+      const lst = porClave.get(clave);
+      if (lst) lst.push({ p, lista });
+      else porClave.set(clave, [{ p, lista }]);
+    }
+  }
+
+  const out = [];
+  for (const entradas of porClave.values()) {
+    const listas = new Set(entradas.map((e) => e.lista.id));
+    if (listas.size < 2) continue;
+    const ordenadas = [...entradas].sort(
+      (a, b) => (Date.parse(a.lista.fecha) || 0) - (Date.parse(b.lista.fecha) || 0),
     );
+    const vieja = ordenadas[0];
+    const nueva = ordenadas[ordenadas.length - 1];
+    if (vieja.p.precio_costo === nueva.p.precio_costo) continue;
+    out.push({
+      proveedor: nueva.p.proveedor,
+      nombre: nueva.p.nombre,
+      referencia: nueva.p.referencia ?? "",
+      precioViejo: vieja.p.precio_costo,
+      precioNuevo: nueva.p.precio_costo,
+      listaVieja: vieja.lista.nombre,
+      listaNueva: nueva.lista.nombre,
+    });
+  }
+  return out.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.nombre.localeCompare(b.nombre));
 }
 
 // ─── Márgenes ───────────────────────────────────────────────────────────────
