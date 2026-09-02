@@ -99,12 +99,16 @@ export function precioDeTexto(texto: string): number | null {
  *  es la carátula del catálogo (direcciones, avisos legales, índice). */
 export function partirEnBloques(
   lineas: string[],
-  esInicio: (linea: string) => boolean,
+  // El índice y el arreglo completo van como argumentos porque hay catálogos en
+  // los que la línea sola no basta para saber si abre una ficha: Compuoriente
+  // usa "EQUIPO" tanto para abrir un equipo como de rótulo encima del precio, y
+  // solo se distinguen mirando si la línea siguiente es una referencia.
+  esInicio: (linea: string, indice: number, lineas: string[]) => boolean,
 ): string[][] {
   const bloques: string[][] = [];
   let actual: string[] | null = null;
-  for (const linea of lineas) {
-    if (esInicio(linea)) {
+  for (const [i, linea] of lineas.entries()) {
+    if (esInicio(linea, i, lineas)) {
       if (actual) bloques.push(actual);
       actual = [linea];
     } else if (actual) {
