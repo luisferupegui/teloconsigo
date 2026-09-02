@@ -282,7 +282,7 @@ export function tarjetasDePagina(
 
     productos.push({
       nombre,
-      marca: marcaDeNombre(nombre) ?? "",
+      marca: marcaDeNombre(nombre, categoria) ?? "",
       categoria,
       precio_costo: importe,
       referencia,

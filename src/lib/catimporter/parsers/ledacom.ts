@@ -158,7 +158,7 @@ export async function parseLedacom(buffer: Buffer): Promise<ResultadoParser> {
 
         productos.push({
           nombre,
-          marca: marcaDeNombre(nombre) ?? "",
+          marca: marcaDeNombre(nombre, categoriaDeProducto(nombre, seccion)) ?? "",
           categoria: categoriaDeProducto(nombre, seccion),
           precio_costo: precio,
           referencia,

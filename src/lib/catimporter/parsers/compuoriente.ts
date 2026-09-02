@@ -206,7 +206,7 @@ export async function parseCompuoriente(buffer: Buffer): Promise<ResultadoParser
 
     productos.push({
       nombre,
-      marca: marcaDeNombre(nombre) ?? "",
+      marca: marcaDeNombre(nombre, categoriaDe(campos, nombre)) ?? "",
       categoria: categoriaDe(campos, nombre),
       precio_costo: precio ?? 0,
       referencia,

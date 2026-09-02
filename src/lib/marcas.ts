@@ -15,7 +15,7 @@ const MARCAS = [
   "corsair", "gskill", "g.skill", "kingston", "crucial", "teamgroup", "zotac",
   "sapphire", "cooler master", "coolermaster", "evga", "seasonic", "thermaltake",
   "xpg", "adata", "lenovo", "hp", "dell", "acer", "apple", "microsoft", "janus",
-  "gateway", "huawei", "toshiba", "compumax",
+  "gateway", "huawei", "toshiba", "compumax", "power group", "powergroup",
   // Monitores y pantallas
   "aoc", "lg", "samsung", "viewsonic", "benq", "philips",
   // Refrigeración
@@ -83,6 +83,15 @@ const COMO_SE_ESCRIBE: Record<string, string> = {
   hyperx: "HyperX",
 };
 
+/** Marcas de COMPONENTE. En un equipo completo nombran la pieza, no el equipo. */
+const SOLO_COMPONENTE = new Set(["intel", "amd", "nvidia"]);
+
+/** Categorías donde el producto es una máquina, no una pieza. */
+const EQUIPO_COMPLETO = new Set([
+  "portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one",
+  "todo-en-uno", "mini-pc", "tableta", "celular", "servidor",
+]);
+
 const capitalizar = (m: string) =>
   COMO_SE_ESCRIBE[m] ?? m.split(" ").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
@@ -98,12 +107,23 @@ const capitalizar = (m: string) =>
  * Gana la coincidencia más larga, así que "Cooler Master" no se lee como
  * "Master".
  */
-export function marcaDeNombre(nombre: string): string | null {
+export function marcaDeNombre(nombre: string, categoria?: string): string | null {
   const texto = nombre.toLowerCase();
-  for (const marca of ORDENADAS) {
-    if (new RegExp(`(^|[^a-z0-9])${escapar(marca)}([^a-z0-9]|$)`).test(texto)) {
-      return capitalizar(marca);
-    }
-  }
-  return null;
+  const halladas = ORDENADAS.filter((m) =>
+    new RegExp(`(^|[^a-z0-9])${escapar(m)}([^a-z0-9]|$)`).test(texto),
+  );
+  if (halladas.length === 0) return null;
+
+  // Quien fabrica el procesador no es quien fabrica la máquina: un "POWER GROUP
+  // INTEL CORE ULTRA 5 245K" es un Power Group con CPU Intel, y darle la marca
+  // "Intel" es tan falso como darle la del proveedor.
+  const propia = halladas.find((m) => !SOLO_COMPONENTE.has(m));
+  if (propia) return capitalizar(propia);
+
+  // Solo se nombró un fabricante de componente. En una pieza suelta esa ES la
+  // marca ("Procesador Intel Core i5-12400"); en un equipo completo no lo es, y
+  // como el documento no dice de quién es, se deja vacía antes que mentir.
+  return EQUIPO_COMPLETO.has((categoria ?? "").toLowerCase())
+    ? null
+    : capitalizar(halladas[0]);
 }

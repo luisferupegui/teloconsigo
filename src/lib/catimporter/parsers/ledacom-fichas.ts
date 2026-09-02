@@ -202,7 +202,7 @@ export function fichasDePagina(
 
       productos.push({
         nombre,
-        marca: marcaDeNombre(nombre) ?? "",
+        marca: marcaDeNombre(nombre, categoriaDeFicha(nombre, specs)) ?? "",
         categoria: categoriaDeFicha(nombre, specs),
         precio_costo: precio,
         referencia,
