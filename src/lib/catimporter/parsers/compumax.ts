@@ -82,7 +82,10 @@ export async function parseCompumax(buffer: Buffer): Promise<ResultadoParser> {
     // producto o es cabecera de sección ("Equipos de Escritorio").
     const fin = bloque.findIndex((l) => /precio\s*total/i.test(l));
     const cuerpo = fin === -1 ? bloque.slice(1) : bloque.slice(1, fin + 1);
-    const { campos } = camposDeBloque(cuerpo);
+    // Compumax reparte un mismo campo en más renglones que Compuoriente:
+    // "Conectividad: Wi-Fi 6 + Bluetooth" / "Cámara" / "Teclado en español"
+    // son tres líneas y las tres son del equipo.
+    const { campos } = camposDeBloque(cuerpo, 3);
 
     // Un código suelto, sin ficha debajo, es una VARIANTE: el catálogo lista
     // varias referencias que comparten una misma descripción. No se puede

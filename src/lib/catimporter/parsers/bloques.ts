@@ -39,19 +39,64 @@ const ETIQUETA = /^([A-Za-zÁÉÍÓÚÑÜáéíóúñü][A-Za-zÁÉÍÓÚÑÜá�
 /** Una línea que es SOLO un precio: "$1.599.000". */
 const ES_SOLO_PRECIO = /^\$\s*[\d][\d.,]{3,}\s*$/;
 
+/**
+ * Rótulo de otro recuadro de la página.
+ *
+ * En estos catálogos la ficha del equipo convive con paneles de accesorios que
+ * el extractor de texto deja pegados detrás del último campo. Un valor acababa
+ * así:
+ *
+ *   Monitor: 23.8" Compumax 144HZ FHD TARJETA DE VIDEO MSI GEFORCE RTX 3050
+ *            VENTUS 2X 6G OC REFRIGERACION LIQUIDA 240MM
+ *
+ * El monitor es 23.8" 144HZ FHD; lo demás son los títulos de los dos recuadros
+ * siguientes. Donde aparece uno de estos rótulos, el valor terminó.
+ *
+ * Se distingue del valor porque son títulos de sección SIN dos puntos: la
+ * "Fuente de Poder:" del equipo lleva etiqueta y se reconoce como campo, y la
+ * "FUENTE DE PODER" del panel de al lado no.
+ */
+const ROTULO_DE_PANEL =
+  /^(tarjeta de video|refrigeraci[oó]n|ventilador(es)?\b|disipador(es)?\b|equipos?\s|opciones\s|modelos\s|partes para pc|caj[oó]n\s)/i;
+
 export type Campo = { etiqueta: string; valor: string };
 
-/** Convierte las líneas de un bloque en campos, uniendo las continuaciones.
- *  Las líneas sueltas de antes del primer campo se devuelven aparte: en estas
- *  listas suelen ser la referencia o el nombre de familia del producto. */
-export function camposDeBloque(lineas: string[]): { campos: Campo[]; sueltas: string[] } {
+/**
+ * Convierte las líneas de un bloque en campos, uniendo las continuaciones. Las
+ * líneas sueltas de antes del primer campo se devuelven aparte: en estas listas
+ * suelen ser la referencia o el nombre de familia del producto.
+ *
+ * `maxContinuacion` — cuántas líneas sin etiqueta puede absorber un campo antes
+ * de darlo por cerrado.
+ *
+ * Hace falta un tope porque el texto plano del PDF intercala la ficha con
+ * paneles que en la página están en otro sitio, y esos caen detrás del último
+ * campo. Al cliente le llegaba así:
+ *
+ *   Pantalla: ACER 23,8 KA242Y MSI GEFORCE RTX 5050 8G VENTUS
+ *
+ * El monitor es "ACER 23,8 KA242Y"; lo demás es el panel de tarjetas de video
+ * de al lado. Lo mismo le pasaba a la fuente de poder, que se tragaba la
+ * refrigeración líquida de la ficha vecina.
+ *
+ * El tope lo pone CADA LECTOR porque depende de cómo esté maquetado su
+ * catálogo, y ponerlo global rompía uno para arreglar el otro: con 1, la
+ * "Conectividad: Wi-Fi 6 + Bluetooth Cámara Teclado en español" de Compumax
+ * —que es de verdad— se quedaba en "Wi-Fi 6 + Bluetooth".
+ */
+export function camposDeBloque(
+  lineas: string[],
+  maxContinuacion = 1,
+): { campos: Campo[]; sueltas: string[] } {
   const campos: Campo[] = [];
   const sueltas: string[] = [];
+  let continuaciones = 0;
 
   for (const linea of lineas) {
     const m = linea.match(ETIQUETA);
     if (m) {
       campos.push({ etiqueta: normalizarEtiqueta(m[1]), valor: m[2].trim() });
+      continuaciones = 0;
       continue;
     }
     // El precio NUNCA es continuación de una spec. En Compuoriente va en su
@@ -62,10 +107,16 @@ export function camposDeBloque(lineas: string[]): { campos: Campo[]; sueltas: st
     if (ES_SOLO_PRECIO.test(linea)) { sueltas.push(linea); continue; }
 
     if (campos.length === 0) { sueltas.push(linea); continue; }
+    // Aquí empieza otro recuadro de la página: el valor terminó.
+    if (ROTULO_DE_PANEL.test(linea)) { sueltas.push(linea); continuaciones = maxContinuacion; continue; }
+    // Pasado el tope, la línea ya no es de este campo: es texto de otra parte
+    // de la página que el extractor dejó aquí. Se aparta en vez de ensuciarlo.
+    if (continuaciones >= maxContinuacion) { sueltas.push(linea); continue; }
     // Continuación del último campo. Si el campo venía vacío ("Procesador:" y el
     // valor en la línea siguiente), esta línea ES el valor.
     const ultimo = campos[campos.length - 1];
     ultimo.valor = ultimo.valor ? `${ultimo.valor} ${linea}` : linea;
+    continuaciones++;
   }
 
   for (const c of campos) c.valor = c.valor.replace(/\s{2,}/g, " ").trim();
