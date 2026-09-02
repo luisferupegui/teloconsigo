@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, Fragment } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import {
-  Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
+  FileText, Loader2, CheckCircle2, AlertCircle,
   Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ChevronDown,
   Star, Tag, Pencil, RefreshCw, ShieldCheck, ClipboardList,
 } from "lucide-react";
@@ -140,7 +140,7 @@ const TARGET_LABEL: Record<PublishTarget, string> = {
  *  sección de cargar listas. Ahora cada una es su propio encabezado y este componente
  *  muestra solo la que le pidan, conservando en un único sitio la carga de listas y claves
  *  que todas comparten. */
-export type VistaListas = "cargar" | "listas" | "buscar" | "herramientas";
+export type VistaListas = "listas" | "buscar" | "herramientas";
 
 export function SupplierListsManager({ vista }: { vista: VistaListas }) {
   const [toast, setToast] = useState<Toast | null>(null);
@@ -180,12 +180,6 @@ export function SupplierListsManager({ vista }: { vista: VistaListas }) {
         </>
       )}
 
-      {vista === "cargar" && (
-        <CargarTab
-          onImported={(n) => flash(true, `${n} productos importados como nueva lista`)}
-          flash={flash}
-        />
-      )}
       {vista === "listas" && (
         <ListasTab lists={lists} totals={totals} onRefresh={refreshLists} flash={flash} />
       )}
@@ -703,133 +697,6 @@ function WebCachePanel({ flash }: { flash: (ok: boolean, msg: string) => void })
 }
 
 // ─── Tab: Cargar lista (Word / Excel) ──────────────────────────────────────────
-
-function CargarTab({ onImported, flash }: {
-  onImported: (n: number) => void; flash: (ok: boolean, msg: string) => void;
-}) {
-  const [fileName, setFileName] = useState("");
-  const [proveedor, setProveedor] = useState("");
-  const [importing, setImporting] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const fileRef = useRef<File | null>(null);
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (inputRef.current) inputRef.current.value = "";
-    if (!file) return;
-    const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".docx") && !lower.endsWith(".xlsx")) {
-      flash(false, "Solo se aceptan Word (.docx) o Excel (.xlsx)");
-      return;
-    }
-    fileRef.current = file;
-    setFileName(file.name);
-  }
-
-  function reset() {
-    fileRef.current = null;
-    setFileName("");
-  }
-
-  async function handleImport() {
-    if (!fileRef.current) return;
-    setImporting(true);
-    try {
-      // Extracción determinista en el servidor: lee las celdas de la tabla.
-      // No usa IA ni clave API — es gratis e instantáneo.
-      const fd = new FormData();
-      fd.append("file", fileRef.current);
-      fd.append("proveedor", proveedor);
-      fd.append("nombre", fileName);
-      const res = await fetch("/api/admin/import-doc-catalog", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error al importar");
-      onImported(data.count ?? 0);
-      reset();
-    } catch (err) {
-      flash(false, err instanceof Error ? err.message : "Error al importar");
-    } finally {
-      setImporting(false);
-    }
-  }
-
-  const isExcel = fileName.toLowerCase().endsWith(".xlsx");
-
-  if (!fileName) {
-    return (
-      <div
-        onClick={() => inputRef.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 py-16 transition hover:border-indigo-400 hover:bg-indigo-50/30"
-      >
-        <FileText className="h-12 w-12 text-zinc-300" />
-        <div className="text-center">
-          <p className="text-sm font-bold text-zinc-700">Subir lista de precios — Word o Excel</p>
-          <p className="mt-1 text-xs text-zinc-400">
-            Se lee la tabla directamente (gratis, sin IA) · archivos <strong>.docx</strong> o <strong>.xlsx</strong> · Máx. 20 MB
-          </p>
-        </div>
-        <div className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-          <Upload className="h-4 w-4" /> Seleccionar archivo
-        </div>
-        <input ref={inputRef} type="file" accept=".docx,.xlsx" className="hidden" onChange={handleFile} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-bold text-zinc-900">{isExcel ? "📊" : "📄"} {fileName}</p>
-          <p className="text-xs text-zinc-400">
-            {isExcel ? "Excel" : "Word"} · se extraerán los productos de la tabla (gratis, sin IA)
-          </p>
-        </div>
-        <button
-          onClick={reset}
-          className="flex items-center gap-1 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:border-red-300 hover:text-red-500 transition"
-        >
-          <X className="h-3.5 w-3.5" /> Cargar otro
-        </button>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-end gap-3">
-        {/* Campo LIBRE, no una lista cerrada: era un desplegable con tres opciones fijas, y
-            sumar un proveedor nuevo obligaba a tocar código. Las conocidas quedan como
-            sugerencia. */}
-        <label className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Proveedor</span>
-          <input
-            type="text"
-            list="proveedores-doc"
-            value={proveedor}
-            onChange={(e) => setProveedor(e.target.value)}
-            placeholder="Nombre del proveedor"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-          />
-          <datalist id="proveedores-doc">
-            {PROVEEDORES.map((p) => <option key={p} value={p} />)}
-          </datalist>
-        </label>
-
-        <button
-          onClick={handleImport}
-          disabled={importing}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-60 transition"
-        >
-          {importing
-            ? <><Loader2 className="h-4 w-4 animate-spin" /> Importando…</>
-            : <><Sparkles className="h-4 w-4" /> Importar lista</>}
-        </button>
-      </div>
-
-      <p className="mt-3 text-xs text-zinc-400">
-        Consejo: si un producto queda con la categoría equivocada, puedes ajustarla al publicarlo.
-        La lista más confiable es un Excel/Word con columnas <strong>Producto · Precio · Código</strong>.
-      </p>
-    </div>
-  );
-}
 
 // ─── Tab: Listas cargadas ──────────────────────────────────────────────────────
 

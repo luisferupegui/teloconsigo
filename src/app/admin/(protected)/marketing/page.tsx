@@ -4,8 +4,7 @@ import { loadBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
 import { ProductManager, type ManagedBusinessProduct } from "@/components/admin/product-manager";
 import { SupplierListsManager } from "@/components/admin/supplier-lists-manager";
-import { PdfListImporter } from "@/components/admin/pdf-list-importer";
-import { CatimporterPanel } from "@/components/admin/catimporter/catimporter-panel";
+import { ImportadorListas } from "@/components/admin/importador-listas";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Productos · Admin" };
@@ -15,13 +14,12 @@ export const metadata = { title: "Productos · Admin" };
 // mantenimiento se apilaban encima de ellas: para consultar una lista había que pasar por
 // la pantalla de importar. Ahora se llega a cada cosa directamente.
 //
-// Los ids "pdf" y "janus" son históricos y se conservan para no romper los enlaces con
-// ?tab= que ya estén guardados o en un marcador.
+// Importar era TRES pestañas —Word/Excel, PDF y Catimporter— y había que saber de
+// antemano cuál abrir según la extensión del archivo. Para quien importa es siempre la
+// misma tarea, así que ahora es una sola: el importador reconoce el formato solo.
 const TABS = [
   { id: "productos",    label: "📋 Gestionar productos" },
-  { id: "pdf",          label: "📄 Listas Word/Excel" },
-  { id: "listas-pdf",   label: "🖥️ Listas PDF" },
-  { id: "catimporter",  label: "🧪 Catimporter (pruebas)" },
+  { id: "importador",   label: "📥 Importador de listas" },
   { id: "listas",       label: "📚 Listas cargadas" },
   { id: "buscar",       label: "🔍 Buscar productos" },
   { id: "herramientas", label: "🛠️ Herramientas" },
@@ -29,15 +27,22 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
+// Ids de pestañas que ya no existen. Se siguen aceptando para no romper los enlaces
+// con ?tab= que estén guardados en un marcador.
+const ALIAS: Record<string, TabId> = {
+  janus:        "importador",
+  pdf:          "importador",
+  "listas-pdf": "importador",
+  catimporter:  "importador",
+};
+
 export default async function ProductosAdminPage({
   searchParams,
 }: {
   searchParams: Promise<{ tab?: string; filter?: string }>;
 }) {
   const { tab = "productos", filter = "all" } = await searchParams;
-  // "janus" era el id de la pestaña de PDF; se acepta como alias para no romper enlaces
-  // guardados antes de generalizar el importador.
-  const pedida = tab === "janus" ? "listas-pdf" : tab;
+  const pedida = ALIAS[tab] ?? tab;
   const activeTab: TabId = TABS.some((t) => t.id === pedida) ? (pedida as TabId) : "productos";
 
   const raw = loadBusinessProducts();
@@ -90,9 +95,7 @@ export default async function ProductosAdminPage({
       </div>
 
       {activeTab === "productos"    && <ProductManager products={products} initialFilter={filter} />}
-      {activeTab === "pdf"          && <SupplierListsManager vista="cargar" />}
-      {activeTab === "listas-pdf"   && <PdfListImporter />}
-      {activeTab === "catimporter"  && <CatimporterPanel />}
+      {activeTab === "importador"   && <ImportadorListas />}
       {activeTab === "listas"       && <SupplierListsManager vista="listas" />}
       {activeTab === "buscar"       && <SupplierListsManager vista="buscar" />}
       {activeTab === "herramientas" && <SupplierListsManager vista="herramientas" />}
