@@ -413,19 +413,32 @@ function notaGraficosCPU(nombre: string): string | null {
 
 /** Antepone la marca cuando el nombre no la trae. Las listas guardan la marca en su
  *  propio campo y muchos nombres son solo el modelo ("Victus 15-fb3019la", "Legion 5"),
- *  así que el cliente veía una ficha sin saber de quién era el equipo. */
-function conMarca(nombre: string, marca?: string): string {
+ *  así que el cliente veía una ficha sin saber de quién era el equipo.
+ *
+ *  EL PROVEEDOR NO ES LA MARCA, y nunca se le dice al cliente. Los lectores de
+ *  listas guardaban en `marca` el nombre de quien nos vende, así que Andrea
+ *  ofrecía "Ledacom Combo Genius Inalámbrico KM-8101": ese combo es de Genius, y
+ *  Ledacom es a quien se lo compramos. Decírselo al cliente es darle el dato
+ *  para saltarse la tienda.
+ *
+ *  La regla no es una lista negra de proveedores —el campo es libre y mañana hay
+ *  uno nuevo— sino comparar contra el proveedor DEL PROPIO PRODUCTO. Cuando el
+ *  fabricante y el proveedor coinciden de verdad (Janus, Compumax, que arman sus
+ *  equipos) el nombre ya los trae, así que no se pierde nada. */
+function conMarca(nombre: string, marca?: string, proveedor?: string): string {
   const m = (marca ?? "").trim();
   if (!m) return nombre;
-  const yaEsta = new RegExp(`\\b${m.replace(/[.*+?^${}()|[\]\\]/g, "\\function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string): string {")}\\b`, "i").test(nombre);
+  const prov = (proveedor ?? "").trim().toLowerCase();
+  if (prov && m.toLowerCase() === prov) return nombre;
+  const yaEsta = new RegExp(`\\b${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(nombre);
   return yaEsta ? nombre : `${m} ${nombre}`;
 }
 
-function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string, marca?: string): string {
+function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string, marca?: string, proveedor?: string): string {
   // El nombre se limpia de ruido comercial ("+ Servicio", "Onsite", "194 AI TOPS") y las
   // specs que el producto no trae se deducen del propio nombre. Las estructuradas mandan:
   // solo se rellenan los huecos.
-  const nombre = conMarca(limpiarNombre(nombreCrudo), marca);
+  const nombre = conMarca(limpiarNombre(nombreCrudo), marca, proveedor);
   const specs2 = { ...specsDesdeNombre(nombreCrudo, categoria), ...(specs ?? {}) };
   const lineas = fichaSpecLines(specs2);
   // La línea de monitor es SOLO para equipos completos. Un procesador suelto salía
@@ -674,7 +687,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
         referencia: p.referencia ?? null, nombre: p.nombre, marca: p.marca, categoria: p.categoria,
         segmento: null, precioDesde: precio, precioIvaIncluido: false,
         specs: p.specs ?? {}, descripcion: "", url: "",
-        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria, p.marca),
+        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria, p.marca, p.proveedor),
       },
     };
   });
@@ -690,7 +703,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
         segmento: p.segmento ? SEGMENTO_LABEL[p.segmento] : null, precioDesde: precio,
         precioIvaIncluido: p.precioIvaIncluido ?? false, specs: p.specs ?? {}, descripcion: p.descripcionUso,
         url: `/conseguir?ref=${encodeURIComponent(p.referencia ?? p.slug)}`,
-        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria, p.marca),
+        ficha: construirFicha(p.nombre, p.specs, precio, p.categoria, p.marca, p.proveedor),
       },
     };
   });

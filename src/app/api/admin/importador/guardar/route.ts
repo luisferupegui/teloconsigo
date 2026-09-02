@@ -74,7 +74,10 @@ export async function POST(req: NextRequest) {
       productos.push({
         id,
         nombre: nombreProducto,
-        marca: texto(p.marca, proveedor),
+        // Sin marca reconocida se deja VACÍA, nunca el proveedor: es el dato de
+        // a quién le compramos y no puede acabar en la ficha del cliente ni en
+        // el `brand` del JSON-LD que indexa Google.
+        marca: texto(p.marca),
         categoria: texto(p.categoria, "accesorios"),
         precio_costo: Math.round(precio),
         proveedor,

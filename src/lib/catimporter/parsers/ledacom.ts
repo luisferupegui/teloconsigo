@@ -1,4 +1,5 @@
 import "server-only";
+import { marcaDeNombre } from "@/lib/marcas";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado, ResultadoParser } from "./tipos";
 import { fragmentosDePdf, type Fragmento } from "./coordenadas";
@@ -157,7 +158,7 @@ export async function parseLedacom(buffer: Buffer): Promise<ResultadoParser> {
 
         productos.push({
           nombre,
-          marca: "Ledacom",
+          marca: marcaDeNombre(nombre) ?? "",
           categoria: categoriaDeProducto(nombre, seccion),
           precio_costo: precio,
           referencia,

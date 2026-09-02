@@ -1,4 +1,5 @@
 import "server-only";
+import { marcaDeNombre } from "@/lib/marcas";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado } from "./tipos";
 import type { Fragmento } from "./coordenadas";
@@ -201,7 +202,7 @@ export function fichasDePagina(
 
       productos.push({
         nombre,
-        marca: "Ledacom",
+        marca: marcaDeNombre(nombre) ?? "",
         categoria: categoriaDeFicha(nombre, specs),
         precio_costo: precio,
         referencia,

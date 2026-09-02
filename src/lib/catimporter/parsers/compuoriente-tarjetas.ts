@@ -1,4 +1,5 @@
 import "server-only";
+import { marcaDeNombre } from "@/lib/marcas";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado } from "./tipos";
 import type { Fragmento } from "./coordenadas";
@@ -281,7 +282,7 @@ export function tarjetasDePagina(
 
     productos.push({
       nombre,
-      marca: "Compuoriente",
+      marca: marcaDeNombre(nombre) ?? "",
       categoria,
       precio_costo: importe,
       referencia,

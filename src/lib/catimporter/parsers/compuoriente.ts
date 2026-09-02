@@ -1,4 +1,5 @@
 import "server-only";
+import { marcaDeNombre } from "@/lib/marcas";
 import { lineasDePdf, camposDeBloque, partirEnBloques, precioDeTexto, campo, type Campo } from "./bloques";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado, ResultadoParser } from "./tipos";
@@ -205,7 +206,7 @@ export async function parseCompuoriente(buffer: Buffer): Promise<ResultadoParser
 
     productos.push({
       nombre,
-      marca: "Compuoriente",
+      marca: marcaDeNombre(nombre) ?? "",
       categoria: categoriaDe(campos, nombre),
       precio_costo: precio ?? 0,
       referencia,

@@ -67,3 +67,43 @@ export function marcasEnConsulta(consulta: string): string[] {
 export function esDeMarca(texto: string, marca: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escapar(marca)}([^a-z0-9]|$)`).test(texto.toLowerCase());
 }
+
+/** Cómo se escribe una marca de cara al cliente: "tp-link" → "TP-Link". */
+const COMO_SE_ESCRIBE: Record<string, string> = {
+  hp: "HP", hpe: "HPE", lg: "LG", msi: "MSI", amd: "AMD", aoc: "AOC",
+  apc: "APC", cdp: "CDP", wd: "WD", pny: "PNY", jbl: "JBL", benq: "BenQ",
+  asus: "ASUS", rog: "ROG", nzxt: "NZXT", xpg: "XPG", adata: "ADATA",
+  qnap: "QNAP", eset: "ESET", "g.skill": "G.Skill", gskill: "G.Skill",
+  "tp-link": "TP-Link", tplink: "TP-Link", "d-link": "D-Link", dlink: "D-Link",
+  "western digital": "Western Digital", "cooler master": "Cooler Master",
+  coolermaster: "Cooler Master", "audio-technica": "Audio-Technica",
+  "klip xtreme": "Klip Xtreme", klipxtreme: "Klip Xtreme",
+  "tripp lite": "Tripp Lite", tripplite: "Tripp Lite", "be quiet": "be quiet!",
+  "t-dagger": "T-Dagger", tdagger: "T-Dagger", steelseries: "SteelSeries",
+  hyperx: "HyperX",
+};
+
+const capitalizar = (m: string) =>
+  COMO_SE_ESCRIBE[m] ?? m.split(" ").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+
+/**
+ * La marca que nombra el propio producto. `null` si no nombra ninguna conocida.
+ *
+ * Existe porque los lectores de listas guardaban en `marca` el nombre del
+ * PROVEEDOR, que no es lo mismo: "Combo Genius Inalámbrico KM-8101" es de
+ * Genius, no de quien nos lo vende. Andrea lo anteponía al nombre y le decía al
+ * cliente a quién le compramos, que es justo lo que no debe saber. Publicarlo
+ * habría sido peor: la marca acaba en el `brand` del JSON-LD que indexa Google.
+ *
+ * Gana la coincidencia más larga, así que "Cooler Master" no se lee como
+ * "Master".
+ */
+export function marcaDeNombre(nombre: string): string | null {
+  const texto = nombre.toLowerCase();
+  for (const marca of ORDENADAS) {
+    if (new RegExp(`(^|[^a-z0-9])${escapar(marca)}([^a-z0-9]|$)`).test(texto)) {
+      return capitalizar(marca);
+    }
+  }
+  return null;
+}

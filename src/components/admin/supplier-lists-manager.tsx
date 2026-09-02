@@ -73,6 +73,8 @@ type PublishTarget = "catalogo" | "destacado" | "promocion";
 type PublishableProduct = {
   nombre: string; marca: string; categoria: string;
   referencia?: string; precio_final: number; specs?: Record<string, string>;
+  /** A quién se lo compramos. No es la marca y no sale a la tienda. */
+  proveedor?: string;
 };
 
 type EditorState = {
@@ -108,7 +110,11 @@ async function publishToStore(p: PublishableProduct, target: PublishTarget): Pro
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       nombre: p.nombre,
-      marca: p.marca,
+      // Última puerta antes de la tienda: si la "marca" es en realidad el
+      // proveedor, no se publica. Acabaría en la ficha del producto y en el
+      // `brand` del JSON-LD, o sea indexada por Google — decirle al cliente a
+      // quién le compramos es darle el dato para saltarse la tienda.
+      marca: p.marca.trim().toLowerCase() === (p.proveedor ?? "").trim().toLowerCase() ? "" : p.marca,
       precio: p.precio_final,
       precioDesde: p.precio_final,
       referencia: p.referencia || undefined,
