@@ -16,7 +16,9 @@ const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 // cada página, y PDF.js entrega cada fragmento con su matriz de transformación,
 // de la que salen la X y la Y.
 
-export type Fragmento = { x: number; y: number; t: string };
+/** `h` es el tamaño de la letra, que en los catálogos maquetados como folleto
+ *  distingue el nombre de un producto de su descripción. */
+export type Fragmento = { x: number; y: number; t: string; h: number };
 
 type ItemPdfJs = { str?: string; transform?: number[] };
 type PaginaPdfJs = {
@@ -37,7 +39,14 @@ export async function fragmentosDePdf(buffer: Buffer): Promise<Fragmento[][]> {
       for (const item of contenido.items) {
         const t = (item.str ?? "").trim();
         if (!t || !item.transform) continue;
-        fragmentos.push({ x: Math.round(item.transform[4]), y: Math.round(item.transform[5]), t });
+        // El tamaño sale de la escala de la matriz, no de un campo aparte.
+        const h = Math.hypot(item.transform[2], item.transform[3]);
+        fragmentos.push({
+          x: Math.round(item.transform[4]),
+          y: Math.round(item.transform[5]),
+          t,
+          h: Math.round(h * 10) / 10,
+        });
       }
       paginas.push(fragmentos);
       // El texto plano no se usa: lo que interesa se guardó arriba con su posición.

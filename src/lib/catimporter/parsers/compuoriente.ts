@@ -2,6 +2,8 @@ import "server-only";
 import { lineasDePdf, camposDeBloque, partirEnBloques, precioDeTexto, campo, type Campo } from "./bloques";
 import type { ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado, ResultadoParser } from "./tipos";
+import { fragmentosDePdf } from "./coordenadas";
+import { tarjetasDePagina, rotulosDePagina } from "./compuoriente-tarjetas";
 
 // ─── Compuoriente ────────────────────────────────────────────────────────────
 //
@@ -209,6 +211,25 @@ export async function parseCompuoriente(buffer: Buffer): Promise<ResultadoParser
       referencia,
       specs: Object.keys(specs).length ? specs : undefined,
     });
+  }
+
+  // ── La otra mitad del catálogo ──
+  //
+  // Los equipos armados son solo una parte. Portátiles, tablets, celulares,
+  // monitores, televisores y periféricos vienen maquetados como folleto y los
+  // lee el motor de tarjetas. Se saltan las páginas donde hay fichas de equipo
+  // para no leer dos veces lo mismo: ahí el precio ya tiene dueño.
+  const paginas = await fragmentosDePdf(buffer);
+  // La sección se arrastra entre páginas: PORTÁTILES ocupa tres y solo la
+  // primera lleva el rótulo impreso.
+  let seccion: string | null = null;
+  for (const fragmentos of paginas) {
+    const rotulos = rotulosDePagina(fragmentos);
+    if (!fragmentos.some((f) => /^EQUIPO(\s|$)/.test(f.t))) {
+      productos.push(...tarjetasDePagina(fragmentos, seccion, descartados));
+    }
+    // Para la página siguiente vale el rótulo que quedó más abajo en esta.
+    seccion = rotulos.at(-1)?.categoria ?? seccion;
   }
 
   return { productos, descartados };
