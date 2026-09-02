@@ -159,8 +159,10 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
 
               Va en `absolute` con `right-full` para que ocupe el hueco del
               padding que ya tiene la cabecera y NO desplace el logo ni un
-              píxel. 28px de ancho contra 32px de padding: cabe justo, sin
-              asomarse fuera del viewport ni crear scroll horizontal.
+              píxel. Ese hueco mide 32px y es todo lo que hay: 24 de botón + 8
+              de separación lo llenan justo, sin asomarse fuera del viewport ni
+              crear scroll horizontal. Por eso el botón es de 24 y no de 28 —
+              para poder despegarlo del logo había que estrecharlo.
 
               Fuera del orden de tabulación a propósito: esconderlo del cliente y
               dejarlo a un tabulador de distancia sería esconderlo a medias. Esto
@@ -171,12 +173,12 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
             aria-hidden="true"
             tabIndex={-1}
             title="Panel de administración"
-            className="absolute right-full top-1/2 mr-0.5 -translate-y-1/2 flex h-7 w-7
+            className="absolute right-full top-1/2 mr-2 -translate-y-1/2 flex h-6 w-6
                        items-center justify-center rounded-full border border-white/15
                        text-zinc-500 opacity-0 transition-opacity duration-200
                        hover:border-[#1e6cff]/50 hover:text-[#4d8dff] hover:opacity-100"
           >
-            <LayoutDashboard className="h-3.5 w-3.5" />
+            <LayoutDashboard className="h-3 w-3" />
           </Link>
 
           {/* Logo SIN eslogan: en el header no se lee a ese tamaño y le robaba alto al
@@ -260,7 +262,7 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
         </nav>
 
         {/* ── Acciones — fila 1, mismo nivel que el nav ───────────── */}
-        <div className="flex items-center gap-2 pt-3 pb-1.5">
+        <div className="flex items-center gap-3 pt-3 pb-1.5">
 
           {/* Favoritos */}
           <Link
