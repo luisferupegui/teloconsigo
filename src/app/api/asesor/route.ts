@@ -115,7 +115,11 @@ const tools: ToolDef[] = [
           properties: {
             urlCompra:      { type: "string", description: "URL Amazon/Newegg/BH donde comprar el producto" },
             costoUSD:       { type: "number", description: "Precio en USD en origen (importados EE.UU.)" },
-            proveedorLocal: { type: "string", enum: ["ledacom", "infoshop", "manual"] },
+            // Sin `enum`: el valor lo pone el servidor con el proveedor real de
+            // la lista (más abajo, `proveedorLocal = local.proveedor`), así que
+            // enumerarlos aquí solo servía para enseñarle nombres de proveedor
+            // al modelo — y estaba desactualizado, le faltaban tres.
+            proveedorLocal: { type: "string", description: "Lo rellena el servidor; no lo inventes." },
           },
         },
       },
@@ -2189,7 +2193,10 @@ async function registrarPedido(input: unknown, acc: Acumulador): Promise<unknown
     if (local) {
       costoTotalCOP  = local.precioCosto;
       margenCOP      = producto.precioCOP - local.precioCosto;
-      const prov     = local.proveedor.toLowerCase();
+      // Se conserva la grafía con la que está guardado ("Compuoriente"): este
+      // campo solo lo ve el admin en el pedido, y ahí se lee mejor así. "manual"
+      // sigue en minúscula porque el panel lo compara literalmente.
+      const prov     = local.proveedor.trim();
       proveedorLocal = prov || proveedorLocal || "manual";
     } else {
       // No está en listas → es un producto de Colombia web. Limpiamos el proveedorLocal

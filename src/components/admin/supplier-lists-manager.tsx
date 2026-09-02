@@ -7,6 +7,7 @@ import {
   Star, Tag, Pencil, RefreshCw, ShieldCheck, ClipboardList,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";
+import { PROVEEDORES_CONOCIDOS } from "@/lib/proveedores-conocidos";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ type SearchMatch = {
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
 // Sugerencias, no una lista cerrada: el campo admite cualquier proveedor nuevo.
-const PROVEEDORES = ["ledacom", "infoshopcorp", "janus"];
+const PROVEEDORES = PROVEEDORES_CONOCIDOS;
 
 // Mapea la categoría del proveedor a los campos del catálogo público.
 const CAT_MAP: Record<string, { categoria: string; usoCaso: string; segmento: string }> = {

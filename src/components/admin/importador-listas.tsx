@@ -6,6 +6,7 @@ import {
   Upload, Loader2, AlertTriangle, CheckCircle2, FileText, Cpu, EyeOff, X, Save, ArrowRight,
 } from "lucide-react";
 import type { CatimporterProduct } from "@/lib/catimporter/types/product";
+import { PROVEEDORES_CONOCIDOS } from "@/lib/proveedores-conocidos";
 
 // ─── Importador de listas ────────────────────────────────────────────────────
 //
@@ -49,9 +50,9 @@ type Analisis = {
   avisos: Aviso[];
 };
 
-/** Proveedores ya conocidos, como atajo. El campo es libre a propósito: sumar un
- *  proveedor nuevo no debería obligar a tocar código. */
-const PROVEEDORES = ["ledacom", "infoshopcorp", "janus", "compumax", "compuoriente"];
+// Sugerencias del campo de proveedor. Viven en lib/proveedores-conocidos.ts para
+// no repetirlas en cada componente.
+const PROVEEDORES = PROVEEDORES_CONOCIDOS;
 
 const cop = (n: number) => (n > 0 ? "$" + n.toLocaleString("es-CO") : "—");
 
