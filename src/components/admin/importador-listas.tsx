@@ -28,12 +28,25 @@ import type { CatimporterProduct } from "@/lib/catimporter/types/product";
 
 type Descartado = { referencia: string; motivo: string };
 
+type Aviso = {
+  tipo: "sin-precio" | "salto-de-precio";
+  nombre: string;
+  referencia: string;
+  precio: number;
+  precioAnterior?: number;
+  diferencia?: number;
+  porcentaje?: number;
+  sospechoso?: boolean;
+  listaAnterior?: string;
+};
+
 type Analisis = {
   motor: string;
   count: number;
   reviewCount: number;
   products: CatimporterProduct[];
   descartados: Descartado[];
+  avisos: Aviso[];
 };
 
 /** Proveedores ya conocidos, como atajo. El campo es libre a propósito: sumar un
@@ -252,6 +265,54 @@ export function ImportadorListas() {
             <Stat label="Requieren revisión" value={datos.reviewCount} tono="aviso" />
             <Stat label="Bloques descartados" value={datos.descartados.length} tono="apagado" />
           </div>
+
+          {/* ── Qué mirar antes de guardar ──
+              Revisar 580 productos no se hace, y no hace falta: el riesgo no
+              está repartido. En la lista de Ledacom, los diez productos que
+              más subieron concentran el 72% de la diferencia total. Por eso
+              esto va ordenado POR PESOS y no por porcentaje ni por cantidad. */}
+          {datos.avisos?.length > 0 && !guardado && (
+            <div className="overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/60">
+              <div className="flex flex-wrap items-center gap-2 border-b border-amber-200 px-5 py-4">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+                <h3 className="font-bold text-amber-900">Revisa esto antes de guardar</h3>
+                <span className="text-xs text-amber-700">
+                  · {datos.avisos.length} de {datos.count}, ordenados por lo que cuesta equivocarse
+                </span>
+              </div>
+              <div className="max-h-80 divide-y divide-amber-200/70 overflow-y-auto">
+                {datos.avisos.map((a, i) => (
+                  <div key={`${a.referencia}-${i}`} className="flex flex-wrap items-center gap-3 px-5 py-2.5 text-sm">
+                    {a.tipo === "sin-precio" ? (
+                      <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
+                        Sin precio
+                      </span>
+                    ) : (
+                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                        a.sospechoso ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800"}`}>
+                        {a.sospechoso ? "Salto raro" : "Cambió"} {(a.porcentaje ?? 0) > 0 ? "+" : ""}
+                        {Math.round((a.porcentaje ?? 0) * 100)}%
+                      </span>
+                    )}
+                    <span className="min-w-[200px] flex-1 text-zinc-800">
+                      {a.nombre}
+                      {a.referencia && <span className="ml-2 font-mono text-[11px] text-zinc-400">{a.referencia}</span>}
+                    </span>
+                    {a.tipo === "salto-de-precio" && (
+                      <span className="shrink-0 text-xs text-zinc-500">
+                        {cop(a.precioAnterior ?? 0)} → <strong className="text-zinc-900">{cop(a.precio)}</strong>
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="border-t border-amber-200 px-5 py-3 text-xs text-amber-800">
+                Los <strong>saltos raros</strong> suelen ser un error de lectura, no una subida: vale la pena
+                mirarlos contra el PDF. Los <strong>sin precio</strong> vienen así porque el proveedor los
+                imprime dentro de una imagen — pídeselos y complétalos a mano después de guardar.
+              </p>
+            </div>
+          )}
 
           {/* ── Paso 2: guardar ── */}
           {guardado ? (

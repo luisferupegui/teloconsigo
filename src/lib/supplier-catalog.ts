@@ -183,6 +183,112 @@ export function loadActiveProducts(): ActiveProduct[] {
   );
 }
 
+// ─── Qué mirar antes de guardar una lista ───────────────────────────────────
+//
+// Revisar una lista entera no se hace: son 580 productos al mes. Pero tampoco
+// hace falta, porque el riesgo no está repartido. Comparando la lista de junio
+// de Ledacom con la de agosto: 62 productos subieron de precio y suman
+// $9.057.253 de diferencia, y los DIEZ primeros por pesos concentran el 72% de
+// esa cifra. Los veinte primeros, el 91%.
+//
+// Así que el aviso se ordena POR PESOS, no por porcentaje ni por cantidad. Por
+// porcentaje el primero de la lista es un router de $143.900 y el Asus TUF de
+// $2.061.000 queda enterrado; por pesos sale primero lo que de verdad cuesta
+// dinero equivocarse.
+//
+// El porcentaje sí sirve, pero para otra cosa: un salto desproporcionado suele
+// ser un error de lectura, no una subida. Por eso se marca aparte.
+
+/** Cuánto tiene que moverse un precio para que valga la pena mirarlo. Por debajo
+ *  de esto es la deriva normal de mes a mes: 46 de las 62 subidas medidas se
+ *  movieron menos del 20% y avisar de todas sería ruido. */
+const SALTO_MINIMO_PESOS = 50_000;
+const SALTO_MINIMO_PORCENTAJE = 0.15;
+
+/** Un salto tan grande que probablemente no es una subida sino una lectura mala
+ *  ("Router inalámbrico N", de $66.000 a $209.900). */
+const SALTO_SOSPECHOSO = 0.6;
+
+export type AvisoImportacion = {
+  tipo: "sin-precio" | "salto-de-precio";
+  nombre: string;
+  referencia: string;
+  precio: number;
+  precioAnterior?: number;
+  diferencia?: number;
+  porcentaje?: number;
+  /** El salto es tan grande que conviene comprobarlo contra el PDF. */
+  sospechoso?: boolean;
+  listaAnterior?: string;
+};
+
+/**
+ * Lo que hay que mirar de una lista recién leída, ANTES de guardarla: los
+ * productos sin precio y los que cambiaron de precio de forma llamativa
+ * respecto a la última lista del mismo proveedor.
+ *
+ * Se llama al analizar, no en una pantalla aparte, porque el momento de revisar
+ * es cuando ya se tiene el documento delante.
+ */
+export function avisosDeImportacion(
+  productos: { nombre: string; referencia?: string; precio_costo: number }[],
+  proveedor: string,
+): AvisoImportacion[] {
+  const avisos: AvisoImportacion[] = [];
+
+  for (const p of productos) {
+    if (!(p.precio_costo > 0)) {
+      avisos.push({
+        tipo: "sin-precio",
+        nombre: p.nombre,
+        referencia: p.referencia ?? "",
+        precio: 0,
+      });
+    }
+  }
+
+  // La lista más reciente de este proveedor es contra la que se compara.
+  const prov = proveedor.trim().toLowerCase();
+  const anterior = loadLists()
+    .filter((l) => l.proveedor.trim().toLowerCase() === prov)
+    .sort((a, b) => (Date.parse(b.fecha) || 0) - (Date.parse(a.fecha) || 0))[0];
+
+  if (anterior) {
+    const previos = new Map<string, SupplierProduct>();
+    for (const q of anterior.productos) previos.set(claveDeProducto(q), q);
+
+    for (const p of productos) {
+      if (!(p.precio_costo > 0)) continue;
+      const antes = previos.get(claveDeProducto({ ...p, id: "", marca: "", categoria: "", proveedor: prov, importedAt: "" }));
+      if (!antes?.precio_costo) continue;
+
+      const diferencia = p.precio_costo - antes.precio_costo;
+      const porcentaje = diferencia / antes.precio_costo;
+      if (Math.abs(diferencia) < SALTO_MINIMO_PESOS) continue;
+      if (Math.abs(porcentaje) < SALTO_MINIMO_PORCENTAJE) continue;
+
+      avisos.push({
+        tipo: "salto-de-precio",
+        nombre: p.nombre,
+        referencia: p.referencia ?? "",
+        precio: p.precio_costo,
+        precioAnterior: antes.precio_costo,
+        diferencia,
+        porcentaje,
+        sospechoso: Math.abs(porcentaje) >= SALTO_SOSPECHOSO,
+        listaAnterior: anterior.nombre,
+      });
+    }
+  }
+
+  // Sin precio primero —no se puede cotizar sin eso— y después por PESOS, que
+  // es lo que ordena el riesgo de verdad.
+  return avisos.sort((a, b) => {
+    if (a.tipo !== b.tipo) return a.tipo === "sin-precio" ? -1 : 1;
+    return Math.abs(b.diferencia ?? 0) - Math.abs(a.diferencia ?? 0);
+  });
+}
+
 /** Los productos que quedaron tapados por una lista más nueva, con los dos
  *  precios. Sirve para ver qué subió y qué bajó entre una lista y la siguiente. */
 export function preciosDesactualizados(): {

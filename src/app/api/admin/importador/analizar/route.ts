@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importCatalog } from "@/lib/catimporter/orchestrator";
+import { avisosDeImportacion } from "@/lib/supplier-catalog";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -53,6 +54,12 @@ export async function POST(req: NextRequest) {
       reviewCount: productos.filter((p) => p.requiresReview).length,
       products: productos,
       descartados,
+      // Qué mirar antes de guardar: lo que no tiene precio y lo que cambió de
+      // precio de forma llamativa frente a la última lista de este proveedor.
+      avisos: avisosDeImportacion(
+        productos.map((p) => ({ nombre: p.nombre, referencia: p.supplierCode, precio_costo: p.precio_costo })),
+        proveedor,
+      ),
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error leyendo la lista";
