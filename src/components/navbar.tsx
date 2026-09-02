@@ -8,9 +8,7 @@ import {
   ShoppingCart,
   Menu,
   Heart,
-  UserCircle,
   LayoutDashboard,
-  LogOut,
 } from "lucide-react";
 import { iconoDe } from "@/lib/categories-icons";
 import type { Category } from "@/lib/categories";
@@ -25,7 +23,6 @@ import { ProductQuickView, type QuickViewProduct } from "./product-quick-view";
 export function Navbar({ categories = [] }: { categories?: Category[] }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [products, setProducts] = useState<QuickViewProduct[]>([]);
   const [searchQ, setSearchQ] = useState("");
@@ -36,7 +33,6 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
   const { count: wishCount } = useWishlist();
   const badgeRef = useRef<HTMLSpanElement>(null);
   const prev = useRef(cartCount);
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -91,17 +87,6 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
       prev.current = cartCount;
     }
   }, [cartCount]);
-
-  // Cerrar menú usuario al clic fuera
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-    if (userMenuOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [userMenuOpen]);
 
   // Cerrar dropdown de contacto al clic fuera
   useEffect(() => {
@@ -161,20 +146,62 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
       <div className="hidden lg:grid grid-cols-[auto_1fr_auto] gap-x-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Logo — abarca ambas filas ───────────────────────────── */}
-        <div className="row-span-2 self-center py-3">
-          {/* El archivo original gastaba el 61% de su alto en margen vacío, así que el logo
-              se dibujaba a 44px dentro de una caja de 115px: de ahí la falta de definición.
-              logo-header.png es el mismo arte recortado y a resolución completa. Sin efecto
-              al pasar el mouse: es la marca, no un control. */}
+        <div className="row-span-2 self-center py-3 relative">
+          {/* ── Entrada al panel, escondida a la izquierda del logo ──
+              Antes era un icono de usuario permanente arriba a la derecha: un
+              control que el cliente ve, no entiende y a veces pulsa, para una
+              puerta que no es suya. Ahora vive en el margen izquierdo de la
+              cabecera, transparente hasta que el mouse entra en la zona.
+
+              `opacity-0` no impide el clic —un elemento transparente sigue
+              recibiendo el puntero— así que la zona está siempre ahí; solo se
+              revela al acercarse.
+
+              Va en `absolute` con `right-full` para que ocupe el hueco del
+              padding que ya tiene la cabecera y NO desplace el logo ni un
+              píxel. Ese hueco mide 32px y es todo lo que hay: 24 de botón + 8
+              de separación lo llenan justo, sin asomarse fuera del viewport ni
+              crear scroll horizontal. Por eso el botón es de 24 y no de 28 —
+              para poder despegarlo del logo había que estrecharlo.
+
+              Fuera del orden de tabulación a propósito: esconderlo del cliente y
+              dejarlo a un tabulador de distancia sería esconderlo a medias. Esto
+              es comodidad, no seguridad — /admin sigue protegido por su login y
+              bloqueado en robots.txt. */}
+          <Link
+            href="/admin"
+            aria-hidden="true"
+            tabIndex={-1}
+            title="Panel de administración"
+            className="absolute right-full top-1/2 mr-2 -translate-y-1/2 flex h-6 w-6
+                       items-center justify-center rounded-full border border-white/15
+                       text-zinc-500 opacity-0 transition-opacity duration-200
+                       hover:border-[#1e6cff]/50 hover:text-[#4d8dff] hover:opacity-100"
+          >
+            <LayoutDashboard className="h-3 w-3" />
+          </Link>
+
+          {/* Logo SIN eslogan: en el header no se lee a ese tamaño y le robaba alto al
+              logotipo. El arte se recorta de "Logo Oscuro Sin Slogan.png" quitándole el
+              64% de margen vacío que trae el lienzo, y se genera a resolución completa.
+
+              52px de alto, no 56: el carrito medía 52px en pantalla con el logo anterior
+              y se conserva, así el header no cambia de peso visual. Al quitar el eslogan
+              el logotipo gana el alto que este ocupaba, que es justo lo que se busca.
+
+              `mix-blend-lighten` es lo que hace desaparecer el fondo del PNG: el del arte
+              es rgb(1,8,21) y el del header #0b0f1c, más claro en los tres canales, así
+              que el máximo entre ambos ES el header. Sin efecto al pasar el mouse: es la
+              marca, no un control. */}
           <Link href="/" className="shrink-0 block mix-blend-lighten cursor-default">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-header.png"
               srcSet="/logo-header.png 1x, /logo-header@2x.png 2x"
               alt="Te lo Consigo"
-              width={244}
-              height={56}
-              className="h-[56px] w-[244px]"
+              width={233}
+              height={52}
+              className="h-[52px] w-[233px]"
               fetchPriority="high"
               decoding="sync"
             />
@@ -235,7 +262,7 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
         </nav>
 
         {/* ── Acciones — fila 1, mismo nivel que el nav ───────────── */}
-        <div className="flex items-center gap-2 pt-3 pb-1.5">
+        <div className="flex items-center gap-3 pt-3 pb-1.5">
 
           {/* Favoritos */}
           <Link
@@ -272,48 +299,6 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
           </Link>
 
           {/* Usuario / Admin */}
-          <div ref={userMenuRef} className="relative">
-            <button
-              onClick={() => setUserMenuOpen((v) => !v)}
-              className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                userMenuOpen
-                  ? "border-[#1e6cff]/60 bg-[#1e6cff]/15 text-[#4d8dff]"
-                  : "border-white/15 text-zinc-400 hover:text-white hover:border-white/30"
-              }`}
-              aria-label="Menú de usuario"
-            >
-              <UserCircle className="h-5 w-5" />
-            </button>
-
-            {userMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-white/10
-                              bg-[#0f1626] shadow-2xl shadow-black/60 py-1 z-50">
-                <div className="px-4 py-3 border-b border-white/8">
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-500 mb-0.5">
-                    Modo desarrollo
-                  </p>
-                  <p className="text-sm font-semibold text-white">Administrador</p>
-                </div>
-                <Link
-                  href="/admin"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300
-                             hover:text-white hover:bg-white/5 transition"
-                >
-                  <LayoutDashboard className="h-4 w-4 text-[#4d8dff]" />
-                  Panel Admin
-                </Link>
-                <button
-                  onClick={() => setUserMenuOpen(false)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-400
-                             hover:text-red-400 hover:bg-red-500/5 transition"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Salir
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ── Fila 2: Barra de búsqueda ───────────────────────────── */}
@@ -428,9 +413,9 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
             src="/logo-header.png"
             srcSet="/logo-header.png 1x, /logo-header@2x.png 2x"
             alt="Te lo Consigo"
-            width={113}
-            height={26}
-            className="h-[26px] w-[113px] mix-blend-lighten"
+            width={108}
+            height={24}
+            className="h-[24px] w-[108px] mix-blend-lighten"
             fetchPriority="high"
             decoding="sync"
           />
@@ -527,26 +512,20 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
       {open && (
         <div className="lg:hidden border-t border-white/10 bg-[#080c14] px-4 py-4">
 
-          {/* Links secundarios (no están en las pills) */}
-          <div className="flex gap-2 mb-4">
+          {/* Link secundario (no está en las pills).
+              Aquí había también un botón "Panel Admin" bien visible: en el móvil
+              no hay mouse que pasar por encima, así que esconderlo en el header
+              y dejarlo anunciado en el menú era esconderlo a medias. Se entra
+              escribiendo /admin. */}
+          <div className="mb-4">
             <Link
               href="/nosotros"
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg
                          border border-white/10 bg-white/5 px-3 py-2.5
                          text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition"
               onClick={() => setOpen(false)}
             >
               Sobre Nosotros
-            </Link>
-            <Link
-              href="/admin"
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg
-                         border border-[#1e6cff]/30 bg-[#1e6cff]/10 px-3 py-2.5
-                         text-sm font-medium text-[#4d8dff] hover:bg-[#1e6cff]/20 transition"
-              onClick={() => setOpen(false)}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Panel Admin
             </Link>
           </div>
 

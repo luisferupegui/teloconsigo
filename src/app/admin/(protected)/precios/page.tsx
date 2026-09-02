@@ -47,6 +47,7 @@ const CAT_LABELS: Record<string, { label: string; desc: string }> = {
   "impresora":       { label: "Impresoras",                       desc: "Láser, inkjet, multifuncionales" },
   "accesorios":      { label: "Accesorios generales",             desc: "Hubs, cables, adaptadores, periféricos sueltos…" },
   "proteccion":      { label: "Protección eléctrica",             desc: "UPS, reguladores, multitomas, supresores de picos" },
+  "celular":         { label: "Teléfonos celulares",              desc: "Xiaomi, Samsung, Motorola… Margen bajo: es categoría de alta rotación y precio muy comparable" },
   "teclado":         { label: "Teclados",                         desc: "Mecánicos, membrana, inalámbrico" },
   "motherboard":     { label: "Motherboards / Placas madre",      desc: "AM5, LGA1700, HEDT…" },
   "escritorio-alto-rendimiento": { label: "Escritorio alto rendimiento", desc: "Gaming, edición de video, producción (GPU dedicada / CPU tope). Margen competitivo" },
@@ -60,6 +61,7 @@ const CAT_ORDER = [
   "almacenamiento",  // Almacenamiento (SSD / HDD)
   "antivirus",       // Antivirus
   "auriculares",     // Auriculares / Headsets
+  "celular",         // Teléfonos celulares
   "escritorio",      // Computadores de escritorio
   "escritorio-alto-rendimiento", // Gaming / edición / producción
   "fuente-poder",    // Fuentes de poder (PSU)

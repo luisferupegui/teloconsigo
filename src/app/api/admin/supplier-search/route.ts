@@ -71,8 +71,11 @@ export async function GET(req: NextRequest) {
     const pb = esDeLaCategoria(b.categoria) ? 0 : 1;
     return pa - pb || a.precio_costo - b.precio_costo;
   });
-  // "Más barato" solo tiene sentido dentro de lo que el usuario buscaba de verdad.
-  if (withFinal.length > 0) withFinal[0].esMasBarato = true;
+  // "Más barato" solo tiene sentido dentro de lo que el usuario buscaba de verdad,
+  // y solo entre los que TIENEN precio: un producto que llegó sin precio ordena
+  // como costo 0 y se llevaba la estrella de más barato sin ser comparable.
+  const primeroConPrecio = withFinal.find((p) => p.precio_costo > 0);
+  if (primeroConPrecio) primeroConPrecio.esMasBarato = true;
 
   return NextResponse.json({
     query: q,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadLists, saveLists, setListActive, deleteList, deleteProductsFromList, loadMargins, applyMargin, restoreListsFromBackup } from "@/lib/supplier-catalog";
+import { loadLists, saveLists, setListActive, deleteList, deleteProductsFromList, loadMargins, applyMargin, restoreListsFromBackup, nombreDeProveedor } from "@/lib/supplier-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     if (action === "setProveedor") {
       const { listId, proveedor } = body;
       if (!listId) return NextResponse.json({ error: "Falta listId" }, { status: 400 });
-      const nombre = (proveedor ?? "").trim().toLowerCase();
+      const nombre = nombreDeProveedor(String(proveedor ?? ""));
       const lists = loadLists();
       const lista = lists.find((l) => l.id === listId);
       if (!lista) return NextResponse.json({ error: "Lista no encontrada" }, { status: 404 });

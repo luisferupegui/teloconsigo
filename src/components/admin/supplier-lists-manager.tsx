@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, Fragment } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import {
-  Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Sparkles,
+  FileText, Loader2, CheckCircle2, AlertCircle,
   Package, Search, Trash2, KeyRound, Eye, EyeOff, Power, Store, ChevronDown,
   Star, Tag, Pencil, RefreshCw, ShieldCheck, ClipboardList,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";
+import { PROVEEDORES_CONOCIDOS } from "@/lib/proveedores-conocidos";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ type SearchMatch = {
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
 // Sugerencias, no una lista cerrada: el campo admite cualquier proveedor nuevo.
-const PROVEEDORES = ["ledacom", "infoshopcorp", "janus"];
+const PROVEEDORES = PROVEEDORES_CONOCIDOS;
 
 // Mapea la categoría del proveedor a los campos del catálogo público.
 const CAT_MAP: Record<string, { categoria: string; usoCaso: string; segmento: string }> = {
@@ -73,6 +74,8 @@ type PublishTarget = "catalogo" | "destacado" | "promocion";
 type PublishableProduct = {
   nombre: string; marca: string; categoria: string;
   referencia?: string; precio_final: number; specs?: Record<string, string>;
+  /** A quién se lo compramos. No es la marca y no sale a la tienda. */
+  proveedor?: string;
 };
 
 type EditorState = {
@@ -108,7 +111,11 @@ async function publishToStore(p: PublishableProduct, target: PublishTarget): Pro
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       nombre: p.nombre,
-      marca: p.marca,
+      // Última puerta antes de la tienda: si la "marca" es en realidad el
+      // proveedor, no se publica. Acabaría en la ficha del producto y en el
+      // `brand` del JSON-LD, o sea indexada por Google — decirle al cliente a
+      // quién le compramos es darle el dato para saltarse la tienda.
+      marca: p.marca.trim().toLowerCase() === (p.proveedor ?? "").trim().toLowerCase() ? "" : p.marca,
       precio: p.precio_final,
       precioDesde: p.precio_final,
       referencia: p.referencia || undefined,
@@ -140,7 +147,7 @@ const TARGET_LABEL: Record<PublishTarget, string> = {
  *  sección de cargar listas. Ahora cada una es su propio encabezado y este componente
  *  muestra solo la que le pidan, conservando en un único sitio la carga de listas y claves
  *  que todas comparten. */
-export type VistaListas = "cargar" | "listas" | "buscar" | "herramientas";
+export type VistaListas = "listas" | "buscar" | "herramientas";
 
 export function SupplierListsManager({ vista }: { vista: VistaListas }) {
   const [toast, setToast] = useState<Toast | null>(null);
@@ -180,12 +187,6 @@ export function SupplierListsManager({ vista }: { vista: VistaListas }) {
         </>
       )}
 
-      {vista === "cargar" && (
-        <CargarTab
-          onImported={(n) => flash(true, `${n} productos importados como nueva lista`)}
-          flash={flash}
-        />
-      )}
       {vista === "listas" && (
         <ListasTab lists={lists} totals={totals} onRefresh={refreshLists} flash={flash} />
       )}
@@ -704,133 +705,6 @@ function WebCachePanel({ flash }: { flash: (ok: boolean, msg: string) => void })
 
 // ─── Tab: Cargar lista (Word / Excel) ──────────────────────────────────────────
 
-function CargarTab({ onImported, flash }: {
-  onImported: (n: number) => void; flash: (ok: boolean, msg: string) => void;
-}) {
-  const [fileName, setFileName] = useState("");
-  const [proveedor, setProveedor] = useState("");
-  const [importing, setImporting] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const fileRef = useRef<File | null>(null);
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (inputRef.current) inputRef.current.value = "";
-    if (!file) return;
-    const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".docx") && !lower.endsWith(".xlsx")) {
-      flash(false, "Solo se aceptan Word (.docx) o Excel (.xlsx)");
-      return;
-    }
-    fileRef.current = file;
-    setFileName(file.name);
-  }
-
-  function reset() {
-    fileRef.current = null;
-    setFileName("");
-  }
-
-  async function handleImport() {
-    if (!fileRef.current) return;
-    setImporting(true);
-    try {
-      // Extracción determinista en el servidor: lee las celdas de la tabla.
-      // No usa IA ni clave API — es gratis e instantáneo.
-      const fd = new FormData();
-      fd.append("file", fileRef.current);
-      fd.append("proveedor", proveedor);
-      fd.append("nombre", fileName);
-      const res = await fetch("/api/admin/import-doc-catalog", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error al importar");
-      onImported(data.count ?? 0);
-      reset();
-    } catch (err) {
-      flash(false, err instanceof Error ? err.message : "Error al importar");
-    } finally {
-      setImporting(false);
-    }
-  }
-
-  const isExcel = fileName.toLowerCase().endsWith(".xlsx");
-
-  if (!fileName) {
-    return (
-      <div
-        onClick={() => inputRef.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 py-16 transition hover:border-indigo-400 hover:bg-indigo-50/30"
-      >
-        <FileText className="h-12 w-12 text-zinc-300" />
-        <div className="text-center">
-          <p className="text-sm font-bold text-zinc-700">Subir lista de precios — Word o Excel</p>
-          <p className="mt-1 text-xs text-zinc-400">
-            Se lee la tabla directamente (gratis, sin IA) · archivos <strong>.docx</strong> o <strong>.xlsx</strong> · Máx. 20 MB
-          </p>
-        </div>
-        <div className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-          <Upload className="h-4 w-4" /> Seleccionar archivo
-        </div>
-        <input ref={inputRef} type="file" accept=".docx,.xlsx" className="hidden" onChange={handleFile} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-bold text-zinc-900">{isExcel ? "📊" : "📄"} {fileName}</p>
-          <p className="text-xs text-zinc-400">
-            {isExcel ? "Excel" : "Word"} · se extraerán los productos de la tabla (gratis, sin IA)
-          </p>
-        </div>
-        <button
-          onClick={reset}
-          className="flex items-center gap-1 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:border-red-300 hover:text-red-500 transition"
-        >
-          <X className="h-3.5 w-3.5" /> Cargar otro
-        </button>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-end gap-3">
-        {/* Campo LIBRE, no una lista cerrada: era un desplegable con tres opciones fijas, y
-            sumar un proveedor nuevo obligaba a tocar código. Las conocidas quedan como
-            sugerencia. */}
-        <label className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Proveedor</span>
-          <input
-            type="text"
-            list="proveedores-doc"
-            value={proveedor}
-            onChange={(e) => setProveedor(e.target.value)}
-            placeholder="Nombre del proveedor"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-          />
-          <datalist id="proveedores-doc">
-            {PROVEEDORES.map((p) => <option key={p} value={p} />)}
-          </datalist>
-        </label>
-
-        <button
-          onClick={handleImport}
-          disabled={importing}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-60 transition"
-        >
-          {importing
-            ? <><Loader2 className="h-4 w-4 animate-spin" /> Importando…</>
-            : <><Sparkles className="h-4 w-4" /> Importar lista</>}
-        </button>
-      </div>
-
-      <p className="mt-3 text-xs text-zinc-400">
-        Consejo: si un producto queda con la categoría equivocada, puedes ajustarla al publicarlo.
-        La lista más confiable es un Excel/Word con columnas <strong>Producto · Precio · Código</strong>.
-      </p>
-    </div>
-  );
-}
-
 // ─── Tab: Listas cargadas ──────────────────────────────────────────────────────
 
 /** Etiqueta del proveedor, editable en el sitio. Un clic y se cambia: el nombre se
@@ -844,7 +718,7 @@ function ProveedorTag({ lista, onRefresh, flash }: {
   const [guardando, setGuardando] = useState(false);
 
   async function guardar() {
-    if (valor.trim().toLowerCase() === lista.proveedor) { setEditando(false); return; }
+    if (valor.trim().toLowerCase() === lista.proveedor.trim().toLowerCase()) { setEditando(false); return; }
     setGuardando(true);
     try {
       const res = await fetch("/api/admin/supplier-lists", {
@@ -1267,8 +1141,8 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                               <td className="px-4 py-2">
                                 <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">{p.categoria}</span>
                               </td>
-                              <td className="px-4 py-2 text-right text-zinc-500">{formatCOP(p.precio_costo)}</td>
-                              <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{formatCOP(p.precio_final)}</td>
+                              <td className="px-4 py-2 text-right text-zinc-500">{p.precio_costo > 0 ? formatCOP(p.precio_costo) : <span className="font-bold text-amber-600">sin precio</span>}</td>
+                              <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{p.precio_final > 0 ? formatCOP(p.precio_final) : "—"}</td>
                               <td className="px-4 py-2 text-right whitespace-nowrap">
                                 {published[rowKey] ? (
                                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
@@ -1291,7 +1165,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                                     {/* Publicación rápida */}
                                     <button
                                       onClick={() => doPublish(p, "catalogo", rowKey)}
-                                      disabled={publishingId === rowKey}
+                                      disabled={publishingId === rowKey || p.precio_final <= 0}
                                       title="Publicar rápido al catálogo"
                                       className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                                     >
@@ -1300,7 +1174,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                                     </button>
                                     <button
                                       onClick={() => doPublish(p, "destacado", rowKey)}
-                                      disabled={publishingId === rowKey}
+                                      disabled={publishingId === rowKey || p.precio_final <= 0}
                                       title="Publicar y marcar como Destacado"
                                       className="rounded-md border border-amber-300 p-1 text-amber-500 hover:bg-amber-50 disabled:opacity-50 transition"
                                     >
@@ -1308,7 +1182,7 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                                     </button>
                                     <button
                                       onClick={() => doPublish(p, "promocion", rowKey)}
-                                      disabled={publishingId === rowKey}
+                                      disabled={publishingId === rowKey || p.precio_final <= 0}
                                       title="Publicar y marcar como Promoción"
                                       className="rounded-md border border-indigo-300 p-1 text-indigo-500 hover:bg-indigo-50 disabled:opacity-50 transition"
                                     >
@@ -1610,16 +1484,28 @@ function BuscarTab({ totals, flash }: { totals: Totals; flash: (ok: boolean, msg
                       <p className="text-zinc-400">{m.marca}{m.referencia ? ` · ${m.referencia}` : ""}</p>
                     </td>
                     <td className="px-4 py-2.5">
-                      <p className="font-semibold text-zinc-700 capitalize">{m.proveedor}</p>
+                      <p className="font-semibold text-zinc-700">{m.proveedor}</p>
                       <p className="text-zinc-400 max-w-[180px] truncate">{m.listaNombre}</p>
                     </td>
-                    <td className="px-4 py-2.5 text-right text-zinc-500">{formatCOP(m.precio_costo)}</td>
-                    <td className="px-4 py-2.5 text-right font-bold text-[#1e6cff]">{formatCOP(m.precio_final)}</td>
+                    {/* Sin costo no hay precio de venta, y sin precio de venta no
+                        se publica. El botón lo dice antes de intentarlo: la API
+                        lo rechaza igual, pero enterarse al hacer clic es peor. */}
+                    <td className="px-4 py-2.5 text-right text-zinc-500">
+                      {m.precio_costo > 0
+                        ? formatCOP(m.precio_costo)
+                        : <span className="font-bold text-amber-600">sin precio</span>}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-bold text-[#1e6cff]">
+                      {m.precio_final > 0 ? formatCOP(m.precio_final) : "—"}
+                    </td>
                     <td className="px-4 py-2.5 text-right">
                       <button
                         onClick={() => publish(m, rowKey)}
-                        disabled={publishing === rowKey}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                        disabled={publishing === rowKey || m.precio_final <= 0}
+                        title={m.precio_final <= 0
+                          ? "Este producto llegó sin precio en la lista del proveedor. Pídeselo y complétalo antes de publicarlo."
+                          : "Publicar al catálogo"}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition"
                       >
                         {publishing === rowKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Store className="h-3 w-3" />}
                         Publicar

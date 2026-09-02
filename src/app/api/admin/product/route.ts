@@ -15,6 +15,44 @@ const HOME_SECTIONS = {
   enAccesorios: "Accesorios & Esenciales",
 } as const;
 
+// ─── Sin precio no se publica ────────────────────────────────────────────────
+//
+// La ficha de producto pinta el precio con `{precio && …}`: si no hay, no
+// muestra nada y el producto sale a la tienda como si todo estuviera bien. Un
+// cliente lo pide, Andrea lo cotiza, y no hay cifra detrás.
+//
+// Pasa de verdad. Algunas listas traen el precio impreso DENTRO de una imagen
+// del PDF y el lector no puede leerlo: seis productos de Compuoriente y cuatro
+// de Compumax llegan sin precio, marcados para revisión. Publicar uno de esos
+// era un clic.
+//
+// La regla se aplica sobre el ESTADO RESULTANTE y no sobre el campo que se
+// tocó, para que dé igual por dónde se entre: crear ya publicado, activar
+// "publicado" después, destacarlo, meterlo en promoción, o borrarle el precio a
+// uno que ya estaba publicado. Todos acaban en la misma comprobación.
+//
+// Lo que NO hace: impedir guardarlo. Un producto sin precio se puede crear y
+// editar sin publicar, que es como se deja pendiente mientras se le pregunta el
+// precio al proveedor.
+
+/** Las banderas que ponen un producto delante de un cliente. */
+const VITRINAS = ["publicado", "destacado", "enAccesorios", "enPromocion"] as const;
+
+const tienePrecio = (p: Partial<BusinessProduct>) =>
+  (typeof p.precio === "number" && p.precio > 0) ||
+  (typeof p.precioDesde === "number" && p.precioDesde > 0);
+
+/** El motivo por el que este producto no puede estar visible, o `null`. */
+function bloqueoPorFaltaDePrecio(p: Partial<BusinessProduct>): string | null {
+  if (tienePrecio(p)) return null;
+  const visibles = VITRINAS.filter((f) => p[f]);
+  if (visibles.length === 0) return null;
+  const donde = visibles.includes("publicado")
+    ? "publicar"
+    : `poner en ${visibles.join(", ")}`;
+  return `"${p.nombre ?? "El producto"}" no tiene precio, así que no se puede ${donde}. Complétalo primero, o guárdalo sin publicar mientras se lo pides al proveedor.`;
+}
+
 function homeLimitError(products: BusinessProduct[], flag: "destacado" | "enAccesorios"): string | null {
   const count = products.filter((p) => (p as Record<string, unknown>)[flag]).length;
   return count >= HOME_MAX
@@ -56,7 +94,13 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    products[idx] = { ...products[idx], ...safe } as BusinessProduct;
+    // Se comprueba cómo QUEDA el producto, no lo que traía el PATCH: así también
+    // se atrapa borrarle el precio a uno que ya estaba publicado.
+    const resultante = { ...products[idx], ...safe } as BusinessProduct;
+    const bloqueo = bloqueoPorFaltaDePrecio(resultante);
+    if (bloqueo) return NextResponse.json({ error: bloqueo }, { status: 409 });
+
+    products[idx] = resultante;
     saveBusinessProducts(products);
 
     return NextResponse.json({ ok: true });
@@ -104,6 +148,9 @@ export async function POST(req: NextRequest) {
       id:   referencia,
       slug: slugify(String(body.nombre)),
     };
+
+    const bloqueo = bloqueoPorFaltaDePrecio(newProduct);
+    if (bloqueo) return NextResponse.json({ error: bloqueo }, { status: 409 });
 
     const products = loadBusinessProducts();
     for (const flag of ["destacado", "enAccesorios"] as const) {
