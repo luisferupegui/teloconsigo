@@ -27,14 +27,23 @@ import { categoriaDeProducto } from "./categorias";
 const ES_PRECIO = /^\$\s?[\d][\d.,]*$/;
 /** Texto de página que se cuela encima de una ficha y nunca es su nombre: pie
  *  legal, avisos comerciales, y colas de la especificación de la ficha anterior. */
-const ES_PIE_FIJO = /^(>|▪|aplica t[eé]rminos|este listado|la configuraci[oó]n|para m[aá]s informaci[oó]n|confirme la existencia|servicio con iva|pag\.?\s*\d|\d+x |puertos?\s*:)/i;
+const ES_PIE_FIJO = /^(>|▪|aplica t[eé]rminos|este listado|la configuraci[oó]n|para m[aá]s informaci[oó]n|confirme la existencia|servicio con iva|pag\.?\s*\d|\d+x |puertos?\s*:|\d)/i;
+/** Restos de la ESPECIFICACIÓN DE PUERTOS de la ficha anterior.
+ *
+ *  Cuando una ficha cierra con su precio, el final de su lista de puertos queda
+ *  impreso POR DEBAJO ("Audio Jack TMDS", "40Gbps), 1x RJ45 LAN port") y se
+ *  acumula en el título de la ficha siguiente. Empiezan en mayúscula, así que la
+ *  regla de continuación no los atrapa. Ninguna de estas palabras forma parte del
+ *  nombre de un portátil, una tablet o un celular, que es lo único que se lee en
+ *  este formato. */
+const ES_PUERTO = /\b(audio\s*jack|jack|hdmi|rj-?45|displayport|thunderbolt|tmds|gbps|ethernet|lan\s*port|type-?[ac]\b|combo\s*audio)\b/i;
 /** Una línea que empieza en MINÚSCULA continúa la especificación anterior; el
  *  nombre de un producto siempre arranca con mayúscula o con un paréntesis.
  *  Va aparte y SIN la bandera `i` a propósito: metida en la regex de arriba con
  *  `i`, el rango [a-z] casaba también las mayúsculas y se comía todos los
  *  nombres — el síntoma fue que los celulares se quedaron llamándose "(4GB|64GB)". */
 const EMPIEZA_MINUSCULA = /^[a-záéíóúñü]/;
-const ES_PIE = (l: string) => ES_PIE_FIJO.test(l) || EMPIEZA_MINUSCULA.test(l);
+const ES_PIE = (l: string) => ES_PIE_FIJO.test(l) || EMPIEZA_MINUSCULA.test(l) || ES_PUERTO.test(l);
 const ETIQUETA = /^([A-Za-zÁÉÍÓÚÑáéíóúñ][A-Za-zÁÉÍÓÚÑáéíóúñ .]{1,26})\s*:\s*(.*)$/;
 const ES_VARIANTE = /^([A-Z0-9][A-Z0-9-]{5,20})\s*[-–]\s*(.+)$/i;
 
