@@ -121,9 +121,9 @@ export function BusinessProductCard({
   const specRows = Object.entries(product.specs)
     .map(([k, v]) => {
       const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
-      return label ? { label, value: String(v) } : null;
+      return label ? { clave: k, label, value: String(v) } : null;
     })
-    .filter((x): x is { label: string; value: string } => x !== null)
+    .filter((x): x is { clave: string; label: string; value: string } => x !== null)
     .slice(0, 3);
 
   return (
@@ -160,8 +160,8 @@ export function BusinessProductCard({
 
       {/* ── Specs ── */}
       <div className="mt-3 space-y-1.5 flex-1">
-        {specRows.map(({ label, value }) => (
-          <div key={label} className="flex items-baseline gap-2 text-xs leading-4">
+        {specRows.map(({ clave, label, value }) => (
+          <div key={clave} className="flex items-baseline gap-2 text-xs leading-4">
             <span className="shrink-0 min-w-[48px] font-medium text-zinc-400 truncate">
               {label}
             </span>
