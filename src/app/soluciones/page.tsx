@@ -50,8 +50,8 @@ const PILL = "bg-[#1e6cff] text-white ring-1 ring-inset ring-white/20 hover:bg-b
 const SECCIONES: SeccionDef[] = [
   {
     id:           "hogar-estudio",
-    filterBy:     "usoCaso",
-    filterValue:  "portatil-oficina",
+    filterBy:     "segmento",
+    filterValue:  "hogar-estudio",
     titulo:       "Hogar y Estudio",
     tags:         ["Teletrabajo", "Estudio", "Económicos"],
     descripcion:  "PCs y portátiles ágiles, confiables para estudiar, trabajar y disfrutar en casa con el equilibrio ideal entre rendimiento y precio.",

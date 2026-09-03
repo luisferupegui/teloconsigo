@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  RefreshCw, Loader2, TrendingUp, TrendingDown, PackageX, CheckCircle2, AlertCircle,
+  RefreshCw, Loader2, TrendingUp, TrendingDown, PackageX, CheckCircle2, AlertCircle, Sparkles,
 } from "lucide-react";
 
 // ─── Sincronizar la vitrina con las listas del mes ───────────────────────────
@@ -28,12 +28,23 @@ type Repreciar = {
 };
 type Descatalogado = { referencia: string; nombre: string; precioActual: number };
 
+type Candidato = {
+  referencia: string; nombre: string; marca: string; categoria: string;
+  proveedor: string; precioCosto: number; precioVenta: number;
+  tramo: string; porque: string;
+};
+type PropuestaSeccion = {
+  id: string; nombre: string; publicados: number; faltan: number;
+  candidatos: Candidato[]; disponibles: number;
+};
+
 type Analisis = {
   enPromocion: number;
   repreciar: Repreciar[];
   descatalogados: Descatalogado[];
   sinReferencia: number;
   alDia: number;
+  relleno: PropuestaSeccion[];
 };
 
 const cop = (n: number) => (n > 0 ? "$" + n.toLocaleString("es-CO") : "—");
@@ -51,13 +62,14 @@ function Stat({ label, value, tono }: { label: string; value: number; tono: "nor
 export function PromocionesPanel() {
   const [datos, setDatos] = useState<Analisis | null>(null);
   const [cargando, setCargando] = useState(true);
-  const [aplicando, setAplicando] = useState<"precios" | "retirar" | null>(null);
+  const [aplicando, setAplicando] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [hecho, setHecho] = useState("");
   // Todo marcado de entrada: lo normal es querer aplicarlo entero, y quitar
   // alguna casilla cuesta menos que marcar cuarenta y cinco.
   const [precios, setPrecios] = useState<Set<string>>(new Set());
   const [retirar, setRetirar] = useState<Set<string>>(new Set());
+  const [aRellenar, setARellenar] = useState<Record<string, Set<string>>>({});
 
   // La petición va aparte de los `setState` para que el efecto no toque estado
   // de forma síncrona: hacerlo encadena renders y es lo que avisa
@@ -73,6 +85,7 @@ export function PromocionesPanel() {
     setDatos(d);
     setPrecios(new Set(d.repreciar.map((r) => r.referencia)));
     setRetirar(new Set(d.descatalogados.map((r) => r.referencia)));
+    setARellenar(Object.fromEntries(d.relleno.map((s) => [s.id, new Set(s.candidatos.map((c) => c.referencia))])));
   }, []);
 
   /** Recarga desde un manejador de evento (el botón "Volver a mirar"). */
@@ -135,6 +148,34 @@ export function PromocionesPanel() {
     if (copia.has(ref)) copia.delete(ref); else copia.add(ref);
     fijar(copia);
   };
+
+  const alternarRelleno = (seccion: string, ref: string) =>
+    setARellenar((prev) => {
+      const copia = new Set(prev[seccion] ?? []);
+      if (copia.has(ref)) copia.delete(ref); else copia.add(ref);
+      return { ...prev, [seccion]: copia };
+    });
+
+  async function publicarSeccion(seccion: string) {
+    const refs = [...(aRellenar[seccion] ?? [])];
+    if (refs.length === 0) return;
+    setAplicando(seccion); setError(""); setHecho("");
+    try {
+      const res = await fetch("/api/admin/promociones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accion: "publicar", seccion, referencias: refs }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error ?? "No se pudo publicar");
+      setHecho(`${d.publicados} productos publicados en la vitrina`);
+      await cargar();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setAplicando(null);
+    }
+  }
 
   if (cargando && !datos) {
     return (
@@ -271,7 +312,66 @@ export function PromocionesPanel() {
         </div>
       )}
 
-      {datos && datos.repreciar.length === 0 && datos.descatalogados.length === 0 && (
+      {/* ── Secciones a medio llenar ── */}
+      {datos && datos.relleno.some((r) => r.candidatos.length > 0) && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-indigo-200 bg-indigo-50/50 px-5 py-4">
+            <h3 className="font-bold text-indigo-900">Secciones con huecos</h3>
+            <p className="mt-0.5 text-xs text-indigo-800">
+              Cada sección quiere {8} cards. Estas son las mejores candidatas de las listas
+              vigentes, repartidas en <strong>escalera de precio</strong> —de entrada, de medio y
+              de gama alta— para que el cliente compare en vez de ver ocho equipos casi iguales.
+            </p>
+          </div>
+
+          {datos.relleno.filter((r) => r.candidatos.length > 0).map((sec) => (
+            <div key={sec.id} className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+              <div className="flex flex-wrap items-center gap-3 border-b border-zinc-100 px-5 py-4">
+                <div className="min-w-[220px] flex-1">
+                  <h4 className="font-bold text-zinc-900">{sec.nombre}</h4>
+                  <p className="text-xs text-zinc-500">
+                    {sec.publicados} de 8 publicadas · {sec.disponibles} candidatas en las listas
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => publicarSeccion(sec.id)}
+                  disabled={aplicando !== null || (aRellenar[sec.id]?.size ?? 0) === 0}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {aplicando === sec.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  Publicar {aRellenar[sec.id]?.size ?? 0}
+                </button>
+              </div>
+              <div className="divide-y divide-zinc-100">
+                {sec.candidatos.map((c) => (
+                  <label key={c.referencia} className="flex cursor-pointer items-start gap-3 px-5 py-2.5 text-sm hover:bg-zinc-50/70">
+                    <input
+                      type="checkbox" checked={aRellenar[sec.id]?.has(c.referencia) ?? false}
+                      onChange={() => alternarRelleno(sec.id, c.referencia)}
+                      className="mt-1 h-3.5 w-3.5 shrink-0 accent-indigo-600"
+                    />
+                    <span className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      c.tramo === "entrada" ? "bg-emerald-100 text-emerald-700"
+                      : c.tramo === "alto" ? "bg-violet-100 text-violet-700"
+                      : "bg-zinc-100 text-zinc-600"}`}>
+                      {c.tramo}
+                    </span>
+                    <span className="min-w-[200px] flex-1">
+                      <span className="block text-zinc-900">{c.nombre}</span>
+                      <span className="block text-[11px] text-zinc-400">{c.porque}</span>
+                    </span>
+                    <span className="shrink-0 text-sm font-bold text-[#1e6cff]">{cop(c.precioVenta)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {datos && datos.repreciar.length === 0 && datos.descatalogados.length === 0 &&
+       !datos.relleno.some((r) => r.candidatos.length > 0) && (
         <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-6">
           <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
           <p className="text-sm font-semibold text-emerald-900">

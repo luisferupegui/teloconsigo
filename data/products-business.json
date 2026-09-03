@@ -17,7 +17,7 @@
     "descripcion": "Portátil corporativo Lenovo V14 G5 con Core 5 210H. Ideal para oficina con garantía Onsite.",
     "usoCaso": "portatil-oficina",
     "precioDesde": 3380000,
-    "segmento": "productividad-oficina",
+    "segmento": "hogar-estudio",
     "publicado": true,
     "destacado": false,
     "enPromocion": true
@@ -247,7 +247,7 @@
     "descripcion": "Acer Aspire 14 con i5 Raptor Lake y 16 GB. Portátil delgado y liviano para trabajo en movilidad.",
     "usoCaso": "portatil-oficina",
     "precioDesde": 3216000,
-    "segmento": "productividad-oficina",
+    "segmento": "hogar-estudio",
     "publicado": true,
     "enPromocion": true
   },
@@ -1111,7 +1111,7 @@
     },
     "descripcion": "Lenovo V14 G4 con Ryzen 5 7520U y 16GB DDR5. Puerto RJ45 integrado para conexión cableada en oficina.",
     "precioDesde": 2015000,
-    "segmento": "productividad-oficina",
+    "segmento": "hogar-estudio",
     "publicado": true,
     "enPromocion": true
   },
@@ -1134,7 +1134,7 @@
     },
     "descripcion": "Dell Inspiron 15 3530 con i5 de 13.ª gen. Ubuntu preinstalado para empresas con infraestructura Linux.",
     "precioDesde": 2587000,
-    "segmento": "productividad-oficina",
+    "segmento": "hogar-estudio",
     "publicado": true,
     "enPromocion": true
   },
@@ -1157,7 +1157,7 @@
     },
     "descripcion": "Acer Aspire 15 con i5 de 13.ª gen y DDR5. Opción económica sin OS para flotas con imagen propia.",
     "precioDesde": 2163000,
-    "segmento": "productividad-oficina",
+    "segmento": "hogar-estudio",
     "publicado": true,
     "enPromocion": true
   },
