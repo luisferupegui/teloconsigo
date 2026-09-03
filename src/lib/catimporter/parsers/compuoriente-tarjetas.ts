@@ -45,21 +45,25 @@ const ES_PRECIO = /^\$\s?\d[\d.,]{3,}$/;
  *  "PORTÁTILES GAMING" tiene que reconocerse antes que "PORTÁTILES". */
 const SECCIONES: [RegExp, string][] = [
   [/^all\s*in\s*one$/i,                       "all-in-one"],
-  [/^port[aá]tiles?(\s+gaming)?$/i,           "portatil"],
+  [/^port[aá]tiles?(\s*gaming)?$/i,           "portatil"],
   [/^tablets?$/i,                             "tableta"],
   [/^celulares?$/i,                           "celular"],
   [/^impresoras?$/i,                          "impresora"],
   [/^televisores?$/i,                         "televisor"],
-  [/^monitores(\s+gaming)?$/i,                "monitor"],
+  [/^monitores(\s*gaming)?$/i,                "monitor"],
   [/^perif[eé]ricos$/i,                       "accesorios"],
   [/^disipadores$/i,                          "refrigeracion"],
-  [/^chasis(\s+gamer)?$/i,                    "accesorios"],
+  [/^chasis(\s*gamer)?$/i,                    "accesorios"],
   [/^boards?$/i,                              "motherboard"],
-  [/^fuentes?(\s+de\s+poder)?$/i,             "fuente-poder"],
-  [/^pc\s+corporativos?$/i,                   "escritorio"],
+  [/^fuentes?(\s*de\s*poder)?$/i,             "fuente-poder"],
+  [/^pc\s*corporativos?$/i,                   "escritorio"],
+  // "NUC" encabeza su propia sección en la página de PC corporativos. Sin ella,
+  // los tres NUC heredaban la sección de la página anterior —MONITORES— y
+  // entraban al catálogo como monitores.
+  [/^nuc$/i,                                  "mini-pc"],
   [/^accesorios$/i,                           "accesorios"],
   [/^otros$/i,                                "accesorios"],
-  [/^partes\s+para\s+pc$/i,                   "accesorios"],
+  [/^partes\s*para\s*pc$/i,                   "accesorios"],
 ];
 
 /** Tamaño de letra a partir del cual un texto puede ser rótulo de sección. Los
@@ -207,7 +211,13 @@ export function rotulosDePagina(fragmentos: Fragmento[]): { y: number; categoria
       )
       .replace(/\s{2,}/g, " ")
       .trim();
-    const categoria = SECCIONES.find(([re]) => re.test(texto))?.[1];
+    // Se compara TAMBIÉN sin espacios. PDF.js no parte los rótulos por palabras
+    // sino donde el diseñador tocó el espaciado, y "PARTES PARA PC" llegaba como
+    // "P ARTESP ARAPC": ni con espacios ni sin ellos coincidía tal cual, así que
+    // la sección no se reconocía y toda la página heredaba la anterior. Por eso
+    // un mouse y una rotuladora acabaron catalogados como televisores.
+    const compacto = texto.replace(/\s+/g, "");
+    const categoria = SECCIONES.find(([re]) => re.test(texto) || re.test(compacto))?.[1];
     if (categoria) out.push({ y: Math.max(...fs.map((f) => f.y)), categoria });
   }
   return out.sort((a, b) => b.y - a.y);
