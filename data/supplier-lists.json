@@ -8160,7 +8160,8 @@
           "board": "MSI PRO B760M-G DDR4 / MSI PRO B760M-P DDR4",
           "monitor": "ACER 23,8 KA242Y"
         },
-        "importedAt": "2026-09-02T13:01:09.029Z"
+        "importedAt": "2026-09-02T13:01:09.029Z",
+        "paginaPdf": 13
       },
       {
         "id": "compuoriente-R56162SKRL",
@@ -8674,7 +8675,8 @@
           "board": "MSI PRO A520M-A",
           "monitor": "ACER 23,8 KA242Y"
         },
-        "importedAt": "2026-09-02T13:01:09.029Z"
+        "importedAt": "2026-09-02T13:01:09.029Z",
+        "paginaPdf": 16
       },
       {
         "id": "compuoriente-R7682SL",
@@ -8781,7 +8783,8 @@
           "tvideo": "MSI GEFORCE RTX 5060 8G",
           "fuente_de_poder": "MSI MAG A750 BRONCE"
         },
-        "importedAt": "2026-09-02T13:01:09.029Z"
+        "importedAt": "2026-09-02T13:01:09.029Z",
+        "paginaPdf": 17
       },
       {
         "id": "compuoriente-R86162SM-P",
@@ -8883,7 +8886,8 @@
           "monitor": "ACER 23,8 KA242Y",
           "memoria": "ADATA 16GB DDR5 RGB 5600MHZ"
         },
-        "importedAt": "2026-09-02T13:01:09.029Z"
+        "importedAt": "2026-09-02T13:01:09.029Z",
+        "paginaPdf": 18
       },
       {
         "id": "compuoriente-R85162SMR",
@@ -8924,7 +8928,8 @@
           "almacenamiento": "SSD HIKSEMI 512GB WAPE (P) M.2",
           "monitor": "ACER 23,8 KA242Y"
         },
-        "importedAt": "2026-09-02T13:01:09.029Z"
+        "importedAt": "2026-09-02T13:01:09.029Z",
+        "paginaPdf": 18
       },
       {
         "id": "compuoriente-R85162SMR-P",
@@ -9545,7 +9550,8 @@
           "caja_atx_power_group": "W97",
           "monitor": "ACER 24.5” KG250Q P6BI"
         },
-        "importedAt": "2026-09-02T13:01:09.029Z"
+        "importedAt": "2026-09-02T13:01:09.029Z",
+        "paginaPdf": 23
       },
       {
         "id": "compuoriente-R96162SR-P",
@@ -11879,7 +11885,8 @@
           "filtro": "Magnético superior",
           "iluminacion": "RGB"
         },
-        "importedAt": "2026-09-02T13:00:29.247Z"
+        "importedAt": "2026-09-02T13:00:29.247Z",
+        "paginaPdf": 10
       },
       {
         "id": "compumax-90579000089",
@@ -11898,7 +11905,8 @@
           "sistema_operativo": "Linux",
           "filtro": "Magnético superior"
         },
-        "importedAt": "2026-09-02T13:00:29.247Z"
+        "importedAt": "2026-09-02T13:00:29.247Z",
+        "paginaPdf": 10
       },
       {
         "id": "compumax-90579000108",
@@ -11918,7 +11926,8 @@
           "filtro": "Magnético superior",
           "iluminacion": "RGB"
         },
-        "importedAt": "2026-09-02T13:00:29.247Z"
+        "importedAt": "2026-09-02T13:00:29.247Z",
+        "paginaPdf": 10
       },
       {
         "id": "compumax-90512010003",
@@ -12046,7 +12055,8 @@
           "iluminacion": "RGB",
           "monitor": "23.8\" Compumax 144HZ FHD"
         },
-        "importedAt": "2026-09-02T13:00:29.247Z"
+        "importedAt": "2026-09-02T13:00:29.247Z",
+        "paginaPdf": 11
       },
       {
         "id": "compumax-90579000113",

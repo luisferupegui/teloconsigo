@@ -23,6 +23,8 @@ export async function GET(req: NextRequest) {
         referencia: p.referencia ?? "",
         precio_costo: p.precio_costo,
         precio_final: applyMargin(p.precio_costo, p.categoria, margins, p.nombre),
+        // Solo la traen los que llegaron sin precio: es dónde buscarlo en el PDF.
+        paginaPdf: p.paginaPdf,
       })),
     });
   }
@@ -83,9 +85,11 @@ export async function DELETE(req: NextRequest) {
 // POST — acciones especiales.
 //   { action: "restore" }
 //   { action: "deleteProducts", listId, productIds: string[] }
+//   { action: "setProveedor", listId, proveedor }
+//   { action: "setPrecio", listId, productId, precio }
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { action?: string; listId?: string; productIds?: string[]; proveedor?: string };
+    const body = (await req.json()) as { action?: string; listId?: string; productIds?: string[]; proveedor?: string; productId?: string; precio?: unknown };
     const { action } = body;
 
     if (action === "restore") {
@@ -123,6 +127,49 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Lista no encontrada" }, { status: 404 });
       }
       return NextResponse.json({ ok: true, deleted: result.deleted });
+    }
+
+    // ── Completar a mano el costo que el lector no pudo sacar ────────────────
+    //
+    // Hay proveedores que imprimen el precio dentro de una imagen, o en un sitio
+    // de la página que el extractor deja lejos de la ficha. El producto existe y
+    // se lee bien; lo único que falta es la cifra.
+    //
+    // Se escribe a mano y no se adivina a propósito. El precio SÍ suele estar en
+    // el documento, pero con varios candidatos en la misma columna: elegir mal
+    // pone un costo equivocado en una máquina de millones, y un costo
+    // equivocado no da ningún síntoma — se cobra y ya. Entre no tener el dato y
+    // tenerlo mal, lo segundo es peor.
+    if (action === "setPrecio") {
+      const { listId, productId, precio } = body;
+      if (!listId || !productId) {
+        return NextResponse.json({ error: "Faltan listId o productId" }, { status: 400 });
+      }
+      const valor = Number(precio);
+      if (!Number.isFinite(valor) || valor < 1000) {
+        return NextResponse.json(
+          { error: "El costo debe ser un número de al menos $1.000." },
+          { status: 400 },
+        );
+      }
+
+      const lists = loadLists();
+      const lista = lists.find((l) => l.id === listId);
+      if (!lista) return NextResponse.json({ error: "Lista no encontrada" }, { status: 404 });
+      const prod = lista.productos.find((p) => p.id === productId);
+      if (!prod) return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 });
+
+      prod.precio_costo = Math.round(valor);
+      // La página era la pista para venir a buscarlo; ya no hace falta.
+      delete prod.paginaPdf;
+      saveLists(lists);
+
+      const margins = loadMargins();
+      return NextResponse.json({
+        ok: true,
+        precio_costo: prod.precio_costo,
+        precio_final: applyMargin(prod.precio_costo, prod.categoria, margins, prod.nombre),
+      });
     }
 
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });

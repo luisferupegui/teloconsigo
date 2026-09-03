@@ -25,6 +25,8 @@ type Totals = { listas: number; listasActivas: number; productosActivos: number 
 type ListProduct = {
   id: string; nombre: string; marca: string; categoria: string;
   referencia: string; precio_costo: number; precio_final: number;
+  /** Solo la traen los que llegaron sin precio: dónde buscarlo en el PDF. */
+  paginaPdf?: number;
 };
 
 type SearchMatch = {
@@ -953,6 +955,17 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
     }
   }
 
+  /** Vuelve a pedir los productos de una lista, sin usar la caché. Se usa tras
+   *  completar un costo a mano, para que la fila se repinte con su precio. */
+  async function recargarProductos(listId: string) {
+    try {
+      const d = await (await fetch(`/api/admin/supplier-lists?id=${encodeURIComponent(listId)}`)).json();
+      setProdCache((c) => ({ ...c, [listId]: d.productos ?? [] }));
+    } catch {
+      flash(false, "No se pudieron recargar los productos");
+    }
+  }
+
   async function toggle(l: ListMeta) {
     setBusy(l.id);
     try {
@@ -1141,7 +1154,18 @@ function ListasTab({ lists, totals, onRefresh, flash }: {
                               <td className="px-4 py-2">
                                 <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">{p.categoria}</span>
                               </td>
-                              <td className="px-4 py-2 text-right text-zinc-500">{p.precio_costo > 0 ? formatCOP(p.precio_costo) : <span className="font-bold text-amber-600">sin precio</span>}</td>
+                              {/* Sin costo, la celda deja de ser un dato y pasa a
+                                  ser el sitio donde se escribe: es donde estás
+                                  mirando cuando descubres que falta. */}
+                              <td className="px-4 py-2 text-right text-zinc-500">
+                                {p.precio_costo > 0
+                                  ? formatCOP(p.precio_costo)
+                                  : <CompletarPrecio
+                                      listId={l.id}
+                                      producto={p}
+                                      onHecho={() => { recargarProductos(l.id); flash(true, "Costo guardado"); }}
+                                    />}
+                              </td>
                               <td className="px-4 py-2 text-right font-bold text-[#1e6cff]">{p.precio_final > 0 ? formatCOP(p.precio_final) : "—"}</td>
                               <td className="px-4 py-2 text-right whitespace-nowrap">
                                 {published[rowKey] ? (
@@ -1235,6 +1259,80 @@ function Stat({ label, value, tone = "zinc" }: { label: string; value: number; t
 }
 
 // ─── Editor inline de producto (dentro de la tabla de la lista) ───────────────
+
+/**
+ * El costo de un producto que llegó sin él, escrito a mano.
+ *
+ * Hay proveedores que imprimen el precio dentro de una imagen, o en un sitio de
+ * la página que el extractor deja lejos de la ficha. El producto se lee bien;
+ * falta la cifra, y sin ella no se puede publicar ni cotizar.
+ *
+ * Se escribe, no se adivina. El precio suele estar en el documento, pero con
+ * varios candidatos en la misma columna: elegir mal pone un costo equivocado en
+ * una máquina de millones y no da ningún síntoma. Por eso el atajo que sí ayuda
+ * es decir en QUÉ PÁGINA está, y que la cifra la ponga quien la ve.
+ */
+function CompletarPrecio({ listId, producto, onHecho }: {
+  listId: string;
+  producto: ListProduct;
+  onHecho: () => void;
+}) {
+  const [valor, setValor] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+
+  async function guardar() {
+    const n = Number(valor.replace(/[^\d]/g, ""));
+    if (!Number.isFinite(n) || n < 1000) { setError("Mínimo $1.000"); return; }
+    setGuardando(true); setError("");
+    try {
+      const res = await fetch("/api/admin/supplier-lists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setPrecio", listId, productId: producto.id, precio: n }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error ?? "No se pudo guardar");
+      onHecho();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex items-center gap-1">
+        <span className="text-zinc-400">$</span>
+        <input
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") guardar(); }}
+          placeholder="costo"
+          inputMode="numeric"
+          className="w-24 rounded-md border border-amber-300 bg-white px-2 py-1 text-right
+                     text-xs focus:border-amber-500 focus:outline-none"
+        />
+        <button
+          onClick={guardar}
+          disabled={guardando || !valor.trim()}
+          className="rounded-md bg-amber-500 px-2 py-1 text-[11px] font-bold text-white
+                     transition hover:bg-amber-600 disabled:opacity-50"
+        >
+          {guardando ? "…" : "ok"}
+        </button>
+      </div>
+      {producto.paginaPdf ? (
+        <span className="text-[10px] text-amber-700">
+          está en la <strong>página {producto.paginaPdf}</strong> del PDF
+        </span>
+      ) : (
+        <span className="text-[10px] text-zinc-400">pídeselo al proveedor</span>
+      )}
+      {error && <span className="text-[10px] font-semibold text-red-600">{error}</span>}
+    </div>
+  );
+}
 
 function InlineEditor({
   state,
