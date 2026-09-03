@@ -1190,11 +1190,11 @@
     "marca": "Asus",
     "categoria": "portatil",
     "usoCaso": "portatil-gaming",
-    "precio": 2238000,
+    "precio": 2882000,
     "precioIvaIncluido": true,
     "specs": {
       "procesador": "Intel Core 5 210H (8C 12T, hasta 4.6 GHz)",
-      "ram": "8GB DDR4",
+      "ram": "8GB DDR5",
       "almacenamiento": "512GB SSD",
       "pantalla": "16.0\" WUXGA (1920×1200)",
       "gpu": "NVIDIA RTX 3050 6GB GDDR6",
@@ -1202,13 +1202,14 @@
       "color": "Mecha Gray"
     },
     "descripcion": "Asus TUF FX607V con RTX 3050 y pantalla WUXGA. Gaming y render 3D para diseñadores y creadores.",
-    "precioDesde": 2573000,
+    "precioDesde": 2882000,
     "segmento": "gaming-streaming",
     "publicado": true,
     "descripcionUso": "",
     "destacado": false,
     "enAccesorios": false,
-    "enPromocion": true
+    "enPromocion": true,
+    "fueraDeLista": true
   },
   {
     "referencia": "PC-R5-5600GT-22",
