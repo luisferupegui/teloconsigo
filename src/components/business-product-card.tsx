@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import type { BusinessProduct } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
 import { formatCOP } from "@/lib/products-types";
+import { subtituloDeCatalogo } from "@/lib/ficha-card";
 
 // ─── Etiquetas de specs (compartido con /productos y /soluciones) ──────────────
 
@@ -19,7 +20,13 @@ const SPEC_LABEL: Record<string, string | null> = {
   conectividad:   "Red",
   bateria:        "Batería",
   capacidad:      "Cap.",
-  interfaz:       "Puerto",
+  interfaz:       "Interfaz",
+  // Fichas de lo que no es un equipo: una cámara se compara por resolución y un
+  // switch por puertos, igual que un portátil por su procesador.
+  resolucion:     "Res.",
+  estandar:       "Estándar",
+  conexion:       "Conexión",
+  puertos:        "Puertos",
   cobertura:      "Equipos",
   duracion:       "Vigencia",
   clase:          "Clase",
@@ -29,9 +36,56 @@ const SPEC_LABEL: Record<string, string | null> = {
   entrega:        "Entrega",
   incluye:        "Incluye",
   version:        "Versión",
+  // Monitores, licencias y accesorios traen sus propias claves. Sin etiqueta se
+  // pintaba la clave cruda —"tamanho", "aplicaciones"— en la columna de la card.
+  tamanho:        null,   // ya va en el subtítulo ("Monitor 24\"")
+  panel:          null,   // idem
+  tiempo_respuesta: "Respuesta",
+  entradas:       "Entradas",
+  freesync:       "FreeSync",
+  curvatura:      "Curva",
+  color:          "Color",
+  aplicaciones:   "Incluye",
+  usuarios:       "Usuarios",
+  activacion:     "Activación",
+  idioma:         "Idioma",
+  dispositivos:   "Equipos",
+  soporte:        "Soporte",
+  transferible:   "Traslado",
+  proteccion:     "Protege",
+  lectura:        "Lectura",
+  escritura:      "Escritura",
+  alcance:        "Alcance",
+  dpi:            "DPI",
+  botones:        "Botones",
+  receptor:       "Receptor",
+  potencia:       "Potencia",
+  autonomia:      "Autonomía",
+  tomas:          "Tomas",
+  avr:            "AVR",
+  entrada:        "Entrada",
+  salida:         "Salida",
+  hdmi:           "HDMI",
+  usb_velocidad:  "USB",
+  pd:             "Carga",
+  carga_rapida:   "Carga",
+  tecnologia:     "Tecnología",
+  compatibilidad: "Compatible",
   // omitidos de la vista resumen
-  puertos:        null,
   extra:          null,
+  cuerpo:         null,
+  dimension:      null,
+  peso:           null,
+  resistencia:    null,
+  ergonomia:      null,
+  indicador:      null,
+  cable:          null,
+  board:          null,
+  uso:            null,
+  teclado:        null,
+  mouse:          null,
+  bateria_teclado: null,
+  bateria_mouse:  null,
   angulo:         null,
   brillo:         null,
 };
@@ -96,8 +150,12 @@ export function BusinessProductCard({
       <h3 className="pr-9 text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
         {product.nombre}
       </h3>
+      {/* Los productos que se cargaron a mano no traen `descripcionUso` y dejaban
+          este renglón en blanco. Se deduce del catálogo antes que dejar el hueco. */}
       <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2 min-h-[2rem]">
-        {product.descripcionUso}
+        {product.descripcionUso?.trim()
+          ? product.descripcionUso
+          : subtituloDeCatalogo(product.nombre, product.categoria, product.specs)}
       </p>
 
       {/* ── Specs ── */}

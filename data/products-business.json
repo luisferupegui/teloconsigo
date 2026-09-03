@@ -483,7 +483,7 @@
     "referencia": "P81467-DM5",
     "nombre": "HPE ProLiant DL320 Gen11 Xeon Silver 4510 64GB 2x960GB Rack 1U",
     "marca": "HPE",
-    "categoria": "portatil",
+    "categoria": "pc",
     "usoCaso": "servidor",
     "precio": 27900000,
     "precioIvaIncluido": true,
@@ -1623,7 +1623,7 @@
     "marca": "Kingston",
     "categoria": "accesorio",
     "usoCaso": "accesorio",
-    "segmento": "creadores-produccion",
+    "segmento": "accesorios",
     "publicado": true,
     "precio": 68000,
     "precioDesde": 79000,
@@ -1675,14 +1675,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "COREI7-13620H",
-      "ram": "8GB DDR4.",
-      "almacenamiento": "SSD500GB",
+      "procesador": "Core i7-13620H",
+      "ram": "8GB DDR4",
+      "almacenamiento": "500GB SSD",
       "pantalla": "LCD 15.6”",
       "so": "Linux",
       "conectividad": "Wi-Fi 6 + Bluetooth Cámara"
     },
-    "descripcionUso": "PC de escritorio"
+    "descripcionUso": "Equipo de escritorio"
   },
   {
     "referencia": "40539000022",
@@ -1702,40 +1702,40 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "CORE I7-12650H",
-      "ram": "SODIMM DDR4-8GB BUS DE 3200",
-      "almacenamiento": "SSD512GB PCIE",
+      "procesador": "Core i7-12650H",
+      "ram": "8GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD",
       "monitor": "23.8\" COMPUMAX 120HZ FHD",
       "so": "Linux",
       "conectividad": "WIFI/Bluetooth"
     },
-    "descripcionUso": "PC de escritorio"
+    "descripcionUso": "Equipo de escritorio · Monitor 23.8\""
   },
   {
-    "referencia": "FA506NC-HN006_I",
-    "id": "FA506NC-HN006_I",
-    "slug": "asus-tuf-gaming-a15-amd-ryzen-5-7535hs-512gb-ssd-ram-8gb-rtx",
-    "nombre": "Asus TUF Gaming A15 AMD Ryzen 5 7535HS/512GB SSD/Ram 8GB/RTX",
-    "marca": "ASUS",
-    "categoria": "portatil",
-    "usoCaso": "portatil-oficina",
-    "segmento": "gaming-streaming",
+    "referencia": "D20XKLT#ABM",
+    "id": "D20XKLT#ABM",
+    "slug": "aio-hp-proone-240-g10-intel-core-ultra-7-155u-ram-8gb-512gb-",
+    "nombre": "AIO HP PROONE 240 G10 Intel Core Ultra 7 155U/Ram 8GB/512GB SSD/23.8\" FHD/FreeDOS OS",
+    "marca": "HP",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "hogar-estudio",
     "publicado": true,
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 3083000,
-    "precioDesde": 3083000,
+    "precio": 2328000,
+    "precioDesde": 2328000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 5 7535HS Processor…",
-      "ram": "8GB DDR5 4800Mhz",
-      "almacenamiento": "512GB PCIe 4.0 NVMe M.2 SSD (2…",
-      "pantalla": "15.6\" FHD (1920 x 1080) 16:9…",
-      "so": "No ▪ Puertos: 1x RJ45 LAN port…"
+      "procesador": "Intel Core Ultra 7 155U",
+      "ram": "8GB DDR5",
+      "almacenamiento": "512GB SSD NVMe",
+      "pantalla": "23.8\" diagonal, FHD (1920 x…",
+      "so": "FreeDOS ▪ Puertos: Parte…"
     },
-    "descripcionUso": "Portátil · ASUS"
+    "descripcionUso": "Todo en uno · Pantalla 23.8\""
   },
   {
     "referencia": "R56162MRX6",
@@ -1755,14 +1755,41 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 5 5600GT 3.6GHZ",
-      "ram": "ADATA SPECTRIX D35G 16GB DDR4…",
-      "almacenamiento": "HIKSEMI 512GB M.2PCIE",
+      "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD M.2",
       "gpu": "RTX 3050 6GB GIGABYTE",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+  },
+  {
+    "referencia": "R56162B76",
+    "id": "R56162B76",
+    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rx-7600-8gb",
+    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RX 7600 8GB",
+    "marca": "Power Group",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "gaming-streaming",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 3659000,
+    "precioDesde": 3659000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD M.2",
+      "gpu": "POWER COLOR RX 7600 8G",
+      "monitor": "ACER 23,8 KA242Y",
+      "so": "Linux"
+    },
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87321FSR6N",
@@ -1782,14 +1809,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4,1GHZ",
-      "ram": "ADATA 32GB XPG LANDER BLADE…",
-      "almacenamiento": "SSD KINGSTON 1TB M.2",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "32GB",
+      "almacenamiento": "1TB SSD M.2",
       "gpu": "ASUS DUAL GEFORCE RTX 3050 6GB…",
       "monitor": "ACER 23,8 KA242Y · MSI PRO 24”…",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 24\""
   },
   {
     "referencia": "R87162F5W-2",
@@ -1809,14 +1836,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4,1GHZ",
-      "ram": "HIKSEMI ARMOR / ADATA XPG 16GB…",
-      "almacenamiento": "SSD HIKSEMI 512GB WAPE (P)",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "16GB DDR5 5600MHz",
+      "almacenamiento": "512GB SSD",
       "gpu": "GIGABYTE GeForce RTX 5060…",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87161F76W",
@@ -1836,14 +1863,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4.1GHZ",
-      "ram": "HIKSEMI ARMOR 16GB DDR5 5600MHz",
-      "almacenamiento": "SSD HIKSEMI 1TB WAPE (P) M.2",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "16GB DDR5 5600MHz",
+      "almacenamiento": "1TB SSD M.2",
       "gpu": "ASUS DUAL RX7600 8GB",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87321FSR0",
@@ -1863,14 +1890,39 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4,1GHZ",
-      "ram": "ADATA 32GB XPG LANDER BLADE…",
-      "almacenamiento": "SSD KINGSTON 1TB M.2",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "32GB",
+      "almacenamiento": "1TB SSD M.2",
       "gpu": "ASUS DUAL RTX 5050 8GB",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+  },
+  {
+    "referencia": "83DV01AYLM",
+    "id": "83DV01AYLM",
+    "slug": "lenovo-loq-15irx9-intel-core-i5-13450hx-ram-16gb-ssd-512gb-r",
+    "nombre": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX/RAM 16GB/SSD 512GB/ RTX 3050 6GB/15.6\" FHD/Linux OS",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "usoCaso": "portatil-oficina",
+    "segmento": "gaming-streaming",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 8087000,
+    "precioDesde": 8087000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Intel Core i5-13450HX 10C…",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD NVMe",
+      "pantalla": "15.6\" FHD (1920x1080) IPS…"
+    },
+    "descripcionUso": "Portátil 15.6\""
   },
   {
     "referencia": "AMO-2G13",
@@ -1890,7 +1942,7 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {},
-    "descripcionUso": "Equipo de red"
+    "descripcionUso": "Antena"
   },
   {
     "referencia": "MR50G",
@@ -1909,8 +1961,11 @@
     "precioDesde": 244000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Equipo de red"
+    "specs": {
+      "estandar": "Wi-Fi AC1900",
+      "velocidad": "Gigabit"
+    },
+    "descripcionUso": "Router"
   },
   {
     "referencia": "S310-48P4S",
@@ -1929,8 +1984,10 @@
     "precioDesde": 251000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Equipo de red · Huawei"
+    "specs": {
+      "puertos": "4 PoE"
+    },
+    "descripcionUso": "Switch"
   },
   {
     "referencia": "ARCHERAX53",
@@ -1949,8 +2006,10 @@
     "precioDesde": 356000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Equipo de red"
+    "specs": {
+      "estandar": "Wi-Fi AX3000"
+    },
+    "descripcionUso": "Router"
   },
   {
     "referencia": "G403C",
@@ -1969,8 +2028,11 @@
     "precioDesde": 735000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Equipo de red"
+    "specs": {
+      "estandar": "Wi-Fi",
+      "velocidad": "4G"
+    },
+    "descripcionUso": "Router"
   },
   {
     "referencia": "EAP245TE",
@@ -1989,8 +2051,11 @@
     "precioDesde": 812000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Equipo de red"
+    "specs": {
+      "estandar": "Wi-Fi AC1750",
+      "velocidad": "Gigabit"
+    },
+    "descripcionUso": "Punto de acceso"
   },
   {
     "referencia": "LGS328C",
@@ -2009,35 +2074,11 @@
     "precioDesde": 910000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Equipo de red"
-  },
-  {
-    "referencia": "R56162B76",
-    "id": "R56162B76",
-    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rx-7600-8gb",
-    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RX 7600 8GB",
-    "marca": "Power Group",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "creadores-produccion",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 3659000,
-    "precioDesde": 3659000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 5 5600GT 3.6GHZ",
-      "ram": "ADATA SPECTRIX D35G 16GB DDR4…",
-      "almacenamiento": "HIKSEMI 512GB M.2PCIE",
-      "gpu": "POWER COLOR RX 7600 8G",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
+      "velocidad": "10G",
+      "puertos": "24 SFP"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Switch"
   },
   {
     "referencia": "R55162SB6X",
@@ -2057,14 +2098,41 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 5 5500X3D 3.0GHZ",
-      "ram": "HIKSEMI FUTURE 16GB DDR4 RGB…",
-      "almacenamiento": "SSD HIKSEMI WAPE 512GB",
+      "procesador": "AMD Ryzen 5 5500X3D 3.0GHz",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD",
       "gpu": "ASUS DUAL GEFORCE / MSI RTX…",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+  },
+  {
+    "referencia": "R56162ST5W",
+    "id": "R56162ST5W",
+    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rtx-5060-8gb",
+    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RTX 5060 8GB",
+    "marca": "Power Group",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 4079000,
+    "precioDesde": 4079000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD M.2",
+      "gpu": "MSI RTX 5060 8GB",
+      "monitor": "ACER 23,8 KA242Y",
+      "so": "Linux"
+    },
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87162FSR67",
@@ -2084,14 +2152,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4.1GHZ",
-      "ram": "HIKSEMI FUTURE / ADATA 16GB…",
-      "almacenamiento": "SSD BIWIN NV3500 / ADATA…",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD",
       "gpu": "ASUS DUAL / MSI GEFORCE RTX…",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87162FSR6N",
@@ -2111,14 +2179,41 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4,1GHZ",
-      "ram": "HIKSEMI FUTURE / ADATA XPG 16GB…",
-      "almacenamiento": "SSD ACER FA100 / ADATA…",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "16GB DDR5 5600MHz",
+      "almacenamiento": "500GB SSD",
       "gpu": "MSI / ASUS DUAL GEFORCE RTX…",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+  },
+  {
+    "referencia": "G146162BKFS6",
+    "id": "G146162BKFS6",
+    "slug": "power-group-core-i5-14600kf-16gb-512gb-rtx-3050-6gb",
+    "nombre": "POWER GROUP Core i5-14600KF 16GB 512GB + RTX 3050 6GB",
+    "marca": "Power Group",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 4379000,
+    "precioDesde": 4379000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Intel Core i5 14600KF 3.5GHz",
+      "ram": "16GB DDR5 6000MHz",
+      "almacenamiento": "512GB SSD",
+      "gpu": "ASUS DUAL RTX 3050 6GB",
+      "monitor": "ACER 23,8 KA242Y",
+      "so": "Linux"
+    },
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R55162SB76X",
@@ -2138,14 +2233,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 5 5500X3D 3.0GHZ",
-      "ram": "HIKSEMI FUTURE 16GB DDR4 RGB…",
-      "almacenamiento": "SSD HIKSEMI 512GB WAPE (P)",
+      "procesador": "AMD Ryzen 5 5500X3D 3.0GHz",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD",
       "gpu": "ASUS DUAL RX7600 8GB",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R57162MRX5X",
@@ -2165,14 +2260,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 5700X 3.4GHZ",
-      "ram": "HIKSEMI FUTURE 16GB DDR4 RGB…",
-      "almacenamiento": "SSD HIKSEMI 512 GB WAPE (P)",
+      "procesador": "AMD Ryzen 7 5700X 3.4GHz",
+      "ram": "16GB DDR4 3200MHz",
+      "almacenamiento": "512GB SSD",
       "gpu": "MSI RTX 5060 8GB",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87162MR76N",
@@ -2192,14 +2287,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4,1GHZ",
-      "ram": "ADATA XPG LANCER 16GB DDR5 RGB…",
-      "almacenamiento": "SSD BIWIN NV3500 512GB M.2",
+      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
+      "ram": "16GB DDR5 6000MHz",
+      "almacenamiento": "512GB SSD M.2",
       "gpu": "POWER COLOR RX7600 8G",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "32200003400",
@@ -2218,8 +2313,10 @@
     "precioDesde": 80000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara · Genius"
+    "specs": {
+      "resolucion": "720p"
+    },
+    "descripcionUso": "Cámara web"
   },
   {
     "referencia": "960-000694",
@@ -2238,8 +2335,10 @@
     "precioDesde": 99000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara · Logitech"
+    "specs": {
+      "resolucion": "720p · 3MP"
+    },
+    "descripcionUso": "Cámara"
   },
   {
     "referencia": "DZ-CAM001",
@@ -2259,7 +2358,7 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {},
-    "descripcionUso": "Cámara"
+    "descripcionUso": "Cámara de seguridad"
   },
   {
     "referencia": "TAPO-C110",
@@ -2278,8 +2377,11 @@
     "precioDesde": 118000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara"
+    "specs": {
+      "resolucion": "3MP",
+      "estandar": "Wi-Fi"
+    },
+    "descripcionUso": "Cámara de seguridad"
   },
   {
     "referencia": "HAC-T1A21N-U-2.",
@@ -2298,8 +2400,10 @@
     "precioDesde": 134000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara"
+    "specs": {
+      "resolucion": "2MP"
+    },
+    "descripcionUso": "Cámara domo"
   },
   {
     "referencia": "960-001586",
@@ -2318,8 +2422,11 @@
     "precioDesde": 196000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara · Logitech"
+    "specs": {
+      "resolucion": "1080p",
+      "interfaz": "USB"
+    },
+    "descripcionUso": "Cámara web"
   },
   {
     "referencia": "960-000764",
@@ -2338,8 +2445,11 @@
     "precioDesde": 373000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara · Logitech"
+    "specs": {
+      "resolucion": "Full HD",
+      "interfaz": "USB"
+    },
+    "descripcionUso": "Cámara web"
   },
   {
     "referencia": "960-001257",
@@ -2358,162 +2468,11 @@
     "precioDesde": 392000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Cámara · Logitech"
-  },
-  {
-    "referencia": "5015",
-    "id": "5015",
-    "slug": "dd-1000-gb-sata-western-digital-blue",
-    "nombre": "DD 1000 GB SATA WESTERN DIGITAL BLUE",
-    "marca": "Western Digital",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 223000,
-    "precioDesde": 223000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
     "specs": {
-      "almacenamiento": "1000GB"
+      "resolucion": "Full HD",
+      "interfaz": "USB"
     },
-    "descripcionUso": "Almacenamiento · Western Digital"
-  },
-  {
-    "referencia": "AHD650-2TB-NEG",
-    "id": "AHD650-2TB-NEG",
-    "slug": "disco-adata-externo-hd650-2tb-antigolpe-negro",
-    "nombre": "Disco Adata Externo HD650 2TB Antigolpe Negro",
-    "marca": "ADATA",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 474000,
-    "precioDesde": 474000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "2TB"
-    },
-    "descripcionUso": "Almacenamiento · ADATA"
-  },
-  {
-    "referencia": "AHD330-2TU3-NG",
-    "id": "AHD330-2TU3-NG",
-    "slug": "disco-adata-externo-hd330-2tb-3-1-negro",
-    "nombre": "Disco Adata Externo HD330 2TB 3.1 Negro",
-    "marca": "ADATA",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 494000,
-    "precioDesde": 494000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "2TB"
-    },
-    "descripcionUso": "Almacenamiento · ADATA"
-  },
-  {
-    "referencia": "5143",
-    "id": "5143",
-    "slug": "dd-3000-gb-sata-western-digital-blue",
-    "nombre": "DD 3000 GB SATA WESTERN DIGITAL BLUE",
-    "marca": "Western Digital",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 528000,
-    "precioDesde": 528000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "3000GB"
-    },
-    "descripcionUso": "Almacenamiento · Western Digital"
-  },
-  {
-    "referencia": "5140",
-    "id": "5140",
-    "slug": "dd-3000-gb-sata-western-digital-purple",
-    "nombre": "DD 3000 GB SATA WESTERN DIGITAL PURPLE",
-    "marca": "Western Digital",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 555000,
-    "precioDesde": 555000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "3000GB"
-    },
-    "descripcionUso": "Almacenamiento · Western Digital"
-  },
-  {
-    "referencia": "5214",
-    "id": "5214",
-    "slug": "dd-4000-gb-sata-western-digital-blue",
-    "nombre": "DD 4000 GB SATA WESTERN DIGITAL BLUE",
-    "marca": "Western Digital",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 768000,
-    "precioDesde": 768000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "4000GB"
-    },
-    "descripcionUso": "Almacenamiento · Western Digital"
-  },
-  {
-    "referencia": "SD620-2TCBK",
-    "id": "SD620-2TCBK",
-    "slug": "unidad-ssd-adata-externo-sd620-2tb-3-2-negro",
-    "nombre": "Unidad SSD Adata Externo SD620 2TB 3.2 Negro",
-    "marca": "ADATA",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 1088000,
-    "precioDesde": 1088000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "2TB"
-    },
-    "descripcionUso": "Almacenamiento · ADATA"
+    "descripcionUso": "Cámara"
   },
   {
     "referencia": "1115",
@@ -2533,107 +2492,10 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "ram": "128GB"
+      "capacidad": "128GB",
+      "interfaz": "USB"
     },
-    "descripcionUso": "Accesorio · Kingston"
-  },
-  {
-    "referencia": "1747",
-    "id": "1747",
-    "slug": "usb-256gb-kingston-dt-exodia",
-    "nombre": "USB 256GB KINGSTON DT EXODIA",
-    "marca": "Kingston",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "accesorios",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 139000,
-    "precioDesde": 139000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "almacenamiento": "256GB"
-    },
-    "descripcionUso": "Accesorio · Kingston"
-  },
-  {
-    "referencia": "6941812706312",
-    "id": "6941812706312",
-    "slug": "xiaomi-smart-band-9-active",
-    "nombre": "Xiaomi Smart Band 9 Active",
-    "marca": "Xiaomi",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "accesorios",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 241000,
-    "precioDesde": 241000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "pantalla": "TFT de 1.47\" (172 x 320…"
-    },
-    "descripcionUso": "Accesorio · Xiaomi"
-  },
-  {
-    "referencia": "10519000048",
-    "id": "10519000048",
-    "slug": "compumax-ryzen-7-5825u-16gb-500gb-monitor-23-8",
-    "nombre": "Compumax Ryzen 7 5825U 16GB 500GB + Monitor 23.8\"",
-    "marca": "",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "hogar-estudio",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 2138000,
-    "precioDesde": 2138000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "RYZEN 7 5825U",
-      "ram": "16GB",
-      "almacenamiento": "SSD500GB PCIE M.2",
-      "monitor": "23.8\" Compumax 120HZ FHD",
-      "so": "Linux",
-      "conectividad": "Wi-Fi"
-    },
-    "descripcionUso": "PC de escritorio"
-  },
-  {
-    "referencia": "R871620W",
-    "id": "R871620W",
-    "slug": "power-group-ryzen-7-8700f-16gb-512gb-rtx-5050-8gb",
-    "nombre": "POWER GROUP Ryzen 7 8700F 16GB 512GB + RTX 5050 8GB",
-    "marca": "Power Group",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "gaming-streaming",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 4679000,
-    "precioDesde": 4679000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "AMD RYZEN 7 8700F 4.1GHZ",
-      "ram": "HIKSEMI ARMOR 16GB DDR5 5600MHZ",
-      "almacenamiento": "SSD HIKSEMI 512GB M.2",
-      "gpu": "MSI GEFORCE RTX 5050 8G",
-      "monitor": "ACER 23,8 KA242Y · MSI PRO 24”…",
-      "so": "Linux"
-    },
-    "descripcionUso": "PC de alto rendimiento · Power Group · gráfica dedicada"
+    "descripcionUso": "Memoria USB"
   },
   {
     "referencia": "SDCS3/128GB",
@@ -2653,8 +2515,185 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "ram": "128GB"
+      "capacidad": "128GB"
     },
-    "descripcionUso": "Accesorio · Kingston"
+    "descripcionUso": "Memoria Micro SD"
+  },
+  {
+    "referencia": "1747",
+    "id": "1747",
+    "slug": "usb-256gb-kingston-dt-exodia",
+    "nombre": "USB 256GB KINGSTON DT EXODIA",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "accesorios",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 139000,
+    "precioDesde": 139000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "256GB",
+      "interfaz": "USB"
+    },
+    "descripcionUso": "Memoria USB"
+  },
+  {
+    "referencia": "5015",
+    "id": "5015",
+    "slug": "dd-1000-gb-sata-western-digital-blue",
+    "nombre": "DD 1000 GB SATA WESTERN DIGITAL BLUE",
+    "marca": "Western Digital",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 223000,
+    "precioDesde": 223000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "1TB"
+    },
+    "descripcionUso": "Disco duro"
+  },
+  {
+    "referencia": "AHD650-2TB-NEG",
+    "id": "AHD650-2TB-NEG",
+    "slug": "disco-adata-externo-hd650-2tb-antigolpe-negro",
+    "nombre": "Disco Adata Externo HD650 2TB Antigolpe Negro",
+    "marca": "ADATA",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 474000,
+    "precioDesde": 474000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "2TB"
+    },
+    "descripcionUso": "Disco externo"
+  },
+  {
+    "referencia": "AHD330-2TU3-NG",
+    "id": "AHD330-2TU3-NG",
+    "slug": "disco-adata-externo-hd330-2tb-3-1-negro",
+    "nombre": "Disco Adata Externo HD330 2TB 3.1 Negro",
+    "marca": "ADATA",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 494000,
+    "precioDesde": 494000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "2TB"
+    },
+    "descripcionUso": "Disco externo"
+  },
+  {
+    "referencia": "5143",
+    "id": "5143",
+    "slug": "dd-3000-gb-sata-western-digital-blue",
+    "nombre": "DD 3000 GB SATA WESTERN DIGITAL BLUE",
+    "marca": "Western Digital",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 528000,
+    "precioDesde": 528000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "3TB"
+    },
+    "descripcionUso": "Disco duro"
+  },
+  {
+    "referencia": "5140",
+    "id": "5140",
+    "slug": "dd-3000-gb-sata-western-digital-purple",
+    "nombre": "DD 3000 GB SATA WESTERN DIGITAL PURPLE",
+    "marca": "Western Digital",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 555000,
+    "precioDesde": 555000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "3TB"
+    },
+    "descripcionUso": "Disco duro"
+  },
+  {
+    "referencia": "5214",
+    "id": "5214",
+    "slug": "dd-4000-gb-sata-western-digital-blue",
+    "nombre": "DD 4000 GB SATA WESTERN DIGITAL BLUE",
+    "marca": "Western Digital",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 768000,
+    "precioDesde": 768000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "4TB"
+    },
+    "descripcionUso": "Disco duro"
+  },
+  {
+    "referencia": "SD620-2TCBK",
+    "id": "SD620-2TCBK",
+    "slug": "unidad-ssd-adata-externo-sd620-2tb-3-2-negro",
+    "nombre": "Unidad SSD Adata Externo SD620 2TB 3.2 Negro",
+    "marca": "ADATA",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 1088000,
+    "precioDesde": 1088000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "2TB"
+    },
+    "descripcionUso": "SSD externo"
   }
 ]

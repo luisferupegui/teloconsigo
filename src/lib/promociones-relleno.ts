@@ -4,6 +4,7 @@ import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from
 import { ramYDisco, sinVram, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { categoriaPorNombre } from "@/lib/catimporter/parsers/categorias";
 import { marcaDeNombre } from "@/lib/marcas";
+import { pulgadasDe, sustantivoDeNombre } from "@/lib/ficha-card";
 
 // ─── Llenar la vitrina con lo mejor de las listas del mes ────────────────────
 //
@@ -47,6 +48,8 @@ const ALIAS_SPEC: Record<string, string | null> = {
   os: "so", so: "so", "s.o": "so", sistema_operativo: "so",
   tvideo: "gpu", gpu: "gpu", "tarjeta de video": "gpu",
   conectividad: "conectividad", capacidad: "capacidad", interfaz: "interfaz",
+  resolucion: "resolucion", "resolución": "resolucion", estandar: "estandar", puertos: "puertos",
+  conexion: "conexion", "conexión": "conexion",
   garantia: "garantia", velocidad: "velocidad", frecuencia: "frecuencia",
   version: "version", duracion: "duracion", cobertura: "cobertura", incluye: "incluye",
   // Internas del lector o del catálogo: nunca a la vitrina.
@@ -57,7 +60,118 @@ const ALIAS_SPEC: Record<string, string | null> = {
 /** Orden en que se muestran: la card enseña las tres primeras, así que lo que
  *  decide una compra va delante. */
 const ORDEN_SPEC = ["procesador", "ram", "almacenamiento", "gpu", "pantalla", "monitor", "so",
-  "capacidad", "velocidad", "frecuencia", "interfaz", "cobertura", "duracion", "version", "conectividad", "incluye"];
+  "capacidad", "resolucion", "estandar", "velocidad", "puertos", "conexion", "interfaz",
+  "frecuencia", "cobertura", "duracion", "version", "conectividad", "incluye"];
+
+// ─── Que la ficha se lea como una ficha ──────────────────────────────────────
+//
+// Las listas escriben la memoria como "ADATA SPECTRIX D35G 16GB DDR4 3200MHZ" y
+// el disco como "SSD HIKSEMI 512GB WAPE (P) M.2": el fabricante de la pieza, su
+// nombre comercial y la referencia interna. Nada de eso decide una compra —el
+// cliente compara 16GB contra 8GB— y al recortar a 32 caracteres la card
+// enseñaba "HIKSEMI ARMOR / ADATA XPG…" sin llegar a decir cuánta memoria trae.
+//
+// Se normaliza ANTES de recortar, que si no se recorta la parte que importa.
+
+const CAPACIDAD = /(\d{1,4})\s?(gb|tb)/i;
+
+/** "SODIMM DDR4-8GB BUS DE 3200" → "8GB DDR4 3200MHz" */
+function ramCorta(v: string): string {
+  const cap = v.match(CAPACIDAD);
+  if (!cap) return v;
+  const tipo = v.match(/\bddr\s?([2345])/i);
+  const mhz = v.match(/(\d{4})\s?mhz/i) ?? v.match(/bus\s*(?:de)?\s*(\d{4})/i);
+  const partes = [Number(cap[1]) + cap[2].toUpperCase()];
+  if (tipo) partes.push("DDR" + tipo[1]);
+  if (mhz) partes.push(mhz[1] + "MHz");
+  return partes.join(" ");
+}
+
+/** "SSD HIKSEMI 512GB WAPE (P) M.2" → "512GB SSD M.2" */
+function discoCorto(v: string): string {
+  const cap = v.match(CAPACIDAD);
+  if (!cap) return v;
+  const gb = Number(cap[1]) * (cap[2].toLowerCase() === "tb" ? 1000 : 1);
+  const tamano = gb >= 1000 && gb % 1000 === 0 ? gb / 1000 + "TB" : gb + "GB";
+  const tecnologia = /ssd|nvme|\bm\.?2/i.test(v) ? "SSD"
+    : /hdd|sata|mec[áa]nic/i.test(v) ? "HDD" : "";
+  const partes = [tamano, tecnologia].filter(Boolean);
+  if (/\bnvme\b/i.test(v)) partes.push("NVMe");
+  else if (/\bm\.?2/i.test(v)) partes.push("M.2");
+  return partes.join(" ");
+}
+
+/** "AMD RYZEN 7 8700F 4,1GHZ" → "AMD Ryzen 7 8700F 4.1GHz" */
+const COMO_SE_LEE: Record<string, string> = {
+  amd: "AMD", intel: "Intel", ryzen: "Ryzen", core: "Core", ultra: "Ultra",
+  xeon: "Xeon", athlon: "Athlon", celeron: "Celeron", pentium: "Pentium",
+};
+function cpuCorta(v: string): string {
+  const t = v
+    .replace(/\bprocessors?\b/i, "")
+    .replace(/\s*[(][^)]*[)]/g, "")
+    .replace(/core\s?i(\d)/i, "Core i$1")
+    .replace(/(\d),(\d)\s?ghz/i, "$1.$2GHz")
+    .replace(/(\d(?:\.\d)?)\s?ghz/i, "$1GHz")
+    .replace(/\s+/g, " ")
+    .trim();
+  return t.split(" ").map((w) => COMO_SE_LEE[w.toLowerCase()] ?? w).join(" ");
+}
+
+/**
+ * La ficha de lo que no es un equipo, sacada del nombre.
+ *
+ * Medido sobre las listas: de 289 accesorios, 287 no traen NI UNA spec; redes y
+ * tablets, ninguna. Esas cards salían con el nombre, el precio y tres renglones
+ * en blanco. Pero el nombre sí lo dice —"Router Archer AX53 WiFi AX3000",
+ * "Cámara Logitech C920 Pro Full-HD USB"—, así que se lee de ahí.
+ *
+ * Sólo para lo que NO es un equipo completo: a un portátil se le lee la ficha,
+ * que para eso la trae.
+ */
+function specsDeNombre(nombre: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const n = nombre;
+
+  const wifiGen = n.match(/wi\.?-?fi\s*([4567])\b/i);
+  const wifiVel = n.match(/\b(ac|ax|be)\s?(\d{3,4})\b/i);
+  if (wifiGen) out.estandar = "Wi-Fi " + wifiGen[1];
+  else if (wifiVel) out.estandar = "Wi-Fi " + wifiVel[1].toUpperCase() + wifiVel[2];
+  else if (/wi\.?-?fi|inal[áa]mbric/i.test(n)) out.estandar = "Wi-Fi";
+
+  const puertos = n.match(/(\d{1,2})\s*(?:x\s*)?(?:puertos?|sfp)/i);
+  if (puertos) out.puertos = puertos[1] + (/sfp/i.test(puertos[0]) ? " SFP" : "");
+  if (/\bpoe\b/i.test(n)) out.puertos = (out.puertos ? out.puertos + " " : "") + "PoE";
+  if (/\bgigabit\b/i.test(n)) out.velocidad = "Gigabit";
+  const diez = n.match(/\b(\d{1,2})\s?G\b/i);
+  if (diez) out.velocidad = diez[1] + "G";
+
+  const mp = n.match(/\b(\d{1,2})\s?mp\b/i);
+  const res = n.match(/\b(4k|2k|1080p?|720p?)\b/i) ?? n.match(/\bfull[-\s]?hd\b/i);
+  if (res) {
+    out.resolucion = /full/i.test(res[0])
+      ? "Full HD"
+      : res[1].toUpperCase().replace("P", "p");
+  }
+  if (mp) out.resolucion = (out.resolucion ? out.resolucion + " · " : "") + mp[1] + "MP";
+
+  const usb = n.match(/usb\s?([23](?:\.\d)?)\b(?!\d)/i);
+  if (usb) out.interfaz = "USB " + usb[1];
+  else if (/\busb\b/i.test(n)) out.interfaz = "USB";
+  if (/\bbluetooth\b|\bbt\b/i.test(n)) out.conexion = "Bluetooth";
+
+  const cap = n.match(/\b(\d{1,4})\s?(gb|tb)\b/i);
+  if (cap) out.capacidad = Number(cap[1]) + cap[2].toUpperCase();
+
+  return out;
+}
+
+/** Quién sabe acortar cada spec. Lo que no está aquí se muestra tal cual. */
+const ACORTA: Record<string, (v: string) => string> = {
+  // "capacidad" pasa por el mismo sitio que el disco: 1000GB es como lo escribe
+  // el proveedor y 1TB es como se compra.
+  procesador: cpuCorta, ram: ramCorta, almacenamiento: discoCorto, capacidad: discoCorto,
+};
 
 const corto = (v: string, max = 32) => {
   const limpio = v.replace(/\s+/g, " ").trim();
@@ -76,16 +190,31 @@ export function specsParaCard(p: ActiveProduct): Record<string, string> {
 
   // Lo que la ficha no trae pero el nombre sí. "Ryzen 5 5600GT 16GB 512GB" lleva
   // la memoria y el disco dentro del propio nombre en media docena de listas.
-  const { ram, disco } = ramYDisco(sinVram(`${p.nombre} ${Object.values(p.specs ?? {}).join(" ")}`));
-  if (!bruto.ram && ram) bruto.ram = `${ram}GB`;
-  if (!bruto.almacenamiento && disco) bruto.almacenamiento = disco >= 1024 ? `${disco / 1024}TB` : `${disco}GB`;
-  if (!bruto.pantalla && !bruto.monitor) {
-    const pulg = pantallaDesdeNombre(p.nombre);
-    if (pulg) bruto.pantalla = pulg;
+  if (EQUIPOS_COMPLETOS.has(p.categoria)) {
+    const { ram, disco } = ramYDisco(sinVram(`${p.nombre} ${Object.values(p.specs ?? {}).join(" ")}`));
+    if (!bruto.ram && ram) bruto.ram = `${ram}GB`;
+    if (!bruto.almacenamiento && disco) bruto.almacenamiento = disco >= 1024 ? `${disco / 1024}TB` : `${disco}GB`;
+    if (!bruto.pantalla && !bruto.monitor) {
+      const pulg = pantallaDesdeNombre(p.nombre);
+      if (pulg) bruto.pantalla = pulg;
+    }
+  } else {
+    // Un USB de 128GB no tiene 128GB de RAM: leerle la memoria a un accesorio
+    // con la regla de los equipos ponía "RAM 128GB" en la card.
+    for (const [k, v] of Object.entries(specsDeNombre(p.nombre))) if (!bruto[k]) bruto[k] = v;
+    // La etiqueta "SSD" sobre un WD Blue SATA es mentira, y sobre una memoria
+    // USB no significa nada: en lo que no es un equipo, eso es capacidad.
+    if (bruto.almacenamiento) {
+      bruto.capacidad = bruto.capacidad ?? bruto.almacenamiento;
+      delete bruto.almacenamiento;
+    }
   }
 
   const salida: Record<string, string> = {};
-  for (const clave of ORDEN_SPEC) if (bruto[clave]) salida[clave] = corto(bruto[clave]);
+  for (const clave of ORDEN_SPEC) {
+    if (!bruto[clave]) continue;
+    salida[clave] = corto((ACORTA[clave] ?? ((x: string) => x))(bruto[clave]));
+  }
   return salida;
 }
 
@@ -155,22 +284,50 @@ function suficienteInfo(p: ActiveProduct, specs: Record<string, string>): boolea
  *
  *  Se arma con lo que se sabe y nada más. Nada de "ideal para tu productividad":
  *  el cliente que está comparando ocho equipos no lee adjetivos, lee datos. */
+const QUE_ES: Record<string, string> = {
+  portatil: "Portátil", escritorio: "Equipo de escritorio",
+  "escritorio-alto-rendimiento": "Escritorio de alto rendimiento",
+  "all-in-one": "Todo en uno", "mini-pc": "Mini PC", servidor: "Servidor",
+  monitor: "Monitor", tableta: "Tablet", celular: "Celular",
+  impresora: "Impresora", redes: "Equipo de red",
+  antivirus: "Licencia de seguridad", licencia: "Licencia", camara: "Cámara",
+  teclado: "Teclado", mouse: "Mouse", auriculares: "Audio", televisor: "Televisor",
+  almacenamiento: "Almacenamiento", "memoria-ram": "Memoria RAM", procesador: "Procesador",
+  motherboard: "Board", "tarjeta-grafica": "Tarjeta de video", "fuente-poder": "Fuente de poder",
+  proteccion: "Protección eléctrica", refrigeracion: "Refrigeración",
+  accesorios: "Accesorio", software: "Software",
+};
+
+
+/**
+ * La línea que va bajo el nombre.
+ *
+ * Antes decía "PC de alto rendimiento · Power Group · gráfica dedicada": repetía
+ * la marca que ya está en el nombre y gastaba la línea en un adjetivo. Lo que el
+ * cliente no puede deducir del nombre es el FORMATO —si es portátil o torre, y
+ * de qué tamaño—, así que eso es lo que va: "Portátil 14"",
+ * "Escritorio de alto rendimiento · Monitor 23.8"".
+ *
+ * La marca sólo se nombra si el nombre no la lleva ya.
+ */
+
 function descripcionDe(p: ActiveProduct, specs: Record<string, string>, marca: string): string {
-  const QUE_ES: Record<string, string> = {
-    portatil: "Portátil", escritorio: "PC de escritorio",
-    "escritorio-alto-rendimiento": "PC de alto rendimiento", "all-in-one": "Todo en uno",
-    "mini-pc": "Mini PC", monitor: "Monitor", tableta: "Tablet", celular: "Celular",
-    impresora: "Impresora", redes: "Equipo de red", servidor: "Servidor",
-    antivirus: "Licencia de seguridad", licencia: "Licencia", camara: "Cámara",
-    teclado: "Teclado", mouse: "Mouse", auriculares: "Audio", televisor: "Televisor",
-    almacenamiento: "Almacenamiento", "memoria-ram": "Memoria RAM", procesador: "Procesador",
-    motherboard: "Board", "tarjeta-grafica": "Tarjeta de video", "fuente-poder": "Fuente de poder",
-    proteccion: "Protección eléctrica", refrigeracion: "Refrigeración",
-    accesorios: "Accesorio", software: "Software",
-  };
-  const partes = [QUE_ES[p.categoria] ?? "Equipo"];
-  if (marca && marca.toLowerCase() !== p.proveedor.toLowerCase()) partes.push(marca);
-  if (specs.gpu) partes.push("gráfica dedicada");
+  const base = QUE_ES[p.categoria] ?? "Equipo";
+
+  if (EQUIPOS_COMPLETOS.has(p.categoria)) {
+    // La pantalla del portátil forma parte de lo que es; el monitor de una torre
+    // es algo que viene ADEMÁS, y por eso se nombra aparte.
+    const propia = pulgadasDe(specs.pantalla) || pulgadasDe(p.nombre);
+    const aparte = pulgadasDe(specs.monitor);
+    const partes = [propia && p.categoria === "portatil" ? base + " " + propia : base];
+    if (aparte) partes.push("Monitor " + aparte);
+    else if (propia && p.categoria === "all-in-one") partes.push("Pantalla " + propia);
+    return partes.join(" · ");
+  }
+
+  const partes = [sustantivoDeNombre(p.nombre) ?? base];
+  const sinTildes = (t: string) => t.normalize("NFD").replace(/[^a-zA-Z0-9 ]/g, "").toLowerCase();
+  if (marca && !sinTildes(p.nombre).includes(sinTildes(marca))) partes.push(marca);
   return partes.join(" · ");
 }
 
