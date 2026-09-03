@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Star, Tag, Package, ChevronDown, ChevronUp,
@@ -67,6 +68,7 @@ function ProductRow({
 }) {
   const identifier = product.referencia ?? product.slug ?? product.id;
 
+  const router = useRouter();
   const [open,   setOpen]   = useState(false);
   const [saving, startSave] = useTransition();
   const [saved,  setSaved]  = useState(false);
@@ -127,6 +129,11 @@ function ProductRow({
           referencia:     identifier,
           nombre,
           marca,
+          // Se escriben los DOS campos porque la card lee `precioDesde ?? precio`:
+          // dejar `precio` con el valor viejo hace que el precio que se ve
+          // dependa de cuál de los dos lea quien pregunte. Es la misma razón por
+          // la que el panel de promociones los escribe juntos.
+          precio:         precio !== "" ? Number(precio) : null,
           precioDesde:    precio !== "" ? Number(precio) : null,
           descripcionUso: descripcion,
           segmento,
@@ -139,6 +146,10 @@ function ProductRow({
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setSaved(true);
+        // Sin esto la fila seguía enseñando el precio viejo: el cambio estaba
+        // guardado y la pantalla decía otra cosa, así que el precio se corregía
+        // dos y tres veces creyendo que no había pasado nada.
+        router.refresh();
         setTimeout(() => setSaved(false), 2500);
       } else {
         setError((data as { error?: string }).error ?? "No se pudo guardar.");
