@@ -37,6 +37,7 @@ export function pulgadasDe(v: string | undefined): string {
  * general.
  */
 const QUE_ES_POR_NOMBRE: [RegExp, string][] = [
+  [/\b(dvd|blu\s?-?ray|cd\s?-?rw)\b|unidad\s[óo]ptica/i, "Unidad óptica"],
   [/micro\s?sd\b/i, "Memoria Micro SD"],
   [/memoria\susb|pen\s?drive|\busb\b[^,]*\d{2,4}\s?gb/i, "Memoria USB"],
   [/\bssd\b[^,]*extern|extern[^,]*\bssd\b/i, "SSD externo"],
@@ -308,8 +309,10 @@ export function specsDeNombre(nombre: string): Record<string, string> {
   const puertos = n.match(/(\d{1,2})\s*(?:x\s*)?(?:puertos?|sfp)/i);
   if (puertos) out.puertos = puertos[1] + (/sfp/i.test(puertos[0]) ? " SFP" : "");
   if (/\bpoe\b/i.test(n)) out.puertos = (out.puertos ? out.puertos + " " : "") + "PoE";
-  if (/\bgigabit\b/i.test(n)) out.velocidad = "Gigabit";
-  const vatios = n.match(/(\d{2,4})\s?w\b/i);
+  // "GIGA" a secas es como lo escriben media docena de listas.
+  if (/\bgiga(bit)?\b/i.test(n)) out.velocidad = "Gigabit";
+  // Con decimal: un inyector PoE de 15.4W se quedaba sin potencia.
+  const vatios = n.match(/(\d{1,4}(?:\.\d)?)\s?w\b/i);
   if (vatios) out.potencia = vatios[1] + "W";
   const diez = n.match(/\b(\d{1,2})\s?G\b/i);
   if (diez) out.velocidad = diez[1] + "G";
@@ -323,6 +326,22 @@ export function specsDeNombre(nombre: string): Record<string, string> {
   }
   if (mp) out.resolucion = (out.resolucion ? out.resolucion + " · " : "") + mp[1] + "MP";
 
+  // Cámaras: la tecnología y lo que ve de noche es lo que se compara entre dos
+  // domos del mismo precio, y estaba todo en el nombre sin leer.
+  const tecno = n.match(/\b(hdcvi|hdtvi|\bahd\b|turbo\shd)\b/i);
+  if (tecno) {
+    const cuatro = /\d\s?en\s?\d/i.test(n);
+    out.tecnologia = tecno[1].toUpperCase() + (cuatro ? " 4 en 1" : "");
+  } else if (/\b(c[áa]mara|webcam)\b[^,]*\bip\b/i.test(n)) out.tecnologia = "IP";
+  else if (/\bdvr\b/i.test(n)) out.tecnologia = "DVR";
+
+  if (!out.tipo) {
+    if (/infrarrojo|\bir\b|visi[óo]n\snocturna/i.test(n)) out.tipo = "Infrarrojos";
+    else if (/full\scolor/i.test(n)) out.tipo = "Full Color";
+    else if (/detecci[óo]n/i.test(n)) out.tipo = "Con detección";
+    else if (/\b(externa|externo)\b/i.test(n)) out.tipo = "Externo";
+  }
+
   const usb = n.match(/usb\s?([23](?:\.\d)?)\b(?!\d)/i);
   if (usb) out.interfaz = "USB " + usb[1];
   else if (/\busb\b/i.test(n)) out.interfaz = "USB";
@@ -334,9 +353,40 @@ export function specsDeNombre(nombre: string): Record<string, string> {
   // Una pieza suelta lleva su ficha en el nombre y en ningún otro sitio: un
   // "Intel Core i5-12400F LGA1700 (2.5GHZ)" salía con la card entera en blanco.
   const socket = n.match(/\b(lga\s?\d{3,4}|am[45]|sp[35])\b/i);
-  if (socket) out.tipo = socket[1].toUpperCase().replace(/\s+/g, "");
+  if (socket && !out.tipo) out.tipo = socket[1].toUpperCase().replace(/\s+/g, "");
   const ghz = n.match(/(\d(?:\.\d)?)\s?ghz\b/i);
   if (ghz) out.velocidad = ghz[1] + "GHz";
 
   return out;
+}
+
+/**
+ * El nombre tal como se lee en el encabezado de la card.
+ *
+ * Las listas escriben el título como una fórmula: "JANUS GAMER Ryzen 7 5700X
+ * 16GB DDR4 SSD 1TB M.2 + GPU RX 9060 8GB". Los signos son ruido de inventario,
+ * no del producto, y en un encabezado de dos líneas se llevan el sitio de las
+ * palabras que sí identifican el equipo.
+ *
+ * Se va el "+" que sólo separa —el de "PoE+" y "SFP+" se queda, que ahí el
+ * signo ES parte del nombre del estándar— y el guion de los códigos de modelo,
+ * igual que en la ficha. "Wi-Fi" y "DVD-RW" conservan el suyo: ahí el guion
+ * pertenece a la palabra.
+ */
+export function tituloDeCard(nombre: string): string {
+  return limpio(sinGuiones(nombre.replace(/\s+[+]\s+/g, " ")));
+}
+
+/**
+ * ¿Este texto sirve de etiqueta?
+ *
+ * La etiqueta azul es un rótulo, no una descripción. Algunos productos
+ * cargados a mano traen en `descripcionUso` una frase entera —"Unidad Lector
+ * Cd Dvd Externa Usb 3.0 Alta Velocidad Portátil Lector"— y la etiqueta se
+ * convertía en un párrafo azul de tres líneas encima de la ficha. Con la
+ * primera parte se entiende igual qué es.
+ */
+export function cabeEnEtiqueta(texto: string): boolean {
+  const partes = texto.trim().split(" · ").filter(Boolean);
+  return partes.length > 0 && partes.every((p) => p.length <= 34);
 }

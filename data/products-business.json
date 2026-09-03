@@ -2388,7 +2388,9 @@
     "precioDesde": 111000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
+    "specs": {
+      "tecnologia": "DVR"
+    },
     "descripcionUso": "Cámara de seguridad"
   },
   {
@@ -2410,7 +2412,8 @@
     "proveedor": "manual",
     "specs": {
       "resolucion": "3MP",
-      "estandar": "Wi-Fi"
+      "estandar": "Wi-Fi",
+      "tipo": "Con detección"
     },
     "descripcionUso": "Cámara de seguridad"
   },
@@ -2432,7 +2435,9 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "puertos": "1 PoE"
+      "velocidad": "Gigabit",
+      "puertos": "1 PoE",
+      "potencia": "15.4W"
     },
     "descripcionUso": "Equipo de red"
   },
@@ -2453,7 +2458,9 @@
     "precioDesde": 142000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
+    "specs": {
+      "tecnologia": "HDCVI 4 en 1"
+    },
     "descripcionUso": "Cámara domo"
   },
   {
@@ -2474,7 +2481,9 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "resolucion": "4K · 8MP"
+      "resolucion": "4K · 8MP",
+      "tecnologia": "HDCVI",
+      "tipo": "Full Color"
     },
     "descripcionUso": "Cámara domo"
   },
@@ -2496,7 +2505,9 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "resolucion": "4K · 8MP"
+      "resolucion": "4K · 8MP",
+      "tecnologia": "HDCVI",
+      "tipo": "Infrarrojos"
     },
     "descripcionUso": "Cámara domo"
   },

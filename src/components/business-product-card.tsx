@@ -9,7 +9,9 @@ import {
 import type { BusinessProduct } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
 import { formatCOP } from "@/lib/products-types";
-import { subtituloDeCatalogo, iconoDeCard, resumirSpec, specsDeNombre } from "@/lib/ficha-card";
+import {
+  subtituloDeCatalogo, iconoDeCard, resumirSpec, specsDeNombre, tituloDeCard, cabeEnEtiqueta,
+} from "@/lib/ficha-card";
 
 // ─── El icono del subtítulo ──────────────────────────────────────────────────
 //
@@ -142,8 +144,11 @@ export function BusinessProductCard({
   // cortaba justo donde estaba el dato: "…· Monitor …". Se parte en dos, que
   // además son dos cosas distintas —lo que es y lo que trae de más— y así ni se
   // corta ni hay que acortar el texto.
-  const [queEs, ...extras] = (product.descripcionUso?.trim()
-    ? product.descripcionUso
+  // La descripción guardada manda, pero sólo si cabe en una etiqueta: si es una
+  // frase, se usa el rótulo deducido del catálogo.
+  const guardada = product.descripcionUso?.trim() ?? "";
+  const [queEs, ...extras] = (cabeEnEtiqueta(guardada)
+    ? guardada
     : subtituloDeCatalogo(product.nombre, product.categoria, product.specs)
   ).split(" · ");
   const Icono = ICONOS[iconoDeCard(product.nombre, product.categoria)] ?? Package;
@@ -187,7 +192,7 @@ export function BusinessProductCard({
 
       {/* ── Nombre ── */}
       <h3 className="pr-9 text-sm font-semibold tracking-tight text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
-        {product.nombre}
+        {tituloDeCard(product.nombre)}
       </h3>
 
       {/* ── Qué es ──

@@ -65,7 +65,7 @@ const ALIAS_SPEC: Record<string, string | null> = {
 /** Orden en que se muestran: la card enseña las tres primeras, así que lo que
  *  decide una compra va delante. */
 const ORDEN_SPEC = ["procesador", "ram", "almacenamiento", "gpu", "pantalla", "monitor", "so",
-  "capacidad", "resolucion", "estandar", "banda", "velocidad", "puertos", "potencia", "tipo",
+  "capacidad", "resolucion", "tecnologia", "estandar", "banda", "velocidad", "puertos", "potencia", "tipo",
   "conexion", "interfaz", "frecuencia", "cobertura", "duracion", "version", "conectividad", "incluye"];
 
 // ─── Que la ficha se lea como una ficha ──────────────────────────────────────
