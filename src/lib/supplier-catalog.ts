@@ -243,7 +243,7 @@ const SALTO_MINIMO_PORCENTAJE = 0.15;
 const SALTO_SOSPECHOSO = 0.6;
 
 export type AvisoImportacion = {
-  tipo: "sin-precio" | "salto-de-precio";
+  tipo: "sin-precio" | "salto-de-precio" | "precio-imposible";
   nombre: string;
   referencia: string;
   precio: number;
@@ -268,6 +268,22 @@ export function avisosDeImportacion(
   proveedor: string,
 ): AvisoImportacion[] {
   const avisos: AvisoImportacion[] = [];
+
+  // Un equipo completo por debajo del millón no es barato: es una columna mal
+  // leída. Se avisa AQUÍ, al importar, que es donde todavía se puede comparar
+  // con el PDF; llegar a la vitrina a $19.000 ya es tarde.
+  const EQUIPO = new Set(["portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one", "mini-pc", "servidor"]);
+  for (const p of productos as { nombre: string; referencia?: string; precio_costo: number; categoria?: string }[]) {
+    if (p.categoria && EQUIPO.has(p.categoria) && p.precio_costo > 0 && p.precio_costo < 1_000_000) {
+      avisos.push({
+        tipo: "precio-imposible",
+        nombre: p.nombre,
+        referencia: p.referencia ?? "",
+        precio: p.precio_costo,
+        sospechoso: true,
+      });
+    }
+  }
 
   for (const p of productos) {
     if (!(p.precio_costo > 0)) {

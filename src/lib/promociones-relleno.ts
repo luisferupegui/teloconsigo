@@ -171,6 +171,22 @@ const EQUIPOS_COMPLETOS = new Set([
   "portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one", "mini-pc", "servidor",
 ]);
 
+/**
+ * Por debajo de esto, un equipo completo no es barato: está mal leído.
+ *
+ * En la vitrina salieron un "All-In-One 3-DP Core i5-1235U, 16GB, 500GB SSD" a
+ * $19.000 y un "AIO POS System Intel Core i5" a $99.000. Sus costos en la lista
+ * de Ledacom son $15.000 y $79.000: el lector se comió los millones al partir la
+ * columna del precio. Y no es sólo ridículo, es caro — quien pida ese equipo a
+ * ese precio tiene una oferta publicada.
+ *
+ * El millón sale de medir: el equipo completo más barato de las listas vigentes
+ * cuesta $1.715.000, y por debajo del millón sólo hay seis filas, todas mal
+ * leídas o mal clasificadas (una UPS, un ventilador y un SSD marcados como
+ * "escritorio"). No hay nada legítimo en medio que perder.
+ */
+const PISO_EQUIPO = 1_000_000;
+
 function suficienteInfo(p: ActiveProduct, specs: Record<string, string>): boolean {
   if (EQUIPOS_COMPLETOS.has(p.categoria)) return Object.keys(specs).length >= 2;
   const palabras = p.nombre.trim().split(/\s+/).filter((w) => w.length > 1).length;
@@ -221,10 +237,16 @@ function descripcionDe(p: ActiveProduct, specs: Record<string, string>, marca: s
     // en la lista como `escritorio` y traía "LCD 15.6"", lector de huella y
     // cámara: es un portátil mal clasificado, y en la card salía como "Equipo de
     // escritorio" sin tamaño. Manda la pantalla, no la columna de la lista.
-    const conPantalla = propia && p.categoria !== "portatil" && !aparte;
-    if (conPantalla) {
+    // Una torre con pantalla propia es un portátil mal clasificado —el
+    // "Compumax Core i7-13620H" venía como `escritorio` con "LCD 15.6"", lector
+    // de huella y cámara—. Pero un todo-en-uno SIEMPRE es un todo en uno, tenga
+    // 15" o 24": un AIO POS de pantalla táctil salía anunciado como portátil.
+    if (propia && !aparte && p.categoria !== "portatil") {
+      if (p.categoria === "all-in-one") return "Todo en uno " + propia;
       const n = Number(propia.replace('"', ""));
-      return (n <= 17 ? "Portátil " : "Todo en uno ") + propia;
+      if (p.categoria === "escritorio" || p.categoria === "escritorio-alto-rendimiento") {
+        return (n <= 17 ? "Portátil " : "Todo en uno ") + propia;
+      }
     }
 
     const partes = [propia && p.categoria === "portatil" ? base + " " + propia : base];
@@ -504,11 +526,22 @@ function nombreUsable(n: string): boolean {
 const PIEZAS_CON_MODELO = new Set(["tarjeta-grafica", "procesador", "memoria-ram", "motherboard"]);
 const LLEVA_MODELO = /\d{3,}/;
 
+/** Lo que hace que un nombre suene a máquina y no a pieza. */
+const NOMBRE_DE_MAQUINA =
+  /\b(core\s?i?[3579]|core\s?ultra|ryzen|xeon|epyc|celeron|pentium|athlon|snapdragon|all\s?-?in\s?-?one|\baio\b|port[áa]til|laptop|notebook|\bpc\b|torre|workstation|servidor)\b/i;
+
 function encajaEnSeccion(nombre: string, catLista: string, s: SeccionVitrina): boolean {
   if (s.excluye?.test(nombre)) return false;
   if (PIEZAS_CON_MODELO.has(catLista) && !LLEVA_MODELO.test(nombre)) return false;
   if (s.exige && s.exige.categorias.includes(catLista) && !s.exige.patron.test(nombre)) return false;
-  if (EQUIPOS_COMPLETOS.has(catLista)) return true;
+  if (EQUIPOS_COMPLETOS.has(catLista)) {
+    // A un equipo no se le mira la categoría del nombre —nombra sus piezas y
+    // parecería una tarjeta de video—, pero si el nombre dice claramente que es
+    // OTRA cosa y no menciona ni un procesador, es que la lista lo clasificó
+    // mal: una UPS, un ventilador y un SSD venían marcados como "escritorio".
+    const dice = categoriaPorNombre(nombre);
+    return !dice || EQUIPOS_COMPLETOS.has(dice) || NOMBRE_DE_MAQUINA.test(nombre);
+  }
   const dice = categoriaPorNombre(nombre);
   return !dice || s.categorias.includes(dice);
 }
@@ -588,6 +621,7 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
     const sueltos = vigentes
       .filter((p) => s.categorias.includes(p.categoria))
       .filter((p) => p.precio_costo > 0 && p.referencia && !yaEsta.has(norm(p.referencia)))
+      .filter((p) => !EQUIPOS_COMPLETOS.has(p.categoria) || p.precio_costo >= PISO_EQUIPO)
       .filter((p) => nombreUsable(p.nombre))
       .filter((p) => encajaEnSeccion(p.nombre, p.categoria, s))
       // Una card que no dice nada ocupa sitio en la vitrina y no ayuda a decidir.

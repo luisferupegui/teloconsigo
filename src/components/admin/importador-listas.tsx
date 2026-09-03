@@ -30,7 +30,7 @@ import { PROVEEDORES_CONOCIDOS } from "@/lib/proveedores-conocidos";
 type Descartado = { referencia: string; motivo: string };
 
 type Aviso = {
-  tipo: "sin-precio" | "salto-de-precio";
+  tipo: "sin-precio" | "salto-de-precio" | "precio-imposible";
   nombre: string;
   referencia: string;
   precio: number;
@@ -296,6 +296,10 @@ export function ImportadorListas() {
                       <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
                         Sin precio
                       </span>
+                    ) : a.tipo === "precio-imposible" ? (
+                      <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
+                        Precio imposible
+                      </span>
                     ) : (
                       <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${
                         a.sospechoso ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800"}`}>
@@ -312,10 +316,16 @@ export function ImportadorListas() {
                         {cop(a.precioAnterior ?? 0)} → <strong className="text-zinc-900">{cop(a.precio)}</strong>
                       </span>
                     )}
+                    {a.tipo === "precio-imposible" && (
+                      <span className="shrink-0 text-xs font-semibold text-red-700">{cop(a.precio)}</span>
+                    )}
                   </div>
                 ))}
               </div>
               <p className="border-t border-amber-200 px-5 py-3 text-xs text-amber-800">
+                Un <strong>precio imposible</strong> es un equipo completo por debajo del millón: no existe, es
+                una columna que se leyó a medias —un all-in-one con Core i5 y 16GB a $15.000— y llega a la web
+                como oferta publicada.{" "}
                 Los <strong>saltos raros</strong> suelen ser un error de lectura, no una subida: vale la pena
                 mirarlos contra el PDF. Los <strong>sin precio</strong> vienen así porque el proveedor los
                 imprime dentro de una imagen — pídeselos y complétalos a mano después de guardar.
