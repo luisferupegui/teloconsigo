@@ -17,4 +17,7 @@ export type CatimporterProduct = {
   warnings: string[];
   source: ImportSource;
   requiresReview: boolean;
+  /** Página del PDF donde está impreso. Solo se calcula para los productos que
+   *  llegan SIN PRECIO: son los únicos que hay que ir a buscar al documento. */
+  paginaPdf?: number;
 };

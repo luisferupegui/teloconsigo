@@ -25,6 +25,7 @@ type Entrante = {
   precio_costo?: unknown;
   supplierCode?: unknown;
   specs?: unknown;
+  paginaPdf?: unknown;
 };
 
 const texto = (v: unknown, fallback = ""): string =>
@@ -83,6 +84,9 @@ export async function POST(req: NextRequest) {
         proveedor,
         referencia,
         specs: specsLimpias(p.specs),
+        // Solo viene en los que llegaron sin precio: es la pista para ir a
+        // buscarlo al documento sin recorrerlo entero.
+        paginaPdf: Number.isInteger(p.paginaPdf) ? (p.paginaPdf as number) : undefined,
         importedAt: now,
       });
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importCatalog } from "@/lib/catimporter/orchestrator";
 import { avisosDeImportacion, nombreDeProveedor } from "@/lib/supplier-catalog";
+import { paginasDeReferencias } from "@/lib/catimporter/parsers/coordenadas";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -37,12 +38,27 @@ export async function POST(req: NextRequest) {
     const proveedor = nombreDeProveedor(String(fd.get("proveedor") || "")) || "Sin proveedor";
     const aplicarIva = fd.get("aplicarIva") === "true";
 
+    const buffer = Buffer.from(await file.arrayBuffer());
     const { motor, productos, descartados } = await importCatalog(
-      Buffer.from(await file.arrayBuffer()),
+      buffer,
       file.name,
       proveedor,
       aplicarIva,
     );
+
+    // A los que llegan SIN PRECIO se les busca en qué página están. Son pocos
+    // —diez de mil quinientos— y son justo los que alguien tendrá que abrir el
+    // PDF a buscar: decirle la página le ahorra recorrer el documento entero.
+    // Solo tiene sentido en PDF; en Word y Excel no hay páginas que dar.
+    const sinPrecio = productos.filter((p) => !(p.precio_costo > 0) && p.supplierCode);
+    if (sinPrecio.length > 0 && /\.pdf$/i.test(file.name)) {
+      try {
+        const paginas = await paginasDeReferencias(buffer, sinPrecio.map((p) => p.supplierCode!));
+        for (const p of sinPrecio) p.paginaPdf = paginas.get(p.supplierCode!);
+      } catch {
+        // Saber la página es una comodidad; si falla, la importación sigue.
+      }
+    }
 
     if (productos.length === 0) {
       return NextResponse.json(

@@ -14,6 +14,9 @@ export type SupplierProduct = {
   referencia?: string;
   specs?: Record<string, string>;
   importedAt: string;
+  /** Página del PDF donde está impreso, cuando el producto llegó sin precio.
+   *  Es lo que evita tener que buscarlo a mano en un documento de 33 páginas. */
+  paginaPdf?: number;
 };
 
 /** Una lista de precios = un PDF importado. Se puede activar/desactivar. */
