@@ -172,7 +172,7 @@ function claveDeProducto(p: SupplierProduct): string {
  * aparece como descatalogado, que es justo lo que hay que mirar. El prefijo
  * avisa de que la pusimos nosotros.
  */
-export function referenciaDeLista(p: SupplierProduct): string {
+function referenciaDeLista(p: SupplierProduct): string {
   const propia = (p.referencia ?? "").trim();
   if (propia.length >= 4) return propia;
   const clave = claveProveedor(p.proveedor) + "|" + claveDeProducto(p);
@@ -242,6 +242,41 @@ const SALTO_MINIMO_PORCENTAJE = 0.15;
  *  ("Router inalámbrico N", de $66.000 a $209.900). */
 const SALTO_SOSPECHOSO = 0.6;
 
+/**
+ * Por debajo de esto, el precio no es barato: está mal leído.
+ *
+ * Los números salen de medir las listas vigentes, no de intuir. Para cada
+ * categoría, el piso queda por debajo de lo más barato que se vende de verdad y
+ * por encima de lo que se coló mal leído:
+ *
+ *   equipo completo   más barato real $1.715.000 · colados $15.000 y $79.000
+ *   impresora         más barata real   $665.000 · colada  $35.000 (Canon G4170)
+ *   tarjeta gráfica   más barata real   $805.000 · colados  $4.000 (video baluns)
+ *   monitor           más barato real   $163.000
+ *   procesador        más barato real   $110.000 (Athlon 200GE, legítimo)
+ *
+ * Lo que comparte categoría con el producto sin serlo —un cable de impresora,
+ * un cartucho, un soporte de monitor— queda exento: ahí lo barato es correcto.
+ */
+const PISO_DE_COSTO: Record<string, number> = {
+  portatil: 1_000_000, escritorio: 1_000_000, "escritorio-alto-rendimiento": 1_000_000,
+  "all-in-one": 1_000_000, "mini-pc": 1_000_000, servidor: 1_000_000,
+  tableta: 300_000, tablet: 300_000,
+  monitor: 150_000, "tarjeta-grafica": 250_000, procesador: 100_000, motherboard: 120_000,
+  impresora: 200_000,
+};
+
+/** Lo que vive en la categoría del producto sin ser el producto. */
+const NO_ES_EL_PRODUCTO =
+  /\b(cable|cartucho|t[óo]ner|tinta|papel|soporte|adaptador|conector|repuesto|kit)\b/i;
+
+/** ¿Este costo es imposible para lo que dice ser? */
+export function costoImposible(p: { nombre: string; categoria: string; precio_costo: number }): boolean {
+  const piso = PISO_DE_COSTO[p.categoria];
+  if (!piso || !(p.precio_costo > 0)) return false;
+  return p.precio_costo < piso && !NO_ES_EL_PRODUCTO.test(p.nombre);
+}
+
 export type AvisoImportacion = {
   tipo: "sin-precio" | "salto-de-precio" | "precio-imposible";
   nombre: string;
@@ -272,9 +307,8 @@ export function avisosDeImportacion(
   // Un equipo completo por debajo del millón no es barato: es una columna mal
   // leída. Se avisa AQUÍ, al importar, que es donde todavía se puede comparar
   // con el PDF; llegar a la vitrina a $19.000 ya es tarde.
-  const EQUIPO = new Set(["portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one", "mini-pc", "servidor"]);
   for (const p of productos as { nombre: string; referencia?: string; precio_costo: number; categoria?: string }[]) {
-    if (p.categoria && EQUIPO.has(p.categoria) && p.precio_costo > 0 && p.precio_costo < 1_000_000) {
+    if (p.categoria && costoImposible({ nombre: p.nombre, categoria: p.categoria, precio_costo: p.precio_costo })) {
       avisos.push({
         tipo: "precio-imposible",
         nombre: p.nombre,

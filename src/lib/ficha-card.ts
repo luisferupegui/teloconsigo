@@ -37,6 +37,8 @@ export function pulgadasDe(v: string | undefined): string {
  * general.
  */
 const QUE_ES_POR_NOMBRE: [RegExp, string][] = [
+  [/\bcartucho\b|\bt[óo]ner\b|\btinta\b/i, "Cartucho de tinta"],
+  [/\bcable\b|\bextensi[óo]n\b|\bpatch\scord\b/i, "Cable"],
   [/\b(dvd|blu\s?-?ray|cd\s?-?rw)\b|unidad\s[óo]ptica/i, "Unidad óptica"],
   [/micro\s?sd\b/i, "Memoria Micro SD"],
   [/memoria\susb|pen\s?drive|\busb\b[^,]*\d{2,4}\s?gb/i, "Memoria USB"],

@@ -1,6 +1,8 @@
 import "server-only";
+import fs from "fs";
+import path from "path";
 import { loadBusinessProducts, saveBusinessProducts } from "@/lib/products";
-import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from "@/lib/supplier-catalog";
+import { loadActiveProducts, loadMargins, applyMargin, costoImposible, type ActiveProduct } from "@/lib/supplier-catalog";
 import { ramYDisco, sinVram, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { categoriaPorNombre } from "@/lib/catimporter/parsers/categorias";
 import { marcaDeNombre } from "@/lib/marcas";
@@ -28,8 +30,8 @@ import { pulgadasDe, sustantivoDeNombre, specsDeNombre, resumirSpec } from "@/li
 // El cupo se declara EN la sección, no se deduce de su nombre: subir una
 // sección de 8 a 12 es decidir que importa más, y eso se escribe.
 
-export const CUPO = 8;
-export const MINIMO = 4;
+const CUPO = 8;
+const MINIMO = 4;
 
 const cupoDe = (s: SeccionVitrina) => s.cupo ?? CUPO;
 
@@ -76,7 +78,7 @@ const ORDEN_SPEC = ["procesador", "ram", "almacenamiento", "gpu", "pantalla", "m
 
 
 /** Las specs del producto tal como las va a leer un cliente en la card. */
-export function specsParaCard(p: ActiveProduct): Record<string, string> {
+function specsParaCard(p: ActiveProduct): Record<string, string> {
   const bruto: Record<string, string> = {};
   for (const [k, v] of Object.entries(p.specs ?? {})) {
     const clave = ALIAS_SPEC[k.toLowerCase().replace(/_/g, " ").trim()]
@@ -171,21 +173,6 @@ const EQUIPOS_COMPLETOS = new Set([
   "portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one", "mini-pc", "servidor",
 ]);
 
-/**
- * Por debajo de esto, un equipo completo no es barato: está mal leído.
- *
- * En la vitrina salieron un "All-In-One 3-DP Core i5-1235U, 16GB, 500GB SSD" a
- * $19.000 y un "AIO POS System Intel Core i5" a $99.000. Sus costos en la lista
- * de Ledacom son $15.000 y $79.000: el lector se comió los millones al partir la
- * columna del precio. Y no es sólo ridículo, es caro — quien pida ese equipo a
- * ese precio tiene una oferta publicada.
- *
- * El millón sale de medir: el equipo completo más barato de las listas vigentes
- * cuesta $1.715.000, y por debajo del millón sólo hay seis filas, todas mal
- * leídas o mal clasificadas (una UPS, un ventilador y un SSD marcados como
- * "escritorio"). No hay nada legítimo en medio que perder.
- */
-const PISO_EQUIPO = 1_000_000;
 
 function suficienteInfo(p: ActiveProduct, specs: Record<string, string>): boolean {
   if (EQUIPOS_COMPLETOS.has(p.categoria)) return Object.keys(specs).length >= 2;
@@ -347,8 +334,11 @@ export const SECCIONES: SeccionVitrina[] = [
   { id: "smart-home", nombre: "Smart Home y Conectividad", campo: "segmento", valor: "smart-home",
     categorias: ["camara", "redes"] },
 
+  // La columna `monitor` de una lista recogió un "INTEL I7-1185G7 3GHZ Onboard"
+  // de $2.449.000: un procesador anunciado como monitor. Que el nombre lo diga.
   { id: "monitores", nombre: "Monitores", campo: "usoCaso", valor: "monitor",
-    categorias: ["monitor"] },
+    categorias: ["monitor"],
+    exige: { categorias: ["monitor"], patron: /\b(monitor|pantalla|display)\b|\b[\d]{2}["”]/i } },
 
   { id: "tablets", nombre: "Tablets Empresariales", campo: "usoCaso", valor: "tablet-empresarial",
     categorias: ["tableta"] },
@@ -384,7 +374,7 @@ export const SECCIONES: SeccionVitrina[] = [
  * Manda el segmento, que es lo específico. Las secciones por `usoCaso` sólo se
  * quedan con lo que no tiene sección propia.
  */
-export const SEGMENTOS_CON_SECCION = new Set(
+const SEGMENTOS_CON_SECCION = new Set(
   SECCIONES.filter((s) => s.campo === "segmento").map((s) => s.valor),
 );
 
@@ -499,6 +489,14 @@ function nombreUsable(n: string): boolean {
   if ((t.match(/[(]/g) ?? []).length !== (t.match(/[)]/g) ?? []).length) return false;
   if (/^(iva|precio|total|subtotal|descuento|valor|ref)[ :]/i.test(t)) return false;
 
+  // Trozos de la tabla de especificaciones que el lector tomó por nombre:
+  // "Number Of Managed APS32, Maximum User (WAN) + 4 pu", "WAN, 8*GE LAN
+  // (POE+,124W), up to 350 Users, Forwar". Se reconocen por dos cosas que un
+  // nombre de producto no tiene: vocabulario de ficha en inglés —estas listas
+  // son en español— y una coma detrás de otra.
+  if (/\b(up\sto|maximum|number\sof|forwarding|throughput|built@S?-?in)\b/i.test(t)) return false;
+  if ((t.match(/,/g) ?? []).length >= 3) return false;
+
   // Dos palabras de verdad, como mínimo. Sin esto entraba "TMP216-51-56ZP
   // NX.B17AL.00D": es un portátil real, pero en una card el cliente lee dos
   // códigos de fábrica y no sabe qué le están ofreciendo.
@@ -594,6 +592,29 @@ const TRAMOS = ["entrada", "medio", "alto"] as const;
  *  extremos hacen de ancla — la cara hace razonable a la del medio. */
 const REPARTO = { entrada: 0.25, medio: 0.5, alto: 0.25 };
 
+/**
+ * Productos que no vuelven a la vitrina, pase lo que pase.
+ *
+ * Retirar un producto desde el panel lo deja despublicado y con eso basta
+ * mientras su ficha siga en el catálogo. Pero hay un caso que eso no cubre: el
+ * producto cuyo PRECIO en la lista está mal y vuelve igual de mal cada mes. Si
+ * alguien borra la ficha, la propuesta lo vuelve a subir con el mismo error.
+ *
+ * Esta lista es esa memoria, y guarda el motivo: dentro de tres meses nadie se
+ * va a acordar de por qué este portátil no sale, y sin el motivo lo único que
+ * se puede hacer con una exclusión es respetarla a ciegas o borrarla.
+ */
+type Excluido = { referencia: string; nombre?: string; motivo: string; desde?: string };
+
+function excluidos(): Set<string> {
+  try {
+    const crudo = fs.readFileSync(path.join(process.cwd(), "data", "promociones-excluidos.json"), "utf-8");
+    return new Set((JSON.parse(crudo) as Excluido[]).map((e) => e.referencia.toUpperCase().replace(/[^A-Z0-9]/g, "")));
+  } catch {
+    return new Set();
+  }
+}
+
 /** La propuesta para las secciones pedidas. No escribe nada. */
 export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
   const publicados = loadBusinessProducts();
@@ -610,6 +631,7 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
   // mismos tres Power Group salían a la vez en Gaming y en Creadores, y sólo
   // pueden estar en una.
   const usados = new Set<string>();
+  const vetados = excluidos();
 
   return SECCIONES.filter((s) => ids.includes(s.id)).map((s) => {
     const enVitrina = publicados.filter(
@@ -621,7 +643,8 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
     const sueltos = vigentes
       .filter((p) => s.categorias.includes(p.categoria))
       .filter((p) => p.precio_costo > 0 && p.referencia && !yaEsta.has(norm(p.referencia)))
-      .filter((p) => !EQUIPOS_COMPLETOS.has(p.categoria) || p.precio_costo >= PISO_EQUIPO)
+      .filter((p) => !vetados.has(norm(p.referencia!)))
+      .filter((p) => !costoImposible(p))
       .filter((p) => nombreUsable(p.nombre))
       .filter((p) => encajaEnSeccion(p.nombre, p.categoria, s))
       // Una card que no dice nada ocupa sitio en la vitrina y no ayuda a decidir.

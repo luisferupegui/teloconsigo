@@ -80,3 +80,8 @@ data/web-cache.json
 # imágenes de línea subidas desde el panel — viven en el volumen persistente
 # (data/), no en el repositorio. Las de fábrica siguen en public/lineas/.
 data/lineas-img/
+
+# listas de trabajo de imágenes — las genera `node scripts/build-image-manifest.mjs`
+# a partir del catálogo del momento, así que versionarlas sólo guarda una foto vieja
+IMAGENES-POR-GENERAR.*
+IMAGENES-IMPRESORAS.md
