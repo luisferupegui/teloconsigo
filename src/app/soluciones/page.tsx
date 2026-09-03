@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
-import { BusinessProductCard } from "@/components/business-product-card";
+import { RejillaOrdenable } from "@/components/rejilla-ordenable";
 import { esDeLaSeccion } from "@/lib/promociones-relleno";
 import {
   Laptop,
@@ -256,11 +256,7 @@ function SeccionUso({
           Próximamente — estamos cargando el catálogo de {sec.titulo.toLowerCase()}.
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((p) => (
-            <BusinessProductCard key={p.referencia ?? p.slug ?? p.id} product={p} variant="asesor" />
-          ))}
-        </div>
+        <RejillaOrdenable products={products} variant="asesor" />
       )}
     </section>
   );

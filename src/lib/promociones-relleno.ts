@@ -15,18 +15,23 @@ import { pulgadasDe, sustantivoDeNombre } from "@/lib/ficha-card";
 // Esto propone hasta 8 por sección tomándolas de las listas vigentes. No
 // publica: propone, y quien mira decide. Es el escaparate, no una lista interna.
 
-/** Cuántas cards quiere una sección. Ocho llena una rejilla de 4×2 sin huecos. */
+// ─── Cuántas cards quiere cada sección ───────────────────────────────────────
+//
+// Una escalera de tres peldaños, y el peldaño ES la importancia de la sección:
+//
+//    4  el mínimo para que parezca una tienda. Por debajo se ve rota, no
+//       surtida, y la pantalla lo avisa en vez de dejar dos cards huérfanas.
+//    8  lo normal. Llena una rejilla de 4×2 sin huecos.
+//   12  las que mandan. Accesorios es la primera: es lo que más busca la gente
+//       y donde más rota el surtido, así que aguanta —y pide— rejilla larga.
+//
+// El cupo se declara EN la sección, no se deduce de su nombre: subir una
+// sección de 8 a 12 es decidir que importa más, y eso se escribe.
+
 export const CUPO = 8;
-
-/** Accesorios lleva 12: es lo que más busca la gente y donde más rota el
- *  surtido, así que aguanta —y pide— una rejilla más larga. */
-export const CUPO_ACCESORIOS = 12;
-
-/** Por debajo de esto una sección se ve rota, no surtida. Si no se llega, la
- *  pantalla lo avisa en vez de dejar dos cards huérfanas sin explicación. */
 export const MINIMO = 4;
 
-const cupoDe = (id: string) => (id === "accesorios" ? CUPO_ACCESORIOS : CUPO);
+const cupoDe = (s: SeccionVitrina) => s.cupo ?? CUPO;
 
 // ─── Que la card diga algo ───────────────────────────────────────────────────
 //
@@ -370,6 +375,8 @@ export type SeccionVitrina = {
   exige?: { categorias: string[]; patron: RegExp };
   /** Lo que la sección no admite aunque su categoría encaje. */
   excluye?: RegExp;
+  /** Cuántas cards quiere: 12 las que mandan, 8 el resto. Ver la escalera. */
+  cupo?: 8 | 12;
 };
 
 export const SECCIONES: SeccionVitrina[] = [
@@ -435,6 +442,7 @@ export const SECCIONES: SeccionVitrina[] = [
   // El almacenamiento entra sólo si es EXTERNO: un disco que se lleva en el
   // bolso es un accesorio, y uno que va atornillado a la board es un componente.
   { id: "accesorios", nombre: "Accesorios", campo: "usoCaso", valor: "accesorio",
+    cupo: 12,
     categorias: ["accesorios", "mouse", "teclado", "auriculares", "camara", "impresora", "almacenamiento"],
     exige: { categorias: ["almacenamiento"], patron: /extern|port[áa]til|micro\s?sd|\busb\b/i },
     excluye: /grabador\sde\sv[íi]deo|\bnvr\b/i },
@@ -683,7 +691,7 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
       (p) => p.enPromocion &&
         esDeLaSeccion(p as unknown as { usoCaso?: string; segmento?: string }, s.campo, s.valor),
     ).length;
-    const faltan = Math.max(0, cupoDe(s.id) - enVitrina);
+    const faltan = Math.max(0, cupoDe(s) - enVitrina);
 
     const sueltos = vigentes
       .filter((p) => s.categorias.includes(p.categoria))
@@ -717,7 +725,7 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
 
     if (faltan === 0 || pool.length === 0) {
       return { id: s.id, nombre: s.nombre, publicados: enVitrina, faltan, candidatos: [],
-        disponibles: pool.length, cupo: cupoDe(s.id), bajoMinimo: enVitrina < MINIMO };
+        disponibles: pool.length, cupo: cupoDe(s), bajoMinimo: enVitrina < MINIMO };
     }
 
     // ── Escalera de precios ──
@@ -802,7 +810,7 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
       id: s.id, nombre: s.nombre, publicados: enVitrina, faltan,
       candidatos: elegidos.sort((a, b) => a.precioVenta - b.precioVenta),
       disponibles: pool.length,
-      cupo: cupoDe(s.id),
+      cupo: cupoDe(s),
       bajoMinimo: enVitrina + elegidos.length < MINIMO,
     };
   });

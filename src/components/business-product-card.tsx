@@ -136,9 +136,14 @@ export function BusinessProductCard({
         )}&precio=${price ?? ""}`
       : `/conseguir?ref=${product.referencia ?? product.slug}`;
 
-  const subtitulo = product.descripcionUso?.trim()
+  // "Escritorio alto rendimiento · Monitor 23.8"" no cabe en una etiqueta y se
+  // cortaba justo donde estaba el dato: "…· Monitor …". Se parte en dos, que
+  // además son dos cosas distintas —lo que es y lo que trae de más— y así ni se
+  // corta ni hay que acortar el texto.
+  const [queEs, ...extras] = (product.descripcionUso?.trim()
     ? product.descripcionUso
-    : subtituloDeCatalogo(product.nombre, product.categoria, product.specs);
+    : subtituloDeCatalogo(product.nombre, product.categoria, product.specs)
+  ).split(" · ");
   const Icono = ICONOS[iconoDeCard(product.nombre, product.categoria)] ?? Package;
 
   const specRows = Object.entries(product.specs)
@@ -147,7 +152,7 @@ export function BusinessProductCard({
       return label ? { clave: k, label, value: String(v) } : null;
     })
     .filter((x): x is { clave: string; label: string; value: string } => x !== null)
-    .slice(0, 3);
+    .slice(0, 4);
 
   return (
     <div className="relative flex h-full flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5">
@@ -179,15 +184,21 @@ export function BusinessProductCard({
           se deduce del catálogo antes que dejar el renglón en blanco. Va en azul
           de marca y con icono: es lo único de color de la card y lo que la salva
           de ser un bloque de texto gris. */}
-      <div className="mt-2 min-h-[1.75rem]">
-        {subtitulo && (
-          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1
+      <div className="mt-2 flex min-h-[1.75rem] flex-wrap gap-1.5">
+        {queEs && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1
                            text-[11px] font-semibold leading-none text-[#1e6cff]
                            ring-1 ring-inset ring-blue-100">
             <Icono className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{subtitulo}</span>
+            {queEs}
           </span>
         )}
+        {extras.map((e) => (
+          <span key={e} className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1
+                                   text-[11px] font-semibold leading-none text-zinc-600">
+            {e}
+          </span>
+        ))}
       </div>
 
       {/* ── Ficha ──
