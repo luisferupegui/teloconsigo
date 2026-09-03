@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCredentials, hasAnyUser } from "@/lib/admin-users";
+import { COOKIE_SESION, crearSesion, opcionesCookie } from "@/lib/admin-session";
 
 // Las credenciales viven en data/admin-users.json (hasheadas). El primer usuario
 // se siembra desde ADMIN_USER / ADMIN_PASSWORD del .env (ver src/lib/admin-users).
@@ -27,14 +28,21 @@ export async function POST(req: NextRequest) {
   }
 
   if (verifyCredentials(username, password)) {
+    // La cookie ya no vale la cadena "yes" —que cualquiera escribía a mano en la
+    // consola del navegador y entraba— sino un dato firmado con un secreto del
+    // servidor. Ver src/lib/admin-session.ts.
+    const sesion = crearSesion(username);
+    if (!sesion) {
+      console.error(
+        "[login] No hay con qué firmar la sesión: falta ADMIN_SESSION_SECRET y no se pudo leer data/admin-users.json.",
+      );
+      return NextResponse.json(
+        { ok: false, error: "El login no está configurado en el servidor." },
+        { status: 500 },
+      );
+    }
     const res = NextResponse.json({ ok: true });
-    res.cookies.set("admin_auth", "yes", {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 8, // 8 horas
-      secure: process.env.NODE_ENV === "production",
-    });
+    res.cookies.set(COOKIE_SESION, sesion.valor, opcionesCookie(sesion.maxAge));
     return res;
   }
 

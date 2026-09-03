@@ -1,3 +1,4 @@
+import { COOKIE_SESION, leerSesion } from "@/lib/admin-session";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  if (cookieStore.get("admin_auth")?.value !== "yes") redirect("/admin/login");
+  if (!leerSesion(cookieStore.get(COOKIE_SESION)?.value)) redirect("/admin/login");
   return (
     <div className="min-h-screen bg-zinc-100">
       <div className="border-b border-zinc-200 bg-white">

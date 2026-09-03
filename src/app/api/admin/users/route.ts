@@ -1,3 +1,4 @@
+import { COOKIE_SESION, leerSesion } from "@/lib/admin-session";
 import { NextRequest, NextResponse } from "next/server";
 import { listUsers, addUser, deleteUser, setPassword } from "@/lib/admin-users";
 
@@ -5,7 +6,7 @@ import { listUsers, addUser, deleteUser, setPassword } from "@/lib/admin-users";
 // Como estos endpoints crean/borran administradores y cambian contraseñas,
 // verificamos la sesión aquí mismo. Sin la cookie de admin → 401.
 function requireAdmin(req: NextRequest): boolean {
-  return req.cookies.get("admin_auth")?.value === "yes";
+  return leerSesion(req.cookies.get(COOKIE_SESION)?.value) !== null;
 }
 
 const UNAUTHORIZED = NextResponse.json({ error: "No autorizado" }, { status: 401 });

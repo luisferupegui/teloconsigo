@@ -1,9 +1,10 @@
+import { COOKIE_SESION, leerSesion } from "@/lib/admin-session";
 import { cookies } from "next/headers";
 import { exportHistoryCSV } from "@/lib/orders";
 
 export async function GET() {
   const cookieStore = await cookies();
-  if (cookieStore.get("admin_auth")?.value !== "yes") {
+  if (!leerSesion(cookieStore.get(COOKIE_SESION)?.value)) {
     return new Response("No autorizado", { status: 401 });
   }
 
