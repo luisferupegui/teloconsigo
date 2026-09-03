@@ -39,6 +39,27 @@ export async function POST(req: NextRequest) {
       seccion?: string;
     };
 
+    // La actualización mensual completa: no recibe referencias porque no elige
+    // nada a mano, aplica lo que el análisis y la propuesta ya calcularon.
+    //
+    // NO retira nada, y es a propósito. Un producto que se cayó de las listas no
+    // es un producto que no se pueda vender: se consigue por web —Falabella,
+    // Éxito, el mayorista de turno— y esa es media tienda. Retirar sigue siendo
+    // una decisión aparte, de quien mira.
+    if (accion === "refrescar") {
+      const analisis = analizarPromociones();
+      const actualizados = aplicarPrecios(analisis.repreciar.map((r) => r.referencia));
+
+      let publicados = 0;
+      const secciones: string[] = [];
+      for (const s of proponerRelleno(SECCIONES.map((x) => x.id))) {
+        if (s.candidatos.length === 0) continue;
+        const r = publicarCandidatos(s.id, s.candidatos.map((c) => c.referencia));
+        if (r.publicados > 0) { publicados += r.publicados; secciones.push(s.nombre); }
+      }
+      return NextResponse.json({ ok: true, actualizados, publicados, secciones });
+    }
+
     if (!Array.isArray(referencias) || referencias.length === 0) {
       return NextResponse.json({ error: "No se recibió ninguna referencia" }, { status: 400 });
     }

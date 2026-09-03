@@ -2504,7 +2504,7 @@
     "usoCaso": "accesorio",
     "segmento": "accesorios",
     "publicado": true,
-    "enPromocion": true,
+    "enPromocion": false,
     "destacado": false,
     "enAccesorios": false,
     "precio": 62000,
@@ -2712,5 +2712,27 @@
     "proveedor": "manual",
     "specs": {},
     "descripcionUso": "Procesador"
+  },
+  {
+    "referencia": "SDCS3/128GB",
+    "id": "SDCS3/128GB",
+    "slug": "micro-sd-128gb-canvas-select-plus-gen3-150mb-kingston",
+    "nombre": "Micro SD 128GB Canvas Select Plus Gen3 150MB Kingston",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "accesorios",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 110000,
+    "precioDesde": 110000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "128GB"
+    },
+    "descripcionUso": "Memoria Micro SD"
   }
 ]

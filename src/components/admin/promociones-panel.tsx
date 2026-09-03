@@ -68,8 +68,9 @@ export function PromocionesPanel() {
   const [aplicando, setAplicando] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [hecho, setHecho] = useState("");
-  // Todo marcado de entrada: lo normal es querer aplicarlo entero, y quitar
-  // alguna casilla cuesta menos que marcar cuarenta y cinco.
+  // Los precios van marcados de entrada: lo normal es querer aplicarlos
+  // enteros. Los descatalogados NO, y ahí está la diferencia — retirar es una
+  // decisión producto a producto, no un botón que se pulsa sin mirar.
   const [precios, setPrecios] = useState<Set<string>>(new Set());
   const [retirar, setRetirar] = useState<Set<string>>(new Set());
   const [aRellenar, setARellenar] = useState<Record<string, Set<string>>>({});
@@ -88,7 +89,7 @@ export function PromocionesPanel() {
   const recibir = useCallback((d: Analisis) => {
     setDatos(d);
     setPrecios(new Set(d.repreciar.map((r) => r.referencia)));
-    setRetirar(new Set(d.descatalogados.map((r) => r.referencia)));
+    setRetirar(new Set());
     setARellenar(Object.fromEntries(d.relleno.map((s) => [s.id, new Set(s.candidatos.map((c) => c.referencia))])));
     setMalUbicados(new Set(d.malUbicados.map((m) => m.referencia)));
   }, []);
@@ -121,6 +122,38 @@ export function PromocionesPanel() {
     })();
     return () => { vivo = false; };
   }, [pedirAnalisis, recibir]);
+
+  /**
+   * La actualización del mes, de una vez.
+   *
+   * El panel enseñaba el diagnóstico y dejaba tres botones repartidos —precios
+   * arriba, y un "publicar" por cada sección con huecos—. Hacerlo entero eran
+   * nueve clics y había que acordarse de bajar hasta el final.
+   *
+   * Esto pone al día los precios de lo publicado y llena las secciones con
+   * huecos. No retira nada: eso sigue siendo aparte.
+   */
+  async function refrescar() {
+    setAplicando("refrescar"); setError(""); setHecho("");
+    try {
+      const res = await fetch("/api/admin/promociones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accion: "refrescar" }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error ?? "No se pudo actualizar");
+      const partes = [];
+      if (d.actualizados) partes.push(`${d.actualizados} precios al día`);
+      if (d.publicados) partes.push(`${d.publicados} productos nuevos en ${d.secciones.length} secciones`);
+      setHecho(partes.length ? partes.join(" · ") : "La vitrina ya estaba al día");
+      await cargar();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setAplicando(null);
+    }
+  }
 
   async function aplicar(accion: "actualizarPrecios" | "quitarDePromocion", conjunto?: Set<string>) {
     const refs = [...(conjunto ?? (accion === "actualizarPrecios" ? precios : retirar))];
@@ -199,23 +232,35 @@ export function PromocionesPanel() {
           <div>
             <h2 className="text-lg font-bold text-zinc-900">Promociones al día</h2>
             <p className="mt-1 text-sm text-zinc-500">
-              Compara lo que hay publicado con las listas vigentes. Aquí{" "}
-              <strong>solo se mira</strong>: cada cambio se aplica cuando tú lo apruebas.
+              Compara lo que hay publicado con las listas vigentes.{" "}
+              <strong>Actualizar la vitrina</strong> pone los precios al día y llena las
+              secciones con huecos de una vez; lo demás se aplica cuando tú lo apruebas.
             </p>
           </div>
-          <button
-            type="button" onClick={cargar} disabled={cargando}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:border-indigo-400 hover:text-indigo-600 disabled:opacity-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${cargando ? "animate-spin" : ""}`} /> Volver a mirar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button" onClick={cargar} disabled={cargando || aplicando !== null}
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:border-indigo-400 hover:text-indigo-600 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${cargando ? "animate-spin" : ""}`} /> Volver a mirar
+            </button>
+            <button
+              type="button" onClick={refrescar} disabled={cargando || aplicando !== null}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {aplicando === "refrescar"
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Sparkles className="h-4 w-4" />}
+              Actualizar la vitrina
+            </button>
+          </div>
         </div>
 
         {datos && (
           <div className="mt-5 grid gap-3 sm:grid-cols-4">
             <Stat label="En promoción" value={datos.enPromocion} tono="normal" />
             <Stat label="Precio desactualizado" value={datos.repreciar.length} tono="aviso" />
-            <Stat label="Ya no están en listas" value={datos.descatalogados.length} tono="malo" />
+            <Stat label="Sin proveedor en listas" value={datos.descatalogados.length} tono="aviso" />
             <Stat label="Correctos" value={datos.alDia} tono="bien" />
           </div>
         )}
@@ -277,31 +322,32 @@ export function PromocionesPanel() {
 
       {/* ── Los que el proveedor ya no trae ── */}
       {datos && datos.descatalogados.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-red-200 bg-red-50/40">
-          <div className="flex flex-wrap items-center gap-3 border-b border-red-200 px-5 py-4">
-            <PackageX className="h-4 w-4 shrink-0 text-red-500" />
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50/60">
+          <div className="flex flex-wrap items-center gap-3 border-b border-zinc-200 px-5 py-4">
+            <PackageX className="h-4 w-4 shrink-0 text-zinc-400" />
             <div className="min-w-[220px] flex-1">
-              <h3 className="font-bold text-red-900">Ya no están en ninguna lista</h3>
-              <p className="text-xs text-red-800">
-                Se siguen ofreciendo en la web y no hay de dónde traerlos.
+              <h3 className="font-bold text-zinc-800">Sin proveedor en las listas</h3>
+              <p className="text-xs text-zinc-600">
+                Se siguen ofreciendo y se consiguen por web. Lo que hay que vigilar es el
+                precio: no se actualiza solo, porque no hay lista contra la que compararlo.
               </p>
             </div>
             <button
               type="button" onClick={() => aplicar("quitarDePromocion")}
               disabled={aplicando !== null || retirar.size === 0}
-              className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-600 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-40"
             >
               {aplicando === "retirar" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PackageX className="h-4 w-4" />}
-              Quitar {retirar.size} de promociones
+              Retirar {retirar.size} marcados
             </button>
           </div>
-          <div className="max-h-96 divide-y divide-red-200/70 overflow-y-auto">
+          <div className="max-h-96 divide-y divide-zinc-200 overflow-y-auto">
             {datos.descatalogados.map((d) => (
-              <label key={d.referencia} className="flex cursor-pointer items-center gap-3 px-5 py-2.5 text-sm hover:bg-red-100/40">
+              <label key={d.referencia} className="flex cursor-pointer items-center gap-3 px-5 py-2.5 text-sm hover:bg-zinc-100/60">
                 <input
                   type="checkbox" checked={retirar.has(d.referencia)}
                   onChange={() => alternar(retirar, setRetirar, d.referencia)}
-                  className="h-3.5 w-3.5 shrink-0 accent-red-600"
+                  className="h-3.5 w-3.5 shrink-0 accent-red-500"
                 />
                 <span className="min-w-[200px] flex-1 text-zinc-800">{d.nombre}</span>
                 <span className="shrink-0 font-mono text-[11px] text-zinc-400">{d.referencia}</span>
@@ -309,10 +355,11 @@ export function PromocionesPanel() {
               </label>
             ))}
           </div>
-          <p className="border-t border-red-200 px-5 py-3 text-xs text-red-800">
-            Quitarlos los saca de la vitrina, <strong>no los borra</strong>: su ficha sigue viva con su
-            enlace y su sitio en el buscador, porque un proveedor puede volver a traer el modelo el mes
-            que viene. Despublicarlos del todo se hace en Gestionar productos.
+          <p className="border-t border-zinc-200 px-5 py-3 text-xs text-zinc-600">
+            Estar aquí <strong>no es un error</strong>: media tienda se consigue por web y por eso el
+            catálogo los mantiene. Marca sólo los que ya no quieras ofrecer. Retirarlos los saca de la
+            vitrina y <strong>no los borra</strong>: la ficha sigue viva con su enlace y su sitio en el
+            buscador. Despublicarlos del todo se hace en Gestionar productos.
           </p>
         </div>
       )}
