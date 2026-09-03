@@ -29,6 +29,14 @@ function construir(
     const validation = validateProduct({
       nombre: p.nombre, precio_costo: p.precio_costo, marca: p.marca, source,
     });
+    // Los avisos del lector se SUMAN a los de la validación y mandan el producto
+    // a revisión. No le tocan ni un dato: nombre, precio y categoría quedan como
+    // los leyó. Es una mano levantada, no una corrección.
+    const avisos = p.avisos ?? [];
+    if (avisos.length > 0) {
+      validation.warnings = [...validation.warnings, ...avisos];
+      validation.requiresReview = true;
+    }
     return {
       id: generateProductId(p.nombre, provider, p.referencia),
       internalCode: internalCode(provider, i + 1),

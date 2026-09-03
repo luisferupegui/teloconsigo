@@ -17,6 +17,11 @@ export type ParsedProduct = {
   precio_costo: number;
   referencia: string;
   specs?: Record<string, string>;
+  /** Dudas que el propio lector quiere levantar sobre lo que acaba de leer.
+   *  Se suman a los avisos del producto y lo mandan a revisión; no lo descartan
+   *  ni cambian ninguno de sus datos. Un lector sabe cosas de su catálogo que
+   *  la validación genérica no puede saber. */
+  avisos?: string[];
 };
 
 // ── Helpers de texto ──────────────────────────────────────────────────────────

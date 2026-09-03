@@ -290,6 +290,28 @@ export function tarjetasDePagina(
 
     const { nombre, detalle } = nombreYDetalle(renglones);
 
+    // ── ¿El nombre y el código salieron del mismo sitio? ─────────────────────
+    //
+    // El nombre son los primeros renglones de la tarjeta y el código se busca
+    // en la tarjeta entera. Cuando el folleto pone el modelo arriba —que es lo
+    // normal— el nombre LO CONTIENE: "23.8” KA242Y…" con código KA242Y.
+    //
+    // Cuando no lo contiene es que arriba había otra cosa: etiquetas de
+    // característica ("PIVOTE Altura ajustable", "FHD 1ms 1ms IPS 1920X1080") o
+    // el modelo de la tarjeta vecina. El producto se lee, con su precio y su
+    // categoría, pero el nombre no sirve para reconocerlo.
+    //
+    // Medido sobre los 83 del folleto: marca 15, de los que 12 están realmente
+    // mal. No se descarta ni se corrige nada — solo se levanta la mano para que
+    // salga en "Revisa esto antes de guardar" en vez de colarse con confianza
+    // alta por tener número de parte.
+    //
+    // La comprobación vale SOLO aquí. En los motores de ficha el nombre se
+    // compone de las specs y nunca contiene la referencia, así que allí
+    // marcaría todos los equipos, que están bien.
+    const soloAlfanum = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const coherente = soloAlfanum(nombre).includes(soloAlfanum(referencia));
+
     productos.push({
       nombre,
       marca: marcaDeNombre(nombre, categoria) ?? "",
@@ -297,6 +319,9 @@ export function tarjetasDePagina(
       precio_costo: importe,
       referencia,
       specs: detalle ? { detalle } : undefined,
+      avisos: coherente
+        ? undefined
+        : [`El nombre no contiene su código ${referencia}: revisa que sea el producto correcto`],
     });
   }
 
