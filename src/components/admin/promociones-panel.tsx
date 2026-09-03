@@ -59,23 +59,50 @@ export function PromocionesPanel() {
   const [precios, setPrecios] = useState<Set<string>>(new Set());
   const [retirar, setRetirar] = useState<Set<string>>(new Set());
 
+  // La petición va aparte de los `setState` para que el efecto no toque estado
+  // de forma síncrona: hacerlo encadena renders y es lo que avisa
+  // react-hooks/set-state-in-effect.
+  const pedirAnalisis = useCallback(async (): Promise<Analisis> => {
+    const res = await fetch("/api/admin/promociones");
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error ?? "No se pudo analizar");
+    return d as Analisis;
+  }, []);
+
+  const recibir = useCallback((d: Analisis) => {
+    setDatos(d);
+    setPrecios(new Set(d.repreciar.map((r) => r.referencia)));
+    setRetirar(new Set(d.descatalogados.map((r) => r.referencia)));
+  }, []);
+
+  /** Recarga desde un manejador de evento (el botón "Volver a mirar"). */
   const cargar = useCallback(async () => {
     setCargando(true); setError("");
     try {
-      const res = await fetch("/api/admin/promociones");
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error ?? "No se pudo analizar");
-      setDatos(d as Analisis);
-      setPrecios(new Set((d.repreciar as Repreciar[]).map((r) => r.referencia)));
-      setRetirar(new Set((d.descatalogados as Descatalogado[]).map((r) => r.referencia)));
+      recibir(await pedirAnalisis());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [pedirAnalisis, recibir]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    let vivo = true;
+    // El `await` va antes que cualquier `setState`, y el testigo evita escribir
+    // estado si la pestaña se cambió mientras llegaba la respuesta.
+    (async () => {
+      try {
+        const d = await pedirAnalisis();
+        if (vivo) recibir(d);
+      } catch (e) {
+        if (vivo) setError(e instanceof Error ? e.message : "Error");
+      } finally {
+        if (vivo) setCargando(false);
+      }
+    })();
+    return () => { vivo = false; };
+  }, [pedirAnalisis, recibir]);
 
   async function aplicar(accion: "actualizarPrecios" | "quitarDePromocion") {
     const refs = [...(accion === "actualizarPrecios" ? precios : retirar)];
