@@ -164,3 +164,179 @@ export function iconoDeCard(nombre: string, categoria: string): string {
     ?? ICONO_POR_CATALOGO[categoria]
     ?? "accesorio";
 }
+
+// ─── Que quepa entero ────────────────────────────────────────────────────────
+//
+// La ficha salía cortada a media palabra —"Intel Core i5-1335U (10C 12…"— y un
+// dato cortado no es un dato: el cliente no puede comparar dos equipos si a los
+// dos les falta el final. El problema no era el ancho de la card, era que se
+// estaba enseñando la cadena entera del proveedor, con su empaquetador, su
+// socket y sus paréntesis.
+//
+// Aquí se queda lo que decide la compra y se tira el resto. "Intel Core
+// i5-1335U (10C 12T, hasta 4.6 GHz, 12MB)" es, para elegir, "Core i5 1335U".
+//
+// Los guiones se cambian por espacios a propósito: "i5-1335U" parte raro y se
+// lee peor que "i5 1335U".
+
+const sinParentesis = (v: string) => v.replace(/\s*[(][^)]*[)]/g, " ");
+const sinGuiones = (v: string) =>
+  v.replace(/([A-Za-z\d])-(?=\d)/g, "$1 ").replace(/(\d)-(?=[A-Za-z])/g, "$1 ");
+const limpio = (v: string) =>
+  v.replace(/\s+/g, " ").replace(/…+\s*$/, "").replace(/[,;·]+\s*$/, "").trim();
+
+/** "Intel Core i5-1335U (10C 12T, hasta 4.6 GHz, 12MB)" → "Core i5 1335U" */
+function cpuBreve(v: string): string {
+  let t = limpio(sinParentesis(v));
+  t = t.split(/[,;▪|]/)[0];
+  t = t.replace(/\b(intel|amd|processors?|procesador|cpu)\b/gi, " ");
+  t = t.replace(/\b(lga\d*|socket|am[45]|no\svideo|vpro|box|oem|tray)\b/gi, " ");
+  t = t.replace(/\s*\d+\.?\d*\s?(mb|m)\s?cache\b/gi, " ");
+  t = t.replace(/\s*\d+(\.\d+)?\s*-\s*\d+(\.\d+)?\s?ghz\b/gi, " ");
+  return limpio(sinGuiones(t));
+}
+
+/** "16GB DDR5-4800 SODIMM" → "16GB DDR5 4800" */
+function ramBreve(v: string): string {
+  const t = limpio(sinParentesis(v));
+  const cap = t.match(/(\d{1,3})\s?(gb|tb)/i);
+  const tipo = t.match(/\bddr\s?([2345])\b/i);
+  const mhz = t.match(/(\d{4})\s?(mhz)?\b/i);
+  if (!cap) return limpio(sinGuiones(t)).slice(0, 24);
+  const partes = [cap[1] + cap[2].toUpperCase()];
+  if (tipo) partes.push("DDR" + tipo[1]);
+  if (mhz) partes.push(mhz[1] + "MHz");
+  return partes.join(" ");
+}
+
+/** "512GB SSD M.2 PCIe 4.0 NVMe" → "512GB SSD NVMe" */
+function discoBreve(v: string): string {
+  const t = limpio(v);
+  const cap = t.match(/(\d{1,4})\s?(gb|tb)/i);
+  if (!cap) return limpio(sinGuiones(t)).slice(0, 24);
+  const gb = Number(cap[1]) * (cap[2].toLowerCase() === "tb" ? 1000 : 1);
+  const tamano = gb >= 1000 && gb % 1000 === 0 ? gb / 1000 + "TB" : gb + "GB";
+  const partes = [tamano];
+  if (/ssd|nvme|\bm\.?2/i.test(t)) partes.push("SSD");
+  else if (/hdd|sata|\d\s?rpm|7200|5400/i.test(t)) partes.push("HDD");
+  if (/\bnvme\b/i.test(t)) partes.push("NVMe");
+  return partes.join(" ");
+}
+
+/** "NVIDIA GeForce RTX 3050 6GB GDDR6, Boost Clock 1732MHz" → "RTX 3050 6GB" */
+function gpuBreve(v: string): string {
+  const t = limpio(sinParentesis(v)).split(/[,;▪|]/)[0];
+  const modelo = t.match(/\b(rtx|gtx|rx|arc)\s?(\d{3,4}\s?(ti|xt|super)?)/i);
+  const vram = t.match(/(\d{1,2})\s?gb/i);
+  if (!modelo) return limpio(sinGuiones(t)).slice(0, 24);
+  const nombre = (modelo[1].toUpperCase() + " " + modelo[2].toUpperCase()).replace(/\s+/g, " ").trim();
+  return vram ? nombre + " " + vram[1] + "GB" : nombre;
+}
+
+/** '15.6" FHD (1920x1080) IPS 300nits Anti-glare, 144Hz' → '15.6" FHD IPS 144Hz' */
+function pantallaBreve(v: string): string {
+  const t = limpio(sinParentesis(v)).split(/[,;▪|]/)[0];
+  const pulg = pulgadasDe(t);
+  const res = t.match(/\b(4k|2k|qhd|wqxga|wuxga|fhd|hd+?)\b/i);
+  const panel = t.match(/\b(ips|va|tn|oled|lcd)\b/i);
+  const hz = t.match(/(\d{2,3})\s?hz\b/i);
+  const partes = [pulg, res?.[1].toUpperCase(), panel?.[1].toUpperCase(), hz ? hz[1] + "Hz" : ""];
+  const salida = partes.filter(Boolean).join(" ");
+  return salida || limpio(sinGuiones(t)).slice(0, 24);
+}
+
+const BREVE: Record<string, (v: string) => string> = {
+  procesador: cpuBreve, ram: ramBreve, almacenamiento: discoBreve, capacidad: discoBreve,
+  gpu: gpuBreve, pantalla: pantallaBreve, monitor: pantallaBreve,
+};
+
+/**
+ * El valor de una spec tal como cabe en la card.
+ *
+ * Se aplica al PINTAR, no al publicar: así vale igual para los productos que
+ * llenó el panel y para los 63 que se cargaron a mano, que son justo los que
+ * traen las cadenas más largas.
+ */
+export function resumirSpec(clave: string, valor: string): string {
+  const breve =
+    BREVE[clave]?.(valor) ?? limpio(sinGuiones(sinParentesis(valor.split(/[▪|]/)[0])));
+  // Red de seguridad: nada por encima de 26 caracteres cabe en la columna, y
+  // cortar por la última palabra entera se lee mejor que cortar por la mitad.
+  if (breve.length <= 26) return breve;
+  return breve.slice(0, 26).replace(/\s+\S*$/, "");
+}
+
+/**
+ * La ficha de lo que no es un equipo, sacada del nombre.
+ *
+ * Medido sobre las listas: de 289 accesorios, 287 no traen NI UNA spec; redes y
+ * tablets, ninguna. Esas cards salían con el nombre, el precio y tres renglones
+ * en blanco. Pero el nombre sí lo dice —"Router Archer AX53 WiFi AX3000",
+ * "Cámara Logitech C920 Pro Full-HD USB"—, así que se lee de ahí.
+ *
+ * Sólo para lo que NO es un equipo completo: a un portátil se le lee la ficha,
+ * que para eso la trae.
+ */
+export function specsDeNombre(nombre: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const n = nombre;
+
+  // AC es Wi-Fi 5, AX es Wi-Fi 6 y BE es Wi-Fi 7: el proveedor escribe el
+  // nombre comercial ("AX3000") y el cliente compara por generación.
+  const GENERACION: Record<string, string> = { n: "4", ac: "5", ax: "6", be: "7" };
+  const wifiGen = n.match(/wi\.?-?fi\s*([4567])\b/i);
+  const wifiVel = n.match(/\b(ac|ax|be|n)\s?(\d{3,4})\b/i);
+  if (wifiGen) out.estandar = "Wi-Fi " + wifiGen[1];
+  else if (wifiVel) {
+    const gen = GENERACION[wifiVel[1].toLowerCase()];
+    out.estandar = "Wi-Fi " + gen + " " + wifiVel[1].toUpperCase() + wifiVel[2];
+  } else if (/wi\.?-?fi|inal[áa]mbric/i.test(n)) out.estandar = "Wi-Fi";
+
+  // Lo que le queda a un equipo de red cuando el nombre no trae número: qué
+  // clase de aparato es. Sin esto la card de la antena salía con el nombre, el
+  // precio y nada en medio.
+  if (/doble\sbanda|dual[\s-]?band/i.test(n)) out.banda = "Doble banda";
+  else if (/tri\s?band|triple\sbanda/i.test(n)) out.banda = "Tri banda";
+
+  const grados = n.match(/(\d{2,3})\s?°/);
+  if (/omnidireccional/i.test(n)) out.tipo = "Omnidireccional" + (grados ? " " + grados[1] + "°" : "");
+  else if (/direccional/i.test(n)) out.tipo = "Direccional" + (grados ? " " + grados[1] + "°" : "");
+  else if (/\badministrable\b/i.test(n)) out.tipo = "Administrable";
+  else if (/no\sadministrable/i.test(n)) out.tipo = "No administrable";
+  else if (/\b(exterior|outdoor)\b/i.test(n)) out.tipo = "Exterior";
+
+  const puertos = n.match(/(\d{1,2})\s*(?:x\s*)?(?:puertos?|sfp)/i);
+  if (puertos) out.puertos = puertos[1] + (/sfp/i.test(puertos[0]) ? " SFP" : "");
+  if (/\bpoe\b/i.test(n)) out.puertos = (out.puertos ? out.puertos + " " : "") + "PoE";
+  if (/\bgigabit\b/i.test(n)) out.velocidad = "Gigabit";
+  const vatios = n.match(/(\d{2,4})\s?w\b/i);
+  if (vatios) out.potencia = vatios[1] + "W";
+  const diez = n.match(/\b(\d{1,2})\s?G\b/i);
+  if (diez) out.velocidad = diez[1] + "G";
+
+  const mp = n.match(/\b(\d{1,2})\s?mp\b/i);
+  const res = n.match(/\b(4k|2k|1080p?|720p?)\b/i) ?? n.match(/\bfull[-\s]?hd\b/i);
+  if (res) {
+    out.resolucion = /full/i.test(res[0])
+      ? "Full HD"
+      : res[1].toUpperCase().replace("P", "p");
+  }
+  if (mp) out.resolucion = (out.resolucion ? out.resolucion + " · " : "") + mp[1] + "MP";
+
+  const usb = n.match(/usb\s?([23](?:\.\d)?)\b(?!\d)/i);
+  if (usb) out.interfaz = "USB " + usb[1];
+  else if (/\busb\b/i.test(n)) out.interfaz = "USB";
+  if (/\bbluetooth\b|\bbt\b/i.test(n)) out.conexion = "Bluetooth";
+
+  const cap = n.match(/\b(\d{1,4})\s?(gb|tb)\b/i);
+  if (cap) out.capacidad = Number(cap[1]) + cap[2].toUpperCase();
+
+  // Una pieza suelta lleva su ficha en el nombre y en ningún otro sitio: un
+  // "Intel Core i5-12400F LGA1700 (2.5GHZ)" salía con la card entera en blanco.
+  const socket = n.match(/\b(lga\s?\d{3,4}|am[45]|sp[35])\b/i);
+  if (socket) out.tipo = socket[1].toUpperCase().replace(/\s+/g, "");
+  const ghz = n.match(/(\d(?:\.\d)?)\s?ghz\b/i);
+  if (ghz) out.velocidad = ghz[1] + "GHz";
+
+  return out;
+}

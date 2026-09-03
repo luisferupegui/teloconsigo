@@ -1658,31 +1658,6 @@
     "slug": "amd-ryzen-5-5500"
   },
   {
-    "referencia": "83DV01AYLM",
-    "id": "83DV01AYLM",
-    "slug": "lenovo-loq-15irx9-intel-core-i5-13450hx-ram-16gb-ssd-512gb-r",
-    "nombre": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX/RAM 16GB/SSD 512GB/ RTX 3050 6GB/15.6\" FHD/Linux OS",
-    "marca": "Lenovo",
-    "categoria": "portatil",
-    "usoCaso": "portatil-oficina",
-    "segmento": "gaming-streaming",
-    "publicado": false,
-    "enPromocion": false,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 8087000,
-    "precioDesde": 8087000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "Intel Core i5-13450HX 10C…",
-      "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD NVMe",
-      "pantalla": "15.6\" FHD (1920x1080) IPS…"
-    },
-    "descripcionUso": "Portátil 15.6\""
-  },
-  {
     "referencia": "T150-E2324G-16GB-1TB",
     "id": "T150-E2324G-16GB-1TB",
     "slug": "servidor-dell-poweredge-t150-xeon-e2324g-16gb-1tb",
@@ -1735,6 +1710,33 @@
       "garantia": "12 meses"
     },
     "fueraDeLista": true
+  },
+  {
+    "referencia": "R360-E2414G-16GB-4TB",
+    "id": "R360-E2414G-16GB-4TB",
+    "slug": "servidor-dell-poweredge-r360-xeon-e2414g-16gb-4tb-rack-1u",
+    "nombre": "Servidor Dell PowerEdge R360 Xeon E-2414G 16GB 4TB Rack 1U",
+    "marca": "Dell",
+    "categoria": "pc",
+    "usoCaso": "servidor",
+    "segmento": "redes-servidores",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 11200000,
+    "precioDesde": 11200000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "fueraDeLista": true,
+    "descripcionUso": "Servidor · Rack 1U",
+    "specs": {
+      "procesador": "Xeon E-2414G 4C 2.6GHz",
+      "ram": "16GB DDR5 5600",
+      "almacenamiento": "4TB SATA 7.2K",
+      "puertos": "2 Gigabit",
+      "garantia": "12 meses"
+    }
   },
   {
     "referencia": "JAN-D598E4A0",
@@ -1807,8 +1809,8 @@
       "procesador": "Intel Core Ultra 7 155U",
       "ram": "8GB DDR5",
       "almacenamiento": "512GB SSD NVMe",
-      "pantalla": "23.8\" diagonal, FHD (1920 x…",
-      "so": "FreeDOS ▪ Puertos: Parte…"
+      "pantalla": "23.8\" diagonal, FHD (1920 x 1080), IPS, anti-glare, WLED-backlit, 250 nits, 72% NTSC",
+      "so": "FreeDOS ▪ Puertos: Parte posterior 1 USB Type-C con velocidad de señalización de 5 Gb/s; 2 USB Type-A con velocidad de señalización de 5 Gb/s; 2 USB 2.0 Type-A; 1 HDMI 1.4; 1 combinación de audífonos/micrófono; 1 RJ-45; 1 conector de alimentación"
     },
     "descripcionUso": "Todo en uno 23.8\""
   },
@@ -1833,8 +1835,8 @@
       "procesador": "AMD Ryzen 7 8700F 4.1GHz",
       "ram": "32GB",
       "almacenamiento": "1TB SSD M.2",
-      "gpu": "ASUS DUAL GEFORCE RTX 3050 6GB…",
-      "monitor": "ACER 23,8 KA242Y · MSI PRO 24”…",
+      "gpu": "ASUS DUAL GEFORCE RTX 3050 6GB GDDR6",
+      "monitor": "ACER 23,8 KA242Y · MSI PRO 24” MP243LE14",
       "so": "Linux"
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 24\""
@@ -1886,7 +1888,7 @@
       "procesador": "AMD Ryzen 7 8700F 4.1GHz",
       "ram": "16GB DDR5 5600MHz",
       "almacenamiento": "512GB SSD",
-      "gpu": "GIGABYTE GeForce RTX 5060…",
+      "gpu": "GIGABYTE GeForce RTX 5060 WINDFORCE OC 8GB GDDR7 / MSI RTX 5060 8G SHADOW",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
@@ -1973,30 +1975,29 @@
     "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
-    "referencia": "JAN-52F53A77",
-    "id": "JAN-52F53A77",
-    "slug": "janus-gamer-ryzen-7-5700x-16gb-ddr4-ssd-1tb-m-2-gpu-rx-9060-",
-    "nombre": "JANUS GAMER Ryzen 7 5700X 16GB DDR4 SSD 1TB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
-    "marca": "",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
+    "referencia": "83DV01AYLM",
+    "id": "83DV01AYLM",
+    "slug": "lenovo-loq-15irx9-intel-core-i5-13450hx-ram-16gb-ssd-512gb-r",
+    "nombre": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX/RAM 16GB/SSD 512GB/ RTX 3050 6GB/15.6\" FHD/Linux OS",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "usoCaso": "portatil-oficina",
     "segmento": "gaming-streaming",
     "publicado": true,
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 4859000,
-    "precioDesde": 4859000,
+    "precio": 8087000,
+    "precioDesde": 8087000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Ryzen 7 5700X",
-      "ram": "16GB DDR4",
-      "almacenamiento": "1TB SSD M.2",
-      "gpu": "RX 9060 8GB",
-      "monitor": "Janus 27\""
+      "procesador": "Intel Core i5-13450HX 10C / 16T, P-core 2.4 / 4.6GHz, E-core 1.8 / 3.4GHz, 20MB Intel Smart Cache",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD NVMe",
+      "pantalla": "15.6\" FHD (1920x1080) IPS 300nits Anti-glare, 100% sRGB, 144Hz, G-SYNC"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
+    "descripcionUso": "Portátil 15.6\""
   },
   {
     "referencia": "AMO-2G13",
@@ -2015,7 +2016,9 @@
     "precioDesde": 77000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
+    "specs": {
+      "tipo": "Omnidireccional 360°"
+    },
     "descripcionUso": "Antena"
   },
   {
@@ -2036,7 +2039,8 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "estandar": "Wi-Fi AC1900",
+      "estandar": "Wi-Fi 5 AC1900",
+      "banda": "Doble banda",
       "velocidad": "Gigabit"
     },
     "descripcionUso": "Router"
@@ -2059,7 +2063,8 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "puertos": "4 PoE"
+      "puertos": "4 PoE",
+      "potencia": "380W"
     },
     "descripcionUso": "Switch"
   },
@@ -2081,7 +2086,7 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "estandar": "Wi-Fi",
+      "estandar": "Wi-Fi 4 N300",
       "velocidad": "4G"
     },
     "descripcionUso": "Router"
@@ -2104,7 +2109,8 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "estandar": "Wi-Fi AC1750",
+      "estandar": "Wi-Fi 5 AC1750",
+      "banda": "Doble banda",
       "velocidad": "Gigabit"
     },
     "descripcionUso": "Punto de acceso"
@@ -2270,10 +2276,10 @@
     "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
-    "referencia": "JAN-C6FFDF1B",
-    "id": "JAN-C6FFDF1B",
-    "slug": "janus-gamer-core-i7-12700f-16gb-ddr4-ssd-500gb-m-2-gpu-rx-90",
-    "nombre": "JANUS GAMER Core i7-12700F 16GB DDR4 SSD 500GB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
+    "referencia": "JAN-52F53A77",
+    "id": "JAN-52F53A77",
+    "slug": "janus-gamer-ryzen-7-5700x-16gb-ddr4-ssd-1tb-m-2-gpu-rx-9060-",
+    "nombre": "JANUS GAMER Ryzen 7 5700X 16GB DDR4 SSD 1TB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
     "marca": "",
     "categoria": "pc",
     "usoCaso": "accesorio",
@@ -2282,14 +2288,14 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 5062000,
-    "precioDesde": 5062000,
+    "precio": 4859000,
+    "precioDesde": 4859000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Core i7-12700F",
+      "procesador": "Ryzen 7 5700X",
       "ram": "16GB DDR4",
-      "almacenamiento": "500GB SSD M.2",
+      "almacenamiento": "1TB SSD M.2",
       "gpu": "RX 9060 8GB",
       "monitor": "Janus 27\""
     },
@@ -2504,7 +2510,7 @@
     "usoCaso": "accesorio",
     "segmento": "accesorios",
     "publicado": true,
-    "enPromocion": false,
+    "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
     "precio": 62000,
@@ -2646,7 +2652,10 @@
     "precioDesde": 983000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
+    "specs": {
+      "velocidad": "2.5GHz",
+      "tipo": "LGA1700"
+    },
     "descripcionUso": "Procesador"
   },
   {
@@ -2710,56 +2719,9 @@
     "precioDesde": 1379000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {},
-    "descripcionUso": "Procesador"
-  },
-  {
-    "referencia": "SDCS3/128GB",
-    "id": "SDCS3/128GB",
-    "slug": "micro-sd-128gb-canvas-select-plus-gen3-150mb-kingston",
-    "nombre": "Micro SD 128GB Canvas Select Plus Gen3 150MB Kingston",
-    "marca": "Kingston",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "accesorios",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 110000,
-    "precioDesde": 110000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
     "specs": {
-      "capacidad": "128GB"
+      "tipo": "AM5"
     },
-    "descripcionUso": "Memoria Micro SD"
-  },
-  {
-    "referencia": "R360-E2414G-16GB-4TB",
-    "id": "R360-E2414G-16GB-4TB",
-    "slug": "servidor-dell-poweredge-r360-xeon-e2414g-16gb-4tb-rack-1u",
-    "nombre": "Servidor Dell PowerEdge R360 Xeon E-2414G 16GB 4TB Rack 1U",
-    "marca": "Dell",
-    "categoria": "pc",
-    "usoCaso": "servidor",
-    "segmento": "redes-servidores",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 11200000,
-    "precioDesde": 11200000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "fueraDeLista": true,
-    "descripcionUso": "Servidor · Rack 1U",
-    "specs": {
-      "procesador": "Xeon E-2414G 4C 2.6GHz",
-      "ram": "16GB DDR5 5600",
-      "almacenamiento": "4TB SATA 7.2K",
-      "puertos": "2 Gigabit",
-      "garantia": "12 meses"
-    }
+    "descripcionUso": "Procesador"
   }
 ]

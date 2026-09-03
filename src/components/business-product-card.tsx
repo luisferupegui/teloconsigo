@@ -9,7 +9,7 @@ import {
 import type { BusinessProduct } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
 import { formatCOP } from "@/lib/products-types";
-import { subtituloDeCatalogo, iconoDeCard } from "@/lib/ficha-card";
+import { subtituloDeCatalogo, iconoDeCard, resumirSpec, specsDeNombre } from "@/lib/ficha-card";
 
 // ─── El icono del subtítulo ──────────────────────────────────────────────────
 //
@@ -27,85 +27,87 @@ const ICONOS: Record<string, React.ComponentType<{ className?: string }>> = {
 
 // ─── Etiquetas de specs (compartido con /productos y /soluciones) ──────────────
 
+// Ninguna etiqueta pasa de CINCO letras, y no es capricho: la columna mide 46px
+// y "ESTÁNDAR" salía como "ESTÁN…", "PUERTOS" como "PUERT…". Una etiqueta
+// cortada no dice nada; una de cinco letras cabe siempre y se lee igual.
 const SPEC_LABEL: Record<string, string | null> = {
-  procesador:     "CPU",
-  ram:            "RAM",
-  almacenamiento: "Disco",
-  pantalla:       "Pantalla",
-  monitor:        "Monitor",
-  so:             "SO",
-  garantia:       "Garantía",
-  conectividad:   "Red",
-  bateria:        "Batería",
-  capacidad:      "Cap.",
-  interfaz:       "Interfaz",
-  // Fichas de lo que no es un equipo: una cámara se compara por resolución y un
-  // switch por puertos, igual que un portátil por su procesador.
-  resolucion:     "Res.",
-  estandar:       "Estándar",
-  conexion:       "Conexión",
-  puertos:        "Puertos",
-  cobertura:      "Equipos",
-  duracion:       "Vigencia",
-  clase:          "Clase",
-  velocidad:      "Vel.",
-  frecuencia:     "Refresco",
-  tipo:           "Tipo",
-  entrega:        "Entrega",
-  incluye:        "Incluye",
-  version:        "Versión",
-  // Monitores, licencias y accesorios traen sus propias claves. Sin etiqueta se
-  // pintaba la clave cruda —"tamanho", "aplicaciones"— en la columna de la card.
-  tamanho:        null,   // ya va en el subtítulo ("Monitor 24\"")
-  panel:          null,   // idem
-  tiempo_respuesta: "Respuesta",
-  entradas:       "Entradas",
-  freesync:       "FreeSync",
-  curvatura:      "Curva",
-  color:          "Color",
-  aplicaciones:   "Incluye",
-  usuarios:       "Usuarios",
-  activacion:     "Activación",
-  idioma:         "Idioma",
-  dispositivos:   "Equipos",
-  soporte:        "Soporte",
-  transferible:   "Traslado",
-  proteccion:     "Protege",
-  lectura:        "Lectura",
-  escritura:      "Escritura",
-  alcance:        "Alcance",
-  dpi:            "DPI",
-  botones:        "Botones",
-  receptor:       "Receptor",
-  potencia:       "Potencia",
-  autonomia:      "Autonomía",
-  tomas:          "Tomas",
-  avr:            "AVR",
-  entrada:        "Entrada",
-  salida:         "Salida",
-  hdmi:           "HDMI",
-  usb_velocidad:  "USB",
-  pd:             "Carga",
-  carga_rapida:   "Carga",
-  tecnologia:     "Tecnología",
-  compatibilidad: "Compatible",
+  procesador:       "CPU",
+  ram:              "RAM",
+  almacenamiento:   "DISCO",
+  capacidad:        "CAP",
+  gpu:              "GPU",
+  pantalla:         "PANT",
+  monitor:          "MON",
+  so:               "SO",
+  garantia:         "GAR",
+  conectividad:     "RED",
+  bateria:          "BAT",
+  // Redes y cámaras
+  estandar:         "WIFI",
+  velocidad:        "VEL",
+  puertos:          "PTOS",
+  banda:            "BANDA",
+  tipo:             "TIPO",
+  resolucion:       "RES",
+  conexion:         "CONEX",
+  interfaz:         "CONEX",
+  // Monitores
+  frecuencia:       "HZ",
+  tiempo_respuesta: "RESP",
+  entradas:         "ENTR",
+  freesync:         "SYNC",
+  curvatura:        "CURVA",
+  color:            "COLOR",
+  // Licencias
+  aplicaciones:     "INCL",
+  incluye:          "INCL",
+  usuarios:         "USRS",
+  dispositivos:     "EQUIP",
+  cobertura:        "EQUIP",
+  duracion:         "VIG",
+  version:          "VER",
+  activacion:       "ACTIV",
+  idioma:           "IDIOM",
+  soporte:          "SOP",
+  transferible:     "TRASL",
+  proteccion:       "PROT",
+  clase:            "CLASE",
+  // Accesorios y energía
+  lectura:          "LECT",
+  escritura:        "ESCR",
+  alcance:          "ALC",
+  dpi:              "DPI",
+  botones:          "BTN",
+  receptor:         "RECEP",
+  potencia:         "POT",
+  autonomia:        "AUTON",
+  tomas:            "TOMAS",
+  avr:              "AVR",
+  entrada:          "ENTR",
+  salida:           "SAL",
+  hdmi:             "HDMI",
+  usb_velocidad:    "USB",
+  pd:               "CARGA",
+  carga_rapida:     "CARGA",
+  tecnologia:       "TECNO",
+  compatibilidad:   "COMP",
+  tamanho:          null,   // ya va en el subtítulo ("Monitor 24\"")
+  panel:            null,   // idem
   // omitidos de la vista resumen
-  extra:          null,
-  cuerpo:         null,
-  dimension:      null,
-  peso:           null,
-  resistencia:    null,
-  ergonomia:      null,
-  indicador:      null,
-  cable:          null,
-  board:          null,
-  uso:            null,
-  teclado:        null,
-  mouse:          null,
-  bateria_teclado: null,
-  bateria_mouse:  null,
-  angulo:         null,
-  brillo:         null,
+  extra:            null,
+  cuerpo:           null,
+  dimension:        null,
+  peso:             null,
+  resistencia:      null,
+  ergonomia:        null,
+  indicador:        null,
+  cable:            null,
+  board:            null,
+  uso:              null,
+  teclado:          null,
+  mouse:            null,
+  bateria_teclado:  null,
+  bateria_mouse:    null,
 };
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -146,12 +148,21 @@ export function BusinessProductCard({
   ).split(" · ");
   const Icono = ICONOS[iconoDeCard(product.nombre, product.categoria)] ?? Package;
 
-  const specRows = Object.entries(product.specs)
+  // Seis productos del catálogo no traen NI UNA spec —"Unidad DVD-RW Externa
+  // Usb 3.0", "Intel Core i5-12400F LGA1700 (2.5GHZ)"— y salían con la card en
+  // blanco entre el nombre y el precio. Su ficha está en el nombre; se lee de
+  // ahí, igual que hace el panel al publicar.
+  const specs = Object.keys(product.specs ?? {}).length
+    ? product.specs
+    : specsDeNombre(product.nombre);
+
+  const specRows = Object.entries(specs)
     .map(([k, v]) => {
       const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
-      return label ? { clave: k, label, value: String(v) } : null;
+      return label ? { clave: k, label, value: resumirSpec(k, String(v)) } : null;
     })
     .filter((x): x is { clave: string; label: string; value: string } => x !== null)
+    .filter((x) => x.value.length > 0)
     .slice(0, 4);
 
   return (
@@ -209,10 +220,10 @@ export function BusinessProductCard({
           <dl className="space-y-2 rounded-xl bg-zinc-50/80 px-3 py-2.5 ring-1 ring-inset ring-zinc-100">
             {specRows.map(({ clave, label, value }) => (
               <div key={clave} className="flex items-baseline gap-2.5 text-xs leading-4">
-                <dt className="w-[46px] shrink-0 truncate text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                <dt className="w-[46px] shrink-0 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                   {label}
                 </dt>
-                <dd className="min-w-0 flex-1 truncate font-medium text-zinc-700">
+                <dd className="min-w-0 flex-1 font-medium text-zinc-700">
                   {value}
                 </dd>
               </div>

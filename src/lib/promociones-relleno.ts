@@ -4,7 +4,7 @@ import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from
 import { ramYDisco, sinVram, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { categoriaPorNombre } from "@/lib/catimporter/parsers/categorias";
 import { marcaDeNombre } from "@/lib/marcas";
-import { pulgadasDe, sustantivoDeNombre } from "@/lib/ficha-card";
+import { pulgadasDe, sustantivoDeNombre, specsDeNombre } from "@/lib/ficha-card";
 
 // ─── Llenar la vitrina con lo mejor de las listas del mes ────────────────────
 //
@@ -54,7 +54,7 @@ const ALIAS_SPEC: Record<string, string | null> = {
   tvideo: "gpu", gpu: "gpu", "tarjeta de video": "gpu",
   conectividad: "conectividad", capacidad: "capacidad", interfaz: "interfaz",
   resolucion: "resolucion", "resolución": "resolucion", estandar: "estandar", puertos: "puertos",
-  conexion: "conexion", "conexión": "conexion",
+  conexion: "conexion", "conexión": "conexion", banda: "banda", tipo: "tipo", potencia: "potencia",
   garantia: "garantia", velocidad: "velocidad", frecuencia: "frecuencia",
   version: "version", duracion: "duracion", cobertura: "cobertura", incluye: "incluye",
   // Internas del lector o del catálogo: nunca a la vitrina.
@@ -65,8 +65,8 @@ const ALIAS_SPEC: Record<string, string | null> = {
 /** Orden en que se muestran: la card enseña las tres primeras, así que lo que
  *  decide una compra va delante. */
 const ORDEN_SPEC = ["procesador", "ram", "almacenamiento", "gpu", "pantalla", "monitor", "so",
-  "capacidad", "resolucion", "estandar", "velocidad", "puertos", "conexion", "interfaz",
-  "frecuencia", "cobertura", "duracion", "version", "conectividad", "incluye"];
+  "capacidad", "resolucion", "estandar", "banda", "velocidad", "puertos", "potencia", "tipo",
+  "conexion", "interfaz", "frecuencia", "cobertura", "duracion", "version", "conectividad", "incluye"];
 
 // ─── Que la ficha se lea como una ficha ──────────────────────────────────────
 //
@@ -123,53 +123,6 @@ function cpuCorta(v: string): string {
   return t.split(" ").map((w) => COMO_SE_LEE[w.toLowerCase()] ?? w).join(" ");
 }
 
-/**
- * La ficha de lo que no es un equipo, sacada del nombre.
- *
- * Medido sobre las listas: de 289 accesorios, 287 no traen NI UNA spec; redes y
- * tablets, ninguna. Esas cards salían con el nombre, el precio y tres renglones
- * en blanco. Pero el nombre sí lo dice —"Router Archer AX53 WiFi AX3000",
- * "Cámara Logitech C920 Pro Full-HD USB"—, así que se lee de ahí.
- *
- * Sólo para lo que NO es un equipo completo: a un portátil se le lee la ficha,
- * que para eso la trae.
- */
-function specsDeNombre(nombre: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  const n = nombre;
-
-  const wifiGen = n.match(/wi\.?-?fi\s*([4567])\b/i);
-  const wifiVel = n.match(/\b(ac|ax|be)\s?(\d{3,4})\b/i);
-  if (wifiGen) out.estandar = "Wi-Fi " + wifiGen[1];
-  else if (wifiVel) out.estandar = "Wi-Fi " + wifiVel[1].toUpperCase() + wifiVel[2];
-  else if (/wi\.?-?fi|inal[áa]mbric/i.test(n)) out.estandar = "Wi-Fi";
-
-  const puertos = n.match(/(\d{1,2})\s*(?:x\s*)?(?:puertos?|sfp)/i);
-  if (puertos) out.puertos = puertos[1] + (/sfp/i.test(puertos[0]) ? " SFP" : "");
-  if (/\bpoe\b/i.test(n)) out.puertos = (out.puertos ? out.puertos + " " : "") + "PoE";
-  if (/\bgigabit\b/i.test(n)) out.velocidad = "Gigabit";
-  const diez = n.match(/\b(\d{1,2})\s?G\b/i);
-  if (diez) out.velocidad = diez[1] + "G";
-
-  const mp = n.match(/\b(\d{1,2})\s?mp\b/i);
-  const res = n.match(/\b(4k|2k|1080p?|720p?)\b/i) ?? n.match(/\bfull[-\s]?hd\b/i);
-  if (res) {
-    out.resolucion = /full/i.test(res[0])
-      ? "Full HD"
-      : res[1].toUpperCase().replace("P", "p");
-  }
-  if (mp) out.resolucion = (out.resolucion ? out.resolucion + " · " : "") + mp[1] + "MP";
-
-  const usb = n.match(/usb\s?([23](?:\.\d)?)\b(?!\d)/i);
-  if (usb) out.interfaz = "USB " + usb[1];
-  else if (/\busb\b/i.test(n)) out.interfaz = "USB";
-  if (/\bbluetooth\b|\bbt\b/i.test(n)) out.conexion = "Bluetooth";
-
-  const cap = n.match(/\b(\d{1,4})\s?(gb|tb)\b/i);
-  if (cap) out.capacidad = Number(cap[1]) + cap[2].toUpperCase();
-
-  return out;
-}
 
 /** Quién sabe acortar cada spec. Lo que no está aquí se muestra tal cual. */
 const ACORTA: Record<string, (v: string) => string> = {
@@ -178,10 +131,6 @@ const ACORTA: Record<string, (v: string) => string> = {
   procesador: cpuCorta, ram: ramCorta, almacenamiento: discoCorto, capacidad: discoCorto,
 };
 
-const corto = (v: string, max = 32) => {
-  const limpio = v.replace(/\s+/g, " ").trim();
-  return limpio.length <= max ? limpio : limpio.slice(0, max).replace(/[\s,/-]+\S*$/, "") + "…";
-};
 
 /** Las specs del producto tal como las va a leer un cliente en la card. */
 export function specsParaCard(p: ActiveProduct): Record<string, string> {
@@ -218,7 +167,7 @@ export function specsParaCard(p: ActiveProduct): Record<string, string> {
   const salida: Record<string, string> = {};
   for (const clave of ORDEN_SPEC) {
     if (!bruto[clave]) continue;
-    salida[clave] = corto((ACORTA[clave] ?? ((x: string) => x))(bruto[clave]));
+    salida[clave] = (ACORTA[clave] ?? ((x: string) => x))(bruto[clave]).trim();
   }
   return salida;
 }
