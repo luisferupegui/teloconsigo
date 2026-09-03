@@ -1,18 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import {
+  Heart, Laptop, PcCase, Server, Monitor, Tablet, Camera, Router, Network,
+  HardDrive, MemoryStick, Cpu, CircuitBoard, Zap, Fan, Printer, Headphones,
+  Keyboard, Mouse, Usb, KeyRound, Package,
+} from "lucide-react";
 import type { BusinessProduct } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
 import { formatCOP } from "@/lib/products-types";
-import { subtituloDeCatalogo } from "@/lib/ficha-card";
+import { subtituloDeCatalogo, iconoDeCard } from "@/lib/ficha-card";
+
+// ─── El icono del subtítulo ──────────────────────────────────────────────────
+//
+// La vitrina no lleva fotos: doce cards seguidas son doce bloques de texto y el
+// ojo no encuentra dónde agarrarse. El icono da la primera lectura —esto es un
+// portátil, esto un router— antes de leer una sola palabra.
+const ICONOS: Record<string, React.ComponentType<{ className?: string }>> = {
+  portatil: Laptop, escritorio: PcCase, servidor: Server, monitor: Monitor,
+  tablet: Tablet, camara: Camera, red: Router, switch: Network,
+  disco: HardDrive, ram: MemoryStick, procesador: Cpu, board: CircuitBoard,
+  grafica: Cpu, energia: Zap, refrigeracion: Fan, impresora: Printer,
+  audio: Headphones, teclado: Keyboard, mouse: Mouse, usb: Usb,
+  licencia: KeyRound, accesorio: Package,
+};
 
 // ─── Etiquetas de specs (compartido con /productos y /soluciones) ──────────────
 
 const SPEC_LABEL: Record<string, string | null> = {
   procesador:     "CPU",
   ram:            "RAM",
-  almacenamiento: "SSD",
+  almacenamiento: "Disco",
   pantalla:       "Pantalla",
   monitor:        "Monitor",
   so:             "SO",
@@ -118,6 +136,11 @@ export function BusinessProductCard({
         )}&precio=${price ?? ""}`
       : `/conseguir?ref=${product.referencia ?? product.slug}`;
 
+  const subtitulo = product.descripcionUso?.trim()
+    ? product.descripcionUso
+    : subtituloDeCatalogo(product.nombre, product.categoria, product.specs);
+  const Icono = ICONOS[iconoDeCard(product.nombre, product.categoria)] ?? Package;
+
   const specRows = Object.entries(product.specs)
     .map(([k, v]) => {
       const label = k in SPEC_LABEL ? SPEC_LABEL[k] : k;
@@ -127,7 +150,7 @@ export function BusinessProductCard({
     .slice(0, 3);
 
   return (
-    <div className="relative flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+    <div className="relative flex h-full flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5">
 
       {/* ── Botón favoritos ── */}
       <button
@@ -146,45 +169,56 @@ export function BusinessProductCard({
         />
       </button>
 
-      {/* ── Nombre + descripción ── */}
-      <h3 className="pr-9 text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
+      {/* ── Nombre ── */}
+      <h3 className="pr-9 text-sm font-semibold tracking-tight text-zinc-900 leading-snug line-clamp-2 min-h-[2.5rem]">
         {product.nombre}
       </h3>
-      {/* Los productos que se cargaron a mano no traen `descripcionUso` y dejaban
-          este renglón en blanco. Se deduce del catálogo antes que dejar el hueco. */}
-      <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2 min-h-[2rem]">
-        {product.descripcionUso?.trim()
-          ? product.descripcionUso
-          : subtituloDeCatalogo(product.nombre, product.categoria, product.specs)}
-      </p>
 
-      {/* ── Specs ── */}
-      <div className="mt-3 space-y-1.5 flex-1">
-        {specRows.map(({ clave, label, value }) => (
-          <div key={clave} className="flex items-baseline gap-2 text-xs leading-4">
-            <span className="shrink-0 min-w-[48px] font-medium text-zinc-400 truncate">
-              {label}
-            </span>
-            <span className="flex-1 min-w-0 text-zinc-700 line-clamp-1">
-              {value}
-            </span>
-          </div>
-        ))}
-        {/* Relleno para altura uniforme cuando hay menos de 3 specs */}
-        {specRows.length < 3 && (
-          <div style={{ height: `${(3 - specRows.length) * 1.25}rem` }} />
+      {/* ── Qué es ──
+          Los productos que se cargaron a mano no traen `descripcionUso`, así que
+          se deduce del catálogo antes que dejar el renglón en blanco. Va en azul
+          de marca y con icono: es lo único de color de la card y lo que la salva
+          de ser un bloque de texto gris. */}
+      <div className="mt-2 min-h-[1.75rem]">
+        {subtitulo && (
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1
+                           text-[11px] font-semibold leading-none text-[#1e6cff]
+                           ring-1 ring-inset ring-blue-100">
+            <Icono className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{subtitulo}</span>
+          </span>
+        )}
+      </div>
+
+      {/* ── Ficha ──
+          En un panel propio: separa lo que se compara de lo que se lee, y una
+          card con una sola spec deja de verse rota. */}
+      <div className="mt-3 flex-1">
+        {specRows.length > 0 && (
+          <dl className="space-y-2 rounded-xl bg-zinc-50/80 px-3 py-2.5 ring-1 ring-inset ring-zinc-100">
+            {specRows.map(({ clave, label, value }) => (
+              <div key={clave} className="flex items-baseline gap-2.5 text-xs leading-4">
+                <dt className="w-[46px] shrink-0 truncate text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  {label}
+                </dt>
+                <dd className="min-w-0 flex-1 truncate font-medium text-zinc-700">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
         )}
       </div>
 
       {/* ── Precio y CTA ── */}
-      <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
+      <div className="mt-4 flex items-center justify-between gap-2 border-t border-zinc-100 pt-3.5">
         <div>
           {price ? (
             <>
               <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
                 Desde
               </span>
-              <p className="text-base font-bold text-zinc-900 leading-tight mt-0.5">
+              <p className="mt-0.5 text-[17px] font-black leading-tight tracking-tight text-zinc-900">
                 {formatCOP(price)}
               </p>
             </>

@@ -228,7 +228,7 @@ export function BusinessFeaturedCard({
           <div className="flex flex-col items-end gap-0.5 text-right">
             <Truck className="h-4 w-4 text-emerald-500" />
             <p className="text-[10px] font-semibold leading-tight text-emerald-600">
-              Envío gratis
+              Envío
               <br />
               a todo el país
             </p>

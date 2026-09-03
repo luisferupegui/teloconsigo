@@ -111,3 +111,56 @@ export function subtituloDeCatalogo(
 
   return sustantivoDeNombre(nombre) ?? QUE_ES_CATALOGO[categoria] ?? "";
 }
+
+// ─── El icono de la card ─────────────────────────────────────────────────────
+//
+// La vitrina no tiene fotos. Sin nada que mirar, doce cards seguidas son doce
+// bloques de texto y el ojo no encuentra dónde agarrarse: no distingue de un
+// vistazo un portátil de un router. Un icono en la línea del subtítulo cuesta
+// 16 píxeles y hace ese trabajo.
+//
+// Devuelve una CLAVE, no un componente: este módulo lo importan el servidor y
+// el cliente, y quien pinta decide con qué dibujarla.
+
+const ICONO_POR_NOMBRE: [RegExp, string][] = [
+  [/proliant|poweredge|\bservidor\b|thinksystem|\bxeon\b|\bepyc\b/i, "servidor"],
+  [/\brouter\b|punto\sde\sacceso|access\s?point|\brepetidor\b|\bantena\b/i, "red"],
+  [/\bswitch\b|\bpoe\b|\bsfp\b|inyector/i, "switch"],
+  [/c[áa]mara|webcam|\bnvr\b|\bdomo\b/i, "camara"],
+  [/micro\s?sd|memoria\susb|pen\s?drive|\busb\b[^,]*\d{2,4}\s?gb/i, "usb"],
+  [/\bssd\b|\bnvme\b|\bhdd\b|disco\sduro|\bsata\b|disco/i, "disco"],
+  [/\bddr[2345]\b|sodimm|memoria\sram|\bram\b/i, "ram"],
+  [/procesador|\bryzen\b|core\s?i[3579]|\bcpu\b/i, "procesador"],
+  [/motherboard|\bboard\b|placa\s(base|madre)/i, "board"],
+  [/tarjeta\s(de\s)?(video|gr[áa]fica)|\brtx\b|\bgtx\b|geforce|radeon/i, "grafica"],
+  [/fuente\sde\s(poder|alimentaci[óo]n)|\bpsu\b|\bups\b|regulador|multitoma/i, "energia"],
+  [/refrigeraci[óo]n|disipador|\bcooler\b|ventilador/i, "refrigeracion"],
+  [/impresora|multifuncional|t[óo]ner/i, "impresora"],
+  [/aud[íi]fono|auricular|diadema|headset|parlante|cabina|micr[óo]fono/i, "audio"],
+  [/\bteclado\b|\bcombo\b/i, "teclado"],
+  [/\bmouse\b|\brat[óo]n\b/i, "mouse"],
+  [/antivirus|\beset\b|kaspersky|licencia|\boffice\b|windows\s\d\d|microsoft\s365/i, "licencia"],
+];
+
+const ICONO_POR_CATALOGO: Record<string, string> = {
+  portatil: "portatil", pc: "escritorio", monitor: "monitor",
+  tablet: "tablet", licencia: "licencia", accesorio: "accesorio",
+};
+
+/** La clave del icono que le va a esta card. El nombre manda; la categoría es
+ *  el respaldo, igual que en el subtítulo. */
+export function iconoDeCard(nombre: string, categoria: string): string {
+  // Un equipo completo NOMBRA sus piezas —"+ RTX 5060", "16GB DDR5"— y por el
+  // nombre saldría con icono de gráfica o de memoria. Ahí manda la categoría.
+  if (categoria === "portatil") return "portatil";
+  if (categoria === "monitor") return "monitor";
+  if (categoria === "tablet") return "tablet";
+  if (categoria === "pc") {
+    return /proliant|poweredge|\bservidor\b|thinksystem|\bxeon\b|\bepyc\b/i.test(nombre)
+      ? "servidor"
+      : "escritorio";
+  }
+  return ICONO_POR_NOMBRE.find(([re]) => re.test(nombre))?.[1]
+    ?? ICONO_POR_CATALOGO[categoria]
+    ?? "accesorio";
+}

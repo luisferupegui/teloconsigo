@@ -109,14 +109,26 @@ export function leerSesion(valor: string | undefined | null): { usuario: string 
 
 export const COOKIE_SESION = COOKIE;
 
-/** Las opciones con las que se emite y se borra la cookie, en un solo sitio para
- *  que el logout no se desincronice del login. */
-export function opcionesCookie(maxAge: number) {
+/**
+ * Las opciones con las que se emite y se borra la cookie, en un solo sitio para
+ * que el logout no se desincronice del login.
+ *
+ * SIN `maxAge` la cookie es de SESIÓN: el navegador la borra al cerrarse. Antes
+ * se emitía con ocho horas de vida, así que cerrar el navegador —o el portátil
+ * en una oficina compartida— dejaba la sesión abierta y el siguiente que abriera
+ * la página entraba al panel sin escribir nada.
+ *
+ * El límite de ocho horas no se pierde: va firmado dentro del propio dato, así
+ * que una cookie robada tampoco vale más allá de ese plazo.
+ *
+ * Con `maxAge` 0 se borra, que es lo que hace el logout.
+ */
+export function opcionesCookie(maxAge?: number) {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
     path: "/",
-    maxAge,
+    ...(maxAge === undefined ? {} : { maxAge }),
     secure: process.env.NODE_ENV === "production",
   };
 }

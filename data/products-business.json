@@ -502,7 +502,7 @@
     "descripcionUso": "",
     "destacado": false,
     "enAccesorios": false,
-    "enPromocion": true
+    "enPromocion": false
   },
   {
     "referencia": "TS-433-4G-US",
@@ -2734,5 +2734,32 @@
       "capacidad": "128GB"
     },
     "descripcionUso": "Memoria Micro SD"
+  },
+  {
+    "referencia": "R360-E2414G-16GB-4TB",
+    "id": "R360-E2414G-16GB-4TB",
+    "slug": "servidor-dell-poweredge-r360-xeon-e2414g-16gb-4tb-rack-1u",
+    "nombre": "Servidor Dell PowerEdge R360 Xeon E-2414G 16GB 4TB Rack 1U",
+    "marca": "Dell",
+    "categoria": "pc",
+    "usoCaso": "servidor",
+    "segmento": "redes-servidores",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 11200000,
+    "precioDesde": 11200000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "fueraDeLista": true,
+    "descripcionUso": "Servidor · Rack 1U",
+    "specs": {
+      "procesador": "Xeon E-2414G 4C 2.6GHz",
+      "ram": "16GB DDR5 5600",
+      "almacenamiento": "4TB SATA 7.2K",
+      "puertos": "2 Gigabit",
+      "garantia": "12 meses"
+    }
   }
 ]

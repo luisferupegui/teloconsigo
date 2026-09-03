@@ -42,7 +42,9 @@ export async function POST(req: NextRequest) {
       );
     }
     const res = NextResponse.json({ ok: true });
-    res.cookies.set(COOKIE_SESION, sesion.valor, opcionesCookie(sesion.maxAge));
+    // Sin maxAge: se va al cerrar el navegador. La caducidad de verdad —ocho
+    // horas— viaja firmada dentro de la propia cookie.
+    res.cookies.set(COOKIE_SESION, sesion.valor, opcionesCookie());
     return res;
   }
 
