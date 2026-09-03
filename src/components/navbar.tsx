@@ -8,7 +8,7 @@ import {
   ShoppingCart,
   Menu,
   Heart,
-  LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { iconoDe } from "@/lib/categories-icons";
 import type { Category } from "@/lib/categories";
@@ -168,17 +168,21 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
               dejarlo a un tabulador de distancia sería esconderlo a medias. Esto
               es comodidad, no seguridad — /admin sigue protegido por su login y
               bloqueado en robots.txt. */}
+          {/* Sin `title`: el tooltip anunciaba "Panel de administración" a quien
+              solo pasaba el mouse cerca, que es justo lo contrario de esconderlo.
+              Y con `cursor-default`, porque la manita delata que ahí hay algo
+              pulsable antes incluso de que el icono aparezca. */}
           <Link
             href="/admin"
             aria-hidden="true"
             tabIndex={-1}
-            title="Panel de administración"
             className="absolute right-full top-1/2 mr-2 -translate-y-1/2 flex h-6 w-6
-                       items-center justify-center rounded-full border border-white/15
-                       text-zinc-500 opacity-0 transition-opacity duration-200
-                       hover:border-[#1e6cff]/50 hover:text-[#4d8dff] hover:opacity-100"
+                       cursor-default items-center justify-center rounded-full
+                       border border-white/15 text-zinc-500 opacity-0
+                       transition-opacity duration-200 hover:border-[#1e6cff]/50
+                       hover:text-[#4d8dff] hover:opacity-100"
           >
-            <LayoutDashboard className="h-3 w-3" />
+            <Settings className="h-3.5 w-3.5" />
           </Link>
 
           {/* Logo SIN eslogan: en el header no se lee a ese tamaño y le robaba alto al
