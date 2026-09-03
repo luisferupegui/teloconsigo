@@ -1,6 +1,7 @@
 import "server-only";
 import { loadBusinessProducts, saveBusinessProducts } from "@/lib/products";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from "@/lib/supplier-catalog";
+import { ramYDisco, sinVram, pantallaDesdeNombre } from "@/lib/specs-nombre";
 
 // ─── Llenar la vitrina con lo mejor de las listas del mes ────────────────────
 //
@@ -11,8 +12,132 @@ import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from
 // Esto propone hasta 8 por sección tomándolas de las listas vigentes. No
 // publica: propone, y quien mira decide. Es el escaparate, no una lista interna.
 
-/** Cuántas cards quiere cada sección. Ocho llena una rejilla de 4×2 sin huecos. */
+/** Cuántas cards quiere una sección. Ocho llena una rejilla de 4×2 sin huecos. */
 export const CUPO = 8;
+
+/** Accesorios lleva 12: es lo que más busca la gente y donde más rota el
+ *  surtido, así que aguanta —y pide— una rejilla más larga. */
+export const CUPO_ACCESORIOS = 12;
+
+/** Por debajo de esto una sección se ve rota, no surtida. Si no se llega, la
+ *  pantalla lo avisa en vez de dejar dos cards huérfanas sin explicación. */
+export const MINIMO = 4;
+
+const cupoDe = (id: string) => (id === "accesorios" ? CUPO_ACCESORIOS : CUPO);
+
+// ─── Que la card diga algo ───────────────────────────────────────────────────
+//
+// La card de promoción muestra nombre, descripción y hasta TRES specs. Publicar
+// con `specs: {}` deja una card con el nombre y el precio y tres renglones
+// vacíos de relleno: ocupa sitio y no ayuda a decidir.
+//
+// Las listas traen las specs con nombres distintos según el proveedor
+// —"memoria" y "ram", "disco_duro" y "almacenamiento", "os" y "sistema
+// operativo"— y además con claves internas que NO deben salir a la web, como
+// `seccion` (la columna del PDF de donde salió) o `detalle`.
+
+/** Clave de lista → clave que la card sabe etiquetar. `null` = no se muestra. */
+const ALIAS_SPEC: Record<string, string | null> = {
+  procesador: "procesador", cpu: "procesador",
+  ram: "ram", memoria: "ram", "memoria ram": "ram",
+  almacenamiento: "almacenamiento", disco: "almacenamiento", disco_duro: "almacenamiento",
+  pantalla: "pantalla", monitor: "monitor",
+  os: "so", so: "so", "s.o": "so", sistema_operativo: "so",
+  tvideo: "gpu", gpu: "gpu", "tarjeta de video": "gpu",
+  conectividad: "conectividad", capacidad: "capacidad", interfaz: "interfaz",
+  garantia: "garantia", velocidad: "velocidad", frecuencia: "frecuencia",
+  version: "version", duracion: "duracion", cobertura: "cobertura", incluye: "incluye",
+  // Internas del lector o del catálogo: nunca a la vitrina.
+  seccion: null, detalle: null, board: null, combo: null, filtro: null,
+  iluminacion: null, perifericos: null, chasis: null,
+};
+
+/** Orden en que se muestran: la card enseña las tres primeras, así que lo que
+ *  decide una compra va delante. */
+const ORDEN_SPEC = ["procesador", "ram", "almacenamiento", "gpu", "pantalla", "monitor", "so",
+  "capacidad", "velocidad", "frecuencia", "interfaz", "cobertura", "duracion", "version", "conectividad", "incluye"];
+
+const corto = (v: string, max = 32) => {
+  const limpio = v.replace(/\s+/g, " ").trim();
+  return limpio.length <= max ? limpio : limpio.slice(0, max).replace(/[\s,/-]+\S*$/, "") + "…";
+};
+
+/** Las specs del producto tal como las va a leer un cliente en la card. */
+export function specsParaCard(p: ActiveProduct): Record<string, string> {
+  const bruto: Record<string, string> = {};
+  for (const [k, v] of Object.entries(p.specs ?? {})) {
+    const clave = ALIAS_SPEC[k.toLowerCase().replace(/_/g, " ").trim()]
+      ?? ALIAS_SPEC[k.toLowerCase()] ?? null;
+    if (!clave || !v?.trim() || bruto[clave]) continue;
+    bruto[clave] = v;
+  }
+
+  // Lo que la ficha no trae pero el nombre sí. "Ryzen 5 5600GT 16GB 512GB" lleva
+  // la memoria y el disco dentro del propio nombre en media docena de listas.
+  const { ram, disco } = ramYDisco(sinVram(`${p.nombre} ${Object.values(p.specs ?? {}).join(" ")}`));
+  if (!bruto.ram && ram) bruto.ram = `${ram}GB`;
+  if (!bruto.almacenamiento && disco) bruto.almacenamiento = disco >= 1024 ? `${disco / 1024}TB` : `${disco}GB`;
+  if (!bruto.pantalla && !bruto.monitor) {
+    const pulg = pantallaDesdeNombre(p.nombre);
+    if (pulg) bruto.pantalla = pulg;
+  }
+
+  const salida: Record<string, string> = {};
+  for (const clave of ORDEN_SPEC) if (bruto[clave]) salida[clave] = corto(bruto[clave]);
+  return salida;
+}
+
+/**
+ * ¿Esta card va a decirle algo al cliente?
+ *
+ * La información puede venir de las specs O DEL NOMBRE, y de qué producto sea
+ * depende cuál manda. Medido sobre las listas:
+ *
+ *   equipos completos  →  tienen ficha: procesador, RAM, disco, gráfica
+ *   accesorios         →  289 productos, 287 sin una sola spec reconocida
+ *   antivirus          →  153 productos, 153 sin specs
+ *   redes, tablets     →  ninguno con specs
+ *
+ * Pero esos nombres miden 36 y 54 caracteres y lo dicen todo: "Combo Genius
+ * Inalámbrico Teclado Y Mouse US KM-8101", "Kaspersky Small Office Security 10
+ * Users, 1 Año". Exigirles specs habría vaciado seis de las doce secciones para
+ * proteger a las otras seis.
+ *
+ * Así que a un portátil se le exige ficha —sin RAM ni disco no se compara— y a
+ * un accesorio se le exige un nombre que describa.
+ */
+const EQUIPOS_COMPLETOS = new Set([
+  "portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one", "mini-pc", "servidor",
+]);
+
+function suficienteInfo(p: ActiveProduct, specs: Record<string, string>): boolean {
+  if (EQUIPOS_COMPLETOS.has(p.categoria)) return Object.keys(specs).length >= 2;
+  const palabras = p.nombre.trim().split(/\s+/).filter((w) => w.length > 1).length;
+  return p.nombre.trim().length >= 24 && palabras >= 3;
+}
+
+/** Qué es el producto, en la línea que va bajo el nombre en la card.
+ *
+ *  Se arma con lo que se sabe y nada más. Nada de "ideal para tu productividad":
+ *  el cliente que está comparando ocho equipos no lee adjetivos, lee datos. */
+function descripcionDe(p: ActiveProduct, specs: Record<string, string>): string {
+  const QUE_ES: Record<string, string> = {
+    portatil: "Portátil", escritorio: "PC de escritorio",
+    "escritorio-alto-rendimiento": "PC de alto rendimiento", "all-in-one": "Todo en uno",
+    "mini-pc": "Mini PC", monitor: "Monitor", tableta: "Tablet", celular: "Celular",
+    impresora: "Impresora", redes: "Equipo de red", servidor: "Servidor",
+    antivirus: "Licencia de seguridad", licencia: "Licencia", camara: "Cámara",
+    teclado: "Teclado", mouse: "Mouse", auriculares: "Audio", televisor: "Televisor",
+    almacenamiento: "Almacenamiento", "memoria-ram": "Memoria RAM", procesador: "Procesador",
+    motherboard: "Board", "tarjeta-grafica": "Tarjeta de video", "fuente-poder": "Fuente de poder",
+    proteccion: "Protección eléctrica", refrigeracion: "Refrigeración",
+    accesorios: "Accesorio", software: "Software",
+  };
+  const partes = [QUE_ES[p.categoria] ?? "Equipo"];
+  if (p.marca && p.marca.toLowerCase() !== p.proveedor.toLowerCase()) partes.push(p.marca);
+  if (specs.gpu) partes.push("gráfica dedicada");
+  return partes.join(" · ");
+}
 
 /**
  * Qué alimenta cada sección.
@@ -91,6 +216,9 @@ export type Candidato = {
   tramo: string;
   /** Por qué está propuesto, en una línea que se pueda leer. */
   porque: string;
+  /** Lo que verá el cliente en la card. */
+  specs: Record<string, string>;
+  descripcion: string;
 };
 
 export type PropuestaSeccion = {
@@ -101,6 +229,10 @@ export type PropuestaSeccion = {
   candidatos: Candidato[];
   /** Cuántos candidatos había en las listas antes de recortar al cupo. */
   disponibles: number;
+  /** Cuántas cards quiere esta sección: 12 en Accesorios, 8 en el resto. */
+  cupo: number;
+  /** Ni juntando lo publicado con lo propuesto se llega al mínimo de 4. */
+  bajoMinimo: boolean;
 };
 
 /** Un nombre que no identifica el producto no puede ir a una card. Es la misma
@@ -154,12 +286,14 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
     const enVitrina = publicados.filter(
       (p) => p.enPromocion && (p as unknown as Record<string, string>)[s.campo] === s.valor,
     ).length;
-    const faltan = Math.max(0, CUPO - enVitrina);
+    const faltan = Math.max(0, cupoDe(s.id) - enVitrina);
 
     const pool = vigentes
       .filter((p) => s.categorias.includes(p.categoria))
       .filter((p) => p.precio_costo > 0 && p.referencia && !yaEsta.has(norm(p.referencia)))
       .filter((p) => nombreUsable(p.nombre))
+      // Una card que no dice nada ocupa sitio en la vitrina y no ayuda a decidir.
+      .filter((p) => suficienteInfo(p, specsParaCard(p)))
       .map((p) => {
         const precioVenta = applyMargin(p.precio_costo, p.categoria, margins, p.nombre);
         return { p, precioVenta, valor: valorPorPeso(p, precioVenta) };
@@ -169,7 +303,8 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
         (s.desde === undefined || precioVenta >= s.desde));
 
     if (faltan === 0 || pool.length === 0) {
-      return { id: s.id, nombre: s.nombre, publicados: enVitrina, faltan, candidatos: [], disponibles: pool.length };
+      return { id: s.id, nombre: s.nombre, publicados: enVitrina, faltan, candidatos: [],
+        disponibles: pool.length, cupo: cupoDe(s.id), bajoMinimo: enVitrina < MINIMO };
     }
 
     // ── Escalera de precios ──
@@ -234,6 +369,8 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
       id: s.id, nombre: s.nombre, publicados: enVitrina, faltan,
       candidatos: elegidos.sort((a, b) => a.precioVenta - b.precioVenta),
       disponibles: pool.length,
+      cupo: cupoDe(s.id),
+      bajoMinimo: enVitrina + elegidos.length < MINIMO,
     };
   });
 }
@@ -287,8 +424,10 @@ export function publicarCandidatos(
       precioDesde: c.precioVenta,
       precioIvaIncluido: true,
       proveedor: "manual",
-      specs: {},
-      descripcionUso: "",
+      // Las specs SÍ viajan: la card muestra tres y sin ellas sale con el
+      // nombre, el precio y tres renglones vacíos de relleno.
+      specs: c.specs,
+      descripcionUso: c.descripcion,
     } as unknown as ReturnType<typeof loadBusinessProducts>[number]);
     publicados++;
   }
@@ -325,6 +464,7 @@ function candidato(p: ActiveProduct, precioVenta: number, tramo: string, valor: 
   if (p.marca) razones.push(`marca ${p.marca}`);
   razones.push(`${Math.round(valor)} pts/millón`);
 
+  const specs = specsParaCard(p);
   return {
     referencia: p.referencia ?? "",
     nombre: p.nombre,
@@ -335,5 +475,7 @@ function candidato(p: ActiveProduct, precioVenta: number, tramo: string, valor: 
     precioVenta,
     tramo,
     porque: razones.join(" · "),
+    specs,
+    descripcion: descripcionDe(p, specs),
   };
 }
