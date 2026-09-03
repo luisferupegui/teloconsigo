@@ -98,8 +98,16 @@ export function ImportadorListas() {
     setDatos(null); setGuardado(null); setError("");
   }
 
+  /** Deja el formulario como recién abierto, para cargar otra lista.
+   *
+   *  El PROVEEDOR también se borra, y es lo que faltaba: un `<datalist>` filtra
+   *  sus opciones por lo que haya escrito en el campo, así que al volver con
+   *  "Ledacom" dentro el desplegable ofrecía únicamente "Ledacom" y parecía que
+   *  se hubiera perdido la lista de proveedores. Y lo normal después de guardar
+   *  una lista es cargar la del SIGUIENTE proveedor, no otra del mismo. */
   function limpiar() {
-    setArchivo(null); setNombre(""); setDatos(null); setGuardado(null); setError("");
+    setArchivo(null); setNombre(""); setProveedor("");
+    setDatos(null); setGuardado(null); setError("");
   }
 
   async function analizar() {
