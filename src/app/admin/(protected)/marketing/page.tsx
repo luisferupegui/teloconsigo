@@ -5,6 +5,7 @@ import { resolveProductImage } from "@/lib/product-images";
 import { ProductManager, type ManagedBusinessProduct } from "@/components/admin/product-manager";
 import { SupplierListsManager } from "@/components/admin/supplier-lists-manager";
 import { ImportadorListas } from "@/components/admin/importador-listas";
+import { PromocionesPanel } from "@/components/admin/promociones-panel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Productos · Admin" };
@@ -20,6 +21,7 @@ export const metadata = { title: "Productos · Admin" };
 const TABS = [
   { id: "productos",    label: "📋 Gestionar productos" },
   { id: "importador",   label: "📥 Importador de listas" },
+  { id: "promociones",  label: "🔄 Promociones al día" },
   { id: "listas",       label: "📚 Listas cargadas" },
   { id: "buscar",       label: "🔍 Buscar productos" },
   { id: "herramientas", label: "🛠️ Herramientas" },
@@ -96,6 +98,7 @@ export default async function ProductosAdminPage({
 
       {activeTab === "productos"    && <ProductManager products={products} initialFilter={filter} />}
       {activeTab === "importador"   && <ImportadorListas />}
+      {activeTab === "promociones"  && <PromocionesPanel />}
       {activeTab === "listas"       && <SupplierListsManager vista="listas" />}
       {activeTab === "buscar"       && <SupplierListsManager vista="buscar" />}
       {activeTab === "herramientas" && <SupplierListsManager vista="herramientas" />}

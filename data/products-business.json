@@ -51,7 +51,7 @@
     "nombre": "Dell Pro 15 Essential i5-1334U 8GB 512GB 15.6\"",
     "marca": "Dell",
     "categoria": "portatil",
-    "precio": 2229000,
+    "precio": 3143000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "Intel Core i5-1334U (10C 12T, hasta 4.6 GHz, 12MB L3)",
@@ -63,7 +63,7 @@
     },
     "descripcion": "Dell Pro 15 Essential con i5 de 12.ª gen. Balance de desempeño y movilidad para equipos corporativos.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3076000,
+    "precioDesde": 3143000,
     "descripcionUso": "",
     "destacado": true,
     "enPromocion": true,
@@ -121,7 +121,7 @@
     "nombre": "Dell Inspiron 5440 Core 7 150U 16GB 512GB 14\"",
     "marca": "Dell",
     "categoria": "portatil",
-    "precio": 2849900,
+    "precio": 4919000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "Intel Core 7 150U (10C 12T, hasta 5.4 GHz, 12MB)",
@@ -133,7 +133,7 @@
     },
     "descripcion": "Dell Inspiron 5440 con Core 7 de Meteor Lake y 16 GB. Portátil equilibrado para trabajo híbrido.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3934000,
+    "precioDesde": 4919000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "destacado": false,
@@ -278,7 +278,7 @@
     "nombre": "Acer TravelMate P214 Core 5 120U 16GB 1TB 14\" WUXGA",
     "marca": "Acer",
     "categoria": "portatil",
-    "precio": 2849900,
+    "precio": 3323000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "Intel Core 5 120U (10C 12T, hasta 5.0 GHz, 12MB)",
@@ -290,7 +290,7 @@
     },
     "descripcion": "Acer TravelMate P214 con Core 5 120U y 1 TB. Pantalla WUXGA y máximo almacenamiento corporativo.",
     "usoCaso": "portatil-ejecutivo",
-    "precioDesde": 3934000,
+    "precioDesde": 3323000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "enPromocion": true
@@ -300,7 +300,7 @@
     "nombre": "Dell ProOne QC24250 Core Ultra 7 265 16GB 512GB 23.8\"",
     "marca": "Dell",
     "categoria": "pc",
-    "precio": 5450000,
+    "precio": 3142000,
     "precioIvaIncluido": true,
     "specs": {
       "procesador": "Intel Core Ultra 7 265",
@@ -312,7 +312,7 @@
     },
     "descripcion": "Dell ProOne AIO con Core Ultra 7 265. Todo en uno empresarial de alta gama con pantalla FHD.",
     "usoCaso": "pc-empresarial",
-    "precioDesde": 6540000,
+    "precioDesde": 3142000,
     "segmento": "productividad-oficina",
     "publicado": true,
     "enPromocion": true
@@ -531,7 +531,7 @@
     "marca": "Lenovo",
     "categoria": "tablet",
     "usoCaso": "tablet-empresarial",
-    "precio": 495000,
+    "precio": 695000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "MediaTek Helio G85 (8C, 2× A75 @2.0GHz + 6× A55 @1.8GHz)",
@@ -543,7 +543,7 @@
       "incluye": "Estuche + Cargador"
     },
     "descripcion": "Tableta Lenovo 8.7\" para trabajo diario. Incluye estuche y cargador. Pantalla IPS antihuella.",
-    "precioDesde": 671000,
+    "precioDesde": 695000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "enPromocion": true
@@ -554,7 +554,7 @@
     "marca": "Lenovo",
     "categoria": "tablet",
     "usoCaso": "tablet-empresarial",
-    "precio": 579000,
+    "precio": 750000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "MediaTek Helio G85 (8C, 2× A75 @2.0GHz + 6× A55 @1.8GHz)",
@@ -566,7 +566,7 @@
       "incluye": "Estuche + Cargador"
     },
     "descripcion": "Tableta Lenovo 8.7\" con 4G LTE. Conectividad celular para vendedores en campo. Incluye estuche.",
-    "precioDesde": 785000,
+    "precioDesde": 750000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "enPromocion": true
@@ -600,7 +600,7 @@
     "marca": "Lenovo",
     "categoria": "tablet",
     "usoCaso": "tablet-empresarial",
-    "precio": 719000,
+    "precio": 951000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "MediaTek Helio G85 (8C, 2× A75 @2.0GHz + 6× A55 @1.8GHz)",
@@ -612,7 +612,7 @@
       "incluye": "Estuche tipo libro + Cargador"
     },
     "descripcion": "Tableta Lenovo 10\" LTE con estuche libro y cargador. Conectividad 4G para trabajo en terreno.",
-    "precioDesde": 975000,
+    "precioDesde": 951000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "enPromocion": true
@@ -623,7 +623,7 @@
     "marca": "Lenovo",
     "categoria": "tablet",
     "usoCaso": "tablet-empresarial",
-    "precio": 789000,
+    "precio": 1079000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "MediaTek Dimensity 6300 (8C, 2× A76 @2.4GHz + 6× A55 @2.0GHz)",
@@ -635,7 +635,7 @@
       "incluye": "Case + Stylus Pen"
     },
     "descripcion": "Lenovo IdeaTab 11\" con pantalla 2.5K 90Hz y stylus incluido. Ideal para diseñadores y ejecutivos.",
-    "precioDesde": 1070000,
+    "precioDesde": 1079000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "enPromocion": true
@@ -669,7 +669,7 @@
     "marca": "Lenovo",
     "categoria": "tablet",
     "usoCaso": "tablet-empresarial",
-    "precio": 1152000,
+    "precio": 1290000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "MediaTek Helio G99 (8C, 2× A76 @2.2GHz + 6× A55 @2.0GHz)",
@@ -681,7 +681,7 @@
       "incluye": "Combo Sleeve + Audífonos"
     },
     "descripcion": "Lenovo Tab Plus con 256GB y altavoces JBL. Pantalla 2K para presentaciones y consumo de contenido.",
-    "precioDesde": 1562000,
+    "precioDesde": 1290000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "enPromocion": true
@@ -692,7 +692,7 @@
     "marca": "Lenovo",
     "categoria": "tablet",
     "usoCaso": "tablet-empresarial",
-    "precio": 1350000,
+    "precio": 1374000,
     "precioIvaIncluido": false,
     "specs": {
       "procesador": "Dimensity 6300 (8C, 2× A76 @2.4GHz + 6× A55 @2.0GHz)",
@@ -704,7 +704,7 @@
       "incluye": "Teclado + Cargador + Folio"
     },
     "descripcion": "Tablet empresarial 5G con teclado y funda. Máxima conectividad para equipos comerciales en campo.",
-    "precioDesde": 1831000,
+    "precioDesde": 1374000,
     "segmento": "movilidad-premium",
     "publicado": true,
     "destacado": true,
@@ -718,7 +718,7 @@
     "marca": "Microsoft",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 406000,
+    "precio": 519000,
     "precioIvaIncluido": true,
     "specs": {
       "aplicaciones": "Word, Excel, PowerPoint, Outlook, Teams, SharePoint, OneDrive",
@@ -728,7 +728,7 @@
       "soporte": "Microsoft 24/7"
     },
     "descripcion": "Microsoft 365 Standard anual ESD. Incluye todas las apps de Office + Teams + 1TB OneDrive por usuario.",
-    "precioDesde": 609000,
+    "precioDesde": 519000,
     "segmento": "accesorios",
     "publicado": true,
     "descripcionUso": "",
@@ -742,7 +742,7 @@
     "marca": "Microsoft",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 580000,
+    "precio": 732000,
     "precioIvaIncluido": true,
     "specs": {
       "version": "Windows 11 Pro 64 Bits",
@@ -752,7 +752,7 @@
       "soporte": "Soporte técnico Microsoft"
     },
     "descripcion": "Windows 11 Pro OEM para máquina nueva. Licencia genuina con BitLocker, Remote Desktop y Hyper-V.",
-    "precioDesde": 870000,
+    "precioDesde": 732000,
     "segmento": "accesorios",
     "publicado": true,
     "enPromocion": true
@@ -763,7 +763,7 @@
     "marca": "Microsoft",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 765000,
+    "precio": 1012000,
     "precioIvaIncluido": true,
     "specs": {
       "aplicaciones": "Word, Excel, PowerPoint, OneNote, Outlook",
@@ -773,7 +773,7 @@
       "idioma": "Español"
     },
     "descripcion": "Microsoft Office 2024 perpetuo para empresas. Pago único sin mensualidad. Incluye Outlook 2024.",
-    "precioDesde": 1147000,
+    "precioDesde": 1012000,
     "segmento": "accesorios",
     "publicado": true,
     "enPromocion": true
@@ -784,7 +784,7 @@
     "marca": "Microsoft",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 815000,
+    "precio": 967000,
     "precioIvaIncluido": true,
     "specs": {
       "version": "Windows 11 Pro 64 Bits",
@@ -794,7 +794,7 @@
       "transferible": "Sí"
     },
     "descripcion": "Windows 11 Pro ESD transferible. Para upgrade de equipos existentes. Todas las versiones de idioma.",
-    "precioDesde": 1222000,
+    "precioDesde": 967000,
     "segmento": "accesorios",
     "publicado": true,
     "enPromocion": true
@@ -805,7 +805,7 @@
     "marca": "ESET",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 369000,
+    "precio": 499000,
     "precioIvaIncluido": true,
     "specs": {
       "dispositivos": "5 equipos",
@@ -815,7 +815,7 @@
       "so": "Windows / macOS / Android"
     },
     "descripcion": "ESET Small Business Security para 5 equipos por 1 año. Protección multicapa antivirus + firewall.",
-    "precioDesde": 553000,
+    "precioDesde": 499000,
     "segmento": "accesorios",
     "publicado": true,
     "enPromocion": true
@@ -826,7 +826,7 @@
     "marca": "ESET",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 595000,
+    "precio": 804000,
     "precioIvaIncluido": true,
     "specs": {
       "dispositivos": "10 equipos",
@@ -836,7 +836,7 @@
       "so": "Windows / macOS / Android"
     },
     "descripcion": "ESET Small Business Security 10 puestos. Consola de administración centralizada incluida.",
-    "precioDesde": 892000,
+    "precioDesde": 804000,
     "segmento": "accesorios",
     "publicado": true,
     "enPromocion": true
@@ -847,7 +847,7 @@
     "marca": "Kaspersky",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 269000,
+    "precio": 331000,
     "precioIvaIncluido": true,
     "specs": {
       "dispositivos": "5 usuarios",
@@ -857,7 +857,7 @@
       "so": "Windows / macOS / Android / iOS"
     },
     "descripcion": "Kaspersky Small Office Security para 5 usuarios. Entrega inmediata. VPN y gestor de contraseñas incluidos.",
-    "precioDesde": 403000,
+    "precioDesde": 331000,
     "segmento": "accesorios",
     "publicado": true,
     "descripcionUso": "",
@@ -871,7 +871,7 @@
     "marca": "Kaspersky",
     "categoria": "licencia",
     "usoCaso": "licencia",
-    "precio": 918900,
+    "precio": 1073000,
     "precioIvaIncluido": true,
     "specs": {
       "dispositivos": "10 usuarios",
@@ -881,7 +881,7 @@
       "so": "Windows / macOS / Android / iOS + 1 servidor"
     },
     "descripcion": "Kaspersky KSOS 10 usuarios con protección de servidor incluida. Para empresas que manejan datos sensibles.",
-    "precioDesde": 1378000,
+    "precioDesde": 1073000,
     "segmento": "accesorios",
     "publicado": true,
     "enPromocion": true
@@ -1098,7 +1098,7 @@
     "marca": "Lenovo",
     "categoria": "portatil",
     "usoCaso": "portatil-oficina",
-    "precio": 1830000,
+    "precio": 2015000,
     "precioIvaIncluido": true,
     "specs": {
       "procesador": "AMD Ryzen 5 7520U (4C 8T, hasta 4.3 GHz)",
@@ -1110,7 +1110,7 @@
       "color": "Arctic Grey"
     },
     "descripcion": "Lenovo V14 G4 con Ryzen 5 7520U y 16GB DDR5. Puerto RJ45 integrado para conexión cableada en oficina.",
-    "precioDesde": 2122000,
+    "precioDesde": 2015000,
     "segmento": "productividad-oficina",
     "publicado": true,
     "enPromocion": true
@@ -1645,8 +1645,8 @@
     "usoCaso": "accesorio",
     "segmento": "componentes",
     "publicado": true,
-    "precio": 492000,
-    "precioDesde": 492000,
+    "precio": 466000,
+    "precioDesde": 466000,
     "precioIvaIncluido": false,
     "proveedor": "manual",
     "specs": {},
