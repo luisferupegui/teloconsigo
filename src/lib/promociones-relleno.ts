@@ -2,6 +2,8 @@ import "server-only";
 import { loadBusinessProducts, saveBusinessProducts } from "@/lib/products";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from "@/lib/supplier-catalog";
 import { ramYDisco, sinVram, pantallaDesdeNombre } from "@/lib/specs-nombre";
+import { categoriaPorNombre } from "@/lib/catimporter/parsers/categorias";
+import { marcaDeNombre } from "@/lib/marcas";
 
 // ─── Llenar la vitrina con lo mejor de las listas del mes ────────────────────
 //
@@ -88,6 +90,39 @@ export function specsParaCard(p: ActiveProduct): Record<string, string> {
 }
 
 /**
+ * ¿La ficha se contradice con el nombre?
+ *
+ * En la vitrina salió un "HP 15-FC0275LA AMD Ryzen 7 7730U / RAM 16GB" cuya
+ * ficha decía "Intel Core i3 1215U" y "8GB": el lector arrastró las specs de la
+ * fila de al lado. No es un detalle de maquetación —el cliente compara por
+ * procesador y por RAM, y estaría comparando los de otro equipo—.
+ *
+ * Cuando el nombre y la ficha no dicen lo mismo, la fila entera es sospechosa,
+ * así que la card no sale. No se "arregla" quitando la spec que molesta: si el
+ * procesador vino corrido, la RAM y el disco vienen del mismo sitio.
+ */
+const MARCA_INTEL = /intel|core\s*(i[3579]|ultra|\d)/i;
+const MARCA_AMD = /\b(amd|ryzen|athlon)\b/i;
+
+function fichaContradice(p: ActiveProduct, specs: Record<string, string>): boolean {
+  const cpu = specs.procesador ?? "";
+  if (cpu) {
+    const nIntel = MARCA_INTEL.test(p.nombre), nAmd = MARCA_AMD.test(p.nombre);
+    const sIntel = MARCA_INTEL.test(cpu), sAmd = MARCA_AMD.test(cpu);
+    if (nAmd && !nIntel && sIntel && !sAmd) return true;
+    if (nIntel && !nAmd && sAmd && !sIntel) return true;
+  }
+
+  // La RAM del nombre contra la de la ficha. Se lee del nombre sin la VRAM de la
+  // gráfica, que si no un "+ RTX 5060 8GB" pasaría por memoria del equipo.
+  const delNombre = ramYDisco(sinVram(p.nombre)).ram;
+  const deLaFicha = Number((specs.ram ?? "").match(/(\d{1,3})\s?GB/i)?.[1] ?? 0);
+  if (delNombre && deLaFicha && delNombre !== deLaFicha) return true;
+
+  return false;
+}
+
+/**
  * ¿Esta card va a decirle algo al cliente?
  *
  * La información puede venir de las specs O DEL NOMBRE, y de qué producto sea
@@ -120,7 +155,7 @@ function suficienteInfo(p: ActiveProduct, specs: Record<string, string>): boolea
  *
  *  Se arma con lo que se sabe y nada más. Nada de "ideal para tu productividad":
  *  el cliente que está comparando ocho equipos no lee adjetivos, lee datos. */
-function descripcionDe(p: ActiveProduct, specs: Record<string, string>): string {
+function descripcionDe(p: ActiveProduct, specs: Record<string, string>, marca: string): string {
   const QUE_ES: Record<string, string> = {
     portatil: "Portátil", escritorio: "PC de escritorio",
     "escritorio-alto-rendimiento": "PC de alto rendimiento", "all-in-one": "Todo en uno",
@@ -134,7 +169,7 @@ function descripcionDe(p: ActiveProduct, specs: Record<string, string>): string 
     accesorios: "Accesorio", software: "Software",
   };
   const partes = [QUE_ES[p.categoria] ?? "Equipo"];
-  if (p.marca && p.marca.toLowerCase() !== p.proveedor.toLowerCase()) partes.push(p.marca);
+  if (marca && marca.toLowerCase() !== p.proveedor.toLowerCase()) partes.push(marca);
   if (specs.gpu) partes.push("gráfica dedicada");
   return partes.join(" · ");
 }
@@ -160,6 +195,12 @@ export type SeccionVitrina = {
   hasta?: number;
   /** Piso de precio de venta, cuando la sección es la gama alta. */
   desde?: number;
+  /**
+   * Señal que el nombre TIENE que llevar para entrar, y a qué categorías se les
+   * exige. Es para cuando la categoría de lista no distingue lo que la sección
+   * promete: todos los portátiles son `portatil`, gamer o de oficina.
+   */
+  exige?: { categorias: string[]; patron: RegExp };
 };
 
 export const SECCIONES: SeccionVitrina[] = [
@@ -169,8 +210,18 @@ export const SECCIONES: SeccionVitrina[] = [
   { id: "hogar-estudio", nombre: "Hogar y Estudio", campo: "segmento", valor: "hogar-estudio",
     categorias: ["portatil", "escritorio", "all-in-one"], hasta: 2_600_000 },
 
+  // Los portátiles gamer pertenecen aquí tanto como las torres. El piso de
+  // precio es lo que evita que entre un portátil de oficina: por debajo de tres
+  // millones no hay gráfica dedicada que valga.
+  // El piso de precio no bastaba: por encima de tres millones hay ultrabooks de
+  // oficina —un Zenbook OLED, un HP 240 G10— que no son máquinas de juego y
+  // dejaban la sección sin credibilidad. A un portátil se le exige que lo diga:
+  // gráfica dedicada o línea gamer. A una torre no, que para eso está en
+  // `escritorio-alto-rendimiento`.
   { id: "gaming-streaming", nombre: "Gaming y Streaming", campo: "segmento", valor: "gaming-streaming",
-    categorias: ["escritorio-alto-rendimiento", "tarjeta-grafica"] },
+    categorias: ["escritorio-alto-rendimiento", "portatil", "tarjeta-grafica"], desde: 3_000_000,
+    exige: { categorias: ["portatil"],
+      patron: /rtx|gtx|geforce|radeon|\btuf\b|\brog\b|nitro|predator|victus|katana|legion|\bloq\b|\bomen\b|gam(ing|er)/i } },
 
   { id: "productividad-oficina", nombre: "Productividad y Oficina", campo: "usoCaso", valor: "pc-empresarial",
     categorias: ["escritorio", "all-in-one", "mini-pc"], desde: 2_000_000 },
@@ -184,8 +235,12 @@ export const SECCIONES: SeccionVitrina[] = [
   { id: "creadores-produccion", nombre: "Creadores y Producción", campo: "segmento", valor: "creadores-produccion",
     categorias: ["escritorio-alto-rendimiento"], desde: 3_500_000 },
 
+  // Sin `televisor`: en las listas vigentes esa categoría tiene TRES productos y
+  // ninguno es un televisor —una board, un mouse y un rotulador que el lector no
+  // supo clasificar—. Mientras los proveedores no traigan TV, admitirla sólo
+  // sirve para colar lo que no encaja en ningún sitio.
   { id: "smart-home", nombre: "Smart Home y Conectividad", campo: "segmento", valor: "smart-home",
-    categorias: ["camara", "televisor", "redes"] },
+    categorias: ["camara", "redes"] },
 
   { id: "monitores", nombre: "Monitores", campo: "usoCaso", valor: "monitor",
     categorias: ["monitor"] },
@@ -203,6 +258,81 @@ export const SECCIONES: SeccionVitrina[] = [
     categorias: ["procesador", "motherboard", "memoria-ram", "almacenamiento",
                  "tarjeta-grafica", "fuente-poder", "refrigeracion", "proteccion"] },
 ];
+
+/**
+ * Un producto, UNA sección.
+ *
+ * Un producto publicado en una sección por `segmento` —una cámara en Smart
+ * Home, un router en Redes— lleva ADEMÁS el `usoCaso` que necesita /productos
+ * para agruparlo en su catálogo, y ese usoCaso es "accesorio". Sin esta regla la
+ * vitrina enseñaba las ocho cámaras en Smart Home y otra vez en Accesorios: 46
+ * cards en Accesorios, 38 de ellas prestadas de otra sección.
+ *
+ * Manda el segmento, que es lo específico. Las secciones por `usoCaso` sólo se
+ * quedan con lo que no tiene sección propia.
+ */
+export const SEGMENTOS_CON_SECCION = new Set(
+  SECCIONES.filter((s) => s.campo === "segmento").map((s) => s.valor),
+);
+
+export function esDeLaSeccion(
+  p: { usoCaso?: string | null; segmento?: string | null },
+  campo: "usoCaso" | "segmento",
+  valor: string,
+): boolean {
+  if (campo === "segmento") return p.segmento === valor;
+  return p.usoCaso === valor && !SEGMENTOS_CON_SECCION.has(p.segmento ?? "");
+}
+
+/**
+ * Productos publicados que están en la sección equivocada.
+ *
+ * Una "Unidad DVD-RW Externa USB 3.0" de $79.000 en *Creadores y Producción* no
+ * es un error de precio ni de lectura: es un accesorio colado en la sección de
+ * las estaciones de trabajo. Rompe la promesa de la sección y descoloca al
+ * cliente que llegó buscando un equipo para editar video.
+ *
+ * Lo que se admite en cada sección se DERIVA de las mismas `categorias` que
+ * alimentan la propuesta, así que no hay una segunda lista que se desincronice:
+ * si una sección puede recibir cierto producto, ese producto está bien ahí.
+ */
+export type MalUbicado = {
+  referencia: string;
+  nombre: string;
+  categoria: string;
+  seccion: string;
+  precio: number;
+};
+
+/** Categorías de TIENDA que son un equipo completo. */
+const MAQUINAS = new Set(["pc", "portatil", "monitor", "tablet"]);
+
+export function verificarUbicacion(): MalUbicado[] {
+  const publicados = loadBusinessProducts().filter((p) => p.enPromocion);
+  const fuera: MalUbicado[] = [];
+
+  for (const s of SECCIONES) {
+    const admite = new Set(s.categorias.map(categoriaTienda));
+    for (const p of publicados) {
+      if (!esDeLaSeccion(p as unknown as { usoCaso?: string; segmento?: string }, s.campo, s.valor)) continue;
+
+      // La categoría de tienda es gruesa: una cámara, un mouse y un router son
+      // los tres "accesorio", así que un mouse pasaba por bueno en Smart Home.
+      // El nombre afina lo que la categoría no distingue —salvo en los equipos,
+      // que nombran sus piezas y se harían pasar por tarjeta de video—.
+      const dice = MAQUINAS.has(p.categoria) ? null : categoriaPorNombre(p.nombre);
+      if (admite.has(p.categoria) && (!dice || s.categorias.includes(dice))) continue;
+      fuera.push({
+        referencia: p.referencia ?? "",
+        nombre: p.nombre,
+        categoria: p.categoria,
+        seccion: s.nombre,
+        precio: p.precioDesde ?? p.precio ?? 0,
+      });
+    }
+  }
+  return fuera;
+}
 
 export type Candidato = {
   referencia: string;
@@ -235,12 +365,81 @@ export type PropuestaSeccion = {
   bajoMinimo: boolean;
 };
 
+/** Una palabra de verdad: sólo letras, tres o más. "Ryzen" sí, "512GB" no. */
+const PALABRA = /^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ]{3,}$/;
+
 /** Un nombre que no identifica el producto no puede ir a una card. Es la misma
  *  guarda del importador: mejor una sección con seis cards buenas que con ocho. */
 function nombreUsable(n: string): boolean {
-  const letras = (n.match(/[a-záéíóúñü]/gi) ?? []).length;
-  return n.trim().length >= 12 && letras >= 8 && /[a-záéíóúñü]{3,}/i.test(n);
+  const t = n.trim();
+  if (t.length < 12) return false;
+
+  // Restos de la lectura del PDF. No son productos: son trozos de la página que
+  // se colaron con forma de nombre —"IVA ASUS PRIME B760M-A AX6 GSI" (la
+  // columna del impuesto pegada al producto de al lado) o "VIGI y ; Pero además
+  // (Key, VIGI Cámara de red tipo" (dos frases partidas por la mitad)—.
+  if (t.includes(";")) return false;
+  // "IVA" no aparece en el nombre de ningún producto: aparece cuando la columna
+  // del impuesto se pegó al de al lado. Pasaba al principio ("IVA ASUS PRIME
+  // B760M-A") y también por dentro ("GamePad con IVA Portátil ROG Strix G16").
+  if (/(^| )iva( |$)/i.test(t)) return false;
+  if ((t.match(/[(]/g) ?? []).length !== (t.match(/[)]/g) ?? []).length) return false;
+  if (/^(iva|precio|total|subtotal|descuento|valor|ref)[ :]/i.test(t)) return false;
+
+  // Dos palabras de verdad, como mínimo. Sin esto entraba "TMP216-51-56ZP
+  // NX.B17AL.00D": es un portátil real, pero en una card el cliente lee dos
+  // códigos de fábrica y no sabe qué le están ofreciendo.
+  return t.split(/[^A-Za-zÁÉÍÓÚÑÜáéíóúñü0-9]+/).filter((w) => PALABRA.test(w)).length >= 2;
 }
+
+/**
+ * ¿Este producto es de los que van en esta sección?
+ *
+ * La categoría de la lista se equivoca —el lector clasificó un "MOUSE BLUETOOTH
+ * SILENCIOSO LENOVO WL310" y una board "ASUS PRIME B760M-A" como `televisor`, y
+ * por ahí se colaban a Smart Home—. El nombre no se equivoca: un mouse dice
+ * "Mouse". Así que el nombre manda, con la misma tabla que usa el importador.
+ *
+ * Los equipos completos quedan fuera de la comprobación a propósito: un PC
+ * gamer NOMBRA su gráfica ("... + RTX 5060 8GB") y el nombre lo llamaría tarjeta
+ * de video. En un equipo, la categoría de la lista sí es la buena.
+ */
+/**
+ * Piezas cuyo NOMBRE es el modelo. En una gráfica o un procesador, "GeForce RTX"
+ * sin número no dice qué se está vendiendo: la diferencia entre una RTX 3050 y
+ * una RTX 5090 es diez veces el precio. Se coló una "Tarjeta de Video GeForce
+ * RTX PLUS" a $4.562.000 —una gráfica al precio de un PC entero, sin modelo—.
+ */
+const PIEZAS_CON_MODELO = new Set(["tarjeta-grafica", "procesador", "memoria-ram", "motherboard"]);
+const LLEVA_MODELO = /\d{3,}/;
+
+function encajaEnSeccion(nombre: string, catLista: string, s: SeccionVitrina): boolean {
+  if (PIEZAS_CON_MODELO.has(catLista) && !LLEVA_MODELO.test(nombre)) return false;
+  if (s.exige && s.exige.categorias.includes(catLista) && !s.exige.patron.test(nombre)) return false;
+  if (EQUIPOS_COMPLETOS.has(catLista)) return true;
+  const dice = categoriaPorNombre(nombre);
+  return !dice || s.categorias.includes(dice);
+}
+
+/**
+ * El nombre tal cual va a la card.
+ *
+ * Los PDF traen el rótulo de la sección pegado al primer producto que hay
+ * debajo: "PERIFÉRICOS & Xiaomi Smart Band 9 Active". El producto es bueno y el
+ * precio es bueno; lo que sobra son las dos palabras de la cabecera. Se quitan
+ * en vez de tirar la card, que es lo que se hacía antes.
+ */
+const CABECERA_PEGADA = /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ]{2,}&\s*/;
+
+function nombreDeCard(nombre: string): string {
+  const limpio = nombre.replace(CABECERA_PEGADA, "").trim();
+  return nombreUsable(limpio) ? limpio : nombre.trim();
+}
+
+/** El modelo, ignorando cómo lo escribe cada proveedor. Dos referencias con el
+ *  mismo modelo son la misma card. */
+const modelo = (n: string) =>
+  n.normalize("NFD").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
 /**
  * Cuánto producto da por su precio.
@@ -281,19 +480,27 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
     publicados.map((p) => String(p.referencia ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "")).filter(Boolean),
   );
   const norm = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const publicadosModelo = new Set(publicados.map((p) => modelo(p.nombre)));
+  // Un modelo propuesto en una sección no vuelve a proponerse en otra: los
+  // mismos tres Power Group salían a la vez en Gaming y en Creadores, y sólo
+  // pueden estar en una.
+  const usados = new Set<string>();
 
   return SECCIONES.filter((s) => ids.includes(s.id)).map((s) => {
     const enVitrina = publicados.filter(
-      (p) => p.enPromocion && (p as unknown as Record<string, string>)[s.campo] === s.valor,
+      (p) => p.enPromocion &&
+        esDeLaSeccion(p as unknown as { usoCaso?: string; segmento?: string }, s.campo, s.valor),
     ).length;
     const faltan = Math.max(0, cupoDe(s.id) - enVitrina);
 
-    const pool = vigentes
+    const sueltos = vigentes
       .filter((p) => s.categorias.includes(p.categoria))
       .filter((p) => p.precio_costo > 0 && p.referencia && !yaEsta.has(norm(p.referencia)))
       .filter((p) => nombreUsable(p.nombre))
+      .filter((p) => encajaEnSeccion(p.nombre, p.categoria, s))
       // Una card que no dice nada ocupa sitio en la vitrina y no ayuda a decidir.
       .filter((p) => suficienteInfo(p, specsParaCard(p)))
+      .filter((p) => !fichaContradice(p, specsParaCard(p)))
       .map((p) => {
         const precioVenta = applyMargin(p.precio_costo, p.categoria, margins, p.nombre);
         return { p, precioVenta, valor: valorPorPeso(p, precioVenta) };
@@ -301,6 +508,20 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
       .filter(({ precioVenta }) =>
         (s.hasta === undefined || precioVenta <= s.hasta) &&
         (s.desde === undefined || precioVenta >= s.desde));
+
+    // ── Un modelo, una card ──
+    // Las listas traen el mismo equipo con dos referencias y dos precios —el
+    // "Ryzen 7 8700F 32GB 1TB + RTX 5050 8GB" salía a $4.739.000 y a
+    // $4.979.000—. La misma máquina dos veces en la misma rejilla no parece
+    // surtido: parece un error. Se queda la barata.
+    const porModelo = new Map<string, (typeof sueltos)[number]>();
+    for (const c of sueltos) {
+      const clave = modelo(c.p.nombre);
+      if (publicadosModelo.has(clave) || usados.has(clave)) continue;
+      const previo = porModelo.get(clave);
+      if (!previo || c.precioVenta < previo.precioVenta) porModelo.set(clave, c);
+    }
+    const pool = [...porModelo.values()];
 
     if (faltan === 0 || pool.length === 0) {
       return { id: s.id, nombre: s.nombre, publicados: enVitrina, faltan, candidatos: [],
@@ -331,6 +552,7 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
     const tomar = (c: (typeof pool)[number], tramo: string) => {
       if (puestos.has(c.p.referencia!) || elegidos.length >= faltan) return false;
       puestos.add(c.p.referencia!);
+      usados.add(modelo(c.p.nombre));
       porProveedor.set(c.p.proveedor, (porProveedor.get(c.p.proveedor) ?? 0) + 1);
       elegidos.push(candidato(c.p, c.precioVenta, tramo, c.valor));
       return true;
@@ -447,6 +669,10 @@ function categoriaTienda(catLista: string): string {
   if (catLista === "monitor") return "monitor";
   if (["escritorio", "escritorio-alto-rendimiento", "all-in-one", "mini-pc", "servidor"].includes(catLista)) return "pc";
   if (["tableta", "celular"].includes(catLista)) return "tablet";
+  // El catálogo tiene su propia categoría para el software: mandarlo a
+  // "accesorio" lo publicaba mal Y hacía que la verificación marcara como
+  // intrusas las ocho licencias que llevan meses bien puestas.
+  if (["antivirus", "licencia", "software"].includes(catLista)) return "licencia";
   return "accesorio";
 }
 const usoCasoPorDefecto = (c: string) =>
@@ -465,10 +691,16 @@ function candidato(p: ActiveProduct, precioVenta: number, tramo: string, valor: 
   razones.push(`${Math.round(valor)} pts/millón`);
 
   const specs = specsParaCard(p);
+  // La marca de la card se lee del NOMBRE de la card, no de la que quedó
+  // guardada al importar: si la lista trae "T-Dagger" para un "Asus TUF Gaming
+  // A15 + GamePad ... T-Dagger", en pantalla se vería una marca que el propio
+  // nombre desmiente. Se calcula una vez y la usan el campo y la descripción,
+  // que si no podían contradecirse entre ellos.
+  const marca = marcaDeNombre(p.nombre, p.categoria) ?? p.marca;
   return {
     referencia: p.referencia ?? "",
-    nombre: p.nombre,
-    marca: p.marca,
+    nombre: nombreDeCard(p.nombre),
+    marca,
     categoria: p.categoria,
     proveedor: p.proveedor,
     precioCosto: p.precio_costo,
@@ -476,6 +708,6 @@ function candidato(p: ActiveProduct, precioVenta: number, tramo: string, valor: 
     tramo,
     porque: razones.join(" · "),
     specs,
-    descripcion: descripcionDe(p, specs),
+    descripcion: descripcionDe(p, specs, marca),
   };
 }

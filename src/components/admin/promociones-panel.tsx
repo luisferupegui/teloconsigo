@@ -27,6 +27,7 @@ type Repreciar = {
   proveedor: string; lista: string;
 };
 type Descatalogado = { referencia: string; nombre: string; precioActual: number };
+type MalUbicado = { referencia: string; nombre: string; categoria: string; seccion: string; precio: number };
 
 type Candidato = {
   referencia: string; nombre: string; marca: string; categoria: string;
@@ -36,6 +37,7 @@ type Candidato = {
 type PropuestaSeccion = {
   id: string; nombre: string; publicados: number; faltan: number;
   candidatos: Candidato[]; disponibles: number;
+  cupo: number; bajoMinimo: boolean;
 };
 
 type Analisis = {
@@ -45,6 +47,7 @@ type Analisis = {
   sinReferencia: number;
   alDia: number;
   relleno: PropuestaSeccion[];
+  malUbicados: MalUbicado[];
 };
 
 const cop = (n: number) => (n > 0 ? "$" + n.toLocaleString("es-CO") : "—");
@@ -70,6 +73,7 @@ export function PromocionesPanel() {
   const [precios, setPrecios] = useState<Set<string>>(new Set());
   const [retirar, setRetirar] = useState<Set<string>>(new Set());
   const [aRellenar, setARellenar] = useState<Record<string, Set<string>>>({});
+  const [malUbicados, setMalUbicados] = useState<Set<string>>(new Set());
 
   // La petición va aparte de los `setState` para que el efecto no toque estado
   // de forma síncrona: hacerlo encadena renders y es lo que avisa
@@ -86,6 +90,7 @@ export function PromocionesPanel() {
     setPrecios(new Set(d.repreciar.map((r) => r.referencia)));
     setRetirar(new Set(d.descatalogados.map((r) => r.referencia)));
     setARellenar(Object.fromEntries(d.relleno.map((s) => [s.id, new Set(s.candidatos.map((c) => c.referencia))])));
+    setMalUbicados(new Set(d.malUbicados.map((m) => m.referencia)));
   }, []);
 
   /** Recarga desde un manejador de evento (el botón "Volver a mirar"). */
@@ -117,10 +122,10 @@ export function PromocionesPanel() {
     return () => { vivo = false; };
   }, [pedirAnalisis, recibir]);
 
-  async function aplicar(accion: "actualizarPrecios" | "quitarDePromocion") {
-    const refs = [...(accion === "actualizarPrecios" ? precios : retirar)];
+  async function aplicar(accion: "actualizarPrecios" | "quitarDePromocion", conjunto?: Set<string>) {
+    const refs = [...(conjunto ?? (accion === "actualizarPrecios" ? precios : retirar))];
     if (refs.length === 0) return;
-    setAplicando(accion === "actualizarPrecios" ? "precios" : "retirar");
+    setAplicando(conjunto ? "malUbicados" : accion === "actualizarPrecios" ? "precios" : "retirar");
     setError(""); setHecho("");
     try {
       const res = await fetch("/api/admin/promociones", {
@@ -312,13 +317,54 @@ export function PromocionesPanel() {
         </div>
       )}
 
+      {/* ── En la sección equivocada ── */}
+      {datos && datos.malUbicados.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-orange-200 bg-orange-50/40">
+          <div className="flex flex-wrap items-center gap-3 border-b border-orange-200 px-5 py-4">
+            <AlertCircle className="h-4 w-4 shrink-0 text-orange-500" />
+            <div className="min-w-[220px] flex-1">
+              <h3 className="font-bold text-orange-900">En la sección equivocada</h3>
+              <p className="text-xs text-orange-800">
+                Rompen la promesa de su sección: quien entra a <em>Creadores</em> buscando una
+                estación de trabajo no espera una unidad de DVD.
+              </p>
+            </div>
+            <button
+              type="button" onClick={() => aplicar("quitarDePromocion", malUbicados)}
+              disabled={aplicando !== null || malUbicados.size === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
+            >
+              {aplicando === "malUbicados" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PackageX className="h-4 w-4" />}
+              Quitar {malUbicados.size}
+            </button>
+          </div>
+          <div className="divide-y divide-orange-200/70">
+            {datos.malUbicados.map((m) => (
+              <label key={m.referencia} className="flex cursor-pointer items-center gap-3 px-5 py-2.5 text-sm hover:bg-orange-100/40">
+                <input
+                  type="checkbox" checked={malUbicados.has(m.referencia)}
+                  onChange={() => alternar(malUbicados, setMalUbicados, m.referencia)}
+                  className="h-3.5 w-3.5 shrink-0 accent-orange-600"
+                />
+                <span className="shrink-0 rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700">
+                  {m.categoria}
+                </span>
+                <span className="min-w-[200px] flex-1 text-zinc-800">{m.nombre}</span>
+                <span className="shrink-0 text-xs text-zinc-500">en {m.seccion}</span>
+                <span className="shrink-0 text-sm font-semibold text-zinc-600">{cop(m.precio)}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Secciones a medio llenar ── */}
       {datos && datos.relleno.some((r) => r.candidatos.length > 0) && (
         <div className="space-y-4">
           <div className="rounded-2xl border border-indigo-200 bg-indigo-50/50 px-5 py-4">
             <h3 className="font-bold text-indigo-900">Secciones con huecos</h3>
             <p className="mt-0.5 text-xs text-indigo-800">
-              Cada sección quiere {8} cards. Estas son las mejores candidatas de las listas
+              Cada sección quiere 8 cards —Accesorios 12, que es lo que más se busca. Estas son las mejores candidatas de las listas
               vigentes, repartidas en <strong>escalera de precio</strong> —de entrada, de medio y
               de gama alta— para que el cliente compare en vez de ver ocho equipos casi iguales.
             </p>
@@ -330,7 +376,8 @@ export function PromocionesPanel() {
                 <div className="min-w-[220px] flex-1">
                   <h4 className="font-bold text-zinc-900">{sec.nombre}</h4>
                   <p className="text-xs text-zinc-500">
-                    {sec.publicados} de 8 publicadas · {sec.disponibles} candidatas en las listas
+                    {sec.publicados} de {sec.cupo} publicadas · {sec.disponibles} candidatas en las listas
+                    {sec.bajoMinimo && <span className="ml-2 font-semibold text-amber-600">· no llega al mínimo de 4</span>}
                   </p>
                 </div>
                 <button

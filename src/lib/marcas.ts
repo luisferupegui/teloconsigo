@@ -117,7 +117,13 @@ export function marcaDeNombre(nombre: string, categoria?: string): string | null
   // Quien fabrica el procesador no es quien fabrica la máquina: un "POWER GROUP
   // INTEL CORE ULTRA 5 245K" es un Power Group con CPU Intel, y darle la marca
   // "Intel" es tan falso como darle la del proveedor.
-  const propia = halladas.find((m) => !SOLO_COMPONENTE.has(m));
+  // Entre varias marcas propias manda la que aparece ANTES en el nombre: en un
+  // combo —"Asus TUF Gaming A15 + GamePad SCORPIO T-Dagger T-TGP802"— la del
+  // principio es la del equipo y la otra es la del regalo. `ORDENADAS` va de más
+  // larga a más corta, así que sin esto ganaba "t-dagger" a "asus".
+  const propia = halladas
+    .filter((m) => !SOLO_COMPONENTE.has(m))
+    .sort((a, b) => texto.indexOf(a) - texto.indexOf(b))[0];
   if (propia) return capitalizar(propia);
 
   // Solo se nombró un fabricante de componente. En una pieza suelta esa ES la

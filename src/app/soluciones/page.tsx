@@ -2,6 +2,7 @@ import Link from "next/link";
 import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
 import { BusinessProductCard } from "@/components/business-product-card";
+import { esDeLaSeccion } from "@/lib/promociones-relleno";
 import {
   Laptop,
   Monitor,
@@ -270,10 +271,10 @@ function SeccionUso({
 export default function SolucionesPage() {
   const allProducts = loadPublishedBusinessProducts().filter((p) => p.enPromocion === true);
 
+  // La misma regla que usa el panel para contar y para proponer: un producto
+  // aparece en UNA sección. Ver `esDeLaSeccion`.
   const bySeccion = (filterBy: "usoCaso" | "segmento", filterValue: string) =>
-    allProducts.filter((p) =>
-      filterBy === "usoCaso" ? p.usoCaso === filterValue : p.segmento === filterValue
-    );
+    allProducts.filter((p) => esDeLaSeccion(p, filterBy, filterValue));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

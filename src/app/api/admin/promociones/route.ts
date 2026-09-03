@@ -4,7 +4,7 @@ import {
   aplicarPrecios,
   quitarDePromocion,
 } from "@/lib/promociones-sync";
-import { proponerRelleno, publicarCandidatos, SECCIONES } from "@/lib/promociones-relleno";
+import { proponerRelleno, publicarCandidatos, verificarUbicacion, SECCIONES } from "@/lib/promociones-relleno";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +17,9 @@ export async function GET() {
       // La propuesta de relleno para TODAS las secciones: la pantalla decide
       // cuáles enseña, y así una sola llamada sirve para las dos mitades.
       relleno: proponerRelleno(SECCIONES.map((s) => s.id)),
+      // Publicados que están en la sección equivocada: un accesorio colado
+      // entre las estaciones de trabajo rompe la promesa de la sección.
+      malUbicados: verificarUbicacion(),
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error analizando promociones";
