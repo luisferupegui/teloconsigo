@@ -195,8 +195,13 @@ export function exportHistoryCSV(): string {
     const d = o.proveedorDetalle ?? {};
     return [
       o.orderNumber ?? "",
-      new Date(o.fecha).toLocaleString("es-CO", { timeZone: "America/Bogota" }),
-      new Date(o.fechaArchivado).toLocaleString("es-CO", { timeZone: "America/Bogota" }),
+      // Las dos fechas van por `csv()` como todo lo demás: en es-CO
+      // `toLocaleString` devuelve "3/9/2026, 12:48:46 p. m." —con coma dentro—,
+      // y sin comillas cada fila salía con 22 campos contra 20 de la cabecera.
+      // Abierto en Excel, todo lo que venía después del cliente caía dos
+      // columnas corrido: el teléfono en Ciudad, el email en Teléfono.
+      csv(new Date(o.fecha).toLocaleString("es-CO", { timeZone: "America/Bogota" })),
+      csv(new Date(o.fechaArchivado).toLocaleString("es-CO", { timeZone: "America/Bogota" })),
       csv(o.cliente.nombre),
       csv(o.cliente.cedula),
       csv(o.cliente.ciudad),
