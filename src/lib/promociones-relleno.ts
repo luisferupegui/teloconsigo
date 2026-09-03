@@ -4,7 +4,7 @@ import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct } from
 import { ramYDisco, sinVram, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { categoriaPorNombre } from "@/lib/catimporter/parsers/categorias";
 import { marcaDeNombre } from "@/lib/marcas";
-import { pulgadasDe, sustantivoDeNombre, specsDeNombre } from "@/lib/ficha-card";
+import { pulgadasDe, sustantivoDeNombre, specsDeNombre, resumirSpec } from "@/lib/ficha-card";
 
 // ─── Llenar la vitrina con lo mejor de las listas del mes ────────────────────
 //
@@ -68,68 +68,11 @@ const ORDEN_SPEC = ["procesador", "ram", "almacenamiento", "gpu", "pantalla", "m
   "capacidad", "resolucion", "tecnologia", "estandar", "banda", "velocidad", "puertos", "potencia", "tipo",
   "conexion", "interfaz", "frecuencia", "cobertura", "duracion", "version", "conectividad", "incluye"];
 
-// ─── Que la ficha se lea como una ficha ──────────────────────────────────────
-//
-// Las listas escriben la memoria como "ADATA SPECTRIX D35G 16GB DDR4 3200MHZ" y
-// el disco como "SSD HIKSEMI 512GB WAPE (P) M.2": el fabricante de la pieza, su
-// nombre comercial y la referencia interna. Nada de eso decide una compra —el
-// cliente compara 16GB contra 8GB— y al recortar a 32 caracteres la card
-// enseñaba "HIKSEMI ARMOR / ADATA XPG…" sin llegar a decir cuánta memoria trae.
-//
-// Se normaliza ANTES de recortar, que si no se recorta la parte que importa.
+// El panel guarda ya lo que la card va a pintar: el resumen de cada spec vive
+// en `ficha-card`, que es de los dos lados. Aquí había una segunda versión de
+// las mismas reglas —cpuCorta, ramCorta, discoCorto— y dos versiones de la
+// misma regla son dos reglas que un día dicen cosas distintas.
 
-const CAPACIDAD = /(\d{1,4})\s?(gb|tb)/i;
-
-/** "SODIMM DDR4-8GB BUS DE 3200" → "8GB DDR4 3200MHz" */
-function ramCorta(v: string): string {
-  const cap = v.match(CAPACIDAD);
-  if (!cap) return v;
-  const tipo = v.match(/\bddr\s?([2345])/i);
-  const mhz = v.match(/(\d{4})\s?mhz/i) ?? v.match(/bus\s*(?:de)?\s*(\d{4})/i);
-  const partes = [Number(cap[1]) + cap[2].toUpperCase()];
-  if (tipo) partes.push("DDR" + tipo[1]);
-  if (mhz) partes.push(mhz[1] + "MHz");
-  return partes.join(" ");
-}
-
-/** "SSD HIKSEMI 512GB WAPE (P) M.2" → "512GB SSD M.2" */
-function discoCorto(v: string): string {
-  const cap = v.match(CAPACIDAD);
-  if (!cap) return v;
-  const gb = Number(cap[1]) * (cap[2].toLowerCase() === "tb" ? 1000 : 1);
-  const tamano = gb >= 1000 && gb % 1000 === 0 ? gb / 1000 + "TB" : gb + "GB";
-  const tecnologia = /ssd|nvme|\bm\.?2/i.test(v) ? "SSD"
-    : /hdd|sata|mec[áa]nic/i.test(v) ? "HDD" : "";
-  const partes = [tamano, tecnologia].filter(Boolean);
-  if (/\bnvme\b/i.test(v)) partes.push("NVMe");
-  else if (/\bm\.?2/i.test(v)) partes.push("M.2");
-  return partes.join(" ");
-}
-
-/** "AMD RYZEN 7 8700F 4,1GHZ" → "AMD Ryzen 7 8700F 4.1GHz" */
-const COMO_SE_LEE: Record<string, string> = {
-  amd: "AMD", intel: "Intel", ryzen: "Ryzen", core: "Core", ultra: "Ultra",
-  xeon: "Xeon", athlon: "Athlon", celeron: "Celeron", pentium: "Pentium",
-};
-function cpuCorta(v: string): string {
-  const t = v
-    .replace(/\bprocessors?\b/i, "")
-    .replace(/\s*[(][^)]*[)]/g, "")
-    .replace(/core\s?i(\d)/i, "Core i$1")
-    .replace(/(\d),(\d)\s?ghz/i, "$1.$2GHz")
-    .replace(/(\d(?:\.\d)?)\s?ghz/i, "$1GHz")
-    .replace(/\s+/g, " ")
-    .trim();
-  return t.split(" ").map((w) => COMO_SE_LEE[w.toLowerCase()] ?? w).join(" ");
-}
-
-
-/** Quién sabe acortar cada spec. Lo que no está aquí se muestra tal cual. */
-const ACORTA: Record<string, (v: string) => string> = {
-  // "capacidad" pasa por el mismo sitio que el disco: 1000GB es como lo escribe
-  // el proveedor y 1TB es como se compra.
-  procesador: cpuCorta, ram: ramCorta, almacenamiento: discoCorto, capacidad: discoCorto,
-};
 
 
 /** Las specs del producto tal como las va a leer un cliente en la card. */
@@ -167,7 +110,7 @@ export function specsParaCard(p: ActiveProduct): Record<string, string> {
   const salida: Record<string, string> = {};
   for (const clave of ORDEN_SPEC) {
     if (!bruto[clave]) continue;
-    salida[clave] = (ACORTA[clave] ?? ((x: string) => x))(bruto[clave]).trim();
+    salida[clave] = resumirSpec(clave, bruto[clave]);
   }
   return salida;
 }

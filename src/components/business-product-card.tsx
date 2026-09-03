@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import Link from "next/link";
 import {
   Heart, Laptop, PcCase, Server, Monitor, Tablet, Camera, Router, Network,
@@ -29,70 +30,76 @@ const ICONOS: Record<string, React.ComponentType<{ className?: string }>> = {
 
 // ─── Etiquetas de specs (compartido con /productos y /soluciones) ──────────────
 
-// Ninguna etiqueta pasa de CINCO letras, y no es capricho: la columna mide 46px
-// y "ESTÁNDAR" salía como "ESTÁN…", "PUERTOS" como "PUERT…". Una etiqueta
-// cortada no dice nada; una de cinco letras cabe siempre y se lee igual.
+// La columna de la etiqueta se mide sola (grid `auto`), así que ya no hay que
+// abreviar hasta el jeroglífico: "RES", "HZ" y "RESP" pedían adivinar. Cada
+// card ajusta su columna a la etiqueta más larga que tenga, y todas sus filas
+// quedan alineadas entre sí, que es lo que hace que se vea ordenada.
+//
+// El tope sigue siendo NUEVE caracteres: por encima, la etiqueta le come el
+// sitio al dato, que es lo que se vino a enseñar.
 const SPEC_LABEL: Record<string, string | null> = {
   procesador:       "CPU",
+  nucleos:          "CORES",
   ram:              "RAM",
   almacenamiento:   "DISCO",
-  capacidad:        "CAP",
+  capacidad:        "CAPACIDAD",
   gpu:              "GPU",
   pantalla:         "PANT",
-  monitor:          "MON",
+  monitor:          "MONITOR",
   so:               "SO",
-  garantia:         "GAR",
+  garantia:         "GARANTÍA",
   conectividad:     "RED",
-  bateria:          "BAT",
+  bateria:          "BATERÍA",
+  tdp:              "TDP",
   // Redes y cámaras
   estandar:         "WIFI",
-  velocidad:        "VEL",
-  puertos:          "PTOS",
   banda:            "BANDA",
+  velocidad:        "VELOCIDAD",
+  puertos:          "PUERTOS",
+  potencia:         "POTENCIA",
   tipo:             "TIPO",
-  resolucion:       "RES",
-  conexion:         "CONEX",
-  interfaz:         "CONEX",
+  resolucion:       "RESOL",
+  tecnologia:       "TECNO",
+  conexion:         "CONEXIÓN",
+  interfaz:         "CONEXIÓN",
   // Monitores
-  frecuencia:       "HZ",
-  tiempo_respuesta: "RESP",
-  entradas:         "ENTR",
+  frecuencia:       "REFRESCO",
+  tiempo_respuesta: "RESPUESTA",
+  entradas:         "ENTRADAS",
   freesync:         "SYNC",
   curvatura:        "CURVA",
   color:            "COLOR",
   // Licencias
-  aplicaciones:     "INCL",
-  incluye:          "INCL",
-  usuarios:         "USRS",
-  dispositivos:     "EQUIP",
-  cobertura:        "EQUIP",
-  duracion:         "VIG",
-  version:          "VER",
-  activacion:       "ACTIV",
-  idioma:           "IDIOM",
-  soporte:          "SOP",
-  transferible:     "TRASL",
-  proteccion:       "PROT",
+  aplicaciones:     "INCLUYE",
+  incluye:          "INCLUYE",
+  usuarios:         "USUARIOS",
+  dispositivos:     "EQUIPOS",
+  cobertura:        "EQUIPOS",
+  duracion:         "VIGENCIA",
+  version:          "VERSIÓN",
+  activacion:       "ACTIVA",
+  idioma:           "IDIOMA",
+  soporte:          "SOPORTE",
+  transferible:     "TRASLADO",
+  proteccion:       "PROTEGE",
   clase:            "CLASE",
   // Accesorios y energía
-  lectura:          "LECT",
-  escritura:        "ESCR",
-  alcance:          "ALC",
+  lectura:          "LECTURA",
+  escritura:        "ESCRITURA",
+  alcance:          "ALCANCE",
   dpi:              "DPI",
-  botones:          "BTN",
-  receptor:         "RECEP",
-  potencia:         "POT",
-  autonomia:        "AUTON",
+  botones:          "BOTONES",
+  receptor:         "RECEPTOR",
+  autonomia:        "AUTONOMÍA",
   tomas:            "TOMAS",
   avr:              "AVR",
-  entrada:          "ENTR",
-  salida:           "SAL",
+  entrada:          "ENTRADA",
+  salida:           "SALIDA",
   hdmi:             "HDMI",
   usb_velocidad:    "USB",
   pd:               "CARGA",
   carga_rapida:     "CARGA",
-  tecnologia:       "TECNO",
-  compatibilidad:   "COMP",
+  compatibilidad:   "COMPAT",
   tamanho:          null,   // ya va en el subtítulo ("Monitor 24\"")
   panel:            null,   // idem
   // omitidos de la vista resumen
@@ -222,16 +229,16 @@ export function BusinessProductCard({
           card con una sola spec deja de verse rota. */}
       <div className="mt-3 flex-1">
         {specRows.length > 0 && (
-          <dl className="space-y-2 rounded-xl bg-zinc-50/80 px-3 py-2.5 ring-1 ring-inset ring-zinc-100">
+          <dl className="grid grid-cols-[auto_1fr] items-baseline gap-x-2.5 gap-y-2
+                         rounded-xl bg-zinc-50/80 px-3 py-2.5 text-[11px] leading-4
+                         ring-1 ring-inset ring-zinc-100">
             {specRows.map(({ clave, label, value }) => (
-              <div key={clave} className="flex items-baseline gap-2.5 text-xs leading-4">
-                <dt className="w-[46px] shrink-0 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <Fragment key={clave}>
+                <dt className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">
                   {label}
                 </dt>
-                <dd className="min-w-0 flex-1 font-medium text-zinc-700">
-                  {value}
-                </dd>
-              </div>
+                <dd className="min-w-0 font-medium text-zinc-700">{value}</dd>
+              </Fragment>
             ))}
           </dl>
         )}

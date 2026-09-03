@@ -1649,7 +1649,13 @@
     "precioDesde": 466000,
     "precioIvaIncluido": false,
     "proveedor": "manual",
-    "specs": {},
+    "specs": {
+      "nucleos": "6 núcleos 12 hilos",
+      "velocidad": "3.6 / 4.2 GHz",
+      "tipo": "Socket AM4",
+      "gpu": "Sin video integrado",
+      "tdp": "65W"
+    },
     "descripcionUso": "Procesador · 6 núcleos 12 hilos",
     "destacado": false,
     "enAccesorios": false,
@@ -1759,7 +1765,7 @@
       "procesador": "Ryzen 3 3200G",
       "ram": "16GB DDR4",
       "almacenamiento": "1TB SSD",
-      "monitor": "Janus 23.8\""
+      "monitor": "23.8\""
     },
     "descripcionUso": "Equipo de escritorio · Monitor 23.8\""
   },
@@ -1784,7 +1790,7 @@
       "procesador": "Ryzen 3 3200G",
       "ram": "16GB DDR4",
       "almacenamiento": "1TB SSD",
-      "monitor": "Janus 24.5\""
+      "monitor": "24.5\""
     },
     "descripcionUso": "Equipo de escritorio · Monitor 24.5\""
   },
@@ -1806,11 +1812,11 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Intel Core Ultra 7 155U",
+      "procesador": "Core Ultra 7 155U",
       "ram": "8GB DDR5",
       "almacenamiento": "512GB SSD NVMe",
-      "pantalla": "23.8\" diagonal, FHD (1920 x 1080), IPS, anti-glare, WLED-backlit, 250 nits, 72% NTSC",
-      "so": "FreeDOS ▪ Puertos: Parte posterior 1 USB Type-C con velocidad de señalización de 5 Gb/s; 2 USB Type-A con velocidad de señalización de 5 Gb/s; 2 USB 2.0 Type-A; 1 HDMI 1.4; 1 combinación de audífonos/micrófono; 1 RJ-45; 1 conector de alimentación"
+      "pantalla": "23.8\"",
+      "so": "FreeDOS"
     },
     "descripcionUso": "Todo en uno 23.8\""
   },
@@ -1832,14 +1838,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "32GB",
-      "almacenamiento": "1TB SSD M.2",
-      "gpu": "ASUS DUAL GEFORCE RTX 3050 6GB GDDR6",
-      "monitor": "ACER 23,8 KA242Y · MSI PRO 24” MP243LE14",
+      "procesador": "RYZEN 7 8700F 4",
+      "ram": "32GB 5600MHz",
+      "almacenamiento": "1TB SSD",
+      "gpu": "RTX 3050 6GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 24\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "JAN-838AE44A",
@@ -1861,9 +1867,9 @@
     "specs": {
       "procesador": "Ryzen 5 8500G",
       "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD M.2",
+      "almacenamiento": "512GB SSD",
       "gpu": "RX 7600",
-      "monitor": "Janus 27\""
+      "monitor": "27\""
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
@@ -1885,14 +1891,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "16GB DDR5 5600MHz",
+      "procesador": "RYZEN 7 8700F 4",
+      "ram": "16GB DDR5",
       "almacenamiento": "512GB SSD",
-      "gpu": "GIGABYTE GeForce RTX 5060 WINDFORCE OC 8GB GDDR7 / MSI RTX 5060 8G SHADOW",
-      "monitor": "ACER 23,8 KA242Y",
+      "gpu": "RTX 5060 8GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "R87161F76W",
@@ -1912,14 +1918,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "16GB DDR5 5600MHz",
-      "almacenamiento": "1TB SSD M.2",
-      "gpu": "ASUS DUAL RX7600 8GB",
-      "monitor": "ACER 23,8 KA242Y",
+      "procesador": "RYZEN 7 8700F",
+      "ram": "16GB DDR5",
+      "almacenamiento": "1TB SSD",
+      "gpu": "RX 7600 8GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "JAN-8FA72ADA",
@@ -1941,9 +1947,9 @@
     "specs": {
       "procesador": "Ryzen 7 5700G",
       "ram": "16GB DDR4",
-      "almacenamiento": "512GB SSD M.2",
+      "almacenamiento": "512GB SSD",
       "gpu": "RX 9060 8GB",
-      "monitor": "Janus 27\""
+      "monitor": "27\""
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
@@ -1965,14 +1971,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "32GB",
-      "almacenamiento": "1TB SSD M.2",
-      "gpu": "ASUS DUAL RTX 5050 8GB",
-      "monitor": "ACER 23,8 KA242Y",
+      "procesador": "RYZEN 7 8700F 4",
+      "ram": "32GB 5600MHz",
+      "almacenamiento": "1TB SSD",
+      "gpu": "RTX 5050 8GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "83DV01AYLM",
@@ -1992,10 +1998,10 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Intel Core i5-13450HX 10C / 16T, P-core 2.4 / 4.6GHz, E-core 1.8 / 3.4GHz, 20MB Intel Smart Cache",
+      "procesador": "Core i5 13450HX",
       "ram": "16GB DDR5",
       "almacenamiento": "512GB SSD NVMe",
-      "pantalla": "15.6\" FHD (1920x1080) IPS 300nits Anti-glare, 100% sRGB, 144Hz, G-SYNC"
+      "pantalla": "15.6\" FHD IPS"
     },
     "descripcionUso": "Portátil 15.6\""
   },
@@ -2133,14 +2139,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
-      "ram": "16GB DDR4 3200MHz",
-      "almacenamiento": "512GB SSD M.2",
-      "gpu": "RTX 3050 6GB GIGABYTE",
-      "monitor": "ACER 23,8 KA242Y",
+      "procesador": "RYZEN 5 5600GT",
+      "ram": "16GB DDR4",
+      "almacenamiento": "512GB SSD",
+      "gpu": "RTX 3050 6GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "JAN-D56B7B5C",
@@ -2162,9 +2168,9 @@
     "specs": {
       "procesador": "Ryzen 7 5700X",
       "ram": "16GB DDR4",
-      "almacenamiento": "1TB SSD M.2",
+      "almacenamiento": "1TB SSD",
       "gpu": "RTX 3050",
-      "monitor": "Janus 27\""
+      "monitor": "27\""
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
@@ -2186,14 +2192,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Intel Core i5 14600KF 3.5GHz",
-      "ram": "16GB DDR5 6000MHz",
+      "procesador": "CORE i5 14600KF 3",
+      "ram": "16GB DDR5",
       "almacenamiento": "512GB SSD",
-      "gpu": "ASUS DUAL RTX 3050 6GB",
-      "monitor": "ACER 23,8 KA242Y",
+      "gpu": "RTX 3050 6GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "R55162SB76X",
@@ -2213,14 +2219,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 5 5500X3D 3.0GHz",
-      "ram": "16GB DDR4 3200MHz",
+      "procesador": "RYZEN 5 5500X3D",
+      "ram": "16GB DDR4",
       "almacenamiento": "512GB SSD",
-      "gpu": "ASUS DUAL RX7600 8GB",
-      "monitor": "ACER 23,8 KA242Y",
+      "gpu": "RX 7600 8GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "JAN-2965EEB6",
@@ -2240,11 +2246,11 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Core i5-14400F",
+      "procesador": "Core i5 14400F",
       "ram": "16GB DDR4",
-      "almacenamiento": "512GB SSD M.2",
+      "almacenamiento": "512GB SSD",
       "gpu": "RX 9060 8GB",
-      "monitor": "Janus 27\""
+      "monitor": "27\""
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
@@ -2266,14 +2272,14 @@
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 5700X 3.4GHz",
-      "ram": "16GB DDR4 3200MHz",
+      "procesador": "RYZEN 7 5700X",
+      "ram": "16GB DDR4",
       "almacenamiento": "512GB SSD",
-      "gpu": "MSI RTX 5060 8GB",
-      "monitor": "ACER 23,8 KA242Y",
+      "gpu": "RTX 5060 8GB",
+      "monitor": "23\"",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
   },
   {
     "referencia": "JAN-52F53A77",
@@ -2295,9 +2301,9 @@
     "specs": {
       "procesador": "Ryzen 7 5700X",
       "ram": "16GB DDR4",
-      "almacenamiento": "1TB SSD M.2",
+      "almacenamiento": "1TB SSD",
       "gpu": "RX 9060 8GB",
-      "monitor": "Janus 27\""
+      "monitor": "27\""
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
@@ -2321,9 +2327,9 @@
     "specs": {
       "procesador": "Ryzen 7 8700F",
       "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD M.2",
+      "almacenamiento": "512GB SSD",
       "gpu": "RTX 5060 8GB",
-      "monitor": "Janus 27\""
+      "monitor": "27\""
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },

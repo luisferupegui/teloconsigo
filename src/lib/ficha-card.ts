@@ -194,6 +194,9 @@ function cpuBreve(v: string): string {
   t = t.replace(/\b(lga\d*|socket|am[45]|no\svideo|vpro|box|oem|tray)\b/gi, " ");
   t = t.replace(/\s*\d+\.?\d*\s?(mb|m)\s?cache\b/gi, " ");
   t = t.replace(/\s*\d+(\.\d+)?\s*-\s*\d+(\.\d+)?\s?ghz\b/gi, " ");
+  t = t.replace(/\s*\d+(\.\d+)?\s?ghz\b/gi, " ");
+  t = t.split("/")[0];
+  t = t.replace(/\s+\d{1,2}\s?[cpt]\b/gi, " ");
   return limpio(sinGuiones(t));
 }
 
@@ -206,7 +209,7 @@ function ramBreve(v: string): string {
   if (!cap) return limpio(sinGuiones(t)).slice(0, 24);
   const partes = [cap[1] + cap[2].toUpperCase()];
   if (tipo) partes.push("DDR" + tipo[1]);
-  if (mhz) partes.push(mhz[1] + "MHz");
+  else if (mhz) partes.push(mhz[1] + "MHz");
   return partes.join(" ");
 }
 
@@ -263,8 +266,8 @@ export function resumirSpec(clave: string, valor: string): string {
     BREVE[clave]?.(valor) ?? limpio(sinGuiones(sinParentesis(valor.split(/[▪|]/)[0])));
   // Red de seguridad: nada por encima de 26 caracteres cabe en la columna, y
   // cortar por la última palabra entera se lee mejor que cortar por la mitad.
-  if (breve.length <= 26) return breve;
-  return breve.slice(0, 26).replace(/\s+\S*$/, "");
+  if (breve.length <= 22) return breve;
+  return breve.slice(0, 22).replace(/\s+\S*$/, "");
 }
 
 /**
