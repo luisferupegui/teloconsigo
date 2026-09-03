@@ -78,6 +78,12 @@ export function analizarPromociones(): AnalisisPromociones {
   for (const pub of publicados) {
     const precioActual = pub.precioDesde ?? pub.precio ?? 0;
 
+    // Productos que no salen de ninguna lista: los dos servidores de la sección
+    // de Redes están cotizados contra el mercado, no contra un proveedor. Sin
+    // esto el panel los daba por descatalogados —correcto pero inútil: no hay
+    // lista donde buscarlos— y el botón de retirar se los habría llevado.
+    if ((pub as unknown as { fueraDeLista?: boolean }).fueraDeLista) { alDia++; continue; }
+
     if (!pub.referencia) { sinReferencia++; continue; }
 
     const enLista = vigentes.get(norm(pub.referencia));

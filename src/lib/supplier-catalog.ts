@@ -1,5 +1,6 @@
 import "server-only";
 import fs from "fs";
+import { createHash } from "crypto";
 import path from "path";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -155,6 +156,30 @@ function claveDeProducto(p: SupplierProduct): string {
   return `nom:${p.nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim()}`;
 }
 
+/**
+ * La referencia con la que se sigue un producto mes a mes.
+ *
+ * Los 418 productos de Janus y 93 de Infoshop vienen SIN referencia: son listas
+ * de precios por nombre, no por número de parte. Y sin referencia un producto no
+ * se puede publicar —la vitrina la usa de id— ni volver a comparar el mes que
+ * viene, así que Janus entero, con sus 58 equipos gamer, quedaba fuera de la
+ * tienda sin que nadie lo notara: Gaming se llenaba con siete Power Group
+ * porque era lo único que quedaba en pie.
+ *
+ * Se le da una, derivada del mismo nombre normalizado con el que ya se comparan
+ * las listas. Mientras el proveedor no le cambie el nombre, el mes que viene
+ * sale la misma referencia y el precio se actualiza solo; si se lo cambia,
+ * aparece como descatalogado, que es justo lo que hay que mirar. El prefijo
+ * avisa de que la pusimos nosotros.
+ */
+export function referenciaDeLista(p: SupplierProduct): string {
+  const propia = (p.referencia ?? "").trim();
+  if (propia.length >= 4) return propia;
+  const clave = claveProveedor(p.proveedor) + "|" + claveDeProducto(p);
+  const huella = createHash("sha1").update(clave).digest("hex").slice(0, 8).toUpperCase();
+  return claveProveedor(p.proveedor).slice(0, 3).toUpperCase() + "-" + huella;
+}
+
 /** Productos de todas las listas ACTIVAS, aplanados y con contexto de lista.
  *
  *  Cuando el mismo producto del mismo proveedor está en varias listas activas,
@@ -167,7 +192,12 @@ export function loadActiveProducts(): ActiveProduct[] {
   const fechaDe = new Map(activas.map((l) => [l.id, Date.parse(l.fecha) || 0]));
 
   const todos: ActiveProduct[] = activas.flatMap((l) =>
-    l.productos.map((p) => ({ ...p, listaId: l.id, listaNombre: l.nombre })),
+    l.productos.map((p) => ({
+      ...p,
+      referencia: referenciaDeLista(p),
+      listaId: l.id,
+      listaNombre: l.nombre,
+    })),
   );
 
   // Por proveedor y producto, cuál es la lista más nueva que lo trae.

@@ -41,7 +41,7 @@ const REGLAS: [RegExp, string][] = [
   // "Cabina" es como se llama en Colombia a un parlante amplificado. Sin ella,
   // una "Cabina Jaltech BT 6.5\"" caía en accesorios.
   [/parlante|altavoz|cabina|barra\s*de\s*sonido|aud[ií]fono|auricular|diadema|headset|micr[oó]fono|earphone|earbud|headphone|speaker/i, "auriculares"],
-  [/webcam|c[aá]mara\s*web|c[aá]mara/i,                                        "camara"],
+  [/webcam|c[aá]mara\s*web|c[aá]mara|\bnvr\b|grabador\sde\sv[íi]deo/i,                                        "camara"],
   // "Combo" en estas listas es siempre teclado + mouse. Va con teclado, que es
   // como lo trata el resto del sistema; el margen de ambos es el mismo, así que
   // la elección no cambia el precio.
@@ -52,7 +52,12 @@ const REGLAS: [RegExp, string][] = [
   [/router|\bswitch\b|access\s*point|punto\s*de\s*acceso|repetidor|antena|firewall|\bpoe\b/i, "redes"],
   [/refrigeraci[oó]n|disipador|\bcooler\b|ventilador/i,                        "refrigeracion"],
   [/fuente\s*de\s*(poder|alimentaci[oó]n)|\bpsu\b|80\s*plus/i,                 "fuente-poder"],
+  // El chipset con el sufijo comercial: "ASUS TUF X870 PLUS GAMING WIFI",
+  // "ASROCK B860 PRO - RS WIFI", "GIGABYTE H610M - H DDR4". Sin esta regla
+  // caían en `redes` por el "WIFI" del rótulo de la página y acababan
+  // ofreciéndose entre los routers.
   [/motherboard|mainboard|placa\s*(base|madre)|tarjeta\s*madre|\bboard\b/i,    "motherboard"],
+  [/\b[abhxz]\d{3}[a-z]{0,2}\b.*\b(plus|wifi|tomahawk|aorus|steel\s*legend|prime|pro@S*-?@S*rs|ddr[45])\b/i, "motherboard"],
   [/tarjeta\s*(de\s*)?(video|gr[aá]fica)|\brtx\b|\bgtx\b|radeon|geforce|\bgpu\b/i, "tarjeta-grafica"],
   [/procesador|\bcpu\b|\bryzen\b|core\s*i[3579]|\bxeon\b/i,                    "procesador"],
   [/\bddr[2345]\b|sodimm|udimm|memoria\s*ram/i,                                "memoria-ram"],

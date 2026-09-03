@@ -286,7 +286,7 @@ function suficienteInfo(p: ActiveProduct, specs: Record<string, string>): boolea
  *  el cliente que está comparando ocho equipos no lee adjetivos, lee datos. */
 const QUE_ES: Record<string, string> = {
   portatil: "Portátil", escritorio: "Equipo de escritorio",
-  "escritorio-alto-rendimiento": "Escritorio de alto rendimiento",
+  "escritorio-alto-rendimiento": "Escritorio alto rendimiento",
   "all-in-one": "Todo en uno", "mini-pc": "Mini PC", servidor: "Servidor",
   monitor: "Monitor", tableta: "Tablet", celular: "Celular",
   impresora: "Impresora", redes: "Equipo de red",
@@ -319,9 +319,19 @@ function descripcionDe(p: ActiveProduct, specs: Record<string, string>, marca: s
     // es algo que viene ADEMÁS, y por eso se nombra aparte.
     const propia = pulgadasDe(specs.pantalla) || pulgadasDe(p.nombre);
     const aparte = pulgadasDe(specs.monitor);
+
+    // Una torre no tiene pantalla. El "Compumax Core i7-13620H 8GB 500GB" venía
+    // en la lista como `escritorio` y traía "LCD 15.6"", lector de huella y
+    // cámara: es un portátil mal clasificado, y en la card salía como "Equipo de
+    // escritorio" sin tamaño. Manda la pantalla, no la columna de la lista.
+    const conPantalla = propia && p.categoria !== "portatil" && !aparte;
+    if (conPantalla) {
+      const n = Number(propia.replace('"', ""));
+      return (n <= 17 ? "Portátil " : "Todo en uno ") + propia;
+    }
+
     const partes = [propia && p.categoria === "portatil" ? base + " " + propia : base];
     if (aparte) partes.push("Monitor " + aparte);
-    else if (propia && p.categoria === "all-in-one") partes.push("Pantalla " + propia);
     return partes.join(" · ");
   }
 
@@ -358,6 +368,8 @@ export type SeccionVitrina = {
    * promete: todos los portátiles son `portatil`, gamer o de oficina.
    */
   exige?: { categorias: string[]; patron: RegExp };
+  /** Lo que la sección no admite aunque su categoría encaje. */
+  excluye?: RegExp;
 };
 
 export const SECCIONES: SeccionVitrina[] = [
@@ -375,10 +387,15 @@ export const SECCIONES: SeccionVitrina[] = [
   // dejaban la sección sin credibilidad. A un portátil se le exige que lo diga:
   // gráfica dedicada o línea gamer. A una torre no, que para eso está en
   // `escritorio-alto-rendimiento`.
+  // Sin `tarjeta-grafica`: una gráfica suelta es una pieza y su sitio es
+  // Componentes. Aquí van máquinas.
   { id: "gaming-streaming", nombre: "Gaming y Streaming", campo: "segmento", valor: "gaming-streaming",
-    categorias: ["escritorio-alto-rendimiento", "portatil", "tarjeta-grafica"], desde: 3_000_000,
-    exige: { categorias: ["portatil"],
-      patron: /rtx|gtx|geforce|radeon|\btuf\b|\brog\b|nitro|predator|victus|katana|legion|\bloq\b|\bomen\b|gam(ing|er)/i } },
+    categorias: ["escritorio-alto-rendimiento", "portatil"], desde: 3_000_000,
+    // La señal se le pide también a las torres: entre los ensamblados hay
+    // "JANUS WORKSTATION Core i5-12400" sin gráfica dedicada, que es una buena
+    // máquina de oficina y una mala card en la sección de juego.
+    exige: { categorias: ["portatil", "escritorio-alto-rendimiento"],
+      patron: /rtx|gtx|geforce|radeon|\brx\s?\d{4}\b|\btuf\b|\brog\b|nitro|predator|victus|katana|legion|\bloq\b|\bomen\b|gam(ing|er)/i } },
 
   { id: "productividad-oficina", nombre: "Productividad y Oficina", campo: "usoCaso", valor: "pc-empresarial",
     categorias: ["escritorio", "all-in-one", "mini-pc"], desde: 2_000_000 },
@@ -386,11 +403,21 @@ export const SECCIONES: SeccionVitrina[] = [
   { id: "movilidad-premium", nombre: "Movilidad Premium", campo: "usoCaso", valor: "portatil-ejecutivo",
     categorias: ["portatil"], desde: 2_600_000 },
 
+  // La categoría `redes` de las listas recoge lo que el lector no supo colocar
+  // —se coló una board "ASUS TUF X870 PLUS GAMING WIFI"—, así que aquí el nombre
+  // tiene que decir qué aparato es.
   { id: "redes-servidores", nombre: "Redes y Servidores", campo: "segmento", valor: "redes-servidores",
-    categorias: ["redes", "servidor"] },
+    categorias: ["redes", "servidor"],
+    exige: { categorias: ["redes"],
+      patron: /\b(router|switch|antena|repetidor|firewall|poe|inyector|balanceador|nvr)\b|punto\sde\sacceso|access\s?point/i } },
 
+  // La sección promete "GPU dedicada", así que se le exige: entraban
+  // "JANUS WORKSTATION Core i5-12400 + Monitor 55"" con gráfica integrada, que
+  // para editar vídeo es justo lo que no sirve.
   { id: "creadores-produccion", nombre: "Creadores y Producción", campo: "segmento", valor: "creadores-produccion",
-    categorias: ["escritorio-alto-rendimiento"], desde: 3_500_000 },
+    categorias: ["escritorio-alto-rendimiento"], desde: 3_500_000,
+    exige: { categorias: ["escritorio-alto-rendimiento"],
+      patron: /rtx|gtx|geforce|radeon|\brx\s?\d{4}\b|quadro|\bgpu\b/i } },
 
   // Sin `televisor`: en las listas vigentes esa categoría tiene TRES productos y
   // ninguno es un televisor —una board, un mouse y un rotulador que el lector no
@@ -405,15 +432,22 @@ export const SECCIONES: SeccionVitrina[] = [
   { id: "tablets", nombre: "Tablets Empresariales", campo: "usoCaso", valor: "tablet-empresarial",
     categorias: ["tableta"] },
 
+  // El almacenamiento entra sólo si es EXTERNO: un disco que se lleva en el
+  // bolso es un accesorio, y uno que va atornillado a la board es un componente.
   { id: "accesorios", nombre: "Accesorios", campo: "usoCaso", valor: "accesorio",
-    categorias: ["accesorios", "mouse", "teclado", "auriculares", "camara", "impresora"] },
+    categorias: ["accesorios", "mouse", "teclado", "auriculares", "camara", "impresora", "almacenamiento"],
+    exige: { categorias: ["almacenamiento"], patron: /extern|port[áa]til|micro\s?sd|\busb\b/i },
+    excluye: /grabador\sde\sv[íi]deo|\bnvr\b/i },
 
   { id: "licencias", nombre: "Licencias y Software", campo: "usoCaso", valor: "licencia",
     categorias: ["antivirus", "licencia", "software"] },
 
+  // Piezas que van DENTRO del equipo. Un disco externo no se instala, se
+  // conecta: eso es un accesorio y allí tiene sección.
   { id: "componentes", nombre: "Componentes", campo: "segmento", valor: "componentes",
     categorias: ["procesador", "motherboard", "memoria-ram", "almacenamiento",
-                 "tarjeta-grafica", "fuente-poder", "refrigeracion", "proteccion"] },
+                 "tarjeta-grafica", "fuente-poder", "refrigeracion"],
+    excluye: /extern/i },
 ];
 
 /**
@@ -571,6 +605,7 @@ const PIEZAS_CON_MODELO = new Set(["tarjeta-grafica", "procesador", "memoria-ram
 const LLEVA_MODELO = /\d{3,}/;
 
 function encajaEnSeccion(nombre: string, catLista: string, s: SeccionVitrina): boolean {
+  if (s.excluye?.test(nombre)) return false;
   if (PIEZAS_CON_MODELO.has(catLista) && !LLEVA_MODELO.test(nombre)) return false;
   if (s.exige && s.exige.categorias.includes(catLista) && !s.exige.patron.test(nombre)) return false;
   if (EQUIPOS_COMPLETOS.has(catLista)) return true;
@@ -705,42 +740,61 @@ export function proponerRelleno(ids: string[]): PropuestaSeccion[] {
     const elegidos: Candidato[] = [];
     const puestos = new Set<string>();
     const porProveedor = new Map<string, number>();
+    const porCategoria = new Map<string, number>();
 
     const tomar = (c: (typeof pool)[number], tramo: string) => {
       if (puestos.has(c.p.referencia!) || elegidos.length >= faltan) return false;
       puestos.add(c.p.referencia!);
       usados.add(modelo(c.p.nombre));
       porProveedor.set(c.p.proveedor, (porProveedor.get(c.p.proveedor) ?? 0) + 1);
+      porCategoria.set(c.p.categoria, (porCategoria.get(c.p.categoria) ?? 0) + 1);
       elegidos.push(candidato(c.p, c.precioVenta, tramo, c.valor));
       return true;
     };
 
-    // ── Primera pasada: con diversidad de proveedor ──
-    // Como mucho la mitad de la sección del mismo proveedor. Si ese se queda sin
-    // stock, la sección no se cae entera.
-    const tope = Math.max(2, Math.ceil(faltan / 2));
-    for (const tramo of TRAMOS) {
-      const orden = [...porTramo[tramo]].sort((a, b) => b.valor - a.valor);
-      for (const c of orden) {
-        if (elegidos.filter((e) => e.tramo === tramo).length >= cuotas[tramo]) break;
-        if ((porProveedor.get(c.p.proveedor) ?? 0) >= tope) continue;
-        tomar(c, tramo);
+    // ── Cómo se reparte la sección ──
+    //
+    // Tres pasadas, cada una con una restricción menos. La diversidad es una
+    // preferencia fuerte, no un muro: hay secciones que un solo proveedor
+    // domina, y dejarla a medias por eso es peor que repetirlo.
+    //
+    //   1ª  un tope por proveedor Y otro por categoría de lista
+    //   2ª  sólo el tope por proveedor
+    //   3ª  sin topes, lo mejor que quede
+    //
+    // Sin la primera, Gaming salía con siete Power Group teniendo 58 Janus en
+    // las listas, y Componentes con ocho discos teniendo procesadores, memorias
+    // y boards. Lo que las colaba era el segundo paso, que no miraba nada.
+    const topeProveedor = Math.max(2, Math.ceil(faltan / 2));
+    const topeCategoria = Math.max(2, Math.ceil(faltan / 3));
+
+    const limiteEntrada = ordenados[corte - 1]?.precioVenta ?? Infinity;
+    const limiteMedio = ordenados[corte * 2 - 1]?.precioVenta ?? Infinity;
+    const tramoDe = (precio: number) =>
+      precio <= limiteEntrada ? "entrada" : precio <= limiteMedio ? "medio" : "alto";
+
+    const cabe = (c: (typeof pool)[number], conCategoria: boolean, conProveedor: boolean) =>
+      (!conProveedor || (porProveedor.get(c.p.proveedor) ?? 0) < topeProveedor) &&
+      (!conCategoria || (porCategoria.get(c.p.categoria) ?? 0) < topeCategoria);
+
+    // Las dos primeras pasadas respetan la escalera de precio; la última ya sólo
+    // busca llenar, y el tramo se deduce del precio para que no salgan ocho
+    // "medio" seguidos.
+    for (const [conCategoria, conProveedor] of [[true, true], [false, true]] as const) {
+      for (const tramo of TRAMOS) {
+        const orden = [...porTramo[tramo]].sort((a, b) => b.valor - a.valor);
+        for (const c of orden) {
+          if (elegidos.filter((e) => e.tramo === tramo).length >= cuotas[tramo]) break;
+          if (!cabe(c, conCategoria, conProveedor)) continue;
+          tomar(c, tramo);
+        }
       }
     }
 
-    // ── Segunda pasada: llenar lo que falte ──
-    // La diversidad es una preferencia, no un muro: hay categorías que un solo
-    // proveedor domina, y dejar la sección a medias por eso es peor que
-    // repetirlo. Se ordena por valor, así que lo que entra aquí sigue siendo lo
-    // mejor que queda.
     if (elegidos.length < faltan) {
-      // El tramo se saca del precio, no se fija a "medio": etiquetarlos todos
-      // igual hacía que la escalera pareciera plana en pantalla cuando no lo era.
-      const limiteEntrada = ordenados[corte - 1]?.precioVenta ?? Infinity;
-      const limiteMedio = ordenados[corte * 2 - 1]?.precioVenta ?? Infinity;
       for (const c of [...pool].sort((a, b) => b.valor - a.valor)) {
         if (elegidos.length >= faltan) break;
-        tomar(c, c.precioVenta <= limiteEntrada ? "entrada" : c.precioVenta <= limiteMedio ? "medio" : "alto");
+        tomar(c, tramoDe(c.precioVenta));
       }
     }
 

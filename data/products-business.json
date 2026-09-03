@@ -997,7 +997,7 @@
     "precioDesde": 729000,
     "segmento": "monitores",
     "publicado": true,
-    "enPromocion": true
+    "enPromocion": false
   },
   {
     "referencia": "LS27F320GANX",
@@ -1650,7 +1650,7 @@
     "precioIvaIncluido": false,
     "proveedor": "manual",
     "specs": {},
-    "descripcionUso": "Es un procesador de escritorio de gama media con excelente relación calidad-precio. Cuenta con 6 núcleos y 12 hilos, alcanzando una velocidad de hasta 4.2 GHz.",
+    "descripcionUso": "Procesador · 6 núcleos 12 hilos",
     "destacado": false,
     "enAccesorios": false,
     "enPromocion": true,
@@ -1658,37 +1658,89 @@
     "slug": "amd-ryzen-5-5500"
   },
   {
-    "referencia": "20569000022",
-    "id": "20569000022",
-    "slug": "compumax-core-i7-13620h-8gb-500gb",
-    "nombre": "Compumax Core i7-13620H 8GB 500GB",
-    "marca": "",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "hogar-estudio",
-    "publicado": true,
-    "enPromocion": true,
+    "referencia": "83DV01AYLM",
+    "id": "83DV01AYLM",
+    "slug": "lenovo-loq-15irx9-intel-core-i5-13450hx-ram-16gb-ssd-512gb-r",
+    "nombre": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX/RAM 16GB/SSD 512GB/ RTX 3050 6GB/15.6\" FHD/Linux OS",
+    "marca": "Lenovo",
+    "categoria": "portatil",
+    "usoCaso": "portatil-oficina",
+    "segmento": "gaming-streaming",
+    "publicado": false,
+    "enPromocion": false,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 2058000,
-    "precioDesde": 2058000,
+    "precio": 8087000,
+    "precioDesde": 8087000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Core i7-13620H",
-      "ram": "8GB DDR4",
-      "almacenamiento": "500GB SSD",
-      "pantalla": "LCD 15.6”",
-      "so": "Linux",
-      "conectividad": "Wi-Fi 6 + Bluetooth Cámara"
+      "procesador": "Intel Core i5-13450HX 10C…",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD NVMe",
+      "pantalla": "15.6\" FHD (1920x1080) IPS…"
     },
-    "descripcionUso": "Equipo de escritorio"
+    "descripcionUso": "Portátil 15.6\""
   },
   {
-    "referencia": "40539000022",
-    "id": "40539000022",
-    "slug": "compumax-core-i7-12650h-8gb-512gb-monitor-23-8",
-    "nombre": "Compumax Core i7-12650H 8GB 512GB + Monitor 23.8\"",
+    "referencia": "T150-E2324G-16GB-1TB",
+    "id": "T150-E2324G-16GB-1TB",
+    "slug": "servidor-dell-poweredge-t150-xeon-e2324g-16gb-1tb",
+    "nombre": "Servidor Dell PowerEdge T150 Xeon E-2324G 16GB 1TB",
+    "marca": "Dell",
+    "categoria": "pc",
+    "usoCaso": "servidor",
+    "segmento": "redes-servidores",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 7069000,
+    "precioDesde": 7069000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "descripcionUso": "Servidor torre · 4 bahías",
+    "specs": {
+      "procesador": "Xeon E-2324G 4C 3.1-4.6GHz",
+      "ram": "16GB DDR4 3200 ECC",
+      "almacenamiento": "1TB SATA 7.2K",
+      "puertos": "2 Gigabit",
+      "garantia": "12 meses"
+    },
+    "fueraDeLista": true
+  },
+  {
+    "referencia": "MICROSVR-GEN11-6325P",
+    "id": "MICROSVR-GEN11-6325P",
+    "slug": "servidor-hpe-proliant-microserver-gen11-xeon-6325p-16gb-2tb",
+    "nombre": "Servidor HPE ProLiant MicroServer Gen11 Xeon 6325P 16GB 2TB",
+    "marca": "HPE",
+    "categoria": "pc",
+    "usoCaso": "servidor",
+    "segmento": "redes-servidores",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 11603000,
+    "precioDesde": 11603000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "descripcionUso": "Servidor torre compacto · 4 bahías",
+    "specs": {
+      "procesador": "Xeon 6325P",
+      "ram": "16GB DDR5 5600 UDIMM",
+      "almacenamiento": "2TB (2x1TB SATA 7.2K)",
+      "puertos": "2 Gigabit",
+      "garantia": "12 meses"
+    },
+    "fueraDeLista": true
+  },
+  {
+    "referencia": "JAN-D598E4A0",
+    "id": "JAN-D598E4A0",
+    "slug": "janus-home-office-ryzen-3-3200g-16gb-ddr4-ssd-1tb-sata-monit",
+    "nombre": "JANUS HOME/OFFICE Ryzen 3 3200G 16GB DDR4 SSD 1TB SATA + Monitor Janus 23.8\"",
     "marca": "",
     "categoria": "pc",
     "usoCaso": "accesorio",
@@ -1697,19 +1749,42 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 2105000,
-    "precioDesde": 2105000,
+    "precio": 2123000,
+    "precioDesde": 2123000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Core i7-12650H",
-      "ram": "8GB DDR4 3200MHz",
-      "almacenamiento": "512GB SSD",
-      "monitor": "23.8\" COMPUMAX 120HZ FHD",
-      "so": "Linux",
-      "conectividad": "WIFI/Bluetooth"
+      "procesador": "Ryzen 3 3200G",
+      "ram": "16GB DDR4",
+      "almacenamiento": "1TB SSD",
+      "monitor": "Janus 23.8\""
     },
     "descripcionUso": "Equipo de escritorio · Monitor 23.8\""
+  },
+  {
+    "referencia": "JAN-2E2E9279",
+    "id": "JAN-2E2E9279",
+    "slug": "janus-home-office-ryzen-3-3200g-16gb-ddr4-ssd-1tb-sata-monit",
+    "nombre": "JANUS HOME/OFFICE Ryzen 3 3200G 16GB DDR4 SSD 1TB SATA + Monitor Janus 24.5\"",
+    "marca": "",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "hogar-estudio",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 2195000,
+    "precioDesde": 2195000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Ryzen 3 3200G",
+      "ram": "16GB DDR4",
+      "almacenamiento": "1TB SSD",
+      "monitor": "Janus 24.5\""
+    },
+    "descripcionUso": "Equipo de escritorio · Monitor 24.5\""
   },
   {
     "referencia": "D20XKLT#ABM",
@@ -1735,61 +1810,7 @@
       "pantalla": "23.8\" diagonal, FHD (1920 x…",
       "so": "FreeDOS ▪ Puertos: Parte…"
     },
-    "descripcionUso": "Todo en uno · Pantalla 23.8\""
-  },
-  {
-    "referencia": "R56162MRX6",
-    "id": "R56162MRX6",
-    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rtx-3050-6gb",
-    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RTX 3050 6GB",
-    "marca": "Power Group",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "gaming-streaming",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 3659000,
-    "precioDesde": 3659000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
-      "ram": "16GB DDR4 3200MHz",
-      "almacenamiento": "512GB SSD M.2",
-      "gpu": "RTX 3050 6GB GIGABYTE",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
-    },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
-  },
-  {
-    "referencia": "R56162B76",
-    "id": "R56162B76",
-    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rx-7600-8gb",
-    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RX 7600 8GB",
-    "marca": "Power Group",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "gaming-streaming",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 3659000,
-    "precioDesde": 3659000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
-      "ram": "16GB DDR4 3200MHz",
-      "almacenamiento": "512GB SSD M.2",
-      "gpu": "POWER COLOR RX 7600 8G",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
-    },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Todo en uno 23.8\""
   },
   {
     "referencia": "R87321FSR6N",
@@ -1816,7 +1837,33 @@
       "monitor": "ACER 23,8 KA242Y · MSI PRO 24”…",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 24\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 24\""
+  },
+  {
+    "referencia": "JAN-838AE44A",
+    "id": "JAN-838AE44A",
+    "slug": "janus-workstation-ryzen-5-8500g-16gb-ddr5-ssd-512gb-m-2-gpu-",
+    "nombre": "JANUS WORKSTATION Ryzen 5 8500G 16GB DDR5 SSD 512GB M.2 + GPU RX 7600 + Monitor Janus 27\"",
+    "marca": "",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "gaming-streaming",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 4379000,
+    "precioDesde": 4379000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Ryzen 5 8500G",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD M.2",
+      "gpu": "RX 7600",
+      "monitor": "Janus 27\""
+    },
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
   {
     "referencia": "R87162F5W-2",
@@ -1843,7 +1890,7 @@
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R87161F76W",
@@ -1870,7 +1917,33 @@
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+  },
+  {
+    "referencia": "JAN-8FA72ADA",
+    "id": "JAN-8FA72ADA",
+    "slug": "janus-gamer-ryzen-7-5700g-16gb-ddr4-ssd-512gb-m-2-gpu-rx-906",
+    "nombre": "JANUS GAMER Ryzen 7 5700G 16GB DDR4 SSD 512GB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
+    "marca": "",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "gaming-streaming",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 4559000,
+    "precioDesde": 4559000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Ryzen 7 5700G",
+      "ram": "16GB DDR4",
+      "almacenamiento": "512GB SSD M.2",
+      "gpu": "RX 9060 8GB",
+      "monitor": "Janus 27\""
+    },
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
   {
     "referencia": "R87321FSR0",
@@ -1897,32 +1970,33 @@
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
-    "referencia": "83DV01AYLM",
-    "id": "83DV01AYLM",
-    "slug": "lenovo-loq-15irx9-intel-core-i5-13450hx-ram-16gb-ssd-512gb-r",
-    "nombre": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX/RAM 16GB/SSD 512GB/ RTX 3050 6GB/15.6\" FHD/Linux OS",
-    "marca": "Lenovo",
-    "categoria": "portatil",
-    "usoCaso": "portatil-oficina",
+    "referencia": "JAN-52F53A77",
+    "id": "JAN-52F53A77",
+    "slug": "janus-gamer-ryzen-7-5700x-16gb-ddr4-ssd-1tb-m-2-gpu-rx-9060-",
+    "nombre": "JANUS GAMER Ryzen 7 5700X 16GB DDR4 SSD 1TB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
+    "marca": "",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
     "segmento": "gaming-streaming",
     "publicado": true,
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 8087000,
-    "precioDesde": 8087000,
+    "precio": 4859000,
+    "precioDesde": 4859000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "Intel Core i5-13450HX 10C…",
-      "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD NVMe",
-      "pantalla": "15.6\" FHD (1920x1080) IPS…"
+      "procesador": "Ryzen 7 5700X",
+      "ram": "16GB DDR4",
+      "almacenamiento": "1TB SSD M.2",
+      "gpu": "RX 9060 8GB",
+      "monitor": "Janus 27\""
     },
-    "descripcionUso": "Portátil 15.6\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
   {
     "referencia": "AMO-2G13",
@@ -1990,28 +2064,6 @@
     "descripcionUso": "Switch"
   },
   {
-    "referencia": "ARCHERAX53",
-    "id": "ARCHERAX53",
-    "slug": "router-archer-ax53-wifi-ax3000",
-    "nombre": "Router Archer AX53 WiFi AX3000",
-    "marca": "",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "redes-servidores",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 356000,
-    "precioDesde": 356000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "estandar": "Wi-Fi AX3000"
-    },
-    "descripcionUso": "Router"
-  },
-  {
     "referencia": "G403C",
     "id": "G403C",
     "slug": "router-wi-fi-4g-lte-n300",
@@ -2058,33 +2110,10 @@
     "descripcionUso": "Punto de acceso"
   },
   {
-    "referencia": "LGS328C",
-    "id": "LGS328C",
-    "slug": "redes-switch-escritorio-24-sfp-de-10-g-administrable",
-    "nombre": "Redes Switch Escritorio 24 SFP+ de 10 G Administrable",
-    "marca": "",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "redes-servidores",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 910000,
-    "precioDesde": 910000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "velocidad": "10G",
-      "puertos": "24 SFP"
-    },
-    "descripcionUso": "Switch"
-  },
-  {
-    "referencia": "R55162SB6X",
-    "id": "R55162SB6X",
-    "slug": "power-group-ryzen-5-5500x3d-16gb-512gb-rtx-3050-6gb",
-    "nombre": "POWER GROUP Ryzen 5 5500X3D 16GB 512GB + RTX 3050 6GB",
+    "referencia": "R56162MRX6",
+    "id": "R56162MRX6",
+    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rtx-3050-6gb",
+    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RTX 3050 6GB",
     "marca": "Power Group",
     "categoria": "pc",
     "usoCaso": "accesorio",
@@ -2093,53 +2122,26 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 3839000,
-    "precioDesde": 3839000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "AMD Ryzen 5 5500X3D 3.0GHz",
-      "ram": "16GB DDR4 3200MHz",
-      "almacenamiento": "512GB SSD",
-      "gpu": "ASUS DUAL GEFORCE / MSI RTX…",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
-    },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
-  },
-  {
-    "referencia": "R56162ST5W",
-    "id": "R56162ST5W",
-    "slug": "power-group-ryzen-5-5600gt-16gb-512gb-rtx-5060-8gb",
-    "nombre": "POWER GROUP Ryzen 5 5600GT 16GB 512GB + RTX 5060 8GB",
-    "marca": "Power Group",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "creadores-produccion",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 4079000,
-    "precioDesde": 4079000,
+    "precio": 3659000,
+    "precioDesde": 3659000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
       "procesador": "AMD Ryzen 5 5600GT 3.6GHz",
       "ram": "16GB DDR4 3200MHz",
       "almacenamiento": "512GB SSD M.2",
-      "gpu": "MSI RTX 5060 8GB",
+      "gpu": "RTX 3050 6GB GIGABYTE",
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
-    "referencia": "R87162FSR67",
-    "id": "R87162FSR67",
-    "slug": "power-group-ryzen-7-8700f-16gb-512gb-rtx-3050-6gb",
-    "nombre": "POWER GROUP Ryzen 7 8700F 16GB 512GB + RTX 3050 6GB",
-    "marca": "Power Group",
+    "referencia": "JAN-D56B7B5C",
+    "id": "JAN-D56B7B5C",
+    "slug": "janus-gamer-ryzen-7-5700x-16gb-ddr4-ssd-1tb-m-2-gpu-rtx-3050",
+    "nombre": "JANUS GAMER Ryzen 7 5700X 16GB DDR4 SSD 1TB M.2 + GPU RTX 3050 + Monitor Janus 27\"",
+    "marca": "",
     "categoria": "pc",
     "usoCaso": "accesorio",
     "segmento": "creadores-produccion",
@@ -2147,46 +2149,18 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 4199000,
-    "precioDesde": 4199000,
+    "precio": 4319000,
+    "precioDesde": 4319000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "16GB DDR5",
-      "almacenamiento": "512GB SSD",
-      "gpu": "ASUS DUAL / MSI GEFORCE RTX…",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
+      "procesador": "Ryzen 7 5700X",
+      "ram": "16GB DDR4",
+      "almacenamiento": "1TB SSD M.2",
+      "gpu": "RTX 3050",
+      "monitor": "Janus 27\""
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
-  },
-  {
-    "referencia": "R87162FSR6N",
-    "id": "R87162FSR6N",
-    "slug": "power-group-ryzen-7-8700f-16gb-500gb-rtx-3050-6gb",
-    "nombre": "POWER GROUP Ryzen 7 8700F 16GB 500GB + RTX 3050 6GB",
-    "marca": "Power Group",
-    "categoria": "pc",
-    "usoCaso": "accesorio",
-    "segmento": "creadores-produccion",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 4199000,
-    "precioDesde": 4199000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "16GB DDR5 5600MHz",
-      "almacenamiento": "500GB SSD",
-      "gpu": "MSI / ASUS DUAL GEFORCE RTX…",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
-    },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
   {
     "referencia": "G146162BKFS6",
@@ -2213,7 +2187,7 @@
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
     "referencia": "R55162SB76X",
@@ -2240,7 +2214,33 @@
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
+  },
+  {
+    "referencia": "JAN-2965EEB6",
+    "id": "JAN-2965EEB6",
+    "slug": "janus-gamer-core-i5-14400f-16gb-ddr4-ssd-512gb-m-2-gpu-rx-90",
+    "nombre": "JANUS GAMER Core i5-14400F 16GB DDR4 SSD 512GB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
+    "marca": "",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 4493000,
+    "precioDesde": 4493000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Core i5-14400F",
+      "ram": "16GB DDR4",
+      "almacenamiento": "512GB SSD M.2",
+      "gpu": "RX 9060 8GB",
+      "monitor": "Janus 27\""
+    },
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
   {
     "referencia": "R57162MRX5X",
@@ -2267,14 +2267,14 @@
       "monitor": "ACER 23,8 KA242Y",
       "so": "Linux"
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 23.8\""
   },
   {
-    "referencia": "R87162MR76N",
-    "id": "R87162MR76N",
-    "slug": "power-group-ryzen-7-8700f-16gb-512gb-rx-7600-8gb",
-    "nombre": "POWER GROUP Ryzen 7 8700F 16GB 512GB + RX 7600 8GB",
-    "marca": "Power Group",
+    "referencia": "JAN-C6FFDF1B",
+    "id": "JAN-C6FFDF1B",
+    "slug": "janus-gamer-core-i7-12700f-16gb-ddr4-ssd-500gb-m-2-gpu-rx-90",
+    "nombre": "JANUS GAMER Core i7-12700F 16GB DDR4 SSD 500GB M.2 + GPU RX 9060 8GB + Monitor Janus 27\"",
+    "marca": "",
     "categoria": "pc",
     "usoCaso": "accesorio",
     "segmento": "creadores-produccion",
@@ -2282,19 +2282,44 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 4619000,
-    "precioDesde": 4619000,
+    "precio": 5062000,
+    "precioDesde": 5062000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "procesador": "AMD Ryzen 7 8700F 4.1GHz",
-      "ram": "16GB DDR5 6000MHz",
-      "almacenamiento": "512GB SSD M.2",
-      "gpu": "POWER COLOR RX7600 8G",
-      "monitor": "ACER 23,8 KA242Y",
-      "so": "Linux"
+      "procesador": "Core i7-12700F",
+      "ram": "16GB DDR4",
+      "almacenamiento": "500GB SSD M.2",
+      "gpu": "RX 9060 8GB",
+      "monitor": "Janus 27\""
     },
-    "descripcionUso": "Escritorio de alto rendimiento · Monitor 23.8\""
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
+  },
+  {
+    "referencia": "JAN-07533156",
+    "id": "JAN-07533156",
+    "slug": "janus-gamer-ryzen-7-8700f-16gb-ddr5-ssd-512gb-m-2-gpu-rtx-50",
+    "nombre": "JANUS GAMER Ryzen 7 8700F 16GB DDR5 SSD 512GB M.2 + GPU RTX 5060 8GB + Monitor Janus 27\"",
+    "marca": "",
+    "categoria": "pc",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 5099000,
+    "precioDesde": 5099000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "Ryzen 7 8700F",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD M.2",
+      "gpu": "RTX 5060 8GB",
+      "monitor": "Janus 27\""
+    },
+    "descripcionUso": "Escritorio alto rendimiento · Monitor 27\""
   },
   {
     "referencia": "32200003400",
@@ -2384,10 +2409,10 @@
     "descripcionUso": "Cámara de seguridad"
   },
   {
-    "referencia": "HAC-T1A21N-U-2.",
-    "id": "HAC-T1A21N-U-2.",
-    "slug": "camara-domo-de-foco-fijo-hdcvi-ir-de-2mp",
-    "nombre": "Cámara Domo de foco fijo HDCVI IR de 2MP",
+    "referencia": "TL-POE150S",
+    "id": "TL-POE150S",
+    "slug": "adaptador-inyector-poe-1-puerto-giga-15-4w",
+    "nombre": "Adaptador Inyector PoE 1 Puerto GIGA 15.4W",
     "marca": "",
     "categoria": "accesorio",
     "usoCaso": "accesorio",
@@ -2396,21 +2421,63 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 134000,
-    "precioDesde": 134000,
+    "precio": 136000,
+    "precioDesde": 136000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "resolucion": "2MP"
+      "puertos": "1 PoE"
+    },
+    "descripcionUso": "Equipo de red"
+  },
+  {
+    "referencia": "LED-0B882D0A",
+    "id": "LED-0B882D0A",
+    "slug": "camara-domo-hdcvi-4-en-1",
+    "nombre": "Cámara Domo HDCVI 4 en 1",
+    "marca": "",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "smart-home",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 142000,
+    "precioDesde": 142000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Cámara domo"
+  },
+  {
+    "referencia": "LED-5DF12673",
+    "id": "LED-5DF12673",
+    "slug": "camara-domo-de-foco-fijo-hdcvi-4k-full-color-8mp",
+    "nombre": "Cámara Domo de foco fijo HDCVI 4K Full Color 8MP",
+    "marca": "",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "smart-home",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 223000,
+    "precioDesde": 223000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "resolucion": "4K · 8MP"
     },
     "descripcionUso": "Cámara domo"
   },
   {
-    "referencia": "960-001586",
-    "id": "960-001586",
-    "slug": "camara-logitech-web-brio-100-full-hd-1080p-usb-grafito",
-    "nombre": "Cámara Logitech Web Brio 100 Full HD 1080P USB Grafito",
-    "marca": "Logitech",
+    "referencia": "LED-53AE6A01",
+    "id": "LED-53AE6A01",
+    "slug": "camara-domo-con-infrarrojos-hdcvi-en-tiempo-real-4k-8mp",
+    "nombre": "Cámara Domo con infrarrojos HDCVI en tiempo real 4K 8MP",
+    "marca": "",
     "categoria": "accesorio",
     "usoCaso": "accesorio",
     "segmento": "smart-home",
@@ -2418,61 +2485,14 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 196000,
-    "precioDesde": 196000,
+    "precio": 318000,
+    "precioDesde": 318000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "resolucion": "1080p",
-      "interfaz": "USB"
+      "resolucion": "4K · 8MP"
     },
-    "descripcionUso": "Cámara web"
-  },
-  {
-    "referencia": "960-000764",
-    "id": "960-000764",
-    "slug": "camara-logitech-web-c920-pro-full-hd-usb",
-    "nombre": "Cámara Logitech Web C920 Pro Full-HD USB",
-    "marca": "Logitech",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "smart-home",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 373000,
-    "precioDesde": 373000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "resolucion": "Full HD",
-      "interfaz": "USB"
-    },
-    "descripcionUso": "Cámara web"
-  },
-  {
-    "referencia": "960-001257",
-    "id": "960-001257",
-    "slug": "camara-logitech-usb-c920s-full-hd",
-    "nombre": "Cámara Logitech Usb C920S Full HD",
-    "marca": "Logitech",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "smart-home",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 392000,
-    "precioDesde": 392000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "resolucion": "Full HD",
-      "interfaz": "USB"
-    },
-    "descripcionUso": "Cámara"
+    "descripcionUso": "Cámara domo"
   },
   {
     "referencia": "1115",
@@ -2498,10 +2518,10 @@
     "descripcionUso": "Memoria USB"
   },
   {
-    "referencia": "SDCS3/128GB",
-    "id": "SDCS3/128GB",
-    "slug": "micro-sd-128gb-canvas-select-plus-gen3-150mb-kingston",
-    "nombre": "Micro SD 128GB Canvas Select Plus Gen3 150MB Kingston",
+    "referencia": "DTXS/256GB",
+    "id": "DTXS/256GB",
+    "slug": "mem-usb-kingston-3-2-exodia-s-256gb",
+    "nombre": "Mem. USB Kingston 3.2 Exodia S 256GB",
     "marca": "Kingston",
     "categoria": "accesorio",
     "usoCaso": "accesorio",
@@ -2510,14 +2530,15 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 110000,
-    "precioDesde": 110000,
+    "precio": 82000,
+    "precioDesde": 82000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "capacidad": "128GB"
+      "capacidad": "256GB",
+      "interfaz": "USB"
     },
-    "descripcionUso": "Memoria Micro SD"
+    "descripcionUso": "Memoria USB"
   },
   {
     "referencia": "1747",
@@ -2565,50 +2586,6 @@
     "descripcionUso": "Disco duro"
   },
   {
-    "referencia": "AHD650-2TB-NEG",
-    "id": "AHD650-2TB-NEG",
-    "slug": "disco-adata-externo-hd650-2tb-antigolpe-negro",
-    "nombre": "Disco Adata Externo HD650 2TB Antigolpe Negro",
-    "marca": "ADATA",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 474000,
-    "precioDesde": 474000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "capacidad": "2TB"
-    },
-    "descripcionUso": "Disco externo"
-  },
-  {
-    "referencia": "AHD330-2TU3-NG",
-    "id": "AHD330-2TU3-NG",
-    "slug": "disco-adata-externo-hd330-2tb-3-1-negro",
-    "nombre": "Disco Adata Externo HD330 2TB 3.1 Negro",
-    "marca": "ADATA",
-    "categoria": "accesorio",
-    "usoCaso": "accesorio",
-    "segmento": "componentes",
-    "publicado": true,
-    "enPromocion": true,
-    "destacado": false,
-    "enAccesorios": false,
-    "precio": 494000,
-    "precioDesde": 494000,
-    "precioIvaIncluido": true,
-    "proveedor": "manual",
-    "specs": {
-      "capacidad": "2TB"
-    },
-    "descripcionUso": "Disco externo"
-  },
-  {
     "referencia": "5143",
     "id": "5143",
     "slug": "dd-3000-gb-sata-western-digital-blue",
@@ -2653,11 +2630,11 @@
     "descripcionUso": "Disco duro"
   },
   {
-    "referencia": "5214",
-    "id": "5214",
-    "slug": "dd-4000-gb-sata-western-digital-blue",
-    "nombre": "DD 4000 GB SATA WESTERN DIGITAL BLUE",
-    "marca": "Western Digital",
+    "referencia": "BX8071512400F",
+    "id": "BX8071512400F",
+    "slug": "intel-core-i5-12400f-lga1700-2-5ghz",
+    "nombre": "Intel Core i5-12400F LGA1700 (2.5GHZ)",
+    "marca": "Intel",
     "categoria": "accesorio",
     "usoCaso": "accesorio",
     "segmento": "componentes",
@@ -2665,21 +2642,19 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 768000,
-    "precioDesde": 768000,
+    "precio": 983000,
+    "precioDesde": 983000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
-    "specs": {
-      "capacidad": "4TB"
-    },
-    "descripcionUso": "Disco duro"
+    "specs": {},
+    "descripcionUso": "Procesador"
   },
   {
-    "referencia": "SD620-2TCBK",
-    "id": "SD620-2TCBK",
-    "slug": "unidad-ssd-adata-externo-sd620-2tb-3-2-negro",
-    "nombre": "Unidad SSD Adata Externo SD620 2TB 3.2 Negro",
-    "marca": "ADATA",
+    "referencia": "6103",
+    "id": "6103",
+    "slug": "inno3d-rtx-3050-6gb-twin-x2-v2",
+    "nombre": "INNO3D RTX 3050 6GB TWIN X2 V2",
+    "marca": "INNO3D",
     "categoria": "accesorio",
     "usoCaso": "accesorio",
     "segmento": "componentes",
@@ -2687,13 +2662,55 @@
     "enPromocion": true,
     "destacado": false,
     "enAccesorios": false,
-    "precio": 1088000,
-    "precioDesde": 1088000,
+    "precio": 1007000,
+    "precioDesde": 1007000,
     "precioIvaIncluido": true,
     "proveedor": "manual",
     "specs": {
-      "capacidad": "2TB"
+      "capacidad": "6GB"
     },
-    "descripcionUso": "SSD externo"
+    "descripcionUso": "Tarjeta de video"
+  },
+  {
+    "referencia": "AX5U5600C4616G",
+    "id": "AX5U5600C4616G",
+    "slug": "ram-xpg-lancer-blade-rgb-16gb-ddr5-5600mhz-negro",
+    "nombre": "Ram XPG Lancer Blade RGB 16GB DDR5 5600Mhz Negro",
+    "marca": "XPG",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 1169000,
+    "precioDesde": 1169000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "16GB"
+    },
+    "descripcionUso": "Memoria RAM"
+  },
+  {
+    "referencia": "100-100001015",
+    "id": "100-100001015",
+    "slug": "amd-ryzen-5-7600-socket-am5-no-video",
+    "nombre": "AMD Ryzen 5-7600 Socket AM5 (No Video)",
+    "marca": "AMD",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "componentes",
+    "publicado": true,
+    "enPromocion": true,
+    "destacado": false,
+    "enAccesorios": false,
+    "precio": 1379000,
+    "precioDesde": 1379000,
+    "precioIvaIncluido": true,
+    "proveedor": "manual",
+    "specs": {},
+    "descripcionUso": "Procesador"
   }
 ]
