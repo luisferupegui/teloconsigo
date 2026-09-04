@@ -1047,7 +1047,16 @@ const ACCESSORY_QUERY = /\b(teclado|mouse|rat[oó]n|mousepad|pad ?mouse|memoria 
 // El ORDEN importa: un "Combo Teclado y Mouse" es teclado antes que mouse, y una
 // "memoria USB" es memoria antes que cualquier cosa que lleve USB en el nombre.
 const FAMILIAS: [string, RegExp][] = [
-  ["memoria-usb",    /\b(memoria\s+usb|pen\s?drive|flash\s?drive|usb\s?\d{1,4}\s?[gt]b|\d{1,4}\s?[gt]b\s+usb)\b/i],
+  // El disco externo va ANTES que la memoria USB, y no al revés: los dos se conectan por
+  // USB y los dos anuncian su capacidad, así que "Disco Sólido Externo Adata 1TB USB" y
+  // "SSD Externo 2TB USB 3.2" entraban como memorias USB por ese "1TB USB". A quien pidió
+  // una memoria USB le salieron dos discos de $539.000 y de más. El más específico
+  // primero, como con la cámara de seguridad y la cámara web.
+  ["almacenamiento-externo", /\b(disco\s+(duro\s+|s[oó]lido\s+)?externo|ssd\s+externo|(disco|ssd|unidad)\s+port[aá]til|unidad\s+externa|almacenamiento\s+externo)\b/i],
+  // Y aunque no diga "externo": la capacidad pegada al USB solo cuenta como memoria si el
+  // nombre no está hablando de un disco. "Memoria USB" o "pen drive" no necesitan esa
+  // comprobación — ya dicen lo que son.
+  ["memoria-usb",    /\b(?:memoria\s+usb|pen\s?drive|flash\s?drive|memoria\s+flash)\b|^(?!.*\b(?:disco|ssd|hdd|nvme|extern\w+)\b).*\b(?:usb\s?\d{1,4}\s?[gt]b|\d{1,4}\s?[gt]b\s+usb)\b/i],
   // Un hub/dock no es una memoria USB por llevar "USB" en el nombre, ni un cable.
   ["hub",            /\b(hub|docking\s?station|\bdock\b|replicador de puertos)\b/i],
   // Protección eléctrica: una UPS no es un regulador, pero frente a cualquier OTRA cosa
@@ -1074,9 +1083,8 @@ const FAMILIAS: [string, RegExp][] = [
   ["red",            /\b(router|switch|access\s?point|punto de acceso|repetidor|antena|firewall)\b/i],
   ["memoria-ram",    /\b(ddr[2345]|sodimm|udimm|memoria\s+ram|\bram\b)\b/i],
   // Interno y externo NO son la misma familia: quien pide un SSD NVMe para su equipo no
-  // quiere un disco portátil que se conecta por USB, aunque ambos digan "1TB". Va primero
-  // porque un externo también dice "disco" y "ssd".
-  ["almacenamiento-externo", /\b(disco\s+(duro\s+)?externo|ssd\s+externo|disco\s+port[aá]til)\b/i],
+  // quiere un disco portátil que se conecta por USB, aunque ambos digan "1TB". El externo
+  // se reconoce arriba del todo, antes que la memoria USB, porque también dice "USB".
   ["almacenamiento", /\b(ssd|nvme|hdd|disco\s+(duro|s[oó]lido)|m\.?2)\b/i],
   ["tarjeta-grafica",/\b(tarjeta\s+(de\s+)?(video|gr[aá]fica)|rtx|gtx|radeon|geforce|\bgpu\b)\b/i],
   ["procesador",     /\b(procesador|\bcpu\b|ryzen|core\s?i[3579]|xeon|threadripper)\b/i],
