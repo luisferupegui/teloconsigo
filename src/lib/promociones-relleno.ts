@@ -287,6 +287,9 @@ export const SECCIONES: SeccionVitrina[] = [
   { id: "hogar-estudio", nombre: "Hogar y Estudio", campo: "segmento", valor: "hogar-estudio",
     categorias: ["portatil", "escritorio", "all-in-one"], hasta: 2_600_000 },
 
+  { id: "productividad-oficina", nombre: "Productividad y Oficina", campo: "usoCaso", valor: "pc-empresarial",
+    categorias: ["escritorio", "all-in-one", "mini-pc"], desde: 2_000_000 },
+
   // Los portátiles gamer pertenecen aquí tanto como las torres. El piso de
   // precio es lo que evita que entre un portátil de oficina: por debajo de tres
   // millones no hay gráfica dedicada que valga.
@@ -304,9 +307,6 @@ export const SECCIONES: SeccionVitrina[] = [
     // máquina de oficina y una mala card en la sección de juego.
     exige: { categorias: ["portatil", "escritorio-alto-rendimiento"],
       patron: /rtx|gtx|geforce|radeon|\brx\s?\d{4}\b|\btuf\b|\brog\b|nitro|predator|victus|katana|legion|\bloq\b|\bomen\b|gam(ing|er)/i } },
-
-  { id: "productividad-oficina", nombre: "Productividad y Oficina", campo: "usoCaso", valor: "pc-empresarial",
-    categorias: ["escritorio", "all-in-one", "mini-pc"], desde: 2_000_000 },
 
   { id: "movilidad-premium", nombre: "Movilidad Premium", campo: "usoCaso", valor: "portatil-ejecutivo",
     categorias: ["portatil"], desde: 2_600_000 },
