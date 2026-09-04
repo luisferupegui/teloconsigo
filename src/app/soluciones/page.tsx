@@ -3,6 +3,7 @@ import { loadPublishedBusinessProducts, formatCOP } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products";
 import { RejillaOrdenable } from "@/components/rejilla-ordenable";
 import { esDeLaSeccion } from "@/lib/promociones-relleno";
+import { precioImposible } from "@/lib/ficha-card";
 import {
   Laptop,
   Monitor,
@@ -265,7 +266,12 @@ function SeccionUso({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SolucionesPage() {
-  const allProducts = loadPublishedBusinessProducts().filter((p) => p.enPromocion === true);
+  // Un computador a $19.000 no es una ganga, es una columna mal leída, y
+  // mientras esté en pantalla es una oferta publicada a cualquiera que entre.
+  // El panel los señala aparte para arreglarlos o retirarlos.
+  const allProducts = loadPublishedBusinessProducts()
+    .filter((p) => p.enPromocion === true)
+    .filter((p) => !precioImposible(p.categoria, p.precioDesde ?? p.precio));
 
   // La misma regla que usa el panel para contar y para proponer: un producto
   // aparece en UNA sección. Ver `esDeLaSeccion`.

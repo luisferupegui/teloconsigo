@@ -395,3 +395,32 @@ export function cabeEnEtiqueta(texto: string): boolean {
   const partes = texto.trim().split(" · ").filter(Boolean);
   return partes.length > 0 && partes.every((p) => p.length <= 34);
 }
+
+// ─── Un precio que no puede ser ──────────────────────────────────────────────
+//
+// El piso de costo del importador guarda la ENTRADA: impide que un producto mal
+// leído llegue a proponerse. Pero no dice nada de lo que ya está publicado, y
+// ahí quedaron dos: un "All-In-One 3-DP Core i5-1235U, 16GB, 500GB SSD" a
+// $19.000 y un "AIO POS System Intel Core i5" a $99.000, los dos en Hogar y
+// Estudio, los dos ofrecidos a cualquiera que entre.
+//
+// Esto es la otra mitad: la vitrina no pinta una card cuyo precio es imposible
+// para lo que dice ser, y el panel la señala para que se arregle o se retire.
+// No se borra nada ni se despublica a espaldas de nadie —el producto sigue en
+// el catálogo y en el panel—, simplemente deja de ofrecerse a ese precio.
+//
+// Los pisos son los mismos que usa el importador, traducidos a la taxonomía de
+// la TIENDA, que es la que llevan los productos publicados.
+
+const PISO_EN_TIENDA: Record<string, number> = {
+  pc: 1_000_000,
+  portatil: 1_000_000,
+  tablet: 300_000,
+  monitor: 150_000,
+};
+
+/** ¿Este precio es imposible para lo que el producto dice ser? */
+export function precioImposible(categoria: string, precio: number | null | undefined): boolean {
+  const piso = PISO_EN_TIENDA[categoria];
+  return !!piso && typeof precio === "number" && precio > 0 && precio < piso;
+}

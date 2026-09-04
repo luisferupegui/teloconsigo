@@ -2,6 +2,7 @@ import "server-only";
 import { loadBusinessProducts, saveBusinessProducts } from "@/lib/products";
 import type { BusinessProduct } from "@/lib/products-types";
 import { loadActiveProducts, loadMargins, applyMargin } from "@/lib/supplier-catalog";
+import { precioImposible } from "@/lib/ficha-card";
 
 // ─── Sincronizar la vitrina con las listas del mes ───────────────────────────
 //
@@ -42,8 +43,18 @@ export type Descatalogado = {
   precioActual: number;
 };
 
+/** Publicado con un precio que no puede ser: mal leído en la lista de origen. */
+export type PrecioImposible = {
+  referencia: string;
+  nombre: string;
+  categoria: string;
+  precio: number;
+};
+
 export type AnalisisPromociones = {
   enPromocion: number;
+  /** Ofrecidos a un precio imposible. La vitrina ya no los pinta. */
+  imposibles: PrecioImposible[];
   /** Siguen a la venta pero a otro precio. */
   repreciar: Repreciar[];
   /** Ya no están en ninguna lista activa. */
@@ -118,8 +129,21 @@ export function analizarPromociones(): AnalisisPromociones {
   repreciar.sort((a, b) => Math.abs(b.diferencia) - Math.abs(a.diferencia));
   descatalogados.sort((a, b) => b.precioActual - a.precioActual);
 
+  // El piso de precio impide que ENTREN, pero no dice nada de lo que ya estaba
+  // publicado: así se quedaron dentro un all-in-one a $19.000 y otro a $99.000.
+  const imposibles = publicados
+    .filter((p) => precioImposible(p.categoria, p.precioDesde ?? p.precio))
+    .map((p) => ({
+      referencia: p.referencia ?? "",
+      nombre: p.nombre,
+      categoria: p.categoria,
+      precio: p.precioDesde ?? p.precio ?? 0,
+    }))
+    .sort((a, b) => a.precio - b.precio);
+
   return {
     enPromocion: publicados.length,
+    imposibles,
     repreciar,
     descatalogados,
     sinReferencia,

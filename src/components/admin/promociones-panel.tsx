@@ -27,6 +27,7 @@ type Repreciar = {
   proveedor: string; lista: string;
 };
 type Descatalogado = { referencia: string; nombre: string; precioActual: number };
+type Imposible = { referencia: string; nombre: string; categoria: string; precio: number };
 type MalUbicado = { referencia: string; nombre: string; categoria: string; seccion: string; precio: number };
 
 type Candidato = {
@@ -42,6 +43,7 @@ type PropuestaSeccion = {
 
 type Analisis = {
   enPromocion: number;
+  imposibles: Imposible[];
   repreciar: Repreciar[];
   descatalogados: Descatalogado[];
   sinReferencia: number;
@@ -75,6 +77,8 @@ export function PromocionesPanel() {
   const [retirar, setRetirar] = useState<Set<string>>(new Set());
   const [aRellenar, setARellenar] = useState<Record<string, Set<string>>>({});
   const [malUbicados, setMalUbicados] = useState<Set<string>>(new Set());
+  // Marcados de entrada: un precio imposible no se deja "por si acaso".
+  const [imposibles, setImposibles] = useState<Set<string>>(new Set());
 
   // La petición va aparte de los `setState` para que el efecto no toque estado
   // de forma síncrona: hacerlo encadena renders y es lo que avisa
@@ -92,6 +96,7 @@ export function PromocionesPanel() {
     setRetirar(new Set());
     setARellenar(Object.fromEntries(d.relleno.map((s) => [s.id, new Set(s.candidatos.map((c) => c.referencia))])));
     setMalUbicados(new Set(d.malUbicados.map((m) => m.referencia)));
+    setImposibles(new Set((d.imposibles ?? []).map((m) => m.referencia)));
   }, []);
 
   /** Recarga desde un manejador de evento (el botón "Volver a mirar"). */
@@ -158,7 +163,8 @@ export function PromocionesPanel() {
   async function aplicar(accion: "actualizarPrecios" | "quitarDePromocion", conjunto?: Set<string>) {
     const refs = [...(conjunto ?? (accion === "actualizarPrecios" ? precios : retirar))];
     if (refs.length === 0) return;
-    setAplicando(conjunto ? "malUbicados" : accion === "actualizarPrecios" ? "precios" : "retirar");
+    setAplicando(conjunto ? (conjunto === imposibles ? "imposibles" : "malUbicados")
+      : accion === "actualizarPrecios" ? "precios" : "retirar");
     setError(""); setHecho("");
     try {
       const res = await fetch("/api/admin/promociones", {
@@ -272,6 +278,48 @@ export function PromocionesPanel() {
           </p>
         )}
       </div>
+
+      {/* ── Precios que no pueden ser ── */}
+      {datos && datos.imposibles?.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-red-300 bg-red-50/60">
+          <div className="flex flex-wrap items-center gap-3 border-b border-red-300 px-5 py-4">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+            <div className="min-w-[220px] flex-1">
+              <h3 className="font-bold text-red-900">Precio imposible</h3>
+              <p className="text-xs text-red-800">
+                Un computador no cuesta $19.000: es una columna que el lector partió mal.{" "}
+                <strong>La vitrina ya no los muestra</strong> —era una oferta publicada a
+                cualquiera que entrara—, pero siguen en el catálogo. Corrige el precio en
+                Gestionar productos, o retíralos.
+              </p>
+            </div>
+            <button
+              type="button" onClick={() => aplicar("quitarDePromocion", imposibles)}
+              disabled={aplicando !== null || imposibles.size === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-50"
+            >
+              {aplicando === "imposibles" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PackageX className="h-4 w-4" />}
+              Retirar {imposibles.size}
+            </button>
+          </div>
+          <div className="divide-y divide-red-200">
+            {datos.imposibles.map((m) => (
+              <label key={m.referencia} className="flex cursor-pointer items-center gap-3 px-5 py-2.5 text-sm hover:bg-red-100/50">
+                <input
+                  type="checkbox" checked={imposibles.has(m.referencia)}
+                  onChange={() => alternar(imposibles, setImposibles, m.referencia)}
+                  className="h-3.5 w-3.5 shrink-0 accent-red-600"
+                />
+                <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                  {m.categoria}
+                </span>
+                <span className="min-w-[200px] flex-1 text-zinc-800">{m.nombre}</span>
+                <span className="shrink-0 text-sm font-bold text-red-700">{cop(m.precio)}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Precios que ya no son los del mes ── */}
       {datos && datos.repreciar.length > 0 && (
