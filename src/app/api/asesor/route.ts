@@ -1113,8 +1113,35 @@ type Categoria = "equipo" | "componente" | "accesorio" | "otro";
 //    "memoria USB"/"disco externo"/"teclado" quedan Colombia-first pese a "memoria"/"disco".
 //  • equipo/accesorio/otro → Colombia-first (EE.UU. último recurso). Solo equipo
 //    desactiva el filtro de ruido de Serper.
+// ── UNA MÁQUINA NOMBRADA POR SU MODELO NO ES UNA PIEZA ───────────────────────
+//
+// "Compumax Core i7-12650H 8GB 512GB + Monitor 23.8\"" es un computador completo, y sin
+// embargo la primera palabra que el clasificador reconocía era "Core i7", que está en la
+// lista de COMPONENTES. La consulta quedaba clasificada como pieza, y eso enciende
+// `soloPiezas`, que descarta TODO equipo completo — incluido el que el cliente acababa de
+// nombrar. Andrea contestaba "no lo tenemos disponible" con el producto en las listas
+// activas. Pasaba con cualquier modelo escrito tal cual: ThinkPad, ProBook, JANUS GAMER.
+//
+// La diferencia entre pedir un procesador y pedir la máquina que lo lleva: un CPU suelto
+// se nombra solo ("Core i7 14700"); una máquina trae además su memoria Y su disco, o
+// dice de qué formato es. Y para que "memoria RAM para un Core i5" siga siendo una pieza,
+// el CPU tiene que ser lo PRIMERO que se nombra: si antes hay una pieza o un accesorio,
+// ese es el producto principal y el CPU solo describe para qué equipo es.
+const CPU_EN_CONSULTA = /\b(core\s?i[3579]|i[3579]-\w|core\s?ultra|ryzen|xeon|pentium|celeron|athlon)\b/i;
+const FORMATO_EN_CONSULTA = /\+\s*(?:monitor|pantalla)|\b(?:all.?in.?one|aio|todo.?en.?uno|port[aá]til|laptop|notebook|torre|workstation)\b/i;
+
+function pareceEquipoCompleto(q: string): boolean {
+  const iCpu = q.search(CPU_EN_CONSULTA);
+  if (iCpu === -1 || q.search(COMPONENT_QUERY) !== iCpu) return false;
+  const iAcc = q.search(ACCESSORY_QUERY);
+  if (iAcc !== -1 && iAcc < iCpu) return false;
+  const { ram, disco } = ramYDisco(sinVram(q));
+  return (ram !== null && disco !== null) || FORMATO_EN_CONSULTA.test(q);
+}
+
 function clasificarConsulta(consulta: string): Categoria {
   const q = consulta.toLowerCase();
+  if (pareceEquipoCompleto(q)) return "equipo";
   const iAcc    = q.search(ACCESSORY_QUERY);
   const iComp   = q.search(COMPONENT_QUERY);
   const iEquipo = q.search(COMPUTER_QUERY);
@@ -1324,11 +1351,41 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
  *  junto a otras que sí las traían: parecía la peor de las tres por falta de datos.
  *
  *  Solo se afirma lo que el título dice, y en el orden en que se lee una ficha. */
+// Que el anuncio hable de una MÁQUINA. Más ancha que `CPU_EN_CONSULTA` a propósito: los
+// anuncios abrevian el procesador ("Latitude 5440 i5 16GB") y ahí el formato es la señal.
+const EQUIPO_EN_TITULO =
+  /\b(?:core\s?i[3579]|i[3579]|core\s?ultra|ryzen|xeon|pentium|celeron|athlon|laptop|port[aá]til|notebook|todo\s?en\s?uno|all.?in.?one|aio|pc|torre|desktop|workstation)\b/i;
+
 function specsDeTitulo(titulo: string): string {
-  const t = titulo.toLowerCase();
+  // Sin el tramo de la gráfica: un anuncio de tienda escribe "Gpu 8gb Ram 32gb" y esos
+  // 8GB son VRAM. Se le mostró al cliente un equipo de 32GB como si tuviera 8GB.
+  const t = sinVram(titulo.toLowerCase()).replace(/\s+/g, " ");
   const partes: string[] = [];
 
-  const cap = t.match(/\b(\d{1,4})\s?(tb|gb)\b/);
+  // LA RAM PRIMERO, porque de ella depende cuál es la capacidad de disco.
+  //
+  // Los anuncios la escriben en los dos órdenes —"8GB RAM" y "Ram 32gb"— así que no vale
+  // fijar uno: en "Ram 32gb Ssd 512gb" la memoria va detrás de la palabra y en
+  // "8GB RAM 512GB SSD" va delante, y la misma regla leería 512GB de memoria en uno de
+  // los dos. Se pide lo único que se cumple siempre: la palabra PEGADA a la cifra —seis
+  // caracteres a cada lado, que no dan para otra capacidad en medio— y un tamaño que
+  // pueda ser memoria. Sin la palabra no se declara RAM: en "Memoria USB 128GB" no la hay.
+  const caps = [...t.matchAll(/\b(\d{1,4})\s?(tb|gb)\b/g)];
+  const enGb = (m: RegExpMatchArray) => Number(m[1]) * (m[2] === "tb" ? 1024 : 1);
+  let ramGb = caps
+    .find((m) => m[2] === "gb" && Number(m[1]) <= 128
+      && /\b(?:ram|ddr[2345])\b/.test(t.slice(Math.max(0, m.index! - 6), m.index! + m[0].length + 6)))
+    ?.[1] ?? null;
+  // Y cuando el anuncio no escribe la palabra, la convención: en un EQUIPO, "16GB 512GB"
+  // es memoria primero y disco después. Se exige que el título nombre un procesador —en
+  // un accesorio, "128GB" es su capacidad y no la memoria de nada— y que haya dos
+  // capacidades de tamaños distintos, una de memoria y otra de disco.
+  if (ramGb === null && EQUIPO_EN_TITULO.test(t) && caps.length >= 2
+      && enGb(caps[0]) <= 128 && enGb(caps[1]) >= 120) ramGb = caps[0][1];
+
+  // Almacenamiento: la primera capacidad que NO es la memoria. Antes se tomaba la
+  // primera a secas y en "Ram 32gb Ssd 512gb" el disco declarado eran 32GB.
+  const cap = caps.find((c) => !(ramGb !== null && c[1] === ramGb && c[2] === "gb"));
   if (cap) partes.push(`${cap[1]}${cap[2].toUpperCase()}`);
 
   if (/\b(ssd|estado s[oó]lido|nvme)\b/.test(t)) partes.push("SSD");
@@ -1341,14 +1398,7 @@ function specsDeTitulo(titulo: string): string {
   const pulg = t.match(/\b(\d{1,2}(?:[.,]\d)?)\s*(?:"|''|pulg)/);
   if (pulg) partes.push(`${pulg[1].replace(",", ".")}\"`);
 
-  const ram = t.match(/\b(\d{1,3})\s?gb\s+(?:de\s+)?ram\b/);
-  if (ram) {
-    // Si la capacidad que se leyó arriba es esa misma RAM, no se repite: "16GB | 16GB RAM"
-    // se lee como si el equipo tuviera dos memorias.
-    const i = partes.indexOf(`${ram[1]}GB`);
-    if (i !== -1) partes.splice(i, 1);
-    partes.push(`${ram[1]}GB RAM`);
-  }
+  if (ramGb) partes.push(`${ramGb}GB RAM`);
 
   return partes.join(" | ");
 }

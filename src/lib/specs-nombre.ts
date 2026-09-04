@@ -17,7 +17,13 @@
  *  FUERA de las búsquedas de diseño o edición. De los diez portátiles con gráfica
  *  dedicada de las listas, nueve desaparecían por esto. */
 export function sinVram(nombre: string): string {
-  return nombre.replace(/\b(?:rtx|gtx|radeon\s*rx|rx)\s*\d{3,4}\s*(?:ti|super)?\s*\d{0,2}\s*gb?/gi, " ");
+  return nombre
+    .replace(/\b(?:rtx|gtx|radeon\s*rx|rx)\s*\d{3,4}\s*(?:ti|super)?\s*\d{0,2}\s*gb?/gi, " ")
+    // La misma VRAM, escrita como la escriben los anuncios de tienda: sin modelo de
+    // gráfica que la delate. En "Torre Cpu Gamer Core I7 14700 Ssd 512gb Gpu 8gb Ram
+    // 32gb" los 8GB son de la tarjeta y los 32GB del equipo, y la card le mostraba al
+    // cliente "8GB RAM" — menos memoria de la que la máquina trae.
+    .replace(/\b(?:gpu|vram|v-?ram|video|gr[aá]fica)\s*(?:de\s*)?\d{1,2}\s*gb\b/gi, " ");
 }
 
 /** RAM y almacenamiento declarados en el nombre de un equipo, en GB. Cubre las formas que
