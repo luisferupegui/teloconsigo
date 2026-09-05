@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { X, ChevronRight, MessageCircle } from "lucide-react";
 import { whatsappUrl } from "@/lib/contacto";
@@ -11,35 +11,50 @@ const WA_HREF = whatsappUrl("Hola, visité la web de Te lo Consigo y quisiera in
 const AVATAR      = "/asesor/andrea.png";
 const SESSION_KEY = "tlc-andrea-chat";
 
+// ─── ¿Hay una conversación con Andrea empezada en esta pestaña? ──────────────
+//
+// De eso depende si el botón dice "Hablar con Andrea" o "Retomar conversación",
+// y el dato no es de React: lo escribe la página de Andrea en `sessionStorage`.
+//
+// Se leía dentro del efecto y se guardaba con `setState`, que es tratarlo como
+// estado propio: el botón se pintaba una vez diciendo "Hablar con Andrea" y se
+// volvía a pintar diciendo "Retomar conversación". React 19 lo señala como error.
+//
+// `useSyncExternalStore` es la forma de leer un almacén de FUERA: se suscribe al
+// aviso de que cambió, lo lee cuando toca, y en el servidor devuelve `false` —
+// que es lo único que se puede saber allí, donde no hay pestaña ni sesión.
+
+function hayConversacion(): boolean {
+  try {
+    const guardado = sessionStorage.getItem(SESSION_KEY);
+    if (!guardado) return false;
+    const leido = JSON.parse(guardado);
+    const mensajes: unknown[] = Array.isArray(leido) ? leido : (leido?.messages ?? []);
+    return mensajes.some((m) => (m as { role?: string })?.role === "user");
+  } catch {
+    return false;  // sessionStorage no disponible
+  }
+}
+
+/** El aviso lo lanza la página de Andrea cuando el cliente empieza un chat nuevo. */
+function alCambiarElChat(avisar: () => void) {
+  window.addEventListener("tlc-chat-cleared", avisar);
+  return () => window.removeEventListener("tlc-chat-cleared", avisar);
+}
+
 export function FloatingWhatsApp() {
   const pathname = usePathname();
-  const [mounted,         setMounted]         = useState(false);
-  const [showCard,        setShowCard]        = useState(false);
-  const [cardDismissed,   setCardDismissed]   = useState(false);
-  const [hasConversation, setHasConversation] = useState(false);
+  const [mounted,       setMounted]       = useState(false);
+  const [showCard,      setShowCard]      = useState(false);
+  const [cardDismissed, setCardDismissed] = useState(false);
+
+  const hasConversation = useSyncExternalStore(alCambiarElChat, hayConversacion, () => false);
 
   useEffect(() => {
     const t1 = setTimeout(() => setMounted(true),          1200);
     const t2 = setTimeout(() => setShowCard(true),         5000);
     const t3 = setTimeout(() => setCardDismissed(true), 5000 + 28000);
-
-    try {
-      const saved = sessionStorage.getItem(SESSION_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const msgs = Array.isArray(parsed) ? parsed : (parsed?.messages ?? []);
-        if (msgs.some((m: { role: string }) => m.role === "user")) {
-          setHasConversation(true);
-        }
-      }
-    } catch { /* sessionStorage no disponible */ }
-
-    const onCleared = () => setHasConversation(false);
-    window.addEventListener("tlc-chat-cleared", onCleared);
-    return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
-      window.removeEventListener("tlc-chat-cleared", onCleared);
-    };
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   if (!mounted || pathname.startsWith("/asesor")) return null;
