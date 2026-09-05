@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { PackageX, CheckCircle2, Send, RotateCcw, Clock, Shield } from "lucide-react";
+import { CONTACTO, whatsappUrl } from "@/lib/contacto";
 
 const MOTIVOS = [
   "Producto defectuoso o dañado",
@@ -162,7 +163,7 @@ export default function DevolucionesPage() {
             ¿Tienes dudas antes de radicar tu solicitud? Escríbenos directamente a{" "}
             <a href="mailto:soporte@teloconsigo.co" className="text-[#1e6cff] font-semibold hover:underline">soporte@teloconsigo.co</a>{" "}
             o por WhatsApp al{" "}
-            <a href="https://wa.me/573102878194" className="text-[#1e6cff] font-semibold hover:underline">+57 310 2878194</a>.
+            <a href={whatsappUrl()} className="text-[#1e6cff] font-semibold hover:underline">{CONTACTO.telefonoVisible}</a>.
           </p>
         </div>
       </section>

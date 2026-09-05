@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { X, ChevronRight, MessageCircle } from "lucide-react";
+import { whatsappUrl } from "@/lib/contacto";
 
-const WA_HREF = "https://wa.me/573102878194?text=Hola%2C%20visit%C3%A9%20la%20web%20de%20Te%20lo%20Consigo%20y%20quisiera%20informaci%C3%B3n%20sobre%20un%20producto";
+const WA_HREF = whatsappUrl("Hola, visité la web de Te lo Consigo y quisiera información sobre un producto");
 
 const AVATAR      = "/asesor/andrea.png";
 const SESSION_KEY = "tlc-andrea-chat";

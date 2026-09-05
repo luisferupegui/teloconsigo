@@ -24,6 +24,7 @@ import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
 import { marcasEnConsulta, esDeMarca } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
+import { CONTACTO } from "@/lib/contacto";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
 export const runtime = "nodejs";
@@ -3044,8 +3045,8 @@ REGLAS: nunca pidas datos de tarjeta ni números de pago (el pago se hace por nu
 
 CUANDO NO PUEDAS RESOLVER: si por cualquier motivo técnico no puedes continuar, o si el cliente necesita atención personalizada que excede lo que puedes hacer, dale siempre los datos de contacto del equipo y despídete con calidez:
 "Si necesitas ayuda inmediata, puedes contactarnos directamente:
-📞 Teléfono / WhatsApp: +57 310 2878194
-✉️ Email: ventas@teloconsigo.co
+📞 Teléfono / WhatsApp: ${CONTACTO.telefonoVisible}
+✉️ Email: ${CONTACTO.emailVentas}
 En un momento un especialista en tecnología se contactará contigo. ¡Fue un placer atenderte! 😊"
 NUNCA dejes al cliente sin una alternativa de contacto cuando no puedas ayudarlo.`;
 
@@ -3457,12 +3458,12 @@ export async function POST(req: Request): Promise<Response> {
           status === 429 || status === 500 || status === 502 || status === 503 || status === 504 ||
           /overloaded|timed? ?out|ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN|fetch failed|network/i.test(emsg);
 
-        const CONTACTO = "\n\n📞 **Teléfono / WhatsApp:** +57 310 2878194\n✉️ **Email:** ventas@teloconsigo.co\n\nEn un momento un especialista en tecnología se contactará contigo. ¡Fue un placer atenderte! 😊";
+        const DESPEDIDA = `\n\n📞 **Teléfono / WhatsApp:** ${CONTACTO.telefonoVisible}\n✉️ **Email:** ${CONTACTO.emailVentas}\n\nEn un momento un especialista en tecnología se contactará contigo. ¡Fue un placer atenderte! 😊`;
         const clientMsg = isBilling
-          ? `Tuve un inconveniente técnico y no puedo continuar en este momento 🙏. Por favor contáctanos directamente:${CONTACTO}`
+          ? `Tuve un inconveniente técnico y no puedo continuar en este momento 🙏. Por favor contáctanos directamente:${DESPEDIDA}`
           : isTransient
           ? "Hay mucha demanda en este momento y no pude responderte 😅. Espera unos segundos e inténtalo de nuevo, por favor 🙌"
-          : "Uy, tuve un problemita para responderte 😅. ¿Lo intentamos de nuevo? Si prefieres atención inmediata:" + CONTACTO;
+          : "Uy, tuve un problemita para responderte 😅. ¿Lo intentamos de nuevo? Si prefieres atención inmediata:" + DESPEDIDA;
 
         controller.enqueue(new TextEncoder().encode(clientMsg));
         console.error(

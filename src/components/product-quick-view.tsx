@@ -5,9 +5,9 @@ import Image from "next/image";
 import { X, Heart, Tag } from "lucide-react";
 import { formatCOP } from "@/lib/products-types";
 import { useWishlist } from "@/lib/wishlist";
+import { CONTACTO } from "@/lib/contacto";
 
-/** Número WhatsApp del negocio (sin '+') */
-const WA_NUMBER = "573102878194";
+const WA_NUMBER = CONTACTO.whatsapp;
 
 // ─── Tipo compartido entre Navbar y SearchModal ───────────────────────────────
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ContactoPage from "./contacto-client";
+import { CONTACTO } from "@/lib/contacto";
 
 // Esta ruta es un componente de CLIENTE (estado, formularios, hooks) y por eso
 // no podía exportar `metadata`: heredaba el título y la descripción por defecto
@@ -7,11 +8,11 @@ import ContactoPage from "./contacto-client";
 // La página vive ahora en ./contacto-client.tsx y aquí queda solo su metadata.
 export const metadata: Metadata = {
   title: "Contacto",
-  description: "Escríbenos o llámanos: +57 310 2878194, contacto@teloconsigo.co. Atención de lunes a viernes de 8:00 am a 6:00 pm desde Medellín para toda Colombia.",
+  description: `Escríbenos o llámanos: ${CONTACTO.telefonoVisible}, ${CONTACTO.email}. Atención de lunes a viernes de 8:00 am a 6:00 pm desde Medellín para toda Colombia.`,
   alternates: { canonical: "/contacto" },
   openGraph: {
     title: "Contacto",
-    description: "Escríbenos o llámanos: +57 310 2878194, contacto@teloconsigo.co. Atención de lunes a viernes de 8:00 am a 6:00 pm desde Medellín para toda Colombia.",
+    description: `Escríbenos o llámanos: ${CONTACTO.telefonoVisible}, ${CONTACTO.email}. Atención de lunes a viernes de 8:00 am a 6:00 pm desde Medellín para toda Colombia.`,
     type: "website",
     locale: "es_CO",
     url: "/contacto",

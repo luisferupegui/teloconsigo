@@ -1,11 +1,17 @@
 import type { BusinessProduct } from "./products-types";
 import { slugify } from "./products-types";
+import { CONTACTO } from "./contacto";
 
 // ─── SEO: un solo sitio donde vive la identidad del negocio ──────────────────
 //
 // Todo lo que Google necesita saber de teloconsigo.co sale de aquí: los datos de
 // la ficha de empresa, la URL canónica de cada página y los datos estructurados
 // (JSON-LD) de cada tipo de página.
+//
+// El teléfono y el correo NO se escriben aquí: vienen de `contacto.ts`, que es de
+// donde también tiran el pie de página, el botón de WhatsApp y Andrea. Lo que
+// Google publica del negocio y lo que el cliente ve en pantalla tienen que ser el
+// mismo dato, o la ficha de empresa manda llamadas a una línea que ya no existe.
 //
 // REGLA QUE NO SE ROMPE: el JSON-LD describe lo que la página MUESTRA. Nada de
 // adornar. Google penaliza como engañoso un schema que promete algo que el
@@ -20,8 +26,8 @@ export const siteConfig = {
     "Tienda de tecnología en Colombia. Componentes, periféricos, portátiles y equipos para empresas, con asesoría personalizada. Si no lo encuentras, te lo conseguimos.",
   logo: "/logo-header@2x.png",
   imagenSocial: "/hero-banner.png",
-  telefono: "+573102878194",
-  email: "contacto@teloconsigo.co",
+  telefono: CONTACTO.telefono,
+  email: CONTACTO.email,
   ciudad: "Medellín",
   region: "Antioquia",
   pais: "CO",

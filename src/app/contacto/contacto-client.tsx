@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { CONTACTO, whatsappUrl } from "@/lib/contacto";
 import {
   Mail,
   Phone,
@@ -48,10 +49,9 @@ function TiktokIcon({ className = "" }: { className?: string }) {
   );
 }
 
-const EMAIL = "contacto@teloconsigo.co";
-const TEL_DISPLAY = "+57 310 2878194";
-const TEL_E164 = "+573102878194";
-const WHATSAPP = "+573102878194";
+const EMAIL       = CONTACTO.email;
+const TEL_DISPLAY = CONTACTO.telefonoVisible;
+const TEL_E164    = CONTACTO.telefono;
 
 export default function ContactoPage() {
   const [sent, setSent] = useState(false);
@@ -106,7 +106,7 @@ export default function ContactoPage() {
               icon: MessageCircle,
               titulo: "WhatsApp",
               valor: "Respuesta rápida",
-              href: `https://wa.me/${WHATSAPP.replace("+", "")}`,
+              href: whatsappUrl(),
               cta: "Abrir WhatsApp",
               gradient: "from-emerald-400 to-emerald-600",
               shadow: "shadow-emerald-500/30",
@@ -334,7 +334,7 @@ export default function ContactoPage() {
             </div>
 
             <a
-              href={`https://wa.me/${WHATSAPP.replace("+", "")}`}
+              href={whatsappUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between rounded-2xl bg-emerald-500 p-5 text-white hover:bg-emerald-600 transition"

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Truck, CreditCard, Shield, RotateCcw, Package, MessageCircle } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
+import { whatsappUrl } from "@/lib/contacto";
 
 export const metadata = {
   title: "Preguntas frecuentes",
@@ -216,7 +217,7 @@ export default function FaqPage() {
           <h2 className="font-display text-xl font-bold text-zinc-900">¿No encontraste tu respuesta?</h2>
           <p className="mt-2 text-sm text-zinc-600">Nuestro equipo te responde en minutos.</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <a href="https://wa.me/573102878194" target="_blank" rel="noopener noreferrer"
+            <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 transition">
               <MessageCircle className="h-4 w-4" /> Escribir por WhatsApp
             </a>
