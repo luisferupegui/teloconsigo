@@ -56,7 +56,15 @@ const tools: ToolDef[] = [
     input_schema: {
       type: "object",
       properties: {
-        consulta: { type: "string", description: "Caso de uso, tipo de equipo, marca o palabras clave." },
+        consulta: {
+          type: "string",
+          description:
+            "Caso de uso, tipo de equipo, marca o palabras clave. Escribe SOLO lo que el cliente pidió, " +
+            "con sus palabras. NO añadas specs que él no mencionó (ni procesador, ni RAM, ni pulgadas): " +
+            "cada cifra que agregas es un requisito que descarta productos buenos. Si el cliente dijo " +
+            '"un portátil HP para la empresa", la consulta es "portatil hp empresa" — nunca ' +
+            '"portatil hp core i5 16gb". El presupuesto va en precioMax, no aquí.',
+        },
         segmento: {
           type: "string",
           enum: ["hogar-estudio", "gaming-streaming", "productividad-oficina", "movilidad-premium", "redes-servidores", "creadores-produccion", "smart-home", "monitores", "accesorios"],
@@ -579,15 +587,49 @@ function filtrarPorAtributos<T>(items: T[], textoDe: (x: T) => string, consulta:
       return cumplen.length > 0 ? cumplen : quedan;
     }, items);
 
-  // LA MARCA TAMBIÉN ES PARTE DE LO QUE PIDIÓ. Tampoco lleva cifra, así que a quien
-  // pedía un morral TARGUS le salían un Totto, un Lugano y un genérico de Oxford. Quien
-  // nombra la marca ya decidió; ofrecerle otras tres es no haberlo escuchado.
-  // Misma exigencia blanda: si no hay NADA de esa marca, no se filtra y se sigue el
-  // camino normal (que acaba en conseguirlo por web o en pedirle el modelo).
+  // La MARCA ya se aplicó antes que las cifras, en `filtrarPorMarcaYCifras`.
+  return porAtributo;
+}
+
+/** LA MARCA MANDA SOBRE LAS CIFRAS.
+ *
+ *  La marca la dijo el cliente con todas las letras. Las cifras, muchas veces, no: las
+ *  añade el modelo al redactar la consulta de búsqueda. Cuando "un portátil HP para mi
+ *  empresa" se convierte en `"portatil hp empresarial core i5 16gb ssd"`, el filtro de
+ *  cifras —que es duro y va primero— borra los seis portátiles HP de las listas (solo uno
+ *  es Core i5, y ese trae 8GB, no 16). La marca se quedaba entonces sin candidatos y su
+ *  respaldo blando devolvía lo que hubiera con esas cifras: Lenovo y ASUS. Al cliente que
+ *  pidió HP le llegaban tres máquinas que no son HP. Medido: pasaba en 4 de 8 intentos.
+ *
+ *  La marca pasa a ser guarda DURA y se aplica ANTES que las cifras, como la familia y la
+ *  gama. Si no hay nada de esa marca, la respuesta correcta es que no hay disponibilidad
+ *  local —y que Andrea lo consiga por web o le pida el modelo—, nunca ofrecerle otra
+ *  marca. Es lo que el comentario de `filtrarPorAtributos` ya prometía y el código no
+ *  cumplía.
+ *
+ *  Las cifras siguen siendo DURAS, y eso es deliberado. Se probó a ablandarlas dentro de
+ *  la marca —para rescatar las HP de las listas cuando el modelo pide un "core i5" que
+ *  ninguna tiene— y rompía el caso contrario: en "Logitech MX Master 3S" las cifras SON el
+ *  modelo, así que al aflojarlas el buscador devolvía cualquier Logitech (un M170 de
+ *  oficina) y ya no salía a cotizar el MX Master por web. Desde aquí no se distingue una
+ *  cifra que el cliente dijo de una que el modelo supuso, y equivocarse en ese sentido es
+ *  peor: manda otro producto de la marca correcta.
+ *
+ *  Que el modelo no adorne la consulta con specs inventadas se resuelve donde nace el
+ *  problema: en la descripción de la herramienta `buscar_productos`.
+ *
+ *  Cuando el cliente NO nombra marca esto es exactamente el filtro de cifras de siempre. */
+function filtrarPorMarcaYCifras<T>(
+  items: T[],
+  textoDe: (x: T) => string,
+  consulta: string,
+  cumpleCifras: (x: T) => boolean,
+): T[] {
   const marcas = marcasEnConsulta(consulta);
-  if (marcas.length === 0) return porAtributo;
-  const deLaMarca = porAtributo.filter((x) => marcas.some((m) => esDeMarca(textoDe(x), m)));
-  return deLaMarca.length > 0 ? deLaMarca : porAtributo;
+  if (marcas.length === 0) return items.filter(cumpleCifras);
+
+  const deLaMarca = items.filter((x) => marcas.some((m) => esDeMarca(textoDe(x), m)));
+  return deLaMarca.filter(cumpleCifras);
 }
 
 function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; localDisponibles: number; productos: CustomerProduct[]; nota: string } {
@@ -853,7 +895,15 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // darle una diadema. Y las SPECS, porque devolver lo que sea ofrecía un Ryzen 3 a quien
   // pidió un Ryzen 5 con RTX 5060. Si nada local cumple, la respuesta correcta es que no
   // hay disponibilidad local y que Andrea lo consiga por web.
-  const soloEspecs = combinados.filter(gamaSuficiente).filter(mismaFamilia).filter(cumpleSpecs);
+  // La marca va por delante de las cifras, y es tan innegociable como ellas: ver
+  // `filtrarPorMarcaYCifras`. Sin marca en la consulta esto es exactamente
+  // `.filter(cumpleSpecs)`, como antes.
+  const soloEspecs = filtrarPorMarcaYCifras(
+    combinados.filter(gamaSuficiente).filter(mismaFamilia),
+    (x) => x.haystack,
+    consulta,
+    cumpleSpecs,
+  );
   // NO se afloja más allá de esto: si nada local cumple lo que pidió el cliente, la
   // respuesta correcta es "no hay disponibilidad local" y que Andrea lo consiga por web.
   // Devolver lo que sea era peor — ofrecía un Ryzen 3 a quien pidió un Ryzen 5 con RTX 5060.
@@ -1458,10 +1508,13 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
   // ambos lados para que un espacio no descarte el producto correcto.
   const pegar = (t: string) => t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2");
   const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
-  const porCifras = exig.length === 0 ? productos : productos.filter((p) => {
-    const hs = pegar(`${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`);
-    return exig.every((t) => hs.includes(t));
-  });
+  const textoDe = (p: QuoteProducto) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`;
+  // Misma precedencia que en las listas: la marca antes que las cifras. Aquí el daño era
+  // el mismo — el cliente pide una marca, la consulta llega con cifras que no cumple
+  // ninguna opción de esa marca, y acababa viendo otras. Ver `filtrarPorMarcaYCifras`.
+  const porCifras = filtrarPorMarcaYCifras(productos, textoDe, consulta, (p) =>
+    exig.every((t) => pegar(textoDe(p)).includes(t)),
+  );
   // Y los atributos que el cliente pidió con palabras (inalámbrico, mecánico, láser…),
   // que las cifras no cubren. Ver `filtrarPorAtributos`.
   return filtrarPorAtributos(porCifras, (p) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`, consulta);
