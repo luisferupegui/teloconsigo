@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   Send, Monitor, Laptop, Gamepad2, Building2, Headphones, Truck,
   ShieldCheck, Award, Sparkles, ChevronRight, Cpu, Minimize2,
@@ -186,13 +186,129 @@ function TypingIndicator() {
   );
 }
 
+// ─── Hablar con Andrea: la petición y su vigilante de silencio ─────────────
+//
+// La respuesta llega en streaming y con pausas largas: Andrea manda primero un
+// "dame un momento" y después se calla mientras consulta las listas y la web.
+// Medido contra producción: 10,7 segundos seguidos sin un solo byte, y una
+// cotización más pesada tarda más.
+//
+// Ese silencio es justo donde un móvil pierde la conexión — el cliente bloquea
+// la pantalla, se cambia de app, o el teléfono salta de WiFi a datos. La
+// conexión no se cae con un error: se queda colgada. Y un `reader.read()` que
+// nunca resuelve tampoco lanza, así que la promesa se queda pendiente para
+// siempre, el `finally` que libera el chat no corre, y Andrea se queda
+// "escribiendo…" con el input bloqueado. El cliente no puede ni reintentar:
+// solo recargar la página, que es lo que nadie hace. Se va.
+//
+// El vigilante NO mide cuánto dura la respuesta (una cotización legítima puede
+// tardar): mide cuánto lleva sin llegar NADA. Cada trozo reinicia la cuenta.
+
+const SILENCIO_MAX = 45_000;
+/** Margen que se le da a la conexión para dar señales al volver de segundo plano. */
+const GRACIA_AL_VOLVER = 10_000;
+
+/** Separador de globos que manda el backend (ASCII Record Separator, char 30).
+ *  Marca dónde termina el preámbulo y empieza la respuesta final: cada segmento
+ *  es su propio globo, y mientras llega el siguiente se muestra "escribiendo…". */
+const SEP = String.fromCharCode(30);
+
+type Respuesta =
+  | { ok: true; texto: string }
+  | { ok: false; motivo: "http" | "corte" | "red"; mensaje?: string };
+
+async function preguntarAAndrea(
+  cuerpo: unknown,
+  alRecibir: (acumulado: string) => void,
+): Promise<Respuesta> {
+  const ctrl = new AbortController();
+  let ultimoByte = Date.now();
+  let colgada = false;
+
+  const cortarSiLlevaCallada = () => {
+    if (Date.now() - ultimoByte < SILENCIO_MAX) return;
+    colgada = true;
+    ctrl.abort();
+  };
+
+  // Dos guardias para el mismo silencio, porque el temporizador solo no basta:
+  // el navegador de un móvil congela los timers de una pestaña en segundo plano,
+  // así que mientras la pantalla está bloqueada este intervalo NO corre.
+  const vigilante = setInterval(cortarSiLlevaCallada, 5_000);
+
+  // Al volver de segundo plano no se puede saber si la conexión sobrevivió al
+  // congelamiento, y cortar de una mataría también a las que siguen vivas. Se
+  // le adelanta el reloj para dejarle una última oportunidad corta de dar
+  // señales; si no la aprovecha, la corta el vigilante.
+  const alVolver = () => {
+    if (document.visibilityState !== "visible") return;
+    const limite = SILENCIO_MAX - GRACIA_AL_VOLVER;
+    if (Date.now() - ultimoByte >= limite) ultimoByte = Date.now() - limite;
+  };
+  document.addEventListener("visibilitychange", alVolver);
+
+  try {
+    const res = await fetch("/api/asesor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cuerpo),
+      signal: ctrl.signal,
+    });
+
+    if (!res.ok || !res.body) {
+      let mensaje: string | undefined;
+      try { const j = await res.json(); if (j?.error) mensaje = j.error as string; } catch { /* */ }
+      return { ok: false, motivo: "http", mensaje };
+    }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let acc = "";
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      ultimoByte = Date.now();
+      acc += decoder.decode(value, { stream: true });
+      alRecibir(acc);
+    }
+
+    return { ok: true, texto: acc };
+  } catch {
+    return { ok: false, motivo: colgada ? "corte" : "red" };
+  } finally {
+    clearInterval(vigilante);
+    document.removeEventListener("visibilitychange", alVolver);
+  }
+}
+
+/** Andrea nunca se queda muda: si no pudo responder, lo dice y deja una salida. */
+function disculpa(r: Extract<Respuesta, { ok: false }>): string {
+  if (r.motivo === "http")
+    return r.mensaje ?? "Uf, no pude responderte en este momento. ¿Lo intentamos de nuevo?";
+  if (r.motivo === "corte")
+    return "Se me fue la conexión mientras te buscaba las opciones 😅 Te dejé tu mensaje listo abajo: dale enviar y sigo donde quedamos.";
+  return "Parece que se cayó la conexión. ¿Lo intentamos de nuevo?";
+}
+
+const SIN_RESPUESTA = "Uf, no me llegó la respuesta. ¿Lo intentamos de nuevo? 😊";
+
 // ─── Contenido principal ───────────────────────────────────────────────────
-function AsesorContent() {
-  const searchParams = useSearchParams();
-  const router       = useRouter();
-  const producto    = searchParams.get("producto") ?? "";
-  const ref         = searchParams.get("ref") ?? "";
-  const precio      = searchParams.get("precio") ?? "";
+//
+// Los parámetros de la URL llegan como props desde el componente de servidor
+// (ver ./page.tsx). Leerlos aquí con `useSearchParams` obligaba a un
+// `<Suspense>` que hacía repintar la página entera en el cliente.
+export default function AsesorPage({
+  producto,
+  refOrigen,
+  precio,
+}: {
+  producto: string;
+  refOrigen: string;
+  precio: string;
+}) {
+  const router = useRouter();
+  const ref    = refOrigen; // `ref` es nombre reservado como prop; dentro sí puede llamarse así
   const hasProducto = producto.length > 0;
   const isArmador   = ref === "armador";
 
@@ -209,6 +325,12 @@ function AsesorContent() {
   const [inactivity,    setInactivity]    = useState<InactivityState>("active");
   const [showChoice,    setShowChoice]    = useState(false);
   const [sessionReady,  setSessionReady]  = useState(false);
+  // Si el auto-inicio ya arrancó. Va duplicado a propósito: el ref es la guarda
+  // síncrona que impide dispararlo dos veces (el estado no se actualiza a
+  // tiempo para eso), y el estado es lo que se pinta. Leer el ref al pintar
+  // era un error de verdad: cambiarlo no repinta, así que los accesos rápidos
+  // del producto se quedaban o se iban según si algo más provocaba un repintado.
+  const [autoStarted,   setAutoStarted]   = useState(false);
   const scrollRef       = useRef<HTMLDivElement>(null);
   const restoredRef     = useRef(false);
   const autoStartedRef  = useRef(false);
@@ -235,6 +357,7 @@ function AsesorContent() {
   const handleContinue = () => {
     const data = savedDataRef.current;
     autoStartedRef.current = true; // conversación restaurada → no disparar auto-inicio
+    setAutoStarted(true);
     setLoading(false); // si hasProducto=true loading arrancó true; al restaurar se habilita el input
     if (!data) { setShowChoice(false); restoredRef.current = true; return; }
     let { msgs, la, is } = data;
@@ -302,33 +425,33 @@ function AsesorContent() {
     if (!sessionReady || showChoice || !hasProducto) return;
     if (autoStartedRef.current) return;
     autoStartedRef.current = true;
-    const SEP = String.fromCharCode(30);
+    setAutoStarted(true);
     const autoUserMsg: Msg = { role: "user", content: `¿Cuál es el precio y disponibilidad del ${producto}?`, hidden: true };
     setLoading(true);
     setIsTyping(true);
     const doFetch = async () => {
-      try {
-        const res = await fetch("/api/asesor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: [initialMsg], contexto: { producto, ref, precio }, autoInicio: true }),
-        });
-        if (!res.ok || !res.body) { setIsTyping(false); setLoading(false); return; }
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let acc = "";
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          acc += decoder.decode(value, { stream: true });
+      const r = await preguntarAAndrea(
+        { messages: [initialMsg], contexto: { producto, ref, precio }, autoInicio: true },
+        (acc) => {
           const parts = acc.split(SEP);
           const bubbles: Msg[] = parts.map((c) => c.trim()).filter((c) => c.length > 0).map((c) => ({ role: "assistant" as const, content: c }));
           setMessages([initialMsg, autoUserMsg, ...bubbles]);
           setIsTyping(parts[parts.length - 1].trim().length === 0);
-        }
-        if (acc.split(SEP).every((c) => c.trim().length === 0)) setMessages([initialMsg]);
-      } catch { setMessages([initialMsg]); }
-      finally { setLoading(false); setIsTyping(false); }
+        },
+      );
+
+      setLoading(false);
+      setIsTyping(false);
+
+      if (r.ok && r.texto.split(SEP).some((c) => c.trim().length > 0)) return;
+
+      // Sin respuesta se borraba el turno y quedaba el saludo solo: el cliente
+      // veía a Andrea prometer que iba a revisar el precio y no volver nunca.
+      // Aquí llegó por una ficha de producto, así que no hay mensaje suyo que
+      // reenviar — se le dice qué pasó y que escriba, con el input ya libre.
+      setMessages([initialMsg, { role: "assistant", content: r.ok
+        ? SIN_RESPUESTA
+        : "Se me fue la conexión mientras revisaba el precio 😅 Escríbeme por aquí y lo miramos de una." }]);
     };
     doFetch();
   }, [sessionReady, showChoice, hasProducto]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -340,9 +463,11 @@ function AsesorContent() {
     if (!t || loading) return;
     setInput("");
 
-    // Reiniciar contador de inactividad
-    const now = Date.now();
-    setLastActivity(now);
+    // Reiniciar contador de inactividad. El reloj se lee dentro del actualizador,
+    // que React ejecuta al aplicar el estado: `send` nace en el render y el
+    // compilador no puede demostrar que solo la llaman los manejadores, así que
+    // un `Date.now()` suelto aquí lo da por impureza de render.
+    setLastActivity(() => Date.now());
     setInactivity("active");
 
     // Si retorna desde estado archivado, insertar saludo de bienvenida
@@ -355,63 +480,31 @@ function AsesorContent() {
     setLoading(true);
     setIsTyping(true);
 
-    // El backend separa el preámbulo ("dame un momento") de la respuesta final
-    // con un ASCII Record Separator (char 30). Cada segmento es su propio globo;
-    // mientras llega el siguiente, se muestra el indicador "escribiendo…".
-    const SEP = String.fromCharCode(30);
+    const r = await preguntarAAndrea(
+      { messages: withUser, contexto: hasProducto ? { producto, ref, precio } : undefined },
+      (acc) => {
+        const parts = acc.split(SEP);
+        const bubbles = parts
+          .map((c) => c.trim())
+          .filter((c) => c.length > 0)
+          .map((c) => ({ role: "assistant" as const, content: c }));
+        setMessages([...withUser, ...bubbles]);
+        // Si el último segmento aún está vacío, Andrea sigue "escribiendo" el próximo globo.
+        setIsTyping(parts[parts.length - 1].trim().length === 0);
+      },
+    );
 
-    const renderStream = (acc: string) => {
-      const parts = acc.split(SEP);
-      const bubbles = parts
-        .map((c) => c.trim())
-        .filter((c) => c.length > 0)
-        .map((c) => ({ role: "assistant" as const, content: c }));
-      setMessages([...withUser, ...bubbles]);
-      // Si el último segmento aún está vacío, Andrea sigue "escribiendo" el próximo globo.
-      setIsTyping(parts[parts.length - 1].trim().length === 0);
-    };
+    // Pase lo que pase, el chat se desbloquea aquí: es la salida que antes no
+    // existía cuando la conexión se quedaba colgada en vez de caerse.
+    setLoading(false);
+    setIsTyping(false);
 
-    try {
-      const res = await fetch("/api/asesor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: withUser,
-          contexto: hasProducto ? { producto, ref, precio } : undefined,
-        }),
-      });
+    if (r.ok && r.texto.split(SEP).some((c) => c.trim().length > 0)) return;
 
-      if (!res.ok || !res.body) {
-        let msg = "Uf, no pude responderte en este momento. ¿Lo intentamos de nuevo?";
-        try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* */ }
-        setIsTyping(false);
-        setMessages([...withUser, { role: "assistant", content: msg }]);
-        return;
-      }
-
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder();
-      let acc = "";
-
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        acc += decoder.decode(value, { stream: true });
-        renderStream(acc);
-      }
-
-      // Si no llegó ningún contenido real (solo separadores o vacío) → fallback.
-      if (acc.split(SEP).every((c) => c.trim().length === 0)) {
-        setIsTyping(false);
-        setMessages([...withUser, { role: "assistant", content: "Uf, no me llegó la respuesta. ¿Lo intentamos de nuevo? 😊" }]);
-      }
-    } catch {
-      setIsTyping(false);
-      setMessages([...withUser, { role: "assistant", content: "Parece que se cayó la conexión. ¿Lo intentamos de nuevo?" }]);
-    } finally {
-      setLoading(false);
-      setIsTyping(false);
-    }
+    setMessages([...withUser, { role: "assistant", content: r.ok ? SIN_RESPUESTA : disculpa(r) }]);
+    // Y se le devuelve su texto al input: reintentar es pulsar enviar, no volver
+    // a escribirlo todo en el teclado de un móvil.
+    setInput(t);
   };
 
   useEffect(() => {
@@ -593,7 +686,7 @@ function AsesorContent() {
                 </div>
               )}
 
-              {hasProducto && !hasUserMsg && !showChoice && !loading && !autoStartedRef.current && (
+              {hasProducto && !hasUserMsg && !showChoice && !loading && !autoStarted && (
                 <div className="flex flex-wrap gap-1.5">
                   {QUICK_PRODUCTO.map((q) => (
                     <button
@@ -706,20 +799,5 @@ function AsesorContent() {
         </p>
       </div>
     </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────
-export default function AsesorPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="mx-auto max-w-6xl px-4 py-20 text-center text-zinc-400">
-          Cargando…
-        </div>
-      }
-    >
-      <AsesorContent />
-    </Suspense>
   );
 }
