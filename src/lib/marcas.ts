@@ -86,6 +86,13 @@ const COMO_SE_ESCRIBE: Record<string, string> = {
 /** Marcas de COMPONENTE. En un equipo completo nombran la pieza, no el equipo. */
 const SOLO_COMPONENTE = new Set(["intel", "amd", "nvidia"]);
 
+/** ¿La marca solo fabrica piezas? Quien pide un "portátil AMD" habla del procesador que
+ *  lleva dentro, así que para estas marcas vale buscarla en las specs del equipo. Para el
+ *  resto no: un PC con tarjeta de video MSI no es un producto MSI. */
+export function esMarcaDeComponente(marca: string): boolean {
+  return SOLO_COMPONENTE.has(marca.toLowerCase());
+}
+
 /** Categorías donde el producto es una máquina, no una pieza. */
 const EQUIPO_COMPLETO = new Set([
   "portatil", "escritorio", "escritorio-alto-rendimiento", "all-in-one",

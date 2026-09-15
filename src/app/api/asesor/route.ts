@@ -22,7 +22,7 @@ import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
 import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
-import { marcasEnConsulta, esDeMarca } from "@/lib/marcas";
+import { marcasEnConsulta, esDeMarca, esMarcaDeComponente } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { CONTACTO } from "@/lib/contacto";
 
@@ -647,17 +647,30 @@ function filtrarPorAtributos<T>(items: T[], textoDe: (x: T) => string, consulta:
  *  Que el modelo no adorne la consulta con specs inventadas se resuelve donde nace el
  *  problema: en la descripción de la herramienta `buscar_productos`.
  *
- *  Cuando el cliente NO nombra marca esto es exactamente el filtro de cifras de siempre. */
+ *  Cuando el cliente NO nombra marca esto es exactamente el filtro de cifras de siempre.
+ *
+ *  LA MARCA SE BUSCA EN EL NOMBRE, NO EN LAS SPECS. `textoDe` trae la ficha entera, y la
+ *  ficha de un ensamblado nombra sus piezas: "board ASUS PRIME B650M", "tvideo MSI GEFORCE
+ *  RTX 5060". Quien pedía la board "MSI MAG B650 Tomahawk WiFi" recibía, junto a ella, dos
+ *  PC POWER GROUP completos — pasaban la marca por su tarjeta de video MSI y la cifra por
+ *  su board B650. En las listas activas hay 51 equipos que "son MSI", 90 "ASUS" y 22
+ *  "Gigabyte" solo por una pieza; ninguna línea real (IdeaPad, ThinkPad, TUF, Tomahawk…)
+ *  depende de las specs para coincidir con su marca. `marcaDe` es el texto que sí dice de
+ *  quién es el producto. Excepción: Intel, AMD y NVIDIA solo hacen piezas, y "portátil
+ *  AMD" habla del procesador que lleva dentro — para ellas se mira la ficha entera. */
 function filtrarPorMarcaYCifras<T>(
   items: T[],
   textoDe: (x: T) => string,
   consulta: string,
   cumpleCifras: (x: T) => boolean,
+  marcaDe: (x: T) => string,
 ): T[] {
   const marcas = marcasEnConsulta(consulta);
   if (marcas.length === 0) return items.filter(cumpleCifras);
 
-  const deLaMarca = items.filter((x) => marcas.some((m) => esDeMarca(textoDe(x), m)));
+  const deLaMarca = items.filter((x) =>
+    marcas.some((m) => esDeMarca(esMarcaDeComponente(m) ? textoDe(x) : marcaDe(x), m)),
+  );
   return deLaMarca.filter(cumpleCifras);
 }
 
@@ -932,6 +945,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     (x) => x.haystack,
     consulta,
     cumpleSpecs,
+    (x) => `${x.prod.nombre} ${x.prod.marca ?? ""}`,
   );
   // NO se afloja más allá de esto: si nada local cumple lo que pidió el cliente, la
   // respuesta correcta es "no hay disponibilidad local" y que Andrea lo consiga por web.
@@ -1585,8 +1599,12 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
   // Misma precedencia que en las listas: la marca antes que las cifras. Aquí el daño era
   // el mismo — el cliente pide una marca, la consulta llega con cifras que no cumple
   // ninguna opción de esa marca, y acababa viendo otras. Ver `filtrarPorMarcaYCifras`.
-  const porCifras = filtrarPorMarcaYCifras(productos, textoDe, consulta, (p) =>
-    exig.every((t) => pegar(textoDe(p)).includes(t)),
+  const porCifras = filtrarPorMarcaYCifras(
+    productos,
+    textoDe,
+    consulta,
+    (p) => exig.every((t) => pegar(textoDe(p)).includes(t)),
+    (p) => `${p.nombre ?? ""} ${p.marca ?? ""} ${p.modelo ?? ""}`,
   );
   // Y los atributos que el cliente pidió con palabras (inalámbrico, mecánico, láser…),
   // que las cifras no cubren. Ver `filtrarPorAtributos`.
