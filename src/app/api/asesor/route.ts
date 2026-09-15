@@ -3364,6 +3364,20 @@ function fichaDeConfiguracion(perfil: string, piezas: PiezaCotizada[], total: nu
   return `**${perfil} — ensamblado a la medida**\n${lineas.join("\n")}\n💲 ${fmtCOP(total)}`;
 }
 
+/** LO QUE ANDREA VE DE LOS PRODUCTOS: SOLO LOS QUE ENTRARON EN LA SELECCIÓN.
+ *
+ *  La herramienta le devolvía todos, cada uno con su ficha armada, y el servidor elegía
+ *  aparte cuáles mostrar. Andrea copiaba la selección y luego AGREGABA por su cuenta lo
+ *  que se había quedado fuera: el MX Master 3S repetido a $840.000 junto al de $610.000,
+ *  o el combo MK270 con pad sin etiqueta —o con una inventada—. Lo que no se va a mostrar
+ *  no tiene por qué estar a la vista. Sin selección (nada con precio) se deja todo. */
+function soloLosSeleccionados<T extends { nombre?: string }>(productos: T[], seleccion: ReturnType<typeof seleccionDe>): T[] {
+  if (seleccion.opciones.length === 0) return productos;
+  const clave = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const elegidos = new Set(seleccion.opciones.map((o) => clave(o.nombre)));
+  return productos.filter((p) => elegidos.has(clave(p.nombre ?? "")));
+}
+
 async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulador): Promise<unknown> {
   try {
     if (name === "buscar_productos") {
@@ -3375,7 +3389,8 @@ async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulad
           acc.locales.push({ nombre: p.nombre, precio: p.precioDesde, ficha: p.ficha, entrega: "local" });
         }
       }
-      return { ...r, seleccion: seleccionDe(acc) };
+      const seleccion = seleccionDe(acc);
+      return { ...r, productos: soloLosSeleccionados(r.productos, seleccion), seleccion };
     }
     if (name === "registrar_pedido") return await registrarPedido(input, acc);
     if (name === "cancelar_pedido")  return await cancelarPedido(input);
@@ -3415,7 +3430,8 @@ async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulad
       if (r.encontrados === 0 && acc.locales.length > 0) {
         r = { ...r, nota: "INTERNO: no hay más opciones que sumar. Presenta COPIANDO los \"bloque\" del campo \"seleccion\" TAL CUAL (ya vienen elegidos). NO llames cotizar_web otra vez, NO digas que buscaste ni que no apareció nada, y NO derives al equipo: sí hay qué ofrecerle." };
       }
-      return { ...r, seleccion: seleccionDe(acc) };
+      const seleccion = seleccionDe(acc);
+      return { ...r, productos: soloLosSeleccionados(r.productos, seleccion), seleccion };
     }
     return { error: "herramienta desconocida" };
   } catch {
