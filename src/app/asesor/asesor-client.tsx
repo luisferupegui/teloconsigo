@@ -203,10 +203,24 @@ function TypingIndicator() {
 //
 // El vigilante NO mide cuánto dura la respuesta (una cotización legítima puede
 // tardar): mide cuánto lleva sin llegar NADA. Cada trozo reinicia la cuenta.
+//
+// El servidor manda una señal de vida (U+FEFF, invisible) cada 5 s que pasa sin
+// escribir — ver LATIDO en /api/asesor. Con ella el silencio deja de ser ambiguo:
+// si llegan señales el servidor sigue trabajando, y si dejan de llegar lo que se
+// murió es la conexión. Por eso el umbral depende de si ya se vio alguna:
+//  • con señal de vida, 20 s sin nada bastan para saber que la conexión murió;
+//  • sin haber visto ninguna —un servidor todavía en la versión anterior, o algo en
+//    medio que la retiene— no se sabe, y se esperan los 45 s de siempre para no
+//    matar una cotización lenta pero viva (en producción se midieron 32,5 s).
+// Un servidor vivo que no avanza no se detecta aquí: de eso se encarga su propio
+// tope de 90 s, que corta con un mensaje.
 
-const SILENCIO_MAX = 45_000;
+const SILENCIO_SIN_LATIDO = 45_000;
+const SILENCIO_CON_LATIDO = 20_000;
 /** Margen que se le da a la conexión para dar señales al volver de segundo plano. */
 const GRACIA_AL_VOLVER = 10_000;
+/** La señal de vida del servidor. Nunca se pinta: se quita al llegar. */
+const LATIDO = /﻿/g;
 
 /** Separador de globos que manda el backend (ASCII Record Separator, char 30).
  *  Marca dónde termina el preámbulo y empieza la respuesta final: cada segmento
@@ -224,9 +238,11 @@ async function preguntarAAndrea(
   const ctrl = new AbortController();
   let ultimoByte = Date.now();
   let colgada = false;
+  let hayLatido = false;
+  const umbral = () => (hayLatido ? SILENCIO_CON_LATIDO : SILENCIO_SIN_LATIDO);
 
   const cortarSiLlevaCallada = () => {
-    if (Date.now() - ultimoByte < SILENCIO_MAX) return;
+    if (Date.now() - ultimoByte < umbral()) return;
     colgada = true;
     ctrl.abort();
   };
@@ -234,15 +250,16 @@ async function preguntarAAndrea(
   // Dos guardias para el mismo silencio, porque el temporizador solo no basta:
   // el navegador de un móvil congela los timers de una pestaña en segundo plano,
   // así que mientras la pantalla está bloqueada este intervalo NO corre.
-  const vigilante = setInterval(cortarSiLlevaCallada, 5_000);
+  const vigilante = setInterval(cortarSiLlevaCallada, 2_000);
 
   // Al volver de segundo plano no se puede saber si la conexión sobrevivió al
   // congelamiento, y cortar de una mataría también a las que siguen vivas. Se
   // le adelanta el reloj para dejarle una última oportunidad corta de dar
-  // señales; si no la aprovecha, la corta el vigilante.
+  // señales; si no la aprovecha, la corta el vigilante. Si sobrevivió, las señales
+  // de vida que el servidor siguió mandando llegan en cuanto la pestaña despierta.
   const alVolver = () => {
     if (document.visibilityState !== "visible") return;
-    const limite = SILENCIO_MAX - GRACIA_AL_VOLVER;
+    const limite = umbral() - GRACIA_AL_VOLVER;
     if (Date.now() - ultimoByte >= limite) ultimoByte = Date.now() - limite;
   };
   document.addEventListener("visibilitychange", alVolver);
@@ -269,7 +286,12 @@ async function preguntarAAndrea(
       const { done, value } = await reader.read();
       if (done) break;
       ultimoByte = Date.now();
-      acc += decoder.decode(value, { stream: true });
+      const trozo = decoder.decode(value, { stream: true });
+      const limpio = trozo.replace(LATIDO, "");
+      if (limpio.length < trozo.length) hayLatido = true;
+      // Un trozo que solo traía señal de vida no cambia nada en pantalla.
+      if (limpio.length === 0) continue;
+      acc += limpio;
       alRecibir(acc);
     }
 

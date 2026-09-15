@@ -36,6 +36,35 @@ export const runtime = "nodejs";
 const MODEL = DEEPSEEK_MODEL;     // conversación (Andrea)
 const MODEL_WEB = DEEPSEEK_MODEL; // sub-llamadas internas de cotización web
 
+// ── Señal de vida y tope total del stream ─────────────────────────────────────
+//
+// Mientras Andrea consulta listas y web, el stream se queda callado: medido en
+// producción, hasta 32,5 segundos seguidos sin un byte. Ese silencio es donde un
+// móvil pierde la conexión, y además no deja al cliente distinguir "el servidor
+// sigue trabajando" de "la conexión se murió" — así que su vigilante tenía que
+// esperar 45 s para no matar cotizaciones lentas pero vivas.
+//
+// Con la señal de vida, cada 5 s sin escribir se manda un carácter invisible. El
+// cliente que la ve puede cortar tras 20 s de silencio con la seguridad de que la
+// conexión, no el servidor, es la que falló.
+//
+// U+FEFF y no otro, por dos razones. `trim()` lo elimina, así que un navegador que
+// todavía tiene cargada la versión anterior del chat (el que abrió la página antes
+// del despliegue) no pinta nada raro: las señales caen en los bordes de los globos y
+// se recortan. Y el modelo nunca lo produce, así que el cliente puede reconocerlo
+// sin confundirlo con texto — un espacio no servía, porque es un token habitual.
+const LATIDO = "﻿";
+const LATIDO_MS = 5_000;
+// La señal de vida tiene un peligro: si el servidor sigue vivo pero NO avanza (una
+// llamada a DeepSeek atascada: 120 s de timeout y hasta 3 reintentos), seguiría
+// latiendo y el vigilante del cliente no cortaría nunca. De ahí el tope: pasado este
+// tiempo se avisa al cliente, se cierra, y no se lanza ninguna herramienta más —
+// tampoco un registro de pedido que el cliente ya no sabe que se está haciendo. La
+// respuesta más lenta medida fue de 34 s: el tope deja casi el triple de margen.
+const TOPE_TOTAL_MS = 90_000;
+const MSG_DEMORA =
+  "Se me está demorando más de la cuenta revisar las opciones 😅 Vuelve a enviarme tu mensaje en un momento y te respondo con todo.";
+
 // ── Herramientas de Andrea (todas se ejecutan AQUÍ — ninguna es server tool) ──
 // Se declaran con el esquema legible `input_schema` y se traducen al formato de
 // función de DeepSeek/OpenAI en `toDSTool`.
@@ -3165,6 +3194,9 @@ export async function POST(req: Request): Promise<Response> {
   let keyIdx = 0;
   let ds = new DeepSeek({ apiKey: keys[0] ?? apiKey, maxRetries: 3 });
 
+  // Se asigna dentro de `start`; `cancel` la usa cuando el cliente cierra la conexión.
+  let detener: () => void = () => {};
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const enc = new TextEncoder();
@@ -3172,6 +3204,41 @@ export async function POST(req: Request): Promise<Response> {
       // y empieza la respuesta final. El frontend lo usa para renderizar globos
       // distintos y mostrar el indicador "escribiendo…" mientras Andrea consulta.
       const BUBBLE_SEP = String.fromCharCode(30); // ASCII Record Separator (no aparece en texto normal)
+
+      // Toda escritura pasa por aquí: así se sabe cuándo fue la última (para la señal
+      // de vida) y nada intenta escribir en un stream ya cerrado — por el tope, o
+      // porque el cliente se fue —, que lanzaría dentro de este `start`.
+      const inicio = Date.now();
+      let ultimaEscritura = inicio;
+      let cerrado = false;
+      const escribir = (texto: string) => {
+        if (cerrado) return;
+        try {
+          controller.enqueue(enc.encode(texto));
+          ultimaEscritura = Date.now();
+        } catch {
+          cerrado = true;
+        }
+      };
+      const cerrarStream = () => {
+        clearInterval(latido);
+        if (cerrado) return;
+        cerrado = true;
+        try { controller.close(); } catch { /* ya estaba cerrado */ }
+      };
+      const latido = setInterval(() => {
+        if (cerrado) { clearInterval(latido); return; }
+        if (Date.now() - inicio >= TOPE_TOTAL_MS) {
+          console.warn(`[asesor] tope de ${TOPE_TOTAL_MS / 1000}s sin terminar: se avisa al cliente y se corta`);
+          escribir(BUBBLE_SEP + MSG_DEMORA);
+          cerrarStream();
+          return;
+        }
+        if (Date.now() - ultimaEscritura >= LATIDO_MS) escribir(LATIDO);
+      }, 1_000);
+      // El cliente se fue: no hay a quién escribirle, y seguir consultando solo gasta
+      // cuota de DeepSeek y Serper. El bucle lo nota al empezar cada turno.
+      detener = () => { cerrado = true; clearInterval(latido); };
       const MAX_TURNS = 8;
       let buscarCount    = 0;  // veces que Andrea consultó disponibilidad local
       let cotizarCount   = 0;  // veces que consultó web (Colombia/EE.UU.)
@@ -3277,6 +3344,8 @@ export async function POST(req: Request): Promise<Response> {
 
 
         for (let turn = 0; turn < MAX_TURNS; turn++) {
+          // Cortado por el tope o porque el cliente se fue: ni un turno más.
+          if (cerrado) break;
           let turnText = "";
           // Acotamos herramientas para garantizar avance y terminación:
           //  • buscar_productos: 1 sola vez (evita el bucle de re-búsquedas locales).
@@ -3315,7 +3384,7 @@ export async function POST(req: Request): Promise<Response> {
                 // deba leer. El texto completo se sigue acumulando para poder recuperarla.
                 if (fugaToolCall) return;
                 if (pareceToolCallEscrita(turnText)) { fugaToolCall = true; return; }
-                if (streamLive) controller.enqueue(enc.encode(delta));
+                if (streamLive) escribir(delta);
               },
             });
           } catch (err) {
@@ -3366,7 +3435,7 @@ export async function POST(req: Request): Promise<Response> {
               const esEspera = textoVisible.length < 120 &&
                 /dame un momento|un momento|espera|déjame|permíteme/i.test(textoVisible);
               if (esEspera) {
-                controller.enqueue(enc.encode(BUBBLE_SEP)); // cierra el globo de espera
+                escribir(BUBBLE_SEP); // cierra el globo de espera
                 preambulo = turnText;
                 convo.push({ role: "user", content: "Procede: busca los productos ahora." });
                 continue;
@@ -3392,7 +3461,7 @@ export async function POST(req: Request): Promise<Response> {
             // guardián descartaba ese cierre para volver a listarle el catálogo.
             if (isArmador && primerTurno && preguntaSinPrecio && !isLast && nudgeArmador < 2) {
               nudgeArmador++;
-              controller.enqueue(enc.encode(BUBBLE_SEP)); // la pregunta no llega al cliente
+              escribir(BUBBLE_SEP); // la pregunta no llega al cliente
               preambulo = turnText;
 
               if (nudgeArmador === 2 && buscarCount === 0) {
@@ -3465,7 +3534,7 @@ export async function POST(req: Request): Promise<Response> {
               textoFinal = textoFinal.trimEnd() +
                 "\n\nSi prefieres otra marca o capacidad, dime cuál y te la consigo 😊";
             }
-            if (!streamLive && textoFinal.length > 0) controller.enqueue(enc.encode(textoFinal));
+            if (!streamLive && textoFinal.length > 0) escribir(textoFinal);
             break;
           }
 
@@ -3473,13 +3542,16 @@ export async function POST(req: Request): Promise<Response> {
           // cerramos ese globo (la respuesta final irá en un globo nuevo y entre
           // medias se ve el indicador "escribiendo…"). El texto de turnos ≥1 se descarta.
           if (streamLive && turnText.trim().length > 0) {
-            controller.enqueue(enc.encode(BUBBLE_SEP));
+            escribir(BUBBLE_SEP);
             preambulo = turnText;
           }
 
           // DeepSeek exige UN mensaje role:"tool" por cada tool_call_id del turno;
           // omitir uno invalida la conversación en la siguiente llamada.
           for (const call of msg.toolCalls) {
+            // Tampoco una herramienta más: sobre todo, ningún `registrar_pedido` después
+            // de haberle dicho al cliente que vuelva a escribir.
+            if (cerrado) break;
             const nombre = call.function.name;
             if (nombre === "buscar_productos") buscarCount++;
             if (nombre === "cotizar_web")      cotizarCount++;
@@ -3518,13 +3590,16 @@ export async function POST(req: Request): Promise<Response> {
           ? "Hay mucha demanda en este momento y no pude responderte 😅. Espera unos segundos e inténtalo de nuevo, por favor 🙌"
           : "Uy, tuve un problemita para responderte 😅. ¿Lo intentamos de nuevo? Si prefieres atención inmediata:" + DESPEDIDA;
 
-        controller.enqueue(new TextEncoder().encode(clientMsg));
+        escribir(clientMsg);
         console.error(
           `[asesor] error status=${status ?? "n/a"} type=${isBilling ? "BILLING/AUTH" : isTransient ? "TRANSIENT" : "UNKNOWN"} msg=${emsg}`,
         );
       } finally {
-        controller.close();
+        cerrarStream();
       }
+    },
+    cancel() {
+      detener();
     },
   });
 
