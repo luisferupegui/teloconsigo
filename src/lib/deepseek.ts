@@ -6,7 +6,7 @@ import "server-only";
 //
 // Docs: https://api-docs.deepseek.com
 //   • Auth:      Authorization: Bearer sk-…
-//   • Modelos:   deepseek-chat (V3, el que usa Andrea) · deepseek-reasoner (razonador)
+//   • Modelos:   deepseek-flash (el que usa Andrea) · deepseek-v4-pro
 //   • Errores:   401 key inválida · 402 saldo agotado · 429 rate limit · 5xx transitorio
 //
 // IMPORTANTE: DeepSeek NO tiene herramienta de búsqueda web del lado del servidor
@@ -16,10 +16,20 @@ import "server-only";
 export const DEEPSEEK_BASE_URL =
   process.env.DEEPSEEK_BASE_URL?.trim() || "https://api.deepseek.com";
 
-/** Modelo conversacional (Andrea). V3 no-razonador: rápido y con tool calling. */
-export const DEEPSEEK_MODEL = "deepseek-chat";
-/** Modelo razonador, para tareas de análisis. Andrea NO lo usa (latencia de chat). */
-export const DEEPSEEK_MODEL_REASONER = "deepseek-reasoner";
+/** Modelo conversacional (Andrea). Rápido y con tool calling.
+ *
+ *  Aquí decía `deepseek-chat`, que es como se llamaba el modelo cuando se
+ *  escribió esto. DeepSeek lo retiró de su catálogo: hoy `GET /models` solo
+ *  lista `deepseek-flash` y `deepseek-v4-pro`. `deepseek-chat` todavía
+ *  responde, pero como alias no listado — las respuestas vuelven con
+ *  `"model":"deepseek-flash"` — y un alias que ya no aparece en el catálogo es
+ *  algo que pueden apagar sin avisar, dejando a Andrea muda de un día para
+ *  otro. Se nombra el modelo real.
+ *
+ *  Para comprobar qué hay disponible hoy:
+ *    curl https://api.deepseek.com/models -H "Authorization: Bearer $DEEPSEEK_API_KEY"
+ */
+export const DEEPSEEK_MODEL = "deepseek-flash";
 
 // ── Tipos (subconjunto del esquema OpenAI que realmente usamos) ───────────────
 
