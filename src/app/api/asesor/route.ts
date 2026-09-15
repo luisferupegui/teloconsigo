@@ -1014,26 +1014,72 @@ const SITIOS_US = [
 ];
 // Peso para ordenar resultados de Serper: menor = aparece primero en las opciones.
 // Prioridad B2B: alkosto/ktronix/pcfactory/falabella son las 4 referencias principales.
+// Las claves se comparan contra `quienVende` (vendedor + dominio, en minúsculas y sin tildes).
 const PRIORIDAD_SITIO_CO: Record<string, number> = {
-  alkosto:      0,
-  ktronix:      1,
-  pcfactory:    2,
-  falabella:    3,
-  exito:        4,
-  linio:        5,
-  janus:        6,   // especialista en PCs de escritorio/ensamblados (solo aplica a computadores)
-  mercadolibre: 99,
+  alkosto:           0,
+  ktronix:           1,
+  pcfactory:         2,
+  falabella:         3,
+  exito:             4,
+  linio:             5,
+  janus:             6,   // especialista en PCs de escritorio/ensamblados (solo aplica a computadores)
+  olimpica:          7,
+  panamericana:      8,
+  homecenter:        9,
+  "puntos colombia": 10,
+  // Especialistas en PC y componentes. Dos claves por tienda: el vendedor llega como
+  // "Speed Logic" y el dominio como "speedlogic.com.co".
+  "speed logic":     11,
+  speedlogic:        11,
+  tauret:            12,
+  "castor data":     13,
+  castordata:        13,
+  mercadolibre:      99,
 };
 
 // Solo se acepta información de tiendas tecnológicas reconocidas en Colombia.
 // Cualquier otro vendedor (motos, ropa, ferretería…) se descarta silenciosamente.
-const TECH_RETAILERS_CO = /\b(alkosto|ktronix|pcfactory|falabella|exito|linio|mercadolibre|mercado\s*libre)\b/i;
+//
+// Cadenas nacionales del mismo nivel que Falabella, Alkosto o Éxito (añadidas 2026-09-15).
+// No salen de memoria: aparecieron en un censo de 16 búsquedas de tecnología en Google
+// Shopping Colombia (156 vendedores distintos) y se revisaron sus anuncios — precio en
+// pesos que se lee bien, productos que son lo que dicen:
+//   Olímpica 16 anuncios en 9 búsquedas · Panamericana 19 en 5 · Homecenter 9 en 4 ·
+//   Tienda de Puntos Colombia 3 en 2.
+// NO entran: eBay, Techinn (España), Microless (Dubái), Encarguelo (importadora) ni
+// braincorp.com.ve — no son tiendas colombianas. Tampoco cadenas cuyo nombre es una
+// palabra común o una marca ("Jumbo", "Metro", "Claro", "Samsung"): harían coincidir
+// cualquier anuncio de un producto que las mencione.
+//
+// Especialistas en PC y componentes (añadidas 2026-09-15, aprobadas por el negocio). Son
+// las que tenían lo que las cadenas no: boards, GPUs, procesadores, RAM. Verificado que
+// NINGUNA es proveedor nuestro —si lo fuera, su precio ya sería retail y se le sumaría el
+// margen dos veces, que es por lo que Janus queda fuera—, y que son colombianas:
+//   Speed Logic (speedlogic.com.co, sedes en Bogotá) · Tauret Computadores
+//   (tauretcomputadores.com, Bogotá) · Castor Data S.A.S. (castordata.com.co,
+//   distribuidor autorizado HP).
+// Van después de las cadenas nacionales en `PRIORIDAD_SITIO_CO`.
+const TECH_RETAILERS_CO = /\b(alkosto|ktronix|pcfactory|falabella|exito|linio|mercadolibre|mercado\s*libre|olimpica|panamericana|homecenter|puntos\s*colombia|speed\s*logic|tauret(?:\s*computadores)?|castor\s*data)\b/;
 // Tiendas ESPECIALISTAS en PCs de escritorio/ensamblados (precio de mercado real para esa
 // categoría). Solo se aceptan cuando la búsqueda es de un computador — nunca para componentes
 // ni accesorios — y se usan como BENCHMARK de comparación, no como opción al cliente.
-const PC_RETAILERS_CO = /\bjanus\b/i;
+const PC_RETAILERS_CO = /\bjanus\b/;
+
+/** Quién vende un anuncio: el vendedor que reporta Google y el DOMINIO del enlace, en
+ *  minúsculas y sin tildes ("Olímpica" → "olimpica").
+ *
+ *  Antes se miraba la URL completa, y los enlaces de Google Shopping son redirecciones
+ *  que llevan dentro la consulta ("google.com/search?…&q=router+tp-link…"): la tienda no
+ *  aparece ahí, pero las palabras de la búsqueda sí. Con el dominio basta para las
+ *  tiendas que enlazan directo, y la consulta no se cuela en la comparación. */
+function quienVende(source?: string, link?: string): string {
+  let host = "";
+  try { host = link ? new URL(link).hostname : ""; } catch { /* enlace inválido */ }
+  return sinTildes(`${source ?? ""} ${host}`);
+}
+
 function isTechRetailerCO(source?: string, link?: string, allowPCStores = false): boolean {
-  const hay = `${source ?? ""} ${link ?? ""}`;
+  const hay = quienVende(source, link);
   return TECH_RETAILERS_CO.test(hay) || (allowPCStores && PC_RETAILERS_CO.test(hay));
 }
 
@@ -1675,10 +1721,14 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
 
   const locales = conPrecio
     .filter((p) => (p.copLocal as number) >= pisoCop)
+    // La prioridad se buscaba en `fuente`, que es el enlace de Google Shopping —una
+    // redirección donde la tienda no aparece— y sin pasar a minúsculas, así que ni
+    // "Mercadolibre Colombia" contenía "mercadolibre". Todo pesaba 50 y el orden
+    // Alkosto → … → MercadoLibre no se aplicaba nunca. Se mira quién vende de verdad.
     .sort((a, b) => {
-      const prioA = Object.entries(PRIORIDAD_SITIO_CO).find(([k]) => (a.fuente ?? "").includes(k))?.[1] ?? 50;
-      const prioB = Object.entries(PRIORIDAD_SITIO_CO).find(([k]) => (b.fuente ?? "").includes(k))?.[1] ?? 50;
-      return prioA - prioB;
+      const prioridad = (p: WebProducto) =>
+        Object.entries(PRIORIDAD_SITIO_CO).find(([k]) => quienVende(p.vendedor, p.fuente).includes(k))?.[1] ?? 50;
+      return prioridad(a) - prioridad(b);
     });
 
   if (locales.length === 0) return { productosCO: [], localData: {} };
@@ -2194,7 +2244,7 @@ function construirComparacionProveedores(
 
 /** Helper: nombre legible de una tienda colombiana a partir de su URL. */
 function siteNameFromUrl(url: string): string {
-  const u = (url ?? "").toLowerCase();   // acepta tanto URLs como el nombre del vendedor ("Janus LTDA")
+  const u = sinTildes(url ?? "");   // acepta tanto URLs como el nombre del vendedor ("Janus LTDA", "Olímpica")
   return u.includes("alkosto")      ? "Alkosto"
     : u.includes("ktronix")     ? "Ktronix"
     : u.includes("falabella")   ? "Falabella"
@@ -2203,6 +2253,13 @@ function siteNameFromUrl(url: string): string {
     : u.includes("pcfactory")   ? "PCFactory"
     : u.includes("mercadolibre") ? "MercadoLibre"
     : u.includes("janus")       ? "Janus"
+    : u.includes("olimpica")    ? "Olímpica"
+    : u.includes("panamericana") ? "Panamericana"
+    : u.includes("homecenter")  ? "Homecenter"
+    : u.includes("puntos colombia") ? "Puntos Colombia"
+    : /speed\s*logic/.test(u)    ? "Speed Logic"
+    : u.includes("tauret")      ? "Tauret Computadores"
+    : /castor\s*data/.test(u)    ? "Castor Data"
     : "Sitio local";
 }
 
