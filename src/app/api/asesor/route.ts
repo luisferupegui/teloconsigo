@@ -2897,7 +2897,34 @@ function tokensDistintivos(nombre: string): string[] {
 
 /** ¿El listado de la web es el MISMO producto que ya tenemos aquí? Se compara por
  *  palabras distintivas (marca, línea, capacidad); las genéricas no cuentan. */
+/** Accesorios que un anuncio le SUMA al producto, con la etiqueta que los describe. */
+const EXTRAS: { re: RegExp; etiqueta: string }[] = [
+  { re: /\b(?:mouse\s?pad|pad\s?(?:para\s)?mouse|pad|alfombrilla|desk\s?mat)\b/i, etiqueta: "🎁 **Con mouse pad**" },
+  { re: /\b(?:funda|estuche|forro)\b/i,                                           etiqueta: "🎁 **Con funda**" },
+];
+
+/** El accesorio que el anuncio suma ("+ Pad Mouse Small 25x21cm", "con Funda") y el
+ *  tramo de texto que lo nombra. `null` si el anuncio es el producto solo. */
+function extraSumado(nombre: string): { extra: (typeof EXTRAS)[number]; texto: string } | null {
+  for (const extra of EXTRAS) {
+    const suma = new RegExp(`(?:\\s\\+|\\+\\s|\\bcon\\b|\\bincluye\\b|\\bwith\\b|\\bplus\\b)\\s*(?:${extra.re.source})[^-–|,]*`, "i");
+    const m = nombre.match(suma);
+    if (m) return { extra, texto: m[0] };
+  }
+  return null;
+}
+
+/** El nombre sin el accesorio sumado: "Combo Logitech Mk270 + Pad Mouse Small" → "Combo Logitech Mk270". */
+function sinExtra(nombre: string): string {
+  const sumado = extraSumado(nombre);
+  return sumado ? nombre.replace(sumado.texto, " ") : nombre;
+}
+
 function mismoProducto(local: string, web: string): boolean {
+  // El combo solo y el combo "+ Pad Mouse" son dos opciones, no una repetida: tratarlos
+  // como el mismo producto sacaba el del pad de la selección, y Andrea lo volvía a
+  // listar por su cuenta con una etiqueta inventada.
+  if (extraSumado(local)?.extra !== extraSumado(web)?.extra) return false;
   const a = tokensDistintivos(local);
   if (a.length < 2) return false;
   const b = new Set(tokensDistintivos(web));
@@ -2911,6 +2938,19 @@ function mismoProducto(local: string, web: string): boolean {
   if (soloEnA && soloEnB) return false;
   const comunes = a.filter((t) => b.has(t)).length;
   return comunes / a.length >= 0.7;
+}
+
+/** Versión ESTRICTA para comparar dos opciones de la selección: TODAS las palabras del
+ *  nombre más corto tienen que estar en el otro. El 70% de `mismoProducto` absorbe los
+ *  códigos de proveedor de las listas ("DTX/64GB"), pero entre dos anuncios igualaba un
+ *  "G502 Hero" con un "G502 X Plus Wireless" —3 de 4 palabras— y el segundo, que es
+ *  otro mouse, salía de la selección. Mejor mostrar dos veces algo que ocultar otro. */
+function mismoProductoEstricto(x: string, y: string): boolean {
+  if (extraSumado(x)?.extra !== extraSumado(y)?.extra) return false;
+  const [corto, largo] = [tokensDistintivos(x), tokensDistintivos(y)].sort((a, b) => a.length - b.length);
+  if (corto.length < 2) return false;
+  const enLargo = new Set(largo);
+  return corto.every((t) => enLargo.has(t));
 }
 
 /** Las marcas que nombró el cliente, según lo que se buscó en las listas. */
@@ -2977,15 +3017,21 @@ function porUnidadSiHay(acc: Acumulador, pool: OpcionSel[]): OpcionSel[] {
  *  `webQueNoRepite` lo cuida entre las listas y la web, pero no entre dos tiendas de la
  *  web. A quien pidió el combo Logitech MK270 le llegó a $220.000 en Colombia (1 a 3
  *  días) y, de "⚡ Mejor rendimiento", a $475.000 importado: el mismo combo, el doble de
- *  caro y más lento. Queda la opción más barata; a igual precio, la que llega antes. */
+ *  caro y más lento. Queda la opción más barata; a igual precio, la que llega antes.
+ *
+ *  Con un accesorio sumado, el que trae el extra reemplaza al que no, si no cuesta más:
+ *  el MK270 solo a $270.000 importado no tiene sentido junto al MK270 + pad a $190.000
+ *  aquí. Al revés no: el combo con pad, más caro, sigue siendo otra opción. */
 function sinRepetidos(pool: OpcionSel[]): OpcionSel[] {
   const mejor = (p: OpcionSel, o: OpcionSel) =>
     p.precio < o.precio || (p.precio === o.precio && p.entrega === "local" && o.entrega === "us");
-  return pool.filter((o, i) => !pool.some((p, j) =>
-    j !== i &&
-    (mismoProducto(p.nombre, o.nombre) || mismoProducto(o.nombre, p.nombre)) &&
-    (mejor(p, o) || (j < i && !mejor(o, p))),
-  ));
+  const loReemplaza = (p: OpcionSel, o: OpcionSel, pVaAntes: boolean) => {
+    const eP = extraSumado(p.nombre), eO = extraSumado(o.nombre);
+    if (eO && eO.extra !== eP?.extra) return false; // o trae algo que p no
+    if (!eO && eP) return p.precio <= o.precio && mismoProductoEstricto(o.nombre, sinExtra(p.nombre));
+    return mismoProductoEstricto(p.nombre, o.nombre) && (mejor(p, o) || (pVaAntes && !mejor(o, p)));
+  };
+  return pool.filter((o, i) => !pool.some((p, j) => j !== i && loReemplaza(p, o, j < i)));
 }
 
 function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
@@ -3005,6 +3051,21 @@ const ENTREGA_TXT: Record<OpcionSel["entrega"], string> = {
 // primero). Elegimos dentro de las 6 más relevantes para no ofrecer un producto barato
 // pero mal emparejado; dentro de esa ventana, el precio decide orden y etiqueta.
 const VENTANA_RELEVANCIA = 6;
+
+/** EL MISMO PRODUCTO CON UN ACCESORIO DE MÁS NO ES "MEJOR RENDIMIENTO".
+ *
+ *  Para el combo Logitech MK270 salieron el combo solo a $150.000 y, de "🎯 Recomendado"
+ *  y "⚡ Mejor rendimiento", el mismo combo "+ Pad Mouse Small" y "+ Alfombrilla XL".
+ *  Las etiquetas van por precio, pero rinden igual: lo que cambia es que traen un pad.
+ *  Cuando en la selección hay otra opción del mismo producto —sola o con otro pad— la
+ *  etiqueta dice lo que es. `null` si no aplica: la opción conserva la suya. */
+function etiquetaDeExtra(o: OpcionSel, elegidas: OpcionSel[]): string | null {
+  const sumado = extraSumado(o.nombre);
+  if (!sumado) return null;
+  const base = sinExtra(o.nombre);
+  const otraDelMismo = elegidas.some((p) => p !== o && mismoProductoEstricto(base, sinExtra(p.nombre)));
+  return otraDelMismo ? sumado.extra.etiqueta : null;
+}
 
 /** Elige hasta 3 opciones y las devuelve YA ETIQUETADAS y ordenadas de menor a mayor
  *  precio. `candidatos` debe venir ordenado por relevancia (el más relevante primero). */
@@ -3041,6 +3102,8 @@ function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre
 
   return elegidas.map((o, i) => {
     const fin = o;
+    // La más barata conserva "Mejor precio": eso sí es cierto aunque traiga un pad.
+    if (i > 0 && etiquetas[i]) etiquetas[i] = etiquetaDeExtra(o, elegidas) ?? etiquetas[i];
     return {
       etiqueta: etiquetas[i],
       nombre: fin.nombre,
