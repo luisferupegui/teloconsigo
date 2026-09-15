@@ -1332,18 +1332,62 @@ function usStoreRank(source?: string, link?: string): number {
 
 type UsCandidato = { i: number; title: string; store: string; usd: number; link: string };
 
+/** ¿Hay que traducir la consulta antes de buscar en EE.UU.?
+ *
+ *  La traducción es una llamada más a DeepSeek (~1 s). Una referencia de producto —marca
+ *  y modelo— ya está en el idioma de las tiendas, y traducirla no solo cuesta tiempo:
+ *  medido, a "Asus TUF Gaming B760-PLUS DDR5" le añade "motherboard", y justo esa frase
+ *  es la que Google Shopping de EE.UU. devuelve vacía 6 de cada 8 veces (ver
+ *  `consultaAmplia`). Se traduce solo lo que tiene rastro de español: tildes, eñes o las
+ *  palabras con que un cliente describe un producto. Ante la duda, se traduce.
+ *
+ *  (Durante un tiempo pareció que la traducción devolvía la consulta idéntica. No: con el
+ *  razonamiento de `deepseek-flash` encendido fallaba por falta de tokens y el código caía
+ *  a la original. Ver `deepseekJson`.) */
+const RASTRO_DE_ESPANOL =
+  /[áéíóúñü¿¡]|\b(de|del|para|con|sin|y|o|el|la|los|las|un|una|placa|tarjeta|madre|memoria|disco|duro|externo|interno|teclado|raton|portatil|computador|computadora|equipo|pantalla|impresora|audifonos|diadema|cargador|cable|fuente|poder|gabinete|torre|camara|parlante|bocina|morral|funda|soporte|inalambrico|mecanico|negro|negra|blanco|blanca|pulgadas|oficina|empresa|juegos)\b/i;
+
+/** Consulta más ancha para cuando la exacta no trae NADA en Google Shopping.
+ *
+ *  Google Shopping vuelve vacío cuando la frase lleva un término que ningún título
+ *  contiene. Medido contra Serper, misma consulta repetida:
+ *    "Asus TUF Gaming B760-PLUS DDR5 motherboard" → 6 de 8 veces VACÍA
+ *    "Asus TUF Gaming B760-PLUS"                  → 6 de 6 con 40 anuncios
+ *  En EE.UU. esa board se vende sin "DDR5" en el título. Esa intermitencia era la
+ *  diferencia entre cotizarla y dejar a Andrea sin nada que ofrecer.
+ *
+ *  Se quitan las palabras que DESCRIBEN (tipo de memoria, sustantivo de categoría) y
+ *  quedan las que IDENTIFICAN (marca, línea, modelo). No afloja nada de lo que se le
+ *  ofrece al cliente: los resultados siguen pasando por `filtrarPorSpecs` contra la
+ *  consulta ORIGINAL, así que una board DDR4 que entre por aquí se descarta igual. */
+function consultaAmplia(q: string): string {
+  return q
+    .replace(/\b(motherboard|mainboard|board|placa\s+(?:base|madre)|tarjeta\s+madre|ddr[2-5]|desktop|laptop|notebook|computer|pc|new|nuevo|nueva|original)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: boolean): Promise<WebProducto[]> {
   const serperKey = getSerperApiKey();
   if (!serperKey) return [];
 
-  // 1) Consulta en inglés (DeepSeek). Si falla, se usa la consulta original tal cual.
-  const traducida = await deepseekJson<{ query?: string }>(ds, US_QUERY_SYSTEM, consulta, {
-    model: MODEL_WEB, maxTokens: 120, timeoutMs: 20_000,
-  });
-  const query = (traducida?.query ?? "").trim() || consulta;
+  // 1) Consulta en inglés (DeepSeek), solo si hace falta. Si falla, la original tal cual.
+  const query = RASTRO_DE_ESPANOL.test(consulta)
+    ? ((await deepseekJson<{ query?: string }>(ds, US_QUERY_SYSTEM, consulta, {
+        model: MODEL_WEB, maxTokens: 120, timeoutMs: 20_000,
+      }))?.query ?? "").trim() || consulta
+    : consulta;
 
   // 2) Anuncios reales de EE.UU. (Serper). Solo NUEVOS y con precio parseable.
-  const raw = await serperShopping(query, "us", serperKey).catch((): SerperShoppingItem[] => []);
+  let raw = await serperShopping(query, "us", serperKey).catch((): SerperShoppingItem[] => []);
+  if (raw.length === 0) {
+    // Una vacía cuesta ~0,7 s y un reintento ~1,5 s: mucho menos que un turno de Andrea
+    // preguntándole al cliente el modelo que ya dio. Si simplificar no cambia nada, se
+    // repite igual, porque la intermitencia es real y un segundo intento a veces basta.
+    const amplia = consultaAmplia(query);
+    raw = await serperShopping(amplia || query, "us", serperKey).catch((): SerperShoppingItem[] => []);
+    console.warn(`[cotizar] EE.UU. vacío para "${query}"; reintento con "${amplia || query}" → ${raw.length}`);
+  }
   const candidatos: UsCandidato[] = [];
   for (const it of raw) {
     const usd = parseUsdPrice(it.price);
@@ -1550,9 +1594,38 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
 }
 
 // Respuesta estándar de cotizar_web hacia Andrea.
-function respuestaCotizar(productos: QuoteProducto[]) {
+/** ¿La consulta ya nombra un MODELO concreto? Un término con letras y cifras que no sea
+ *  una capacidad ni un tipo de memoria: "b760-plus", "5600g", "rtx4060", "3s". En "memoria
+ *  USB 64GB" no lo hay — ahí sí tiene sentido preguntarle al cliente la marca o el modelo. */
+function nombraModelo(consulta: string): boolean {
+  return consulta
+    .toLowerCase()
+    .split(/\s+/)
+    .some((t) =>
+      /[a-z]/.test(t) && /[0-9]/.test(t)
+      && !/^\d+(?:[.,]\d+)?(gb|tb|mb|hz|w|mah|mm|cm|in|")$/.test(t)
+      && !/^ddr[2-5]$/.test(t),
+    );
+}
+
+function respuestaCotizar(productos: QuoteProducto[], consulta: string) {
   if (productos.length === 0) {
-    return { encontrados: 0, productos: [], nota: "INTERNO: no se encontraron opciones. Pídele al cliente la marca o modelo específico sin decir que buscaste." };
+    // Esta nota decía, siempre, "pídele al cliente la marca o modelo específico". A quien
+    // escribía "Asus TUF Gaming B760-PLUS DDR5" —el modelo exacto— Andrea le preguntaba si
+    // buscaba "específicamente ese modelo", o se inventaba tres alternativas sin precio,
+    // y como no podía resolver pegaba el bloque de contacto. Pedirle el modelo a quien lo
+    // acaba de dar es no haberlo escuchado.
+    //
+    // No existe cómo guardar una cotización SIN precio: `registrarPedido` rechaza precio ≤ 0
+    // a propósito (un pedido en $0 le llegó a un cliente). Así que cuando el modelo exacto
+    // no se pudo cotizar, lo honesto es el traspaso al equipo, directo y sin rodeos.
+    return {
+      encontrados: 0,
+      productos: [],
+      nota: nombraModelo(consulta)
+        ? "INTERNO: esa referencia exacta no se pudo cotizar en este momento. El cliente YA te dio el modelo: PROHIBIDO pedírselo otra vez o preguntarle si lo quiere \"específicamente\". PROHIBIDO proponer otros modelos por tu cuenta: no tienes su precio ni sabes si existen. PROHIBIDO inventar o estimar un precio. PROHIBIDO volver a llamar cotizar_web. En UN solo mensaje breve y cálido: confírmale la referencia que pidió y dile que para esa referencia un asesor del equipo le confirma precio y entrega de inmediato, y dale el teléfono/WhatsApp y el correo de contacto. No digas que buscaste, que no apareció ni que hubo un problema."
+        : "INTERNO: no se encontraron opciones. Pídele al cliente la marca o modelo específico sin decir que buscaste.",
+    };
   }
   const nCO = productos.filter(p => p.origen === "co").length;
   const nUS = productos.filter(p => p.origen !== "co").length;
@@ -1691,7 +1764,7 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
 async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
   const cached = getCachedQuery(consulta);
-  if (cached) return respuestaCotizar(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos, consulta), consulta));
+  if (cached) return respuestaCotizar(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos, consulta), consulta), consulta);
 
   const serperKey = getSerperApiKey();
   const categoria = clasificarConsulta(consulta);
@@ -1712,12 +1785,22 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
   } else if (mode === "eeuu_co") {
     // EE.UU. primero; Colombia rellena si faltan opciones.
+    //
+    // Colombia se pide YA, en paralelo, aunque se use después. Antes esperaba a que
+    // terminara todo lo de EE.UU. —traducción, Serper y la estructura con DeepSeek, que
+    // sola se medía en 5,9 s— y solo entonces arrancaba, 1,3 s más, en serie. Con
+    // referencias concretas EE.UU. casi nunca deja tres opciones que pasen el filtro, así
+    // que Colombia se consulta casi siempre: pedirla antes no cuesta más, llega antes.
+    // `fetchLocalViaSerper` ya atrapa sus errores, así que si no se usa no queda una
+    // promesa rechazada suelta.
+    const colombiaEnCurso = serperKey
+      ? fetchLocalViaSerper(consulta, serperKey, categoria === "equipo")
+      : Promise.resolve<WebProducto[]>([]);
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
     // Se cuentan las que SOBREVIVEN al filtro de specs, no las que llegaron: un listado
     // que no confirma lo que pidió el cliente no es una opción (ver abajo).
     if (filtrarPorSpecs(productosUS, consulta).length < 3 && serperKey) {
-      const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
-      ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
+      ({ productosCO, localData } = construirProductosCO(await colombiaEnCurso, categoria));
     }
   } else {
     // co_eeuu (default): Colombia primero; EE.UU. solo si faltan opciones.
@@ -1777,7 +1860,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
 
   if (finales.length > 0) saveQuote(consulta, finales, localData);
 
-  return respuestaCotizar(finales);
+  return respuestaCotizar(finales, consulta);
 }
 
 // ── Cotización de PC de escritorio / ensamblado ──────────────────────────────
@@ -3548,6 +3631,7 @@ export async function POST(req: Request): Promise<Response> {
 
           // DeepSeek exige UN mensaje role:"tool" por cada tool_call_id del turno;
           // omitir uno invalida la conversación en la siguiente llamada.
+          let listasVacias = false;
           for (const call of msg.toolCalls) {
             // Tampoco una herramienta más: sobre todo, ningún `registrar_pedido` después
             // de haberle dicho al cliente que vuelva a escribir.
@@ -3566,6 +3650,34 @@ export async function POST(req: Request): Promise<Response> {
             }
             const result = await runTool(ds, nombre, input, acc);
             convo.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result) });
+            const encontrados = (result as { encontrados?: number })?.encontrados;
+            if (nombre === "buscar_productos" && encontrados === 0) listasVacias = true;
+            // Un modelo exacto que no se pudo cotizar no se vuelve a intentar: la segunda
+            // búsqueda era la que Andrea gastaba en alternativas que luego no podía cotizar.
+            // `cotizarWeb` ya reintenta dentro con una consulta más ancha.
+            const consultaWeb = String((input as { consulta?: unknown })?.consulta ?? "");
+            if (nombre === "cotizar_web" && encontrados === 0 && nombraModelo(consultaWeb)) cotizarCount = 2;
+          }
+
+          // LAS LISTAS NO TIENEN NADA → LA WEB LA PIDE EL SERVIDOR. Cuando `buscar_productos`
+          // vuelve vacío, su nota le dice a Andrea "llama cotizar_web", y ella gastaba un turno
+          // ENTERO de DeepSeek (1,1–1,3 s medidos, con todo el prompt) solo para obedecer. Es la
+          // misma decisión siempre, así que se toma aquí y ella recibe los resultados hechos.
+          // Igual que la red de "3 opciones" de arriba: una llamada sintética con su respuesta.
+          // En el armador no: ahí la cotización es por piezas y va por otro camino.
+          if (listasVacias && !cerrado && !isArmador && cotizarCount === 0
+              && !msg.toolCalls.some((c) => c.function.name === "cotizar_web") && acc.ultimaConsulta) {
+            const entradaWeb = { consulta: acc.ultimaConsulta };
+            cotizarCount++;
+            const resWeb = await runTool(ds, "cotizar_web", entradaWeb, acc);
+            const llamadaWeb = {
+              id: `call_webauto_${turn}`,
+              type: "function" as const,
+              function: { name: "cotizar_web", arguments: JSON.stringify(entradaWeb) },
+            };
+            convo.push({ role: "assistant", content: "", reasoning_content: "", tool_calls: [llamadaWeb] });
+            convo.push({ role: "tool", tool_call_id: llamadaWeb.id, content: JSON.stringify(resWeb) });
+            if ((resWeb as { encontrados?: number })?.encontrados === 0 && nombraModelo(entradaWeb.consulta)) cotizarCount = 2;
           }
         }
       } catch (err) {
