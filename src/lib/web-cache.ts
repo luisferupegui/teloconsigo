@@ -22,9 +22,14 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  AUTORITATIVO del pedido. También quedó guardado un "MX Anywhere 3S" para quien pedía
  *  un MX Master 3S.
  *
+ *  Se corrió una vez más con 4d53fb7 (en producción el 2026-09-15 a las 11:39 hora de
+ *  Colombia): el filtro de ruido se aplica ANTES de guardar, así que lo cacheado con el
+ *  filtro viejo seguía sin gabinetes, sin coolers y sin combos teclado+mouse aunque el
+ *  cliente los pidiera, y lo seguiría durante los 7 días del TTL.
+ *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 15, 14, 50);
+const VALIDO_DESDE = Date.UTC(2026, 8, 15, 16, 40);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
