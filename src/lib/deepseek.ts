@@ -42,7 +42,18 @@ export type DSToolCall = {
 export type DSMessage =
   | { role: "system"; content: string }
   | { role: "user"; content: string }
-  | { role: "assistant"; content: string; tool_calls?: DSToolCall[] }
+  | {
+      role: "assistant";
+      content: string;
+      tool_calls?: DSToolCall[];
+      /** `deepseek-flash` razona antes de responder, y con herramientas DeepSeek exige que
+       *  cada mensaje de asistente lleve su razonamiento de vuelta. Con los mensajes que
+       *  generó el propio modelo lo tolera aunque no se envíe (lo recupera por su lado).
+       *  Con una llamada SINTÉTICA —una que arma el servidor, con un id que DeepSeek no
+       *  conoce— no: responde 400 "reasoning_content … must be passed back". Medido: basta
+       *  con enviarlo vacío. Lo usan las llamadas que encadena el servidor en /api/asesor. */
+      reasoning_content?: string;
+    }
   | { role: "tool"; tool_call_id: string; content: string };
 
 export type DSTool = {
@@ -70,6 +81,9 @@ export type DSChatParams = {
   onText?: (delta: string) => void;
   timeoutMs?: number;
   maxRetries?: number;
+  /** Razonamiento previo del modelo. Sin especificar, lo decide DeepSeek (en
+   *  `deepseek-flash` viene ENCENDIDO). Ver `deepseekJson` para por qué importa. */
+  thinking?: "enabled" | "disabled";
 };
 
 export class DeepSeekAPIError extends Error {
@@ -148,6 +162,7 @@ export class DeepSeek {
     if (p.temperature !== undefined) body.temperature = p.temperature;
     if (p.tools && p.tools.length > 0) body.tools = p.tools;
     if (p.jsonMode) body.response_format = { type: "json_object" };
+    if (p.thinking) body.thinking = { type: p.thinking };
 
     const res = await fetch(`${this.baseURL}/chat/completions`, {
       method: "POST",
@@ -263,12 +278,24 @@ export function extraerJson<T>(texto: string): T | null {
   }
 }
 
-/** Llamada de un solo turno que DEBE devolver JSON. `null` si falla o no parsea. */
+/** Llamada de un solo turno que DEBE devolver JSON. `null` si falla o no parsea.
+ *
+ *  SIN RAZONAMIENTO, salvo que se pida. Estas llamadas se escribieron para `deepseek-chat`
+ *  cuando detrás había un modelo que respondía directo. Hoy ese nombre lleva a
+ *  `deepseek-flash`, que razona antes de responder — y el razonamiento cuenta contra
+ *  `maxTokens`. Medido con los prompts y datos reales de /api/asesor:
+ *    • traducción (maxTokens 120): el razonamiento se comía el límite, `finish=length`,
+ *      JSON vacío en 2 de 3. El código caía a la consulta original y mandaba
+ *      "memoria RAM 32GB DDR5 para PC gamer", en español, a Google Shopping de EE.UU.
+ *    • estructurar anuncios (maxTokens 1500): JSON cortado e inválido en 6 de 9, a
+ *      4,8–7,9 s cada una. Al fallar, la ficha salía con el título crudo y sin specs.
+ *  Sin razonamiento: 9 de 9 válidos, a 1,3–1,8 s. Son tareas de extraer y ordenar datos
+ *  que ya están en el texto; pensar antes no mejora nada y rompía el resultado. */
 export async function deepseekJson<T>(
   ds: DeepSeek,
   system: string,
   user: string,
-  opts: { model?: string; maxTokens?: number; timeoutMs?: number; maxRetries?: number } = {},
+  opts: { model?: string; maxTokens?: number; timeoutMs?: number; maxRetries?: number; thinking?: "enabled" | "disabled" } = {},
 ): Promise<T | null> {
   try {
     const r = await ds.chat({
@@ -282,6 +309,7 @@ export async function deepseekJson<T>(
       jsonMode: true,
       timeoutMs: opts.timeoutMs ?? 60_000,
       maxRetries: opts.maxRetries ?? 1,
+      thinking: opts.thinking ?? "disabled",
     });
     return extraerJson<T>(r.content);
   } catch {

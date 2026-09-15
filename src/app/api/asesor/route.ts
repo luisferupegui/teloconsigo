@@ -3327,7 +3327,7 @@ export async function POST(req: Request): Promise<Response> {
               function: { name: "buscar_productos", arguments: JSON.stringify({ consulta: ctx.producto, formato: "ensamblado" }) },
             };
             buscarCount++;
-            convo.push({ role: "assistant", content: "", tool_calls: [llamada] });
+            convo.push({ role: "assistant", content: "", reasoning_content: "", tool_calls: [llamada] });
             convo.push({ role: "tool", tool_call_id: llamada.id, content: JSON.stringify(resultado) });
 
             if (primerTurno) {
@@ -3477,7 +3477,7 @@ export async function POST(req: Request): Promise<Response> {
                   type: "function" as const,
                   function: { name: "buscar_productos", arguments: JSON.stringify(entrada) },
                 };
-                convo.push({ role: "assistant", content: "", tool_calls: [llamada] });
+                convo.push({ role: "assistant", content: "", reasoning_content: "", tool_calls: [llamada] });
                 convo.push({ role: "tool", tool_call_id: llamada.id, content: JSON.stringify(resultado) });
                 continue;
               }
@@ -3513,7 +3513,7 @@ export async function POST(req: Request): Promise<Response> {
                 type: "function" as const,
                 function: { name: "cotizar_web", arguments: JSON.stringify(entradaWeb) },
               };
-              convo.push({ role: "assistant", content: "", tool_calls: [llamadaWeb] });
+              convo.push({ role: "assistant", content: "", reasoning_content: "", tool_calls: [llamadaWeb] });
               convo.push({ role: "tool", tool_call_id: llamadaWeb.id, content: JSON.stringify(resWeb) });
               convo.push({ role: "user", content:
                 "INTERNO (el cliente NO ve este mensaje): ya tienes la web cotizada arriba. Presenta AHORA todas las opciones " +
