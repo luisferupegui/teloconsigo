@@ -68,6 +68,14 @@ export function esDeMarca(texto: string, marca: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escapar(marca)}([^a-z0-9]|$)`).test(texto.toLowerCase());
 }
 
+/** La consulta sin las marcas indicadas: "MSI B650 motherboard" → "B650 motherboard". */
+export function sinMarcas(consulta: string, marcas: string[]): string {
+  return marcas
+    .reduce((q, m) => q.replace(new RegExp(`(^|[^a-z0-9])${escapar(m)}(?=[^a-z0-9]|$)`, "gi"), "$1"), consulta)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Cómo se escribe una marca de cara al cliente: "tp-link" → "TP-Link". */
 const COMO_SE_ESCRIBE: Record<string, string> = {
   hp: "HP", hpe: "HPE", lg: "LG", msi: "MSI", amd: "AMD", aoc: "AOC",

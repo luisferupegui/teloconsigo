@@ -22,7 +22,7 @@ import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
 import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
-import { marcasEnConsulta, esDeMarca, esMarcaDeComponente } from "@/lib/marcas";
+import { marcasEnConsulta, esDeMarca, esMarcaDeComponente, sinMarcas } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { CONTACTO } from "@/lib/contacto";
 
@@ -989,7 +989,15 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     const completar = hayAltoRend
       ? `como es un escritorio de ALTO RENDIMIENTO aplica la REGLA 2x2: añade 2 opciones de webs locales colombianas (combos o torres, lo mejor que consigas) para mostrar ${objetivo} EN TOTAL (las ${productos.length} locales + 2 de web)`
       : `completa hasta 3 opciones`;
-    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles): ${specsLocales}. Preséntala(s) COPIANDO su campo "ficha" TAL CUAL (specs y precio EXACTOS) Y ${completar} llamando cotizar_web UNA VEZ. REGLA CLAVE DEL QUERY: construye la consulta con las SPECS del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) pero SIN mencionar la marca ni el modelo exacto — el objetivo es encontrar ALTERNATIVAS DE OTRAS MARCAS con características similares. Ejemplo: si tienes "HP EliteBook Core i7-1365U 16GB 512GB", busca "laptop empresarial Core i7 16GB 512GB" para obtener Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. Nunca busques el modelo exacto o la marca del producto ya encontrado localmente. Indica el tiempo de entrega de CADA opción por separado. Al registrar: locales → proveedor="colombia"; cotizar_web con origen="co" → proveedor="colombia"; cotizar_web con origen="us" → proveedor="eeuu".`;
+    // Si el cliente nombró una marca, las alternativas son OTROS MODELOS DE ESA MARCA.
+    // Esta regla pedía siempre "alternativas de otras marcas", y a quien pidió una board
+    // MSI le salía una ASUS de "Mejor precio". Ver `preferirMarcaDelCliente`, que lo
+    // garantiza al armar las opciones aunque la búsqueda traiga otras.
+    const marcasPedidas = marcasEnConsulta(consulta);
+    const reglaQuery = marcasPedidas.length > 0
+      ? `REGLA CLAVE DEL QUERY: el cliente pidió la marca ${marcasPedidas.map((m) => m.toUpperCase()).join(" / ")}, y quien nombra la marca ya decidió. Construye la consulta CON ESA MARCA y las SPECS del producto local, pero SIN el modelo exacto — el objetivo es encontrar OTROS MODELOS DE LA MISMA MARCA. Ejemplo: si pidió MSI y tienes "MSI MAG B650 Tomahawk WiFi", busca "MSI B650 motherboard". NO busques otras marcas: si de esa marca no hay más modelos, el sistema completa solo.`
+      : `REGLA CLAVE DEL QUERY: construye la consulta con las SPECS del producto local (tipo de equipo, procesador, RAM, almacenamiento, uso) pero SIN mencionar la marca ni el modelo exacto — el objetivo es encontrar ALTERNATIVAS DE OTRAS MARCAS con características similares. Ejemplo: si tienes "HP EliteBook Core i7-1365U 16GB 512GB", busca "laptop empresarial Core i7 16GB 512GB" para obtener Dell Latitude, Lenovo ThinkPad, Asus ExpertBook, etc. Nunca busques el modelo exacto o la marca del producto ya encontrado localmente.`;
+    nota = `INTERNO: solo ${productos.length} opción(es) DISPONIBLE(S) LOCALMENTE (entrega 1 a 3 días hábiles): ${specsLocales}. Preséntala(s) COPIANDO su campo "ficha" TAL CUAL (specs y precio EXACTOS) Y ${completar} llamando cotizar_web UNA VEZ. ${reglaQuery} Indica el tiempo de entrega de CADA opción por separado. Al registrar: locales → proveedor="colombia"; cotizar_web con origen="co" → proveedor="colombia"; cotizar_web con origen="us" → proveedor="eeuu".`;
   }
 
   return { encontrados: productos.length, totalCompatibles: deduped.length, localDisponibles: productos.length, productos, nota };
@@ -2742,18 +2750,50 @@ function mismoProducto(local: string, web: string): boolean {
   return comunes / a.length >= 0.7;
 }
 
-function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
-  if (acc.web.length === 0) return acc.locales;
-  if (acc.localDisponibles >= 3) return acc.web;
+/** Las marcas que nombró el cliente, según lo que se buscó en las listas. */
+function marcasDelCliente(acc: Acumulador): string[] {
+  return marcasEnConsulta(acc.ultimaConsulta ?? "");
+}
 
-  // Un listado de la web que es EL MISMO producto que ya tenemos —misma marca, misma
-  // línea, misma capacidad— y encima más caro no es una segunda opción: es nuestro
-  // propio artículo con el precio de otra tienda. Al cliente le llegaba la misma
-  // memoria Kingston a $40.000 y a $120.000 en la misma lista.
-  const web = acc.web.filter(
+/** ¿La opción es de alguna de esas marcas? En el nombre, como en `filtrarPorMarcaYCifras`:
+ *  un equipo no es de la marca de una pieza suya. Intel, AMD y NVIDIA sí se miran en la
+ *  ficha entera, porque "portátil AMD" habla del procesador. */
+function esDeMarcaPedida(o: OpcionSel, marcas: string[]): boolean {
+  return marcas.some((m) => esDeMarca(esMarcaDeComponente(m) ? `${o.nombre} ${o.ficha}` : o.nombre, m));
+}
+
+/** Opciones de la web que no repiten algo que ya tenemos en las listas.
+ *
+ *  Un listado de la web que es EL MISMO producto que ya tenemos —misma marca, misma
+ *  línea, misma capacidad— y encima más caro no es una segunda opción: es nuestro
+ *  propio artículo con el precio de otra tienda. Al cliente le llegaba la misma
+ *  memoria Kingston a $40.000 y a $120.000 en la misma lista. */
+function webQueNoRepite(acc: Acumulador): OpcionSel[] {
+  return acc.web.filter(
     (w) => !acc.locales.some((l) => w.precio >= l.precio && mismoProducto(l.nombre, w.nombre)),
   );
-  return [...acc.locales, ...web];
+}
+
+/** SI EL CLIENTE NOMBRÓ UNA MARCA, SE COMPLETA CON ESA MARCA.
+ *
+ *  Quien pidió la board "MSI MAG B650 Tomahawk WiFi" recibía la Tomahawk y, de "Mejor
+ *  precio", una ASUS B650M. Venía de la nota de `buscar_productos` para 1–2 opciones
+ *  locales, que desde junio pedía buscar "alternativas de OTRAS marcas". Choca con la
+ *  regla de fondo: quien nombra la marca ya decidió.
+ *
+ *  Otros modelos de SU marca van primero; otras marcas entran solo si no hay NINGUNO.
+ *  Se aplica aquí, al armar las opciones, para no depender de qué buscó Andrea. */
+function preferirMarcaDelCliente(acc: Acumulador, web: OpcionSel[]): OpcionSel[] {
+  const marcas = marcasDelCliente(acc);
+  if (marcas.length === 0) return web;
+  const deSuMarca = web.filter((w) => esDeMarcaPedida(w, marcas));
+  return deSuMarca.length > 0 ? deSuMarca : web;
+}
+
+function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
+  if (acc.web.length === 0) return acc.locales;
+  if (acc.localDisponibles >= 3) return preferirMarcaDelCliente(acc, acc.web);
+  return [...acc.locales, ...preferirMarcaDelCliente(acc, webQueNoRepite(acc))];
 }
 
 const ENTREGA_TXT: Record<OpcionSel["entrega"], string> = {
@@ -3080,12 +3120,37 @@ async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulad
     if (name === "cotizar_web") {
       const consulta = String((input as { consulta?: unknown })?.consulta ?? "").trim();
       if (!consulta) return { error: "consulta vacía" };
-      const r = await cotizarWeb(ds, consulta);
-      for (const p of r.productos as (QuoteProducto & { ficha: string })[]) {
-        const nombre = (p.nombre ?? "").trim();
-        if (nombre && typeof p.precioCOP === "number" && p.precioCOP > 0) {
-          acc.web.push({ nombre, precio: p.precioCOP, ficha: p.ficha, entrega: p.origen === "co" ? "local" : "us" });
+      const guardar = (productos: unknown[]) => {
+        for (const p of productos as (QuoteProducto & { ficha: string })[]) {
+          const nombre = (p.nombre ?? "").trim();
+          if (nombre && typeof p.precioCOP === "number" && p.precioCOP > 0) {
+            acc.web.push({ nombre, precio: p.precioCOP, ficha: p.ficha, entrega: p.origen === "co" ? "local" : "us" });
+          }
         }
+      };
+      let r = await cotizarWeb(ds, consulta);
+      guardar(r.productos);
+
+      // OTRAS MARCAS SOLO SI DE LA SUYA NO HAY NINGUNA. Ya tenemos lo que pidió en las
+      // listas y se buscaron alternativas CON su marca: si no apareció ni un modelo más de
+      // esa marca, se busca una vez sin ella para no dejarlo con una sola opción. Solo con
+      // opciones locales: sin ellas, lo que tocaba era el modelo exacto, y ofrecer otra
+      // marca en su lugar es justo lo que no se debe hacer.
+      const marcas = marcasDelCliente(acc);
+      const sinMarca = sinMarcas(consulta, marcas);
+      const completandoHasta3 = acc.localDisponibles > 0 && acc.localDisponibles < 3;
+      const hayDeSuMarca = webQueNoRepite(acc).some((w) => esDeMarcaPedida(w, marcas));
+      if (marcas.length > 0 && completandoHasta3 && !hayDeSuMarca && sinMarca && sinMarca !== consulta) {
+        const otras = await cotizarWeb(ds, sinMarca);
+        guardar(otras.productos);
+        if (otras.encontrados > 0) r = { ...otras, encontrados: r.encontrados + otras.encontrados, productos: [...r.productos, ...otras.productos] };
+      }
+
+      // Sin nada nuevo que sumar, pero con opciones locales en la mano: la nota de "esa
+      // referencia no se pudo cotizar" haría a Andrea mandar al cliente con el equipo
+      // cuando tiene algo que ofrecerle. Presenta lo que hay.
+      if (r.encontrados === 0 && acc.locales.length > 0) {
+        r = { ...r, nota: "INTERNO: no hay más opciones que sumar. Presenta COPIANDO los \"bloque\" del campo \"seleccion\" TAL CUAL (ya vienen elegidos). NO llames cotizar_web otra vez, NO digas que buscaste ni que no apareció nada, y NO derives al equipo: sí hay qué ofrecerle." };
       }
       return { ...r, seleccion: seleccionDe(acc) };
     }
