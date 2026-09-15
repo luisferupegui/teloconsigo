@@ -157,8 +157,6 @@ function esGabinete(nombre: string): boolean {
   return /\b(gabinete|chasis)\b/.test(n) || /^torre\b/.test(n);
 }
 
-/** Última palabra sobre la categoría de un producto importado. Corrige lo que el
- *  documento dice cuando el propio nombre lo desmiente. */
 /** Specs que el NOMBRE ya declara, listas para guardar.
  *
  *  Hasta ahora se deducían en cada consulta, con dos costes: repetir el mismo trabajo en
@@ -195,6 +193,8 @@ const EQUIPO_CON_SPECS = new Set([
 ]);
 const PANTALLA_INTEGRADA = new Set(["portatil", "all-in-one", "todo-en-uno", "tableta"]);
 
+/** Última palabra sobre la categoría de un producto importado. Corrige lo que el
+ *  documento dice cuando el propio nombre lo desmiente. */
 export function corregirCategoria(nombre: string, categoria: string): string {
   if (esGabinete(nombre)) return "accesorios";
   // Un equipo completo archivado como pieza: se manda a escritorio, y a la gama alta si

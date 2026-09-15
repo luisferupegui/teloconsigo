@@ -292,7 +292,6 @@ function formatoCPU(raw: string): string {
 }
 
 
-/** Specs deducidas del NOMBRE, para rellenar las que el producto no trae. */
 /** Memoria portátil (USB, pendrive, microSD): guarda datos, pero no es ni RAM ni un
  *  disco de equipo. Se distingue porque no nombra ningún procesador. */
 function esMemoriaPortable(nombre: string): boolean {
@@ -301,6 +300,7 @@ function esMemoriaPortable(nombre: string): boolean {
   return /\b(usb|pendrive|flash\s?drive|micro\s?sd|memoria\s+sd)\b/i.test(nombre);
 }
 
+/** Specs deducidas del NOMBRE, para rellenar las que el producto no trae. */
 function specsDesdeNombre(nombre: string, categoria?: string): Record<string, string> {
   const n = nombre;
   const out: Record<string, string> = {};
@@ -337,8 +337,6 @@ function specsDesdeNombre(nombre: string, categoria?: string): Record<string, st
   return out;
 }
 
-/** Specs estructuradas → líneas de viñeta, en orden legible. Solo incluye las que
- *  EXISTEN; nunca inventa una. Cubre las variantes de clave más comunes. */
 /** Capacidades en notación estándar ("16gb", "512gb") añadidas al texto de búsqueda, para
  *  que una consulta con "16GB" encuentre también los nombres abreviados de las listas
  *  ("(16/512)"). Sin esto había que aflojar el filtro de specs y entonces salía cualquier
@@ -351,6 +349,8 @@ function capacidadesNormalizadas(nombre: string): string {
   return out.join(" ");
 }
 
+/** Specs estructuradas → líneas de viñeta, en orden legible. Solo incluye las que
+ *  EXISTEN; nunca inventa una. Cubre las variantes de clave más comunes. */
 function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
   if (!specs) return [];
   const order: [string, string][] = [
@@ -417,9 +417,6 @@ function monitorStatusFromName(texto: string, categoria?: string): string | null
   return "🖥️ Solo torre (sin monitor)";
 }
 
-/** Tarjeta lista para mostrar al cliente. Si hay specs estructuradas las usa; si no,
- *  el nombre completo (que ya contiene la configuración real) es la fuente fiel. Añade
- *  el estado de monitor cuando aplica. El precio va EXACTO. Andrea copia esto sin cambiar nada. */
 /** Dato decisivo de un PROCESADOR suelto: si trae o no video integrado. Quien compra un
  *  Intel "F"/"KF" necesita además una tarjeta gráfica o el equipo no da imagen, y eso hay
  *  que decírselo ANTES de la compra. Solo se afirma cuando el sufijo lo indica sin
@@ -476,6 +473,9 @@ function conMarca(nombre: string, marca?: string, proveedor?: string): string {
   return yaEsta ? nombre : `${m} ${nombre}`;
 }
 
+/** Tarjeta lista para mostrar al cliente. Si hay specs estructuradas las usa; si no,
+ *  el nombre completo (que ya contiene la configuración real) es la fuente fiel. Añade
+ *  el estado de monitor cuando aplica. El precio va EXACTO. Andrea copia esto sin cambiar nada. */
 function construirFicha(nombreCrudo: string, specs: Record<string, string> | undefined, precio: number | null, categoria?: string, marca?: string, proveedor?: string): string {
   // El nombre se limpia de ruido comercial ("+ Servicio", "Onsite", "194 AI TOPS") y las
   // specs que el producto no trae se deducen del propio nombre. Las estructuradas mandan:
@@ -1003,14 +1003,17 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   return { encontrados: productos.length, totalCompatibles: deduped.length, localDisponibles: productos.length, productos, nota };
 }
 
-// ── Búsqueda web AISLADA (interna): sub-llamada solo con web_search ─────────────
+// ── Cotización web ────────────────────────────────────────────────────────────
 //
 // FLUJO DE PRECIOS:
-//   1. buscar_productos (catálogo PDF local) → precio al cliente si está disponible
-//   2. cotizar_web → solo cuando NO está en catálogo:
-//      a) Busca en EE.UU. → precio al cliente (fórmula importación)
-//      b) Busca en Colombia local (MercadoLibre/Alkosto/Falabella) → SOLO comparación
-//         interna en el admin; el cliente nunca ve estos precios
+//   1. buscar_productos (listas de proveedor y catálogo publicado) → precio al cliente
+//      cuando hay disponibilidad local.
+//   2. cotizar_web → cuando lo local no alcanza. Busca en Google Shopping vía Serper, en
+//      el orden que fija el panel por categoría (`getSearchMode`):
+//      a) Colombia (gl=co): solo tiendas de TECH_RETAILERS_CO. Se le OFRECE al cliente,
+//         con entrega de 1 a 3 días, y además es la comparación de mercado del admin.
+//      b) EE.UU. (gl=us): DeepSeek estructura los anuncios (nunca toca precio ni URL) y
+//         el precio al cliente sale de la fórmula de importación, con entrega de 6 a 10.
 //
 // Tiendas de EE.UU. PRIORIZADAS para B2B/empresarial (el orden es la prioridad).
 // El precio de EE.UU. lo trae Serper Shopping (gl=us) y DeepSeek solo lo estructura:
@@ -1100,8 +1103,6 @@ const ALTO_RENDIMIENTO_RE = /\b(rtx|gtx|quadro|geforce)\b|\brx\s?\d{3,4}\b|\bryz
 const escritorioTier = (n: string): string =>
   ALTO_RENDIMIENTO_RE.test(n) ? "escritorio-alto-rendimiento" : "escritorio";
 
-/** Infiere la clave de margen (`margins.json`) a partir del nombre del producto
- *  y la clasificación de la consulta. Si no hay coincidencia usa "default". */
 /** ¿El producto es un accesorio pequeño? Se deduce de su nombre, porque en la web no hay
  *  categoría: es lo único que tenemos para aplicarle la regla del negocio (entre
  *  candidatos que sirven igual, en accesorios pequeños se toma el de mayor valor). */
@@ -1109,6 +1110,8 @@ function esAccesorioPorNombre(nombre: string): boolean {
   return esAccesorioPequeno([inferirCategoriaMargen(nombre, "componente")]);
 }
 
+/** Infiere la clave de margen (`margins.json`) a partir del nombre del producto
+ *  y la clasificación de la consulta. Si no hay coincidencia usa "default". */
 function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): string {
   const n = (nombre ?? "").toLowerCase();
   // "monitor" solo si NO es un equipo completo: un PC combo dice "+ Monitor 24\"" pero lleva CPU
@@ -1639,10 +1642,6 @@ function fichaWeb(p: QuoteProducto): string {
   return `**${nombre}**${cuerpo}${extra}\n💲 ${fmtCOP(p.precioCOP)}`;
 }
 
-/** Deja solo las opciones que cumplen los términos con CIFRA de la consulta (modelo,
- *  capacidad). Se aplica tanto a los resultados frescos como a los que salen del caché:
- *  una entrada guardada antes de este filtro seguía ofreciendo un 7600X a quien pedía un
- *  5600G. Si la consulta no trae cifras, no filtra nada. */
 /** Un SSD y un disco duro no son el mismo producto, aunque ambos digan "2TB externo".
  *
  *  Uno cuesta el doble por la misma capacidad y el otro es diez veces más lento: ponerlos
@@ -1717,6 +1716,12 @@ function palabrasDeLinea(consulta: string): string[] {
   return [...exigidas];
 }
 
+/** Deja solo las opciones de la web que son LO QUE PIDIÓ el cliente: los términos con
+ *  CIFRA de la consulta (modelo, capacidad), la marca si la nombró (ver
+ *  `filtrarPorMarcaYCifras`), la palabra de línea del modelo (ver `palabrasDeLinea`) y
+ *  los atributos que dijo con palabras (ver `filtrarPorAtributos`). Se aplica tanto a
+ *  los resultados frescos como a los que salen del caché: una entrada guardada antes de
+ *  este filtro seguía ofreciendo un 7600X a quien pedía un 5600G. */
 function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
   // Las tiendas escriben "64 GB" y el cliente "64gb": se pega la cifra a su unidad en
   // ambos lados para que un espacio no descarte el producto correcto.
@@ -2027,13 +2032,6 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-/** ¿Dos nombres normalizados se refieren al MISMO producto por contención?
- *
- *  Exige que sean de tamaño COMPARABLE. Sin esa guarda, el nombre de un equipo completo
- *  contiene el de sus propias piezas — "pctorregamer‹amdryzen57600›x16gb512gbssdrtx5060"
- *  contiene "amdryzen57600", el CPU suelto — y el equipo terminaba tomando el precio y el
- *  costo de la pieza. Caso real: "PC Torre Gamer Ryzen 5 7600X + RTX 5060" cotizado en
- *  $1.119.000 (costo $932.000 = el procesador pelado) cuando el mercado lo tiene a $5.199.900. */
 /** Tramo de flete de importación según lo que sea el producto. Un portátil y un
  *  escritorio pagan mucho más flete que una pieza suelta. */
 function tierDeNombre(nombre: string): ShippingTier {
@@ -2042,6 +2040,13 @@ function tierDeNombre(nombre: string): ShippingTier {
   return "component";
 }
 
+/** ¿Dos nombres normalizados se refieren al MISMO producto por contención?
+ *
+ *  Exige que sean de tamaño COMPARABLE. Sin esa guarda, el nombre de un equipo completo
+ *  contiene el de sus propias piezas — "pctorregamer‹amdryzen57600›x16gb512gbssdrtx5060"
+ *  contiene "amdryzen57600", el CPU suelto — y el equipo terminaba tomando el precio y el
+ *  costo de la pieza. Caso real: "PC Torre Gamer Ryzen 5 7600X + RTX 5060" cotizado en
+ *  $1.119.000 (costo $932.000 = el procesador pelado) cuando el mercado lo tiene a $5.199.900. */
 function contencionFiable(a: string, b: string): boolean {
   if (!a || !b) return false;
   if (!(a.includes(b) || b.includes(a))) return false;
@@ -2096,12 +2101,7 @@ function esEscritorioCompuesto(nombre: string): boolean {
   return hasCPU && (hasRAM || hasSto || hasMon || shorthand);
 }
 
-/** CONFIG COMPLETA: el PC de escritorio ensamblado/marca más cercano en las listas
- *  (categoría escritorio), igualando por token de CPU y eligiendo el de precio al
- *  cliente más cercano al cotizado (misma gama). Nunca toma piezas sueltas. */
 const GPU_DEDICADA = /\b(rtx|gtx|radeon|geforce|quadro)\b|\brx\s?\d{3,4}\b/;
-
-
 
 /** Dos capacidades son "la misma" con 10 % de tolerancia: las listas escriben 500, 512
  *  o 480 para el mismo disco. */
@@ -2109,6 +2109,9 @@ function mismaCapacidad(a: number | null, b: number | null): boolean {
   return a != null && b != null && Math.abs(a - b) <= Math.max(a, b) * 0.1;
 }
 
+/** CONFIG COMPLETA: el PC de escritorio ensamblado/marca más cercano en las listas
+ *  (categoría escritorio), igualando por token de CPU y eligiendo el de precio al
+ *  cliente más cercano al cotizado (misma gama). Nunca toma piezas sueltas. */
 function costoEscritorioConfig(
   nombre: string,
   precioCliente: number,

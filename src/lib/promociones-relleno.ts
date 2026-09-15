@@ -504,18 +504,6 @@ function nombreUsable(n: string): boolean {
 }
 
 /**
- * ¿Este producto es de los que van en esta sección?
- *
- * La categoría de la lista se equivoca —el lector clasificó un "MOUSE BLUETOOTH
- * SILENCIOSO LENOVO WL310" y una board "ASUS PRIME B760M-A" como `televisor`, y
- * por ahí se colaban a Smart Home—. El nombre no se equivoca: un mouse dice
- * "Mouse". Así que el nombre manda, con la misma tabla que usa el importador.
- *
- * Los equipos completos quedan fuera de la comprobación a propósito: un PC
- * gamer NOMBRA su gráfica ("... + RTX 5060 8GB") y el nombre lo llamaría tarjeta
- * de video. En un equipo, la categoría de la lista sí es la buena.
- */
-/**
  * Piezas cuyo NOMBRE es el modelo. En una gráfica o un procesador, "GeForce RTX"
  * sin número no dice qué se está vendiendo: la diferencia entre una RTX 3050 y
  * una RTX 5090 es diez veces el precio. Se coló una "Tarjeta de Video GeForce
@@ -528,6 +516,18 @@ const LLEVA_MODELO = /\d{3,}/;
 const NOMBRE_DE_MAQUINA =
   /\b(core\s?i?[3579]|core\s?ultra|ryzen|xeon|epyc|celeron|pentium|athlon|snapdragon|all\s?-?in\s?-?one|\baio\b|port[áa]til|laptop|notebook|\bpc\b|torre|workstation|servidor)\b/i;
 
+/**
+ * ¿Este producto es de los que van en esta sección?
+ *
+ * La categoría de la lista se equivoca —el lector clasificó un "MOUSE BLUETOOTH
+ * SILENCIOSO LENOVO WL310" y una board "ASUS PRIME B760M-A" como `televisor`, y
+ * por ahí se colaban a Smart Home—. El nombre no se equivoca: un mouse dice
+ * "Mouse". Así que el nombre manda, con la misma tabla que usa el importador.
+ *
+ * Los equipos completos quedan fuera de la comprobación a propósito: un PC
+ * gamer NOMBRA su gráfica ("... + RTX 5060 8GB") y el nombre lo llamaría tarjeta
+ * de video. En un equipo, la categoría de la lista sí es la buena.
+ */
 function encajaEnSeccion(nombre: string, catLista: string, s: SeccionVitrina): boolean {
   if (s.excluye?.test(nombre)) return false;
   if (PIEZAS_CON_MODELO.has(catLista) && !LLEVA_MODELO.test(nombre)) return false;

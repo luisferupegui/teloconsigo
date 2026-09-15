@@ -52,10 +52,6 @@ export function saveCategories(cats: Category[]): void {
   fs.writeFileSync(CATEGORIES_PATH, JSON.stringify(cats, null, 2), "utf-8");
 }
 
-export function getCategory(slug: string): Category | null {
-  return loadCategories().find((c) => c.slug === slug) ?? null;
-}
-
 /** Slug web a partir de un texto libre ("Tarjetas Gráficas" → "tarjetas-graficas"). */
 export function slugCategoria(texto: string): string {
   return texto
