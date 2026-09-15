@@ -3617,6 +3617,7 @@ export async function POST(req: Request): Promise<Response> {
       let nudgeOpciones  = 0;  // veces que se forzó completar hasta 3 opciones (máx 1)
       let nudgeArmador   = 0;  // veces que se forzó cotizar sin preguntar en el armador (máx 1)
       let preambulo      = ""; // texto del globo de espera ya mostrado (para no repetirlo)
+      let reintentoVacio = false; // ya se repitió un turno que volvió sin nada (máx 1)
       // Opciones vistas en ESTA solicitud, por origen. El servidor elige y etiqueta las 3
       // finales sobre este acumulado (ver `poolDeCandidatos`).
       const acc: Acumulador = { locales: [], web: [], localDisponibles: 0, compuestas: [] };
@@ -3744,6 +3745,14 @@ export async function POST(req: Request): Promise<Response> {
               maxTokens: 2500,
               temperature: 0.3,
               stream: true,
+              // SIN RAZONAMIENTO. `deepseek-flash` piensa antes de escribir y ese pensamiento
+              // gasta el MISMO `max_tokens` que la respuesta. Al presentar un combo teclado +
+              // mouse gastó 10.719 caracteres pensando, cortó por `length` y la respuesta salió
+              // en 0: el cliente se quedaba en "Dame un momento 🙌" o veía "no me llegó la
+              // respuesta". De 8 presentaciones medidas, 1 vacía y 3 al borde. Sin él, la
+              // batería completa salió sin vacías y cada turno bajó de 7–14 s a 1–9 s. Aquí
+              // no hace falta: qué mostrar y a qué precio ya lo decide el servidor.
+              thinking: "disabled",
               messages: [{ role: "system", content: system }, ...convo],
               ...(turnTools.length > 0 ? { tools: turnTools.map(toDSTool) } : {}),
               onText: (delta: string) => {
@@ -3770,6 +3779,17 @@ export async function POST(req: Request): Promise<Response> {
               continue;
             }
             throw err; // otro error, o sin más claves → manejo normal (catch externo)
+          }
+          // RESPUESTA VACÍA: ni texto ni herramienta. Nada llegaba al cliente, que se quedaba
+          // mirando el globo de espera. Se repite el turno UNA vez (aún no se agregó nada a
+          // `convo`, así que se repite limpio); si vuelve vacío, el catch de abajo le da al
+          // cliente un mensaje y el contacto directo en vez de silencio.
+          if (msg.toolCalls.length === 0 && msg.content.trim() === "") {
+            if (reintentoVacio) throw new Error(`respuesta vacía tras reintento (finish=${msg.finishReason})`);
+            reintentoVacio = true;
+            console.warn(`[asesor] turno ${turn} volvió vacío (finish=${msg.finishReason}); se repite`);
+            turn--; // el turn++ del for repite este mismo turno
+            continue;
           }
           // RECUPERACIÓN: si el modelo ESCRIBIÓ la llamada en vez de emitirla, se lee del
           // texto y se convierte en una llamada de verdad. Antes el cliente veía el markup
