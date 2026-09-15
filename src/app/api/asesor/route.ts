@@ -1543,6 +1543,17 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
 
 // Ficha web (cotizar_web): las specs vienen como string con "|" (EE.UU.) o dentro del
 // nombre (Colombia). Arma la tarjeta exacta con el precioCOP autoritativo. Andrea la copia.
+
+// Que el anuncio hable de una MÁQUINA. Más ancha que `CPU_EN_CONSULTA` a propósito: los
+// anuncios abrevian el procesador ("Latitude 5440 i5 16GB") y ahí el formato es la señal.
+const EQUIPO_EN_TITULO =
+  /\b(?:core\s?i[3579]|i[3579]|core\s?ultra|ryzen|xeon|pentium|celeron|athlon|laptop|port[aá]til|notebook|todo\s?en\s?uno|all.?in.?one|aio|pc|torre|desktop|workstation)\b/i;
+
+/** Un disco duro (HDD), dicho de cualquiera de las formas en que lo escriben tiendas y
+ *  clientes. "Mecánico" SOLO cuenta pegado a "disco" o "unidad": suelto, un "Teclado
+ *  Mecánico Razer BlackWidow" salía con la spec "Disco duro (HDD)" en la ficha. */
+const DISCO_MECANICO = /\b(hdd|disco\s+duro|(?:disco|unidad)\s+mec[aá]nic[oa])\b/;
+
 /** Specs legibles sacadas del TÍTULO de un listado de tienda.
  *
  *  Los resultados de EE.UU. pasan por el modelo, que los devuelve ya estructurados; los
@@ -1551,11 +1562,6 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
  *  junto a otras que sí las traían: parecía la peor de las tres por falta de datos.
  *
  *  Solo se afirma lo que el título dice, y en el orden en que se lee una ficha. */
-// Que el anuncio hable de una MÁQUINA. Más ancha que `CPU_EN_CONSULTA` a propósito: los
-// anuncios abrevian el procesador ("Latitude 5440 i5 16GB") y ahí el formato es la señal.
-const EQUIPO_EN_TITULO =
-  /\b(?:core\s?i[3579]|i[3579]|core\s?ultra|ryzen|xeon|pentium|celeron|athlon|laptop|port[aá]til|notebook|todo\s?en\s?uno|all.?in.?one|aio|pc|torre|desktop|workstation)\b/i;
-
 function specsDeTitulo(titulo: string): string {
   // Sin el tramo de la gráfica: un anuncio de tienda escribe "Gpu 8gb Ram 32gb" y esos
   // 8GB son VRAM. Se le mostró al cliente un equipo de 32GB como si tuviera 8GB.
@@ -1589,7 +1595,7 @@ function specsDeTitulo(titulo: string): string {
   if (cap) partes.push(`${cap[1]}${cap[2].toUpperCase()}`);
 
   if (/\b(ssd|estado s[oó]lido|nvme)\b/.test(t)) partes.push("SSD");
-  else if (/\b(hdd|disco duro|mec[aá]nico)\b/.test(t)) partes.push("Disco duro (HDD)");
+  else if (DISCO_MECANICO.test(t)) partes.push("Disco duro (HDD)");
 
   const usb = t.match(/usb\s?(\d(?:\.\d)?)/);
   if (usb) partes.push(`USB ${usb[1]}`);
@@ -1630,13 +1636,13 @@ function fichaWeb(p: QuoteProducto): string {
 function filtrarPorTipoDisco(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
   const c = consulta.toLowerCase();
   const pideSsd = /\b(ssd|estado s[oó]lido|nvme)\b/.test(c);
-  const pideHdd = /\b(disco duro|hdd|mec[aá]nico)\b/.test(c) && !pideSsd;
+  const pideHdd = DISCO_MECANICO.test(c) && !pideSsd;
   if (!pideSsd && !pideHdd) return productos;
 
   return productos.filter((p) => {
     const t = `${p.nombre ?? ""} ${p.specs ?? ""}`.toLowerCase();
     const esSsd = /\b(ssd|estado s[oó]lido|nvme)\b/.test(t);
-    const esHdd = /\b(hdd|disco duro|mec[aá]nico)\b/.test(t);
+    const esHdd = DISCO_MECANICO.test(t);
     // Un título que no dice ni una cosa ni otra no se descarta: no hay motivo para creer
     // que sea el tipo equivocado.
     if (!esSsd && !esHdd) return true;
