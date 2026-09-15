@@ -11,6 +11,26 @@ import path from "path";
 const CACHE_PATH = path.join(process.cwd(), "data", "web-cache.json");
 export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
 
+/** Nada guardado antes de esto se usa. Es cuando quedó en producción el arreglo de
+ *  `deepseekJson` (29074bc, desplegado el 2026-09-15 a las 09:48 hora de Colombia).
+ *
+ *  Hasta entonces, estructurar los anuncios de EE.UU. fallaba 6 de cada 9 veces por el
+ *  razonamiento de `deepseek-flash`, y el respaldo marcaba todo como "component": un
+ *  portátil o un escritorio importado se cotizaba con el flete de una pieza suelta —$25
+ *  en vez de $60, unos $133.000 menos por equipo— y con la ficha sin specs. Esas
+ *  cotizaciones viven aquí 7 días, y `registrarPedido` toma este caché como el precio
+ *  AUTORITATIVO del pedido. También quedó guardado un "MX Anywhere 3S" para quien pedía
+ *  un MX Master 3S.
+ *
+ *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
+ *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
+const VALIDO_DESDE = Date.UTC(2026, 8, 15, 14, 50);
+
+/** ¿Una entrada del caché se puede usar todavía? */
+function vigente(ts: number, ahora = Date.now()): boolean {
+  return ts >= VALIDO_DESDE && ahora - ts < WEB_CACHE_TTL;
+}
+
 /** Producto cotizado (lo que cotizar_web devuelve a Andrea). */
 export type QuoteProducto = {
   nombre?: string; marca?: string; modelo?: string; specs?: string;
@@ -59,8 +79,8 @@ function save(c: CacheFile) {
 }
 function prune(c: CacheFile) {
   const now = Date.now();
-  for (const k of Object.keys(c.queries)) if (now - c.queries[k].ts > WEB_CACHE_TTL) delete c.queries[k];
-  for (const k of Object.keys(c.products)) if (now - c.products[k].ts > WEB_CACHE_TTL) delete c.products[k];
+  for (const k of Object.keys(c.queries)) if (!vigente(c.queries[k].ts, now)) delete c.queries[k];
+  for (const k of Object.keys(c.products)) if (!vigente(c.products[k].ts, now)) delete c.products[k];
 }
 
 export function cacheKey(str: string): string {
@@ -157,7 +177,7 @@ export function mismaConsulta(a: string[], b: string[]): boolean {
 export function getCachedQuery(consulta: string): QueryEntry | null {
   const c = load();
   const now = Date.now();
-  const fresca = (e: QueryEntry) => now - e.ts < WEB_CACHE_TTL;
+  const fresca = (e: QueryEntry) => vigente(e.ts, now);
 
   const exacta = c.queries[cacheKey(consulta)];
   if (exacta && fresca(exacta)) return exacta;
@@ -203,7 +223,7 @@ export function getWebQuoteStrict(...claves: (string | undefined)[]): WebQuote |
   for (const clave of claves) {
     const norm = clave ? cacheKey(clave) : "";
     const e = norm.length >= 3 ? c.products[norm] : undefined;
-    if (e && now - e.ts < WEB_CACHE_TTL) return e;
+    if (e && vigente(e.ts, now)) return e;
   }
   return null;
 }
@@ -217,7 +237,7 @@ export function getWebQuote(nombre: string, modelo?: string, urlCompra?: string)
   for (const key of [modelo, nombre, urlCompra]) {
     const norm = key ? cacheKey(key) : "";
     const e = norm ? c.products[norm] : undefined;
-    if (e && now - e.ts < WEB_CACHE_TTL) return e;
+    if (e && vigente(e.ts, now)) return e;
   }
   // 2) Fuzzy por nombre (cubre reformateos de Andrea). La contención exige tamaños
   //    COMPARABLES: el nombre de un equipo completo contiene el de sus piezas, y sin
@@ -226,7 +246,7 @@ export function getWebQuote(nombre: string, modelo?: string, urlCompra?: string)
   if (target.length >= 6) {
     for (const k of Object.keys(c.products)) {
       const e = c.products[k];
-      if (now - e.ts > WEB_CACHE_TTL) continue;
+      if (!vigente(e.ts, now)) continue;
       if (k.length < 6 || !(target.includes(k) || k.includes(target))) continue;
       if (Math.min(k.length, target.length) / Math.max(k.length, target.length) < 0.6) continue;
       return e;
@@ -257,7 +277,7 @@ export function getWebQuoteFuzzy(nombre: string, precioCOP?: number): WebQuote |
   // La misma entrada está indexada por nombre, modelo y url → deduplicar.
   const unicos = new Map<string, WebQuote>();
   for (const e of Object.values(c.products)) {
-    if (now - e.ts > WEB_CACHE_TTL || !Array.isArray(e.tokens) || e.tokens.length === 0) continue;
+    if (!vigente(e.ts, now) || !Array.isArray(e.tokens) || e.tokens.length === 0) continue;
     unicos.set(`${e.precioCOP}|${e.urlCompra}`, e);
   }
 
