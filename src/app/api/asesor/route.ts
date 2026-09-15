@@ -2796,10 +2796,31 @@ function preferirMarcaDelCliente(acc: Acumulador, web: OpcionSel[]): OpcionSel[]
   return deSuMarca.length > 0 ? deSuMarca : web;
 }
 
+/** Un anuncio de VARIAS unidades: "2 pack", "Pack of 3", "x3 unidades", "5-Pack". Un kit
+ *  de RAM "2x16GB" NO lo es: es un solo producto. */
+const PAQUETE = /\b\d+\s*-?\s*(?:pack|pk|pcs|unidades|units|uds|und)\b|\bpack\s+of\s+\d+\b|\b(?:paquete|pack|kit|combo)\s+(?:de|x)\s*\d+\b|\bx\s?\d+\s*(?:unidades|uds|und)\b/i;
+
+/** SI HAY OPCIONES POR UNIDAD, LOS PAQUETES NO ENTRAN.
+ *
+ *  Junto a la memoria USB Kingston de 64GB a $40.000 salían, de "Recomendado" y "Mejor
+ *  rendimiento", dos paquetes importados a $211.000 y $318.000 ("2 pack Thumb Drives").
+ *  Un paquete no es un precio por unidad: comparados, parecían opciones de lujo, y si el
+ *  cliente pedía tres unidades el pedido salía por tres paquetes.
+ *
+ *  Es blanda a propósito: si TODO lo que hay son paquetes —las pilas, por ejemplo— se
+ *  dejan. Y no aplica si el cliente pidió un paquete. */
+function porUnidadSiHay(acc: Acumulador, pool: OpcionSel[]): OpcionSel[] {
+  if (/\b(pack|paquetes?|lote)\b/i.test(acc.ultimaConsulta ?? "")) return pool;
+  const porUnidad = pool.filter((o) => !PAQUETE.test(o.nombre));
+  return porUnidad.length > 0 ? porUnidad : pool;
+}
+
 function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
-  if (acc.web.length === 0) return acc.locales;
-  if (acc.localDisponibles >= 3) return preferirMarcaDelCliente(acc, acc.web);
-  return [...acc.locales, ...preferirMarcaDelCliente(acc, webQueNoRepite(acc))];
+  const pool =
+    acc.web.length === 0         ? acc.locales :
+    acc.localDisponibles >= 3    ? preferirMarcaDelCliente(acc, acc.web) :
+    [...acc.locales, ...preferirMarcaDelCliente(acc, webQueNoRepite(acc))];
+  return porUnidadSiHay(acc, pool);
 }
 
 const ENTREGA_TXT: Record<OpcionSel["entrega"], string> = {
