@@ -1167,12 +1167,13 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
 }
 
 // ── Clasificación de la consulta → controla el filtro de ruido de Serper ─────────
-//  EQUIPOS: desactiva el filtro SERPER_NOISE (torres/PCs completos son exactamente lo buscado).
-//  COMPONENTES / ACCESORIOS / OTROS: activa el filtro (excluye PCs y lotes del resultado).
-//  En todas las categorías el ORDEN de fuentes es idéntico:
+//  EQUIPOS: no se filtra nada (torres, PCs y combos con monitor son exactamente lo buscado).
+//  COMPONENTES / ACCESORIOS / OTROS: fuera los equipos completos y los combos que el
+//  cliente no pidió. Ver `esRuidoParaLaConsulta`.
+//  Orden de fuentes:
 //    1. buscar_productos (listas locales — GRATIS, siempre primero)
-//    2. cotizar_web → Colombia primero (Serper ~$0.001)
-//    3. EE.UU. SOLO si Colombia < 3 resultados (Serper gl=us + estructura DeepSeek — último recurso)
+//    2. cotizar_web → Colombia y EE.UU. en el orden que fija el panel por categoría
+//       (`getSearchMode`): por defecto Colombia primero y EE.UU. solo si faltan opciones.
 const COMPUTER_QUERY  = /\b(laptop|port[aá]til|notebook|computador(a)?|desktop|pc de escritorio|todo en uno|all.?in.?one|aio|tablet|ipad|torre pc)\b/i;
 const COMPONENT_QUERY = /\b(motherboard|placa( base| madre)?|tarjeta madre|mainboard|memoria( ram)?|ram|ddr[2345]|disco( duro)?|hdd|ssd|nvme|m\.?2|sata|procesador|cpu|ryzen|core i[3579]|i[3579]-\w|xeon|pentium|celeron|tarjeta (de )?(video|gr[aá]fica|sonido|red|raid)|gpu|vga|rtx|gtx|radeon|geforce|raid|sound ?card|psu|fuente de poder|disipador|cooler|ventilador|refrigeraci[oó]n|switch|router|access point|punto de acceso|servidor|server|\bnas\b|storage|firewall)\b/i;
 // Accesorios / consumo masivo: baratos y abundantes local → Colombia primero, EE.UU.
@@ -1365,24 +1366,66 @@ function parseCopPrice(s?: string): number | null {
   return Number.isFinite(n) && n >= 1000 ? n : null;
 }
 
-// Ruido típico de Shopping: PCs/torres completos y lotes que NO son el producto pedido.
-const SERPER_NOISE = /\b(gaming pc|gaming desktop|desktop pc|pc with|torre|computador|tower|barebone|bundle|combo|lote|pre-?built|prebuilt)\b/i;
+// ── RUIDO DE SHOPPING: lo que NO es el producto pedido ────────────────────────
+//
+// Esta lista era una sola expresión de palabras sueltas —"torre", "tower", "computador",
+// "desktop pc", "gaming pc", "pc with", "combo"…— y descartaba justo lo que no debía.
+// Medido sobre 301 títulos reales de Google Shopping, descartaba 126:
+//   · "gabinete torre ATX": 20 de 40 fuera ("Torre Mediana", "Full Tower", "Mid Tower");
+//   · "gabinete mid tower Corsair": 35 de 40 fuera;
+//   · "Noctua NH-D15": los coolers "Dual Tower";
+//   · "combo teclado y mouse MK270": 28 de 40 fuera — el combo que el cliente PEDÍA.
+// Y "Desktop PC Speakers", "Gaming PC Case" o "Webcam for PC with microphone" caían igual.
+// Con las reglas de abajo se descartan 11, todos combos que el cliente no pidió.
+//
+// Queda como palabra suelta solo lo que no aparece en otra cosa que un equipo.
+const SERPER_NOISE = /\b(barebone|pre-?built)\b/i;
 
 // ¿El anuncio es un EQUIPO COMPLETO? A quien buscaba una board B650 le salió un "Pc Gamer
 // Amd Ryzen 7 8700F Ram Ddr5 Ssd 512Gb Rtx 3050 … B650 Wifi": pasaba la cifra por la
-// board que trae dentro, y SERPER_NOISE no lo atrapaba porque dice "pc gamer", no
-// "gaming pc". Añadir "pc gamer" a esa lista tampoco servía: descartaría un "Gabinete
-// para PC Gamer".
+// board que trae dentro. Buscar "pc gamer" o "torre" sueltos no servía — descartaría un
+// "Gabinete para PC Gamer" o una "Caja Torre".
 //
 // Se exigen las TRES cosas que tiene un equipo y no una pieza: el sustantivo del equipo
 // —que no vaya después de "para/for/de", como en "SSD para portátil"—, una spec de RAM
 // y una de almacenamiento. Probado con 16 títulos: "Laptop SSD 1TB", "Laptop RAM 16GB",
 // una board "Ryzen 7000 … DDR5" o una RAM "Desktop Memory" quedan como piezas.
-const EQUIPO_EN_ANUNCIO = /(?<!\b(?:para|for|de|compatible con)\s)\b(?:pc\s*gamer|gaming\s*pc|desktop\s*pc|computador(?:a)?|torre\s*gamer|cpu\s*gamer|equipo\s*gamer|port[aá]til|laptop|notebook|all\s*in\s*one|todo\s*en\s*uno)\b/i;
+const EQUIPO_EN_ANUNCIO = /(?<!\b(?:para|for|de|compatible con)\s)\b(?:pc\s*gamer|gaming\s*pc|desktop\s*pc|desktop\s*computer|gaming\s*computer|(?:gaming\s+)?tower\s*pc|pc\s*tower|torre\s*pc|pc\s*torre|computador(?:a)?|torre\s*gamer|cpu\s*gamer|equipo\s*gamer|port[aá]til|laptop|notebook|all\s*in\s*one|todo\s*en\s*uno)\b/i;
 const RAM_EN_ANUNCIO = /\b\d{1,3}\s?gb\s?(?:de\s)?ram\b|\bram\s?(?:ddr[345]\s?)?\d{1,3}\s?gb\b|\bram\s+ddr[345]\b/i;
 const DISCO_EN_ANUNCIO = /\b(?:ssd|hdd|nvme)\s?(?:m\.?2\s?)?\d{3,4}\s?gb\b|\b(?:ssd|hdd|nvme)\s?\d\s?tb\b|\b(?:\d{3,4}\s?gb|\d\s?tb)\s?(?:ssd|hdd|nvme)\b/i;
 function esEquipoCompletoEnAnuncio(titulo: string): boolean {
   return EQUIPO_EN_ANUNCIO.test(titulo) && RAM_EN_ANUNCIO.test(titulo) && DISCO_EN_ANUNCIO.test(titulo);
+}
+
+// ¿El anuncio es un COMBO? Para quien pidió un producto suelto no lo es: a quien pedía un
+// "Logitech MX Master 3S" le salió "Logitech Mx Keys +Mouse Logitech Mx Master 3s" — un
+// teclado y un mouse por el precio de los dos. La palabra "combo" no siempre está: las
+// tiendas escriben "+", "with" o "Paquete de Teclado … Y Mouse". Se reconoce porque junta
+// DOS periféricos distintos con una conjunción. "RF inalámbrica + Bluetooth" o "Mouse with
+// Ultra-fast Scrolling" son un solo producto y siguen entrando.
+const COMBO_EN_ANUNCIO = /\b(combo|bundle|lote)\b/i;
+const PERIFERICOS_EN_ANUNCIO = [
+  /\b(teclado|keyboard|mx\s*keys)\b/i,
+  /(?<!\bpad\s)\b(mouse|rat[oó]n)\b(?!\s?pad)/i,
+  /\b(mouse\s?pad|pad\s?(?:para\s)?mouse|alfombrilla|desk\s?mat)\b/i,
+];
+const UNE_PRODUCTOS = /\s\+|\+\s|\s&\s|\bwith\b|\bcon\b|\by\b|\band\b/i;
+
+/** El cliente pidió un combo: lo dice, o nombra teclado Y mouse. Entonces un combo es la respuesta. */
+function pideCombo(consulta: string): boolean {
+  return /\b(combo|kit|bundle|set|lote|paquete|juego)\b/i.test(consulta)
+    || (PERIFERICOS_EN_ANUNCIO[0].test(consulta) && PERIFERICOS_EN_ANUNCIO[1].test(consulta));
+}
+
+/** ¿Este anuncio no es lo que se pidió? Equipos completos para quien busca una pieza, y
+ *  combos para quien no pidió un combo. Para una consulta de EQUIPO no se filtra nada:
+ *  torres, PCs y combos con monitor son exactamente lo que se busca. */
+function esRuidoParaLaConsulta(titulo: string, consulta: string, isComputer: boolean): boolean {
+  if (isComputer) return false;
+  if (SERPER_NOISE.test(titulo) || esEquipoCompletoEnAnuncio(titulo)) return true;
+  if (pideCombo(consulta)) return false;
+  return COMBO_EN_ANUNCIO.test(titulo)
+    || (UNE_PRODUCTOS.test(titulo) && PERIFERICOS_EN_ANUNCIO.filter((re) => re.test(titulo)).length >= 2);
 }
 
 // Productos de segunda mano / reacondicionados — siempre excluidos (solo vendemos nuevos).
@@ -1483,7 +1526,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     if (it.condition && it.condition !== "new") continue;
     const title = it.title ?? "";
     if (USADO.test(title) || USADO_US.test(title)) continue;
-    if (!isComputer && (SERPER_NOISE.test(title) || esEquipoCompletoEnAnuncio(title))) continue;
+    if (esRuidoParaLaConsulta(title, consulta, isComputer)) continue;
     candidatos.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
   }
   if (candidatos.length === 0) return [];
@@ -1551,7 +1594,7 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
   for (const it of raw) {
     const cop = parseCopPrice(it.price);
     if (!cop) continue;
-    if (!isComputer && (SERPER_NOISE.test(it.title ?? "") || esEquipoCompletoEnAnuncio(it.title ?? ""))) continue;
+    if (esRuidoParaLaConsulta(it.title ?? "", consulta, isComputer)) continue;
     // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
     if (it.condition && it.condition !== "new") continue;
     if (USADO.test(it.title ?? "")) continue;
