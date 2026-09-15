@@ -2027,9 +2027,25 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // Un producto conseguido aquí SÍ debe ser más barato que uno importado —el flete pesa—
   // pero no puede costar menos de la mitad. Cuando hay opciones de EE.UU. sirven de
   // referencia de cuánto vale de verdad ese producto.
-  const refUS = productosUS.map((p) => p.precioCOP).filter((n) => n > 0).sort((a, b) => a - b);
+  //
+  // Pero la referencia también puede ser la equivocada. Para el combo Logitech MK270 (unos
+  // US$25) el único anuncio de EE.UU. que pasó era un revendedor a US$139,99 → $765.000, y
+  // con él de vara se botaron las CINCO tiendas de aquí que lo tenían a ~$175.000: el
+  // cliente recibió solo el importado a 4 veces el precio de Alkosto. Por eso se mira quién
+  // tiene más respaldo: si hay más tiendas de Colombia que anuncios de EE.UU. (y al menos
+  // 3) y lo importado sale a más del doble, el atípico es el importado, y es el que sale.
+  const mediana = (xs: number[]) => xs[Math.floor(xs.length / 2)];
+  const refCO = productosCO.map((p) => p.precioCOP).filter((n) => n > 0).sort((a, b) => a - b);
+  let refUS = productosUS.map((p) => p.precioCOP).filter((n) => n > 0).sort((a, b) => a - b);
+  if (refUS.length > 0 && refCO.length >= 3 && refCO.length > refUS.length && mediana(refUS) > mediana(refCO) * 2) {
+    const techo = mediana(refCO) * 2;
+    const antes = productosUS.length;
+    productosUS = productosUS.filter((p) => p.precioCOP <= techo);
+    console.warn(`[cotizar] ${antes - productosUS.length} importado(s) por encima de ${fmtCOP(techo)}: en Colombia está mucho más barato`);
+    refUS = productosUS.map((p) => p.precioCOP).filter((n) => n > 0).sort((a, b) => a - b);
+  }
   if (refUS.length > 0) {
-    const medianaUS = refUS[Math.floor(refUS.length / 2)];
+    const medianaUS = mediana(refUS);
     const piso = medianaUS * 0.4;
     const antes = productosCO.length;
     productosCO = productosCO.filter((p) => p.precioCOP >= piso);
@@ -2853,14 +2869,28 @@ type Acumulador = {
 const PALABRAS_GENERICAS = new Set([
   "memoria", "usb", "disco", "unidad", "flash", "drive", "pc", "computador", "equipo",
   "para", "con", "por", "los", "las", "del", "gamer", "torre", "kit", "nuevo", "original",
+  // Relleno de anuncio y colores: la misma pieza en otra tienda se llama "Set", "Combo" o
+  // "Black" sin ser otro producto.
+  "combo", "set", "and", "the", "nano", "espanol", "spanish", "ingles", "english",
+  "negro", "black", "blanco", "white", "gris", "gray", "grey", "graphite", "grafito",
 ]);
+
+/** La misma palabra en español y en inglés: las listas dicen "Teclado + Raton", la
+ *  tienda de EE.UU. "Keyboard & Mouse". */
+const SINONIMOS: Record<string, string> = {
+  teclado: "keyboard", raton: "mouse", inalambrico: "wireless", inalambrica: "wireless",
+  audifonos: "headset", diadema: "headset", headphones: "headset", camara: "camera",
+  impresora: "printer", portatil: "laptop", parlante: "speaker", parlantes: "speaker",
+};
 
 function tokensDistintivos(nombre: string): string[] {
   return [...new Set(
     nombre.toLowerCase()
-      .replace(/[^a-z0-9áéíóúñ]+/g, " ")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9ñ]+/g, " ")
       .replace(/(\d)\s+(gb|tb)\b/g, "$1$2")
       .split(/\s+/)
+      .map((t) => SINONIMOS[t] ?? t)
       .filter((t) => t.length >= 3 && !PALABRAS_GENERICAS.has(t)),
   )];
 }
@@ -2871,6 +2901,14 @@ function mismoProducto(local: string, web: string): boolean {
   const a = tokensDistintivos(local);
   if (a.length < 2) return false;
   const b = new Set(tokensDistintivos(web));
+  // Si CADA uno trae un código o una cifra que el otro no tiene, son productos distintos
+  // aunque compartan casi todo lo demás: "Genius KM-8200" y "Genius KM-8206S", o una
+  // memoria de 64GB y otra de 128GB. Que solo uno la traiga (el número de parte, "2.4GHz")
+  // no los separa: es el mismo anuncio contado con más detalle.
+  const conCifra = (t: string) => /\d/.test(t);
+  const soloEnA = a.some((t) => conCifra(t) && !b.has(t));
+  const soloEnB = [...b].some((t) => conCifra(t) && !a.includes(t));
+  if (soloEnA && soloEnB) return false;
   const comunes = a.filter((t) => b.has(t)).length;
   return comunes / a.length >= 0.7;
 }
@@ -2934,12 +2972,28 @@ function porUnidadSiHay(acc: Acumulador, pool: OpcionSel[]): OpcionSel[] {
   return porUnidad.length > 0 ? porUnidad : pool;
 }
 
+/** EL MISMO PRODUCTO NO SE OFRECE DOS VECES.
+ *
+ *  `webQueNoRepite` lo cuida entre las listas y la web, pero no entre dos tiendas de la
+ *  web. A quien pidió el combo Logitech MK270 le llegó a $220.000 en Colombia (1 a 3
+ *  días) y, de "⚡ Mejor rendimiento", a $475.000 importado: el mismo combo, el doble de
+ *  caro y más lento. Queda la opción más barata; a igual precio, la que llega antes. */
+function sinRepetidos(pool: OpcionSel[]): OpcionSel[] {
+  const mejor = (p: OpcionSel, o: OpcionSel) =>
+    p.precio < o.precio || (p.precio === o.precio && p.entrega === "local" && o.entrega === "us");
+  return pool.filter((o, i) => !pool.some((p, j) =>
+    j !== i &&
+    (mismoProducto(p.nombre, o.nombre) || mismoProducto(o.nombre, p.nombre)) &&
+    (mejor(p, o) || (j < i && !mejor(o, p))),
+  ));
+}
+
 function poolDeCandidatos(acc: Acumulador): OpcionSel[] {
   const pool =
     acc.web.length === 0         ? acc.locales :
     acc.localDisponibles >= 3    ? preferirMarcaDelCliente(acc, acc.web) :
     [...acc.locales, ...preferirMarcaDelCliente(acc, webQueNoRepite(acc))];
-  return porUnidadSiHay(acc, pool);
+  return sinRepetidos(porUnidadSiHay(acc, pool));
 }
 
 const ENTREGA_TXT: Record<OpcionSel["entrega"], string> = {

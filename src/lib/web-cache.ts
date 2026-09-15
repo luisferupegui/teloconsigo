@@ -27,9 +27,14 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  filtro viejo seguía sin gabinetes, sin coolers y sin combos teclado+mouse aunque el
  *  cliente los pidiera, y lo seguiría durante los 7 días del TTL.
  *
+ *  Y otra con el arreglo del importado atípico (en producción hacia las 12:40 hora de
+ *  Colombia): el combo Logitech MK270 quedó FIJADO a $765.000 por un revendedor de
+ *  EE.UU., sin las tiendas de aquí que lo tienen a ~$175.000, y el precio fijo por
+ *  producto lo habría sostenido 7 días más.
+ *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 15, 16, 40);
+const VALIDO_DESDE = Date.UTC(2026, 8, 15, 17, 40);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
