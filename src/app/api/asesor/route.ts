@@ -1667,12 +1667,68 @@ function filtrarPorTipoDisco(productos: QuoteProducto[], consulta: string): Quot
   });
 }
 
+// ── LA PALABRA DE LÍNEA TAMBIÉN ES EL MODELO ──────────────────────────────────
+//
+// El filtro de cifras solo exige lo que lleva número. A "Logitech MX Master 3S" le
+// exigía "3s", y un "Logitech MX Anywhere 3S" también lo tiene: en producción salió
+// el Anywhere tres de tres veces para quien pidió el Master.
+//
+// Se exige además la palabra que va JUSTO ANTES del número de modelo — "Master" 3S,
+// "EcoTank" L3310, "Archer" AX12, "Galaxy" A55 — si no es una marca ni una palabra
+// genérica. Solo esa, y a propósito: un intento de aflojar las cifras dentro de la
+// marca ya rompió este mismo caso, y exigir más palabras dejaría fuera títulos que las
+// tiendas escriben de otra forma. "Corsair RM850x", "Intel Core i7 13700K" o "MSI B650
+// motherboard" no exigen nada.
+
+/** Palabras que van delante de un modelo sin ser parte de su nombre. */
+const PALABRAS_NO_DE_LINEA = new Set([
+  "de", "del", "para", "con", "sin", "y", "o", "el", "la", "los", "las", "un", "una",
+  "board", "motherboard", "mainboard", "placa", "base", "madre", "tarjeta", "video", "grafica",
+  "procesador", "cpu", "gpu", "memoria", "ram", "disco", "duro", "ssd", "hdd", "nvme", "externo",
+  "interno", "mouse", "raton", "teclado", "monitor", "pantalla", "impresora", "multifuncional",
+  "portatil", "laptop", "notebook", "computador", "pc", "gamer", "gaming", "router", "switch",
+  "usb", "celular", "telefono", "tablet", "audifonos", "diadema", "camara", "parlante", "fuente",
+  "poder", "gabinete", "torre", "cooler", "disipador", "kit", "pack", "nuevo", "original", "modelo",
+  "referencia", "serie", "core", "pro", "plus", "max", "ultra", "mini", "lite", "wifi",
+  "inalambrico", "wireless", "bluetooth", "negro", "blanco", "edition", "edicion", "version", "gen",
+  "generacion",
+]);
+
+/** Una cifra que describe (16gb, 850w, 27 pulgadas, ddr5), no que identifica. */
+const esCifraDeSpec = (t: string) =>
+  /^\d+(?:[.,]\d+)?(?:gb|tb|mb|hz|w|mah|mm|cm|in|pulgadas?|va|v|mhz|p|k)$/.test(t) || /^ddr[2-5]$/.test(t);
+
+/** Un número de modelo: letras y cifras ("3s", "l3310", "ax12") o tres cifras o más ("4060"). */
+const esTokenDeModelo = (t: string) =>
+  !esCifraDeSpec(t) && ((/[a-z]/.test(t) && /\d/.test(t)) || /^\d{3,}$/.test(t));
+
+/** Las palabras de línea que exige la consulta. Ver el bloque de arriba. */
+function palabrasDeLinea(consulta: string): string[] {
+  const q = sinTildes(consulta);
+  const deMarca = new Set(marcasEnConsulta(q).flatMap((m) => m.split(/[\s-]+/)));
+  const t = q.split(/\s+/).filter(Boolean);
+  const exigidas = new Set<string>();
+  for (let i = 1; i < t.length; i++) {
+    const antes = t[i - 1];
+    if (esTokenDeModelo(t[i]) && /^[a-z]{2,}$/.test(antes) && !PALABRAS_NO_DE_LINEA.has(antes) && !deMarca.has(antes)) {
+      exigidas.add(antes);
+    }
+  }
+  return [...exigidas];
+}
+
 function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
   // Las tiendas escriben "64 GB" y el cliente "64gb": se pega la cifra a su unidad en
   // ambos lados para que un espacio no descarte el producto correcto.
   const pegar = (t: string) => t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2");
   const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
   const textoDe = (p: QuoteProducto) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`;
+  // La palabra de línea se busca en el nombre y el modelo, no en las specs.
+  const lineas = palabrasDeLinea(consulta);
+  const diceLinea = (p: QuoteProducto) => {
+    const nombre = sinTildes(`${p.nombre ?? ""} ${p.modelo ?? ""}`);
+    return lineas.every((w) => new RegExp(`(^|[^a-z0-9])${w}([^a-z0-9]|$)`).test(nombre));
+  };
   // Misma precedencia que en las listas: la marca antes que las cifras. Aquí el daño era
   // el mismo — el cliente pide una marca, la consulta llega con cifras que no cumple
   // ninguna opción de esa marca, y acababa viendo otras. Ver `filtrarPorMarcaYCifras`.
@@ -1680,7 +1736,7 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
     productos,
     textoDe,
     consulta,
-    (p) => exig.every((t) => pegar(textoDe(p)).includes(t)),
+    (p) => exig.every((t) => pegar(textoDe(p)).includes(t)) && diceLinea(p),
     (p) => `${p.nombre ?? ""} ${p.marca ?? ""} ${p.modelo ?? ""}`,
   );
   // Y los atributos que el cliente pidió con palabras (inalámbrico, mecánico, láser…),
