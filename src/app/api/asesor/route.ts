@@ -1365,6 +1365,23 @@ function parseCopPrice(s?: string): number | null {
 // Ruido típico de Shopping: PCs/torres completos y lotes que NO son el producto pedido.
 const SERPER_NOISE = /\b(gaming pc|gaming desktop|desktop pc|pc with|torre|computador|tower|barebone|bundle|combo|lote|pre-?built|prebuilt)\b/i;
 
+// ¿El anuncio es un EQUIPO COMPLETO? A quien buscaba una board B650 le salió un "Pc Gamer
+// Amd Ryzen 7 8700F Ram Ddr5 Ssd 512Gb Rtx 3050 … B650 Wifi": pasaba la cifra por la
+// board que trae dentro, y SERPER_NOISE no lo atrapaba porque dice "pc gamer", no
+// "gaming pc". Añadir "pc gamer" a esa lista tampoco servía: descartaría un "Gabinete
+// para PC Gamer".
+//
+// Se exigen las TRES cosas que tiene un equipo y no una pieza: el sustantivo del equipo
+// —que no vaya después de "para/for/de", como en "SSD para portátil"—, una spec de RAM
+// y una de almacenamiento. Probado con 16 títulos: "Laptop SSD 1TB", "Laptop RAM 16GB",
+// una board "Ryzen 7000 … DDR5" o una RAM "Desktop Memory" quedan como piezas.
+const EQUIPO_EN_ANUNCIO = /(?<!\b(?:para|for|de|compatible con)\s)\b(?:pc\s*gamer|gaming\s*pc|desktop\s*pc|computador(?:a)?|torre\s*gamer|cpu\s*gamer|equipo\s*gamer|port[aá]til|laptop|notebook|all\s*in\s*one|todo\s*en\s*uno)\b/i;
+const RAM_EN_ANUNCIO = /\b\d{1,3}\s?gb\s?(?:de\s)?ram\b|\bram\s?(?:ddr[345]\s?)?\d{1,3}\s?gb\b|\bram\s+ddr[345]\b/i;
+const DISCO_EN_ANUNCIO = /\b(?:ssd|hdd|nvme)\s?(?:m\.?2\s?)?\d{3,4}\s?gb\b|\b(?:ssd|hdd|nvme)\s?\d\s?tb\b|\b(?:\d{3,4}\s?gb|\d\s?tb)\s?(?:ssd|hdd|nvme)\b/i;
+function esEquipoCompletoEnAnuncio(titulo: string): boolean {
+  return EQUIPO_EN_ANUNCIO.test(titulo) && RAM_EN_ANUNCIO.test(titulo) && DISCO_EN_ANUNCIO.test(titulo);
+}
+
 // Productos de segunda mano / reacondicionados — siempre excluidos (solo vendemos nuevos).
 const USADO = /\b(usado|segunda\s*mano|reacondicionado|recondicionado|refurbished|open\s*box|de\s*segunda|seminuevo)\b/i;
 
@@ -1463,7 +1480,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     if (it.condition && it.condition !== "new") continue;
     const title = it.title ?? "";
     if (USADO.test(title) || USADO_US.test(title)) continue;
-    if (!isComputer && SERPER_NOISE.test(title)) continue;
+    if (!isComputer && (SERPER_NOISE.test(title) || esEquipoCompletoEnAnuncio(title))) continue;
     candidatos.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
   }
   if (candidatos.length === 0) return [];
@@ -1531,7 +1548,7 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
   for (const it of raw) {
     const cop = parseCopPrice(it.price);
     if (!cop) continue;
-    if (!isComputer && SERPER_NOISE.test(it.title ?? "")) continue;
+    if (!isComputer && (SERPER_NOISE.test(it.title ?? "") || esEquipoCompletoEnAnuncio(it.title ?? ""))) continue;
     // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
     if (it.condition && it.condition !== "new") continue;
     if (USADO.test(it.title ?? "")) continue;
