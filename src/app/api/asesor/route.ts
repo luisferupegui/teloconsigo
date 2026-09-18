@@ -234,8 +234,23 @@ const fmtCOP = (n: number) =>
  *  "+ Servicio", "Onsite", "Carry-In", "No Vpro", "194 AI TOPS". */
 const RUIDO_COMERCIAL = /\s*(?:\+\s*servicio\b|\bonsite\b|\bcarry[\s-]?in\b|\bno\s*vpro\b|\b\d+\s*ai\s*tops\b|\bpremier\b)/gi;
 
+/** Las notas de IVA que la lista imprime junto al PRECIO ("Excluido de IVA", "IVA
+ *  Incluido", "GamePad con IVA") y que un importador se tragó como parte del nombre:
+ *  el cliente llegó a leer "GamePad con IVA Portátil ROG Strix G16". El IVA no es un
+ *  producto, y decirle "con IVA" a quien compra un equipo excluido es falso. La
+ *  primera regla se lleva la palabra que la nota arrastra delante ("GamePad con IVA"
+ *  entera), la segunda cualquier otra nota suelta. */
+const NOTA_IVA_INICIAL = /^\s*(?:[\p{L}\d]+\s+)?(?:(?:con|sin)\s+iva|iva\s+incluido|excluido\s+de\s+iva)\s+/iu;
+const NOTA_IVA = /\s*\b(?:excluido\s+de\s+iva|iva\s+incluido|incluye\s+iva|(?:con|sin|m[aá]s)\s+iva)\b/gi;
+
 function limpiarNombre(nombre: string): string {
-  return nombre.replace(RUIDO_COMERCIAL, "").replace(/\s{2,}/g, " ").replace(/[\s\-+/]+$/, "").trim();
+  return nombre
+    .replace(NOTA_IVA_INICIAL, "")
+    .replace(NOTA_IVA, "")
+    .replace(RUIDO_COMERCIAL, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/[\s\-+/]+$/, "")
+    .trim();
 }
 
 /** Sistema operativo tal como debe leerlo el cliente. `null` si el nombre no lo dice. */
@@ -382,6 +397,9 @@ function normalizarSpecs(specs: Record<string, string> | undefined): Record<stri
     const clave = ALIAS_SPEC[claveSpec(k)] ?? claveSpec(k);
     if (!out[clave]) out[clave] = recortarSpec(v);
   }
+  // "S.O.: No" es como la lista dice que el equipo viene sin sistema, y en la
+  // ficha se leía "Sistema: No", que no le dice nada al cliente.
+  if (out.so && /^(no|no\s*os|n\/?a|ninguno|sin\s*s\.?\s*o\.?)$/i.test(out.so.trim())) out.so = "Sin sistema operativo";
   return out;
 }
 
@@ -3715,6 +3733,8 @@ PUEDES responder directamente (sin herramienta):
 - Garantía: mínimo 1 año del fabricante, y te acompañamos en el proceso si algo llegara a fallar.
 
 LENGUAJE: nunca uses diminutivos como "momentico" — di siempre "un momento". No repitas ni recontextualices información que ya mencionaste antes en la conversación; avanza con datos nuevos o una pregunta concreta. REGLA ABSOLUTA DE ESPERA: "dame un momento" aparece MÁXIMO UNA VEZ por respuesta — únicamente justo antes del PRIMER tool call. Si necesitas llamar dos o más herramientas seguidas (buscar_productos y luego cotizar_web), el texto "dame un momento" ocurre SOLO antes de la primera. Entre herramientas y después de ellas: CERO texto hasta tener el resultado final para entregarle al cliente. NUNCA repitas "dame un momento", ni uses "espera", "permíteme", "déjame verificar", "un segundo" ni ninguna variación. Esta regla es innegociable.
+
+IVA: no hables del IVA. Nunca escribas "con IVA", "sin IVA", "IVA incluido", "más IVA" ni "excluido de IVA", ni en el nombre de un producto ni en tu texto: hay equipos excluidos y otros gravados, y afirmar cualquiera de las dos cosas puede ser falso. Si el cliente pregunta por el IVA, dile que el detalle tributario va en la cotización formal que le envía el equipo.
 
 FORMATO: cuando necesites pedirle al cliente varios datos (nombre, cédula, dirección, teléfono, etc.) preséntalos como lista, con cada ítem en su propia línea comenzando con "- ". Ejemplo:
 - Nombre completo
