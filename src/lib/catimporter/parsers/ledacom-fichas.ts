@@ -1,6 +1,6 @@
 import "server-only";
 import { marcaDeNombre } from "@/lib/marcas";
-import type { ParsedProduct } from "@/lib/parse-supplier-doc";
+import { categoriaPorFuncion, type ParsedProduct } from "@/lib/parse-supplier-doc";
 import type { Descartado } from "./tipos";
 import type { Fragmento } from "./coordenadas";
 import { categoriaDeProducto } from "./categorias";
@@ -78,6 +78,12 @@ function categoriaDeFicha(nombre: string, specs: Record<string, string>): string
   // equipo de otro: de 20" para arriba no existe un portátil.
   const pulgadas = Number(n.match(/(\d{2}(?:[.,]\d)?)\s*["”]/)?.[1]?.replace(",", ".") ?? 0);
 
+  // RED Y PROTECCIÓN antes que servidor: "Switch de 24 puertos Gigabit para
+  // escritorio/ montaje en rack" y "UPS Rack 3000VA" se iban por la palabra "rack" a
+  // servidores, y Andrea los ofrecía como tales. La regla es la misma que aplica el
+  // saneo de listas, así que vive en un solo sitio.
+  const porFuncion = categoriaPorFuncion(nombre);
+  if (porFuncion) return porFuncion;
   // SERVIDOR primero: tiene procesador y memoria como un portátil, así que
   // cualquier regla estructural se lo llevaría por delante.
   if (/servidor|thinksystem|proliant|poweredge|formato rack|\brack\b|\bxeon\b|\bepyc\b/.test(texto)) return "servidor";

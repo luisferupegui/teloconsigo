@@ -195,8 +195,33 @@ const PANTALLA_INTEGRADA = new Set(["portatil", "all-in-one", "todo-en-uno", "ta
 
 /** Última palabra sobre la categoría de un producto importado. Corrige lo que el
  *  documento dice cuando el propio nombre lo desmiente. */
+/**
+ * Red y protección eléctrica se reconocen por el NOMBRE, sea cual sea la sección del
+ * documento o la palabra que lo confunda: un "Switch de 24 puertos… montaje en rack"
+ * entraba como servidor (por "rack") y Andrea lo ofrecía en una cotización de
+ * servidores; una "UPS 1KVA Monofase Torre" entraba como escritorio (por "torre") y se
+ * cobraba con el margen de un computador.
+ *
+ * `null` si el nombre no es de ninguna de las dos. Tampoco lo es si trae procesador
+ * ("IdeaPad Slim 3 + Router LINKSYS" es un portátil con un router de regalo), si es
+ * un teclado o un mouse (los "switches" de un teclado mecánico) o una silla "mesh".
+ * Una batería solo es protección si es de UPS: la de un portátil es un repuesto.
+ */
+export function categoriaPorFuncion(nombre: string): "redes" | "proteccion" | null {
+  const n = nombre.toLowerCase();
+  if (/\b(intel|amd|core|ryzen|celeron|pentium|xeon|athlon|snapdragon|mediatek)\b/.test(n)) return null;
+  if (/\b(teclado|keyboard|mouse|silla)\b/.test(n)) return null;
+  if (/\b(switch|router|access\s*point|punto de acceso|firewall)\b/.test(n)) return "redes";
+  if (/\bmesh\b/.test(n) && /\b(wi-?fi|router|velop|deco|ax\d{3,4}|ac\d{3,4})\b/.test(n)) return "redes";
+  if (/\b(ups|regulador|estabilizador)\b/.test(n)) return "proteccion";
+  if (/\bbater[ií]as?\b/.test(n) && /\b(vrla|agm|ciclo profundo|12\s?v(dc)?|ups|cctv)\b/.test(n)) return "proteccion";
+  return null;
+}
+
 export function corregirCategoria(nombre: string, categoria: string): string {
   if (esGabinete(nombre)) return "accesorios";
+  const porFuncion = categoriaPorFuncion(nombre);
+  if (porFuncion) return porFuncion;
   // Un equipo completo archivado como pieza: se manda a escritorio, y a la gama alta si
   // trae gráfica dedicada, que es lo que decide su margen.
   const esPieza = PIEZAS.has(categoria);

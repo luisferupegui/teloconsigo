@@ -757,8 +757,18 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // guardas a la vez y la búsqueda devolvía lo primero que puntuara.
   const familiaConsulta = familiaDe(consulta);
   const soloEquipos = clase === "equipo";
-  const soloPiezas  = clase === "componente" || clase === "accesorio"
-                   || (clase === "otro" && familiaConsulta !== null);
+  // Un SERVIDOR es un equipo completo. "servidor" está en COMPONENT_QUERY —la lista de
+  // palabras de pieza—, así que una búsqueda de servidor entraba en modo "solo piezas",
+  // y ese modo excluye los equipos: el único servidor de las listas (un ProLiant ML110
+  // G11) no podía salir nunca, y lo que quedaba eran piezas que MENCIONAN un servidor,
+  // como un lector de DVD.
+  // Pero "disco duro PARA servidor" o "memoria RAM de servidor" piden la PIEZA: ahí
+  // manda la pieza, y el servidor es solo para qué es.
+  const SERVIDOR_Q = /\b(servidor|server|virtualizaci[oó]n|hipervisor|vmware|proxmox|hyper-?v|esxi)\b/i;
+  const PIEZA_PARA_SERVIDOR = /\b(disco|hdd|ssd|nvme|memoria|ram|ddr\d|fuente|dvd|unidad\s+[oó]ptica|rieles?|bandeja|caddy|controladora|ventilador|licencias?|gabinete)\b.*\b(para|de)\s+(?:un\s+|el\s+)?(servidor|server)\b/i;
+  const soloServidor = SERVIDOR_Q.test(consulta) && !PIEZA_PARA_SERVIDOR.test(consulta);
+  const soloPiezas  = !soloServidor && (clase === "componente" || clase === "accesorio"
+                   || (clase === "otro" && familiaConsulta !== null));
 
   // EL CLIENTE HABLA DE USO; LOS PRODUCTOS, DE HARDWARE.
   //
@@ -886,9 +896,20 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // tercera opción, junto a un PowerEdge y un ProLiant. Un equipo de oficina no es un
   // servidor por mucho que comparta procesador: le faltan memoria ECC, RAID y fuente
   // redundante, que es justo lo que se paga en un servidor.
-  const SERVIDOR_Q = /\b(servidor|server|virtualizaci[oó]n|hipervisor|vmware|proxmox|hyper-?v|esxi)\b/i;
-  const ES_SERVIDOR = /\b(server|servidor|poweredge|proliant|thinksystem|primergy|supermicro|synology|qnap|\bnas\b|rack|blade|xeon|epyc)\b/i;
-  const soloServidor = SERVIDOR_Q.test(consulta);
+  //
+  // Y no basta con que el nombre MENCIONE un servidor. Con esa regla entraban un "HP
+  // 9.5MM SATA DVD-RW SERVIDOR Gen 9" —un lector de DVD para servidor, a $70.000, que
+  // por ser lo más barato salía de "Mejor precio" en una cotización de servidores para
+  // base de datos—, dos switches "de montaje en rack" y un NAS. Un servidor se reconoce
+  // porque NOMBRA SU PROCESADOR: la pieza o el accesorio "para servidor" no lo hace.
+  // El NAS queda fuera también: no es un servidor de base de datos ni de virtualización
+  // (el prompt ya se lo dice a Andrea), y quien busca uno escribe "NAS", no "servidor".
+  const LINEA_SERVIDOR = /\b(poweredge|proliant|thinksystem|primergy|supermicro|blade)\b/i;
+  const esServidor = (p: { nombre: string; categoria: string }) =>
+    (TIENE_CPU.test(p.nombre) || /\bepyc\b/i.test(p.nombre)) &&
+    (p.categoria === "servidor" || LINEA_SERVIDOR.test(p.nombre) || /\b(servidor|server|xeon|epyc)\b/i.test(p.nombre)) &&
+    // Una estación de trabajo con Xeon no es un servidor: no trae RAID ni fuente redundante.
+    !/\b(workstation|precision)\b/i.test(p.nombre);
 
   const combinados = [...locales, ...catalogo]
     .filter((x) => x.score > 0)
@@ -907,11 +928,15 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     // otro formato (portátil en una búsqueda de ensamblado) ni una pieza suelta
     // (un "INTEL CORE I7 12700F" pelado colándose entre los portátiles, que es lo que
     // pasaba: el filtro de equipos exige que se nombre un CPU y un CPU suelto lo cumple).
-    .filter((x) => !formato || formatoDeProducto(x.prod.categoria, x.prod.nombre) === formato)
+    // Salvo en SERVIDORES: los formatos son de computador (ensamblado, torre de marca,
+    // todo-en-uno, portátil) y un servidor no es ninguno. Cuando Andrea pedía "servidor
+    // en torre" mandaba formato "torre-marca" y el único servidor de las listas —un
+    // ProLiant ML110 G11 con entrega en 1 a 3 días— quedaba fuera.
+    .filter((x) => !formato || soloServidor || formatoDeProducto(x.prod.categoria, x.prod.nombre) === formato)
     // Deducción por texto: solo actúa cuando Andrea NO mandó el formato.
     .filter((x) => !!formato || !soloEscritorio || (x.prod.categoria !== "portatil" && !esPortatilPorNombre(x.prod.nombre)))
     .filter((x) => !!formato || !soloPortatil || x.prod.categoria === "portatil" || esPortatilPorNombre(x.prod.nombre))
-    .filter((x) => !soloServidor || x.prod.categoria === "servidor" || ES_SERVIDOR.test(x.prod.nombre));
+    .filter((x) => !soloServidor || esServidor(x.prod));
 
   // ESPECIFICACIÓN EXIGIDA: como el servidor elige por PRECIO, sin esta guarda entraba
   // siempre lo más barato aunque fuera otro producto — una DDR4 para quien pidió DDR5, una
@@ -1518,6 +1543,17 @@ function parseUsdPrice(s?: string): number | null {
 // Segunda mano en inglés (Serper US). Complementa a USADO (español).
 const USADO_US = /\b(used|refurb(ished)?|renewed|open[\s-]?box|pre[\s-]?owned|for parts|as[\s-]is)\b/i;
 
+/** Servidores de una generación que el fabricante ya no fabrica. Un anuncio de un
+ *  "HP ProLiant ML350 G9" como nuevo es inventario viejo o reacondicionado sin
+ *  decirlo, y salía de "Mejor precio" en una cotización de servidor para base de
+ *  datos: un equipo de 2014, sin garantía de fábrica. HPE G6–G9, Dell PowerEdge de
+ *  12.ª y 13.ª generación (R720, T330…) e IBM/Lenovo System x M1–M5.
+ *  Solo se mira si el anuncio ES de un servidor: "G9" sola también es un Moto G9. */
+const SERVIDOR_EN_TITULO = /\b(proliant|poweredge|thinksystem|server|servidor)\b|\bsystem\s*x\d/i;
+const GENERACION_DESCONTINUADA = /\b(?:g[6-9]|gen\s?[6-9])\b|\b[rt][1-7][23]0\b|\bx3\d{3}\s*m[1-5]\b/i;
+const esServidorDescontinuado = (titulo: string) =>
+  SERVIDOR_EN_TITULO.test(titulo) && GENERACION_DESCONTINUADA.test(titulo);
+
 /** Posición del vendedor dentro de SITIOS_US (menor = más prioritario). */
 function usStoreRank(source?: string, link?: string): number {
   const hay = `${source ?? ""} ${link ?? ""}`.toLowerCase();
@@ -1590,6 +1626,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     if (it.condition && it.condition !== "new") continue;
     const title = it.title ?? "";
     if (USADO.test(title) || USADO_US.test(title)) continue;
+    if (esServidorDescontinuado(title)) continue;
     if (esRuidoParaLaConsulta(title, consulta, isComputer)) continue;
     candidatos.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
   }
@@ -1662,6 +1699,7 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
     // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
     if (it.condition && it.condition !== "new") continue;
     if (USADO.test(it.title ?? "")) continue;
+    if (esServidorDescontinuado(it.title ?? "")) continue;
     if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link, allowPCSpecialists)) continue;
     local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true, vendedor: it.source });
   }
@@ -2031,7 +2069,9 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
 async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
   const cached = getCachedQuery(consulta);
-  if (cached) return respuestaCotizar(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos, consulta), consulta), consulta);
+  // Lo cotizado antes de que existiera la guarda de servidores descontinuados sigue
+  // en la caché una semana; se filtra también al leerla.
+  if (cached) return respuestaCotizar(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos.filter((p) => !esServidorDescontinuado(p.nombre ?? "")), consulta), consulta), consulta);
 
   const serperKey = getSerperApiKey();
   const categoria = clasificarConsulta(consulta);
@@ -3611,7 +3651,7 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
   • Series **H / HS / HX** (45–55W+: i7-13620H, Ryzen 7 7840HS, i9-14900HX) → potencia sostenida. Es lo que hace falta para diseño, edición, desarrollo y juegos.
   Nunca ofrezcas un portátil de serie U para un trabajo exigente, por mucho que su etiqueta diga i7. Y en un portátil menciona SIEMPRE pantalla (tamaño y tipo de panel) y, si el listado la trae, la batería en Wh: son las dos cosas que el cliente no puede cambiar después.
 
-- COMPUTADORES DE ESCRITORIO (HOGAR, GAMING, TRABAJO, ALTO RENDIMIENTO): cuando el cliente pida un "computador", "PC", "equipo de escritorio", "PC gaming", "computador para gaming", "equipo para diseño/edición/trabajo pesado/renderizado" o similar, ANTES de buscar hazle UNA sola pregunta adaptada al contexto:
+- COMPUTADORES DE ESCRITORIO (HOGAR, GAMING, TRABAJO, ALTO RENDIMIENTO): cuando el cliente pida un "computador", "PC", "equipo de escritorio", "PC gaming", "computador para gaming", "equipo para diseño/edición/trabajo pesado/renderizado" o similar, ANTES de buscar hazle UNA sola pregunta adaptada al contexto — SALVO que el cliente ya te haya dado la respuesta. Preguntar lo que el cliente acaba de decir es el peor error de conversación: parece que no lo leíste. Ejemplos de "ya lo dijo": "servidor para base de datos con 10 usuarios" (ya sabes carga y usuarios → busca), "portátil para diseño con RTX" (ya sabes uso y formato → busca).
 
   HOGAR / USO GENERAL — pregunta:
   "¿Tienes claro qué tipo de equipo buscas? Te cuento las opciones:
@@ -3632,6 +3672,7 @@ CÓMO HABLAR DE PRODUCTOS Y PRECIOS:
 
   EMPRESAS / SERVIDORES — lo que decide el equipo es la CARGA y el NÚMERO DE USUARIOS, no el gusto. Pregunta:
   "Para dimensionarlo bien, cuéntame dos cosas: ¿qué va a correr (archivos y contabilidad, base de datos, máquinas virtuales…) y cuántas personas lo van a usar a la vez? Con eso te propongo el equipo exacto 🏢"
+  ⚠️ Esa pregunta es SOLO para el dato que falta. Si el cliente YA dijo qué va a correr y cuántos usuarios (aunque sea en su primer mensaje: "servidor para base de datos con 10 usuarios"), NO la hagas ni la repitas: busca de una. Y tampoco le preguntes torre o rack: eso lo decides TÚ con la tabla de abajo.
 
   Y con la respuesta, elige TÚ la clase (uso interno, no le recites la tabla):
   • Archivos / ERP local, 5 a 20 usuarios → **servidor en TORRE** (Dell PowerEdge T150/T350, HPE ProLiant ML30). Xeon E o EPYC 4004, 16–32GB ECC, RAID 1.
@@ -3794,7 +3835,23 @@ export async function POST(req: Request): Promise<Response> {
 
   const ctx = body.contexto;
   const isArmador = ctx?.ref === "armador";
-  const system = isArmador
+
+  // DATO YA DADO. El prompt manda preguntar carga y usuarios antes de buscar un
+  // servidor, y aunque también dice "salvo que ya lo haya dicho", el modelo lo
+  // pregunta igual: a "servidor para base de datos con 10 usuarios concurrentes"
+  // respondía "¿qué va a correr y cuántas personas lo van a usar?". Como es una
+  // condición que se puede comprobar en el texto, se comprueba aquí y se le dice
+  // en claro, en vez de confiar en que lea el matiz.
+  const textoCliente = convo.filter((m) => m.role === "user").map((m) => m.content).join(" ");
+  const servidorYaDimensionado =
+    /\b(servidor|server)\b/i.test(textoCliente) &&
+    /\b(base de datos|bd|erp|archivos|contabilidad|virtualizaci[oó]n|vmware|proxmox|hyper-?v|sql|postgres|mysql|correo|active directory|cctv|backups?|respaldos?)\b/i.test(textoCliente) &&
+    /\b\d{1,4}\s*(usuarios|personas|empleados|puestos|equipos|concurrentes)\b/i.test(textoCliente);
+  const notaDatoDado = servidorYaDimensionado
+    ? `\n\nDATO YA DADO: el cliente ya te dijo qué va a correr el servidor y cuántos usuarios lo van a usar. NO le preguntes el uso, los usuarios, la marca ni torre o rack: elige TÚ la clase con la tabla de EMPRESAS / SERVIDORES y llama buscar_productos YA, con "servidor" y la clase (torre o rack) en la consulta.`
+    : "";
+
+  const systemBase = isArmador
     // Llega del Armador de PC: el cliente ya eligió una configuración completa de ensamblado.
     ? `${SYSTEM}\n\nCONTEXTO ARMADOR DE PC: el cliente armó esta configuración a la medida y quiere cotizarla: "${ctx?.producto}". El chat ya mostró el saludo. Reglas para este caso:
 - ⛔ CERO PREGUNTAS ANTES DE COTIZAR — esta regla ANULA cualquier otra de más abajo. El cliente ya eligió cada pieza en el armador: ya sabes el uso, el formato, la gama y el presupuesto. NO preguntes por el uso, NI por el formato, NI por la marca, NI por el presupuesto, NI por "algún detalle adicional". Tu PRIMERA respuesta llama la herramienta y la SEGUNDA muestra las opciones con su precio. Preguntar aquí es hacerle repetir lo que ya te dijo.
@@ -3810,6 +3867,7 @@ export async function POST(req: Request): Promise<Response> {
     : ctx?.producto
     ? `${SYSTEM}\n\nCONTEXTO: el cliente llegó interesado en "${ctx.producto}"${ctx.ref ? ` (interno ref ${ctx.ref})` : ""}. Salúdalo por su nombre de producto y ayúdalo con eso.`
     : SYSTEM;
+  const system = systemBase + notaDatoDado;
 
   // maxRetries: el cliente reintenta solo (429/5xx/red) con backoff antes de fallar.
   // keys = [panel, entorno]: si la del panel es rechazada (401/402) en el primer
