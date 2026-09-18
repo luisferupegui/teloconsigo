@@ -350,6 +350,61 @@ function capacidadesNormalizadas(nombre: string): string {
   return out.join(" ");
 }
 
+// ── LAS CLAVES DE LAS SPECS NO VIENEN NORMALIZADAS ───────────────────────────
+//
+// Cada lista escribe la suya: Ledacom manda "Ram", "Almacenamiento", "Tarjeta Gráfica",
+// "S.O."; el catálogo publicado usa "ram", "gpu", "so". Aquí se buscaban en minúscula
+// exacta, así que de una lista entera NO coincidía ni una clave: la ficha se armaba solo
+// con lo que se pudiera adivinar del nombre y las specs buenas —memoria exacta, disco
+// NVMe, pantalla de 165Hz— se tiraban a la basura.
+const ALIAS_SPEC: Record<string, string> = {
+  procesador: "procesador", cpu: "procesador",
+  ram: "ram", memoria: "ram", memoriaram: "ram",
+  almacenamiento: "almacenamiento", disco: "almacenamiento", discoduro: "almacenamiento", ssd: "almacenamiento",
+  pantalla: "pantalla", monitor: "monitor",
+  gpu: "gpu", grafica: "gpu", tarjetagrafica: "gpu", tarjetadevideo: "gpu", video: "gpu",
+  so: "so", sistema: "so", sistemaoperativo: "so",
+  board: "board", placabase: "board", tarjetamadre: "board",
+  capacidad: "capacidad", incluye: "incluye",
+};
+
+const claveSpec = (k: string) =>
+  k.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
+
+/** Las specs de cualquier proveedor con las claves que entiende la ficha. Los valores se
+ *  recortan: las listas meten el pliego entero en un campo ("Windows 11 Home ▪ Puertos:
+ *  1x 3.5mm Combo Audio Jack, 1x HDMI 2.1 FRL…") y eso no es una viñeta, es un párrafo. */
+function normalizarSpecs(specs: Record<string, string> | undefined): Record<string, string> {
+  if (!specs) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(specs)) {
+    if (typeof v !== "string" || !v.trim()) continue;
+    const clave = ALIAS_SPEC[claveSpec(k)] ?? claveSpec(k);
+    if (!out[clave]) out[clave] = recortarSpec(v);
+  }
+  return out;
+}
+
+/** Un valor de spec en algo que quepa en una viñeta. Corta por donde la lista pega otra
+ *  cosa detrás (el "▪" con el que Ledacom encadena los puertos) y, si sigue largo, por la
+ *  última coma antes del límite: así nunca queda una frase partida a media palabra. */
+function recortarSpec(v: string, max = 76): string {
+  let s = v.split("▪")[0].replace(/\s*\bpuertos\s*:.*$/i, "").trim().replace(/[,;]\s*$/, "");
+  if (s.length <= max) return s;
+  const corte = s.lastIndexOf(",", max);
+  s = corte > max * 0.5 ? s.slice(0, corte) : s.slice(0, max).replace(/\s+\S*$/, "");
+  // Si el corte dejó un paréntesis abierto se suelta el paréntesis entero: "(80 MB de
+  // caché, hasta 5,3 GHz, 16 núcleos" sin cerrar se lee como un error, no como un dato.
+  const abre = s.lastIndexOf("(");
+  if (abre > -1 && !s.includes(")", abre)) s = s.slice(0, abre);
+  s = s.trim().replace(/[,;]\s*$/, "");
+  // Los hercios de la pantalla van al final del pliego y el recorte se los comía. En un
+  // portátil para jugar, "165Hz" vale más que "16:10 aspect ratio": se rescatan.
+  const hz = v.match(/\b(\d{2,3})\s*hz\b/i);
+  if (hz && !/\d{2,3}\s*hz\b/i.test(s)) s += ` · ${hz[1]}Hz`;
+  return s;
+}
+
 /** Specs estructuradas → líneas de viñeta, en orden legible. Solo incluye las que
  *  EXISTEN; nunca inventa una. Cubre las variantes de clave más comunes. */
 function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
@@ -482,16 +537,23 @@ function construirFicha(nombreCrudo: string, specs: Record<string, string> | und
   // specs que el producto no trae se deducen del propio nombre. Las estructuradas mandan:
   // solo se rellenan los huecos.
   const nombre = conMarca(limpiarNombre(nombreCrudo), marca, proveedor);
-  const specs2 = { ...specsDesdeNombre(nombreCrudo, categoria), ...(specs ?? {}) };
+  const reales = normalizarSpecs(specs);
+  const specs2 = { ...specsDesdeNombre(nombreCrudo, categoria), ...reales };
   const lineas = fichaSpecLines(specs2);
   // La línea de monitor es SOLO para equipos completos. Un procesador suelto salía
   // etiquetado "🖥️ Solo torre (sin monitor)", que no significa nada para una pieza:
   // pasaba el filtro de "nombra un CPU" porque el producto ES un CPU.
   const esEquipoCompleto = formatoDeProducto(categoria ?? "", nombre) !== null;
   const mon = esEquipoCompleto
-    ? monitorStatusFromName(`${nombre} ${specs?.monitor ?? ""} ${specs?.pantalla ?? ""}`, categoria)
+    ? monitorStatusFromName(`${nombre} ${reales.monitor ?? ""} ${reales.pantalla ?? ""}`, categoria)
     : null;
   const gpu = esEquipoCompleto ? null : notaGraficosCPU(nombre);
+  // Un equipo sin Windows es una compra distinta, y el dato iba escondido entre las
+  // viñetas: quien pide un portátil para jugar lee "Sistema: Linux" como una spec más.
+  // Se avisa aparte, diciendo lo que significa.
+  const sinWindows = esEquipoCompleto && /\b(linux|ubuntu|endless|free\s*dos|sin sistema)\b/i.test(specs2.so ?? "")
+    ? "⚠️ Sin Windows: los juegos y los programas de oficina lo piden aparte"
+    : null;
   // Memoria y disco son decisivos en un equipo, y algunas listas traen solo el modelo
   // comercial. Callarlo dejaba fichas de portátiles con procesador y gráfica y nada más,
   // como si el equipo no tuviera memoria. Se dice que se confirman: es la verdad, y
@@ -509,7 +571,7 @@ function construirFicha(nombreCrudo: string, specs: Record<string, string> | und
     : null;
 
   const cuerpo = lineas.length > 0 ? `\n${lineas.join("\n")}` : "";
-  const extra = [mon, gpu, nota].filter(Boolean).map((l) => `\n${l}`).join("");
+  const extra = [mon, gpu, sinWindows, nota].filter(Boolean).map((l) => `\n${l}`).join("");
   const precioLinea = precio != null ? `\n💲 ${fmtCOP(precio)}` : "";
   return `**${nombre}**${cuerpo}${extra}${precioLinea}`;
 }
@@ -3070,6 +3132,49 @@ function etiquetaDeExtra(o: OpcionSel, elegidas: OpcionSel[]): string | null {
 
 /** Elige hasta 3 opciones y las devuelve YA ETIQUETADAS y ordenadas de menor a mayor
  *  precio. `candidatos` debe venir ordenado por relevancia (el más relevante primero). */
+// ── CUÁL RINDE MÁS ───────────────────────────────────────────────────────────
+//
+// "⚡ Mejor rendimiento" se ponía SIEMPRE a la opción más cara, y el precio no mide
+// potencia: a quien pidió un portátil gamer se le presentó como el de mejor rendimiento
+// un i5 con RTX 3050 a $8.424.000, al lado de un Ryzen 9 con RTX 5060 a $3.462.000 —
+// peor procesador, gráfica dos generaciones atrás y casi cinco millones más caro.
+//
+// Aquí se puntúa el hardware. Por gamas anchas, no por número de modelo: entre una
+// RTX 3080 y una RTX 4050 gana la 3080 aunque el número sea menor, porque lo que manda
+// es el escalón (x080 contra x050) y la generación solo desempata dentro del escalón.
+const ESCALON_GPU: [RegExp, number][] = [
+  [/\brtx\s*\d0(?:80|90)\b/i, 5],
+  [/\brx\s*\d[89]\d{2}\b/i,   5],
+  [/\brtx\s*\d070\b/i,        4],
+  [/\brx\s*\d7\d{2}\b/i,      4],
+  [/\brtx\s*\d060\b/i,        3],
+  [/\brx\s*\d6\d{2}\b/i,      3],
+  [/\brtx\s*\d050\b/i,        2],
+  [/\brx\s*\d5\d{2}\b/i,      2],
+  [/\b(gtx\s*1[6-9]\d{2}|rtx\s*2050|mx\s*\d{3}|arc\s*a\d{3})\b/i, 1],
+];
+
+const GAMA_CPU: [RegExp, number][] = [
+  [/\b(ryzen\s*9|core\s*(?:ultra\s*)?i?9)\b/i, 4],
+  [/\b(ryzen\s*7|core\s*(?:ultra\s*)?i?7)\b/i, 3],
+  [/\b(ryzen\s*5|core\s*(?:ultra\s*)?i?5)\b/i, 2],
+  [/\b(ryzen\s*3|core\s*(?:ultra\s*)?i?3)\b/i, 1],
+];
+
+/** Puntaje de potencia de un equipo. 0 = no se pudo deducir (un accesorio, un mueble),
+ *  y entonces quien llama se queda con el criterio de siempre. La gráfica manda, el
+ *  procesador desempata y la memoria decide entre dos equipos por lo demás iguales. */
+function potenciaDe(o: OpcionSel): number {
+  const texto = `${o.nombre} ${o.ficha}`;
+  const gpu = ESCALON_GPU.find(([re]) => re.test(texto))?.[1] ?? 0;
+  // Generación de la NVIDIA ("RTX 5060" → 5), solo para desempatar dentro del escalón.
+  const gen = Number(texto.match(/\b(?:rtx|gtx)\s*(\d)\d{3}\b/i)?.[1] ?? 0);
+  const cpu = GAMA_CPU.find(([re]) => re.test(texto))?.[1] ?? 0;
+  if (gpu === 0 && cpu === 0) return 0;
+  const { ram } = ramYDisco(sinVram(texto));
+  return gpu * 1000 + gen * 100 + cpu * 10 + Math.min(ram ?? 0, 128) / 16;
+}
+
 function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre: string; precioCOP: number; bloque: string; entrega: OpcionSel["entrega"] }[] {
   // Dedupe por nombre normalizado, conservando el primero (el más relevante).
   const vistos = new Set<string>();
@@ -3095,11 +3200,24 @@ function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre
     elegidas = [porPrecio[0], medio, porPrecio[porPrecio.length - 1]];
   }
 
-  // 1 opción → sin etiqueta (no hay con qué comparar). 2 → extremos. 3 → las tres.
-  const etiquetas =
-    elegidas.length === 1 ? [""] :
-    elegidas.length === 2 ? ["💰 **Mejor precio**", "⚡ **Mejor rendimiento**"] :
-    ["💰 **Mejor precio**", "🎯 **Recomendado**", "⚡ **Mejor rendimiento**"];
+  // 1 opción → sin etiqueta (no hay con qué comparar). La más barata SIEMPRE es la
+  // primera (vienen ordenadas por precio) y "⚡ Mejor rendimiento" va a la que de verdad
+  // rinde más, esté donde esté en esa fila. Si el hardware no se puede puntuar —un mouse,
+  // una silla— se mantiene el criterio anterior: la más cara.
+  const potencias = elegidas.map(potenciaDe);
+  const maxPot = Math.max(...potencias);
+  const unicoMax = potencias.filter((p) => p === maxPot).length === 1;
+  const iPotente = maxPot > 0 && unicoMax ? potencias.indexOf(maxPot) : elegidas.length - 1;
+
+  const etiquetas: string[] = elegidas.map((_, i) => {
+    if (elegidas.length === 1) return "";
+    if (i === 0) return "💰 **Mejor precio**";
+    if (i === iPotente) return "⚡ **Mejor rendimiento**";
+    // Ni la más barata ni la que más rinde. Con tres opciones, la del medio es el
+    // equilibrio; si la más barata ya era la más potente, la cara no se adorna: decirle
+    // "mejor rendimiento" a un equipo que rinde menos y cuesta más es mentirle al cliente.
+    return elegidas.length === 3 && i === 1 ? "🎯 **Recomendado**" : "";
+  });
 
   return elegidas.map((o, i) => {
     const fin = o;

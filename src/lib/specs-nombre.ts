@@ -43,19 +43,38 @@ export function ramYDisco(nombre: string): { ram: number | null; disco: number |
     return { ram: parseInt(corto[1], 10), disco };
   }
 
-  const caps: { gb: number; i: number }[] = [];
+  const caps: { gb: number; i: number; fin: number }[] = [];
   const re = /(\d+(?:[.,]\d+)?)\s*(tb|gb)\b/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(n)) !== null) {
-    caps.push({ gb: parseFloat(m[1].replace(",", ".")) * (m[2] === "tb" ? 1024 : 1), i: m.index });
+    caps.push({
+      gb: parseFloat(m[1].replace(",", ".")) * (m[2] === "tb" ? 1024 : 1),
+      i: m.index,
+      fin: m.index + m[0].length,
+    });
   }
   if (caps.length === 0) return { ram: null, disco: null };
 
-  // RAM: la capacidad pegada a "ram/ddr"; si no, la primera que sea de tamaño de RAM.
-  const pegadaARam = caps.find((c) => /\b(ram|ddr[2345]|dimm)\b/.test(n.slice(Math.max(0, c.i - 14), c.i + 18)));
-  const ram = pegadaARam?.gb ?? caps.find((c) => c.gb <= 128)?.gb ?? null;
-  // Disco: la primera capacidad que no es la RAM y tiene tamaño de disco.
-  const disco = caps.find((c) => c.gb !== ram && c.gb >= 120)?.gb ?? null;
+  // RAM: la capacidad PEGADA a "ram/ddr", y pegada de verdad.
+  //
+  // Antes se buscaba la palabra en una ventana de 14 caracteres antes y 18 después, y esa
+  // ventana posterior era el problema: en "…/1TB SSD/Ram 16GB/…" el "Ram" del disco
+  // siguiente caía dentro de la ventana del 1TB, así que el disco se presentaba como
+  // "RAM: 1024GB" y el equipo quedaba sin almacenamiento. Real, en un ROG Strix G16.
+  //
+  // Ahora la palabra vale si va justo ANTES ("RAM 16GB", "DDR5 16GB") o justo DESPUÉS
+  // sin nada en medio ("16GB RAM"), y además se exige tamaño de memoria: ningún portátil
+  // lleva un tera de RAM, así que una capacidad así nunca lo es por muy pegada que esté.
+  const ANTES   = /\b(ram|ddr[2345]|so-?dimm|dimm|memoria)\s*(?:de\s*)?[:\-]?\s*$/;
+  const DESPUES = /^\s*(?:de\s+)?(ram|ddr[2345]|so-?dimm|dimm)\b/;
+  const esRam = (c: { gb: number; i: number; fin: number }) =>
+    c.gb <= 128 && (ANTES.test(n.slice(Math.max(0, c.i - 14), c.i)) || DESPUES.test(n.slice(c.fin, c.fin + 6)));
+
+  const capRam = caps.find(esRam) ?? caps.find((c) => c.gb <= 128);
+  const ram = capRam?.gb ?? null;
+  // Disco: la primera capacidad que no es LA de la RAM y tiene tamaño de disco. Se compara
+  // la posición, no el valor: en "16GB RAM / 16GB SSD" son dos capacidades iguales.
+  const disco = caps.find((c) => c !== capRam && c.gb >= 120)?.gb ?? null;
   return { ram, disco };
 }
 
