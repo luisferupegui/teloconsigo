@@ -23,6 +23,10 @@ export const CONTACTO = {
   email: "contacto@teloconsigo.co",
   /** El correo con el que se cierra una cotización. */
   emailVentas: "ventas@teloconsigo.co",
+  /** Dirección física: es el remitente que va impreso en el rótulo de envío. */
+  direccion: "Calle 31 # 83 - 39",
+  ciudad: "Medellín",
+  departamento: "Antioquia",
 } as const;
 
 /** Enlace de WhatsApp. El mensaje se codifica aquí: escrito a mano en la URL era
