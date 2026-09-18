@@ -117,7 +117,7 @@ const tools: ToolDef[] = [
     name: "registrar_pedido",
     description:
       "Registra el pedido y notifica al equipo. Úsala ÚNICAMENTE cuando tengas TODOS los datos: " +
-      "nombre, cédula, dirección, ciudad, teléfono y correo del cliente, y el producto con cantidad confirmada. " +
+      "nombre, cédula, dirección, ciudad, departamento, teléfono y correo del cliente, y el producto con cantidad confirmada. " +
       "Después de llamarla, despídete usando el nombre del cliente.",
     input_schema: {
       type: "object",
@@ -129,10 +129,11 @@ const tools: ToolDef[] = [
             cedula:    { type: "string" },
             direccion: { type: "string" },
             ciudad:    { type: "string" },
+            departamento: { type: "string", description: "Departamento de la ciudad de entrega (Antioquia, Cundinamarca, Valle del Cauca…). Lo exige la transportadora: hay varias ciudades con el mismo nombre en departamentos distintos." },
             telefono:  { type: "string" },
             email:     { type: "string" },
           },
-          required: ["nombre", "cedula", "direccion", "ciudad", "telefono", "email"],
+          required: ["nombre", "cedula", "direccion", "ciudad", "departamento", "telefono", "email"],
         },
         producto: {
           type: "object",
@@ -2542,7 +2543,7 @@ function fichaLocalDeCatalogo(nombre: string): FichaLocal | null {
 
 async function registrarPedido(input: unknown, acc: Acumulador): Promise<unknown> {
   const { cliente, producto: rawProducto, proveedorDetalle: pd } = input as {
-    cliente: { nombre: string; cedula: string; direccion: string; ciudad: string; telefono: string; email: string };
+    cliente: { nombre: string; cedula: string; direccion: string; ciudad: string; departamento?: string; telefono: string; email: string };
     producto: { nombre: string; modelo?: string; cantidad: number; precioCOP: number; proveedor: "colombia" | "eeuu" };
     proveedorDetalle?: {
       urlCompra?: string; costoUSD?: number; proveedorLocal?: string;
@@ -3584,7 +3585,7 @@ ORDEN DEL PROCESO DE VENTA — respeta siempre este orden:
 1. Entender la necesidad (uso, preferencias, presupuesto si lo menciona).
 2. Presentar opciones con precios.
 3. Confirmar qué opción quiere el cliente y **cuántas unidades** necesita.
-4. SOLO DESPUÉS de tener producto y cantidad confirmados, pedir los datos de entrega (nombre, cédula, dirección, teléfono, correo). Nunca pidas datos personales antes de saber qué y cuánto quiere el cliente.
+4. SOLO DESPUÉS de tener producto y cantidad confirmados, pedir los datos de entrega (nombre, cédula, dirección, ciudad, departamento, teléfono, correo). El departamento es OBLIGATORIO: sin él la transportadora no despacha, porque hay ciudades con el mismo nombre en varios departamentos. Si el cliente da solo la ciudad y es inequívoca (Bogotá, Medellín, Cali, Barranquilla…), completa tú el departamento; si no lo es, pregúntaselo. Nunca pidas datos personales antes de saber qué y cuánto quiere el cliente.
 
 AVANCE SIN RETROCESO (REGLA CLAVE): cuando el cliente indique qué opción le interesa — aunque sea con frases cortas como "esa", "la segunda", "me quedo con esa", "la del Ryzen", "quiero esa" — confirma el producto elegido en UNA frase. NO vuelvas a buscar el mismo equipo, NO ofrezcas otras versiones del computador (más RAM, otra gama) ni vuelvas a comparar PCs. El cliente ya decidió.
   • Si eligió un equipo que NO incluye monitor (torre de marca, o una torre sola sin pantalla), ofrécele UNA SOLA VEZ un monitor como complemento opcional, en una frase breve y natural ("¿Te sumo un monitor para completarlo? Manejo muy buenas opciones 🙌"). Si dice que sí, búscale monitores y muéstrale máximo 3 con su precio; si dice que no, sigue sin insistir. Este ofrecimiento ocurre UNA sola vez en toda la conversación.
@@ -3600,7 +3601,7 @@ LENGUAJE: nunca uses diminutivos como "momentico" — di siempre "un momento". N
 FORMATO: cuando necesites pedirle al cliente varios datos (nombre, cédula, dirección, teléfono, etc.) preséntalos como lista, con cada ítem en su propia línea comenzando con "- ". Ejemplo:
 - Nombre completo
 - Número de cédula
-- Dirección de entrega y ciudad
+- Dirección de entrega, ciudad y departamento
 - Teléfono de contacto
 - Correo electrónico
 

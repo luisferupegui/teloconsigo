@@ -48,7 +48,7 @@ export async function sendOrderNotification(order: Order): Promise<void> {
           <table style="width:100%;border-collapse:collapse;font-size:14px">
             <tr><td style="padding:5px 0;color:#71717a;width:130px">Nombre</td><td><strong>${cliente.nombre}</strong></td></tr>
             <tr><td style="padding:5px 0;color:#71717a">Cédula</td><td>${cliente.cedula}</td></tr>
-            <tr><td style="padding:5px 0;color:#71717a">Dirección</td><td>${cliente.direccion}, ${cliente.ciudad}</td></tr>
+            <tr><td style="padding:5px 0;color:#71717a">Dirección</td><td>${cliente.direccion}, ${cliente.ciudad}${cliente.departamento ? `, ${cliente.departamento}` : ""}</td></tr>
             <tr><td style="padding:5px 0;color:#71717a">Teléfono</td><td>${cliente.telefono}</td></tr>
             <tr><td style="padding:5px 0;color:#71717a">Correo</td><td>${cliente.email}</td></tr>
           </table>

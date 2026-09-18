@@ -45,6 +45,10 @@ export type Order = {
     cedula:    string;
     direccion: string;
     ciudad:    string;
+    // Las transportadoras despachan por ciudad Y departamento: hay cuatro Santa Rosa
+    // y dos Sabanetas en el país. Opcional porque los pedidos anteriores a este campo
+    // no lo tienen; en los nuevos, Andrea lo pide junto con la ciudad.
+    departamento?: string;
     telefono:  string;
     email:     string;
   };
@@ -185,7 +189,7 @@ export function exportHistoryCSV(): string {
 
   const header = [
     "N° Orden", "Fecha pedido", "Fecha archivado",
-    "Cliente", "Cédula", "Ciudad", "Teléfono", "Email", "Dirección",
+    "Cliente", "Cédula", "Ciudad", "Departamento", "Teléfono", "Email", "Dirección",
     "Producto", "Modelo", "Cantidad", "Precio venta COP",
     "Proveedor", "URL compra", "Costo USD", "Costo total COP", "Margen COP",
     "Proveedor local", "Estado",
@@ -205,6 +209,7 @@ export function exportHistoryCSV(): string {
       csv(o.cliente.nombre),
       csv(o.cliente.cedula),
       csv(o.cliente.ciudad),
+      csv(o.cliente.departamento ?? ""),
       csv(o.cliente.telefono),
       csv(o.cliente.email),
       csv(o.cliente.direccion),
