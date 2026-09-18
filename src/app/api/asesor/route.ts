@@ -25,6 +25,7 @@ import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
 import { marcasEnConsulta, esDeMarca, esMarcaDeComponente, sinMarcas } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { claveCanonica } from "@/lib/specs-claves";
+import { limpiarNombreProducto } from "@/lib/nombre-producto";
 import { CONTACTO } from "@/lib/contacto";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
@@ -231,28 +232,9 @@ const fmtCOP = (n: number) =>
 // gráfica ni sistema. Todo eso SÍ está dentro del nombre; aquí se extrae.
 // Regla: solo se afirma lo que el nombre dice. Nada se infiere ni se completa.
 
-/** Ruido comercial que no le importa al cliente y ensucia la ficha:
- *  "+ Servicio", "Onsite", "Carry-In", "No Vpro", "194 AI TOPS". */
-const RUIDO_COMERCIAL = /\s*(?:\+\s*servicio\b|\bonsite\b|\bcarry[\s-]?in\b|\bno\s*vpro\b|\b\d+\s*ai\s*tops\b|\bpremier\b)/gi;
-
-/** Las notas de IVA que la lista imprime junto al PRECIO ("Excluido de IVA", "IVA
- *  Incluido", "GamePad con IVA") y que un importador se tragó como parte del nombre:
- *  el cliente llegó a leer "GamePad con IVA Portátil ROG Strix G16". El IVA no es un
- *  producto, y decirle "con IVA" a quien compra un equipo excluido es falso. La
- *  primera regla se lleva la palabra que la nota arrastra delante ("GamePad con IVA"
- *  entera), la segunda cualquier otra nota suelta. */
-const NOTA_IVA_INICIAL = /^\s*(?:[\p{L}\d]+\s+)?(?:(?:con|sin)\s+iva|iva\s+incluido|excluido\s+de\s+iva)\s+/iu;
-const NOTA_IVA = /\s*\b(?:excluido\s+de\s+iva|iva\s+incluido|incluye\s+iva|(?:con|sin|m[aá]s)\s+iva)\b/gi;
-
-function limpiarNombre(nombre: string): string {
-  return nombre
-    .replace(NOTA_IVA_INICIAL, "")
-    .replace(NOTA_IVA, "")
-    .replace(RUIDO_COMERCIAL, "")
-    .replace(/\s{2,}/g, " ")
-    .replace(/[\s\-+/]+$/, "")
-    .trim();
-}
+// Las notas de IVA y el ruido comercial ("+ Servicio", "Onsite") se quitan en
+// lib/nombre-producto, que comparte la regla con el buscador de la web.
+const limpiarNombre = limpiarNombreProducto;
 
 /** Sistema operativo tal como debe leerlo el cliente. `null` si el nombre no lo dice. */
 function sistemaDesdeNombre(n: string): string | null {
@@ -327,7 +309,15 @@ function specsDesdeNombre(nombre: string, categoria?: string): Record<string, st
 
   // La memoria de la GRÁFICA no es la RAM del equipo: en "RTX 3050 4GB" ese 4GB se
   // colaba como "RAM 4GB". Se recorta el tramo de la gráfica antes de leer capacidades.
-  const { ram, disco } = ramYDisco(sinVram(n));
+  // Y una tarjeta gráfica suelta no tiene RAM ni disco que leer: en "ASUS DUAL RTX 5060
+  // OC 8GB GDDR7" el "OC" separa el modelo de su memoria, el recorte no la alcanza y la
+  // ficha decía "RAM: 8GB". Una gráfica se reconoce por su categoría; solo si no hay
+  // categoría, por nombrar una GPU sin procesador y sin ser un portátil (un "TUF
+  // Gaming A15 RTX 3050 16GB" no nombra el procesador y sí tiene RAM).
+  const cat = (categoria ?? "").toLowerCase();
+  const esGraficaSuelta = cat === "tarjeta-grafica" ||
+    (!cat && graficaDesdeNombre(n) !== null && !cpu && !esPortatilPorNombre(n));
+  const { ram, disco } = esGraficaSuelta ? { ram: null, disco: null } : ramYDisco(sinVram(n));
   // En una memoria USB o una tarjeta SD la única capacidad del nombre es SU capacidad,
   // no la RAM de un equipo: la ficha de "USB 64GB KINGSTON" decía "RAM: 64GB".
   if (ram != null) {
@@ -346,7 +336,6 @@ function specsDesdeNombre(nombre: string, categoria?: string): Record<string, st
   if (so) out.so = so;
 
   // La pantalla solo aplica a equipos con pantalla propia (portátiles, todo-en-uno).
-  const cat = (categoria ?? "").toLowerCase();
   if (cat === "portatil" || cat === "all-in-one" || esPortatilPorNombre(n)) {
     const pantalla = pantallaDesdeNombre(n);
     if (pantalla) out.pantalla = pantalla;

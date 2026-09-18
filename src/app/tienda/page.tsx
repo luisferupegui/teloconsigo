@@ -8,16 +8,30 @@ import { loadPublishedBusinessProducts } from "@/lib/products";
 import { resolveProductImage } from "@/lib/product-images";
 import { resolveLineImage } from "@/lib/line-images";
 import { TiendaSearchResults } from "@/components/tienda-search-results";
+import { CotizablesGrid } from "@/components/cotizables-grid";
+import { buscarEnListas } from "@/lib/buscador-listas";
 import type { QuickViewProduct } from "@/components/product-quick-view";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+const METADATA_BASE = {
   alternates: { canonical: "/tienda" },
   title: "Catálogo de tecnología",
   description:
     "Explora todas las líneas de productos: procesadores, portátiles, memorias, almacenamiento, impresoras y más.",
 };
+
+// Una página de resultados de búsqueda no va a Google: cambia con cada lista que
+// se importa y, ahora que muestra lo de las listas de proveedor, serían cientos de
+// páginas de nombres de mayorista sin ficha. Se siguen sus enlaces, no se indexa.
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  return q?.trim() ? { ...METADATA_BASE, robots: { index: false, follow: true } } : METADATA_BASE;
+}
 
 const resolveLineImg = (catSlug: string, linea: Linea) =>
   resolveLineImage(catSlug, linea.slug, linea.imagen);
@@ -137,6 +151,11 @@ export default async function TiendaPage({
       descripcionUso: p.descripcionUso ?? "",
     }));
 
+    // Lo que está en las listas de proveedor y no en la tienda: sin precio, con
+    // "Cotizar ahora" (ver lib/buscador-listas).
+    const cotizables = buscarEnListas(q ?? "", 24);
+    const total = resultados.length + cotizables.length;
+
     return (
       <div className="min-h-screen bg-[#f8f9fb]">
         <div className="border-b border-zinc-200 bg-white">
@@ -155,7 +174,7 @@ export default async function TiendaPage({
                   Resultados para &quot;{q}&quot;
                 </h1>
                 <p className="text-sm text-zinc-500 mt-0.5">
-                  {resultados.length} producto{resultados.length !== 1 ? "s" : ""} encontrado{resultados.length !== 1 ? "s" : ""}
+                  {total} producto{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
                 </p>
               </div>
             </div>
@@ -163,7 +182,12 @@ export default async function TiendaPage({
         </div>
 
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <TiendaSearchResults products={searchProducts} query={q ?? ""} />
+          {/* Si solo hay resultados de las listas, el "Sin resultados" de la tienda
+              sobra: sí hay qué ofrecer. */}
+          {(searchProducts.length > 0 || cotizables.length === 0) && (
+            <TiendaSearchResults products={searchProducts} query={q ?? ""} />
+          )}
+          <CotizablesGrid resultados={cotizables} conTitulo={searchProducts.length > 0} />
         </div>
       </div>
     );

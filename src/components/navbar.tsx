@@ -17,6 +17,7 @@ import { useWishlist } from "@/lib/wishlist";
 import { SearchModal } from "./search-modal";
 import { formatCOP } from "@/lib/products-types";
 import { ProductQuickView, type QuickViewProduct } from "./product-quick-view";
+import { FilasCotizables, useCotizables } from "./buscar-cotizables";
 
 // Las categorías llegan por props: este componente es de CLIENTE y la taxonomía se lee
 // del disco en el servidor. El layout raíz las carga y las baja hasta aquí.
@@ -125,6 +126,8 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
           .filter((p) => `${p.nombre} ${p.marca} ${p.categoria}`.toLowerCase().includes(sq))
           .slice(0, 7)
       : [];
+  // Lo de las listas de proveedor, sin precio: se cotiza con Andrea.
+  const cotizables = useCotizables(sq, searchResults.length > 3 ? 4 : 6);
 
   return (
     <header
@@ -352,7 +355,7 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
               {/* Autocompletado de búsqueda en vivo (solo productos publicados) */}
               {searchDDOpen && sq.length >= 1 && (
                 <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl border border-white/10 bg-[#0f1626] shadow-2xl shadow-black/60 py-2 z-50 max-h-[70vh] overflow-y-auto">
-                  {searchResults.length > 0 ? (
+                  {searchResults.length > 0 || cotizables.length > 0 ? (
                     <>
                       {searchResults.map((p) => (
                         <button
@@ -378,6 +381,7 @@ export function Navbar({ categories = [] }: { categories?: Category[] }) {
                           )}
                         </button>
                       ))}
+                      <FilasCotizables resultados={cotizables} alElegir={() => setSearchDDOpen(false)} />
                       <button
                         type="submit"
                         onClick={() => setSearchDDOpen(false)}

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Search, X, ArrowRight, TrendingUp } from "lucide-react";
+import { Search, X, ArrowRight, TrendingUp, Package, MessageCircle } from "lucide-react";
 import { formatCOP } from "@/lib/products-types";
 import { SmartImage } from "./smart-image";
 import type { QuickViewProduct } from "./product-quick-view";
+import { useCotizables } from "./buscar-cotizables";
 
 export function SearchModal({
   open,
@@ -38,6 +40,9 @@ export function SearchModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // Antes del `return` temprano: un hook no puede quedar detrás de un condicional.
+  const cotizables = useCotizables(open ? q : "", 6);
+
   if (!open) return null;
 
   const term = q.toLowerCase().trim();
@@ -49,10 +54,14 @@ export function SearchModal({
         .slice(0, 8)
     : [];
 
-  const hasResults = catalogResults.length > 0;
+  const hasResults = catalogResults.length > 0 || cotizables.length > 0;
   const trending = ["RTX 4070", "Ryzen 7", "DDR5 32GB", "SSD NVMe", "Monitor QHD"];
 
-  return (
+  // Al `body` por un portal: el modal se declara dentro del encabezado, que es
+  // `sticky z-50` y crea su propia capa. Ahí dentro su z-[200] no valía nada fuera
+  // del encabezado, y la tarjeta flotante de Andrea (z-50, pintada después) le
+  // quedaba encima tapando los resultados en el móvil.
+  return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-start justify-center bg-zinc-900/60 backdrop-blur p-4 pt-20 animate-fade-in-up"
       onClick={onClose}
@@ -154,6 +163,41 @@ export function SearchModal({
             </div>
           )}
 
+          {/* Lo de las listas de proveedor: sin precio, se cotiza con Andrea */}
+          {cotizables.length > 0 && (
+            <div>
+              <p className="px-5 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                Te lo cotizamos
+              </p>
+              <ul className="divide-y divide-zinc-100">
+                {cotizables.map((r) => (
+                  <li key={r.clave}>
+                    <Link
+                      href={r.cotizar}
+                      onClick={onClose}
+                      className="flex w-full items-center gap-4 px-5 py-3 text-left transition hover:bg-blue-50"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-zinc-50">
+                        <Package className="h-5 w-5 text-zinc-400" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {r.marca && (
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{r.marca}</p>
+                        )}
+                        {/* Dos renglones: en el móvil uno solo dejaba "Switch de 24 p…" */}
+                        <p className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-900">{r.nombre}</p>
+                      </div>
+                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#1e6cff] px-3 py-1.5 text-xs font-bold text-white">
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        Cotizar
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Ver todos */}
           {hasResults && term && (
             <Link
@@ -167,6 +211,7 @@ export function SearchModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
