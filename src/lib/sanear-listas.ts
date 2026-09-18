@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupplierList, SupplierProduct } from "./supplier-catalog";
 import { corregirCategoria, specsDelNombre } from "./parse-supplier-doc";
+import { tieneEquivalente } from "./specs-claves";
 
 // ─── Saneo de listas ya importadas ────────────────────────────────────────────
 //
@@ -108,12 +109,16 @@ export function diagnosticar(listas: SupplierList[]): Diagnostico {
       // Specs que el nombre declara y no están guardadas. No cambian el producto: lo
       // completan, y evitan que el completador por web gaste una consulta en un dato que
       // ya estaba escrito.
-      const nuevas = specsNuevas(p);
-      if (nuevas.length > 0) {
+      const nuevas = Object.keys(specsNuevas(p));
+      const copias = copiasDeducidas(p);
+      if (nuevas.length > 0 || copias.length > 0) {
         recategorizados.push({
           motivo: "specs",
           nombre: p.nombre,
-          detalle: `añade ${nuevas.join(", ")}`,
+          detalle: [
+            nuevas.length > 0 ? `añade ${nuevas.join(", ")}` : "",
+            copias.length > 0 ? `quita copias repetidas de ${copias.join(", ")}` : "",
+          ].filter(Boolean).join(" · "),
         });
       }
     }
@@ -129,10 +134,28 @@ function categoriaCorrecta(p: SupplierProduct): string {
   return corregirCategoria(p.nombre, p.categoria);
 }
 
-/** Specs que el nombre declara y al producto le faltan, por nombre de campo. */
-function specsNuevas(p: SupplierProduct): string[] {
-  const delNombre = specsDelNombre(p.nombre, p.categoria);
-  return Object.keys(delNombre).filter((k) => !p.specs?.[k]);
+/** Specs que el nombre declara y al producto le faltan.
+ *
+ *  "Faltar" se mira por la clave EQUIVALENTE, no por la grafía: Ledacom guarda "Ram" y
+ *  "Almacenamiento", y comparando en minúscula exacta el saneo le añadía a 310
+ *  productos una copia corta ("ram": "16GB") junto a la buena ("Ram": "16GB DDR5-5200").
+ *  Nada se perdía, pero la ficha del asesor se quedaba con la copia corta y dejaba de
+ *  mostrar el DDR5, el NVMe y los 165Hz. */
+function specsNuevas(p: SupplierProduct, categoria = p.categoria): Record<string, string> {
+  const propias = p.specs ?? {};
+  const delNombre = specsDelNombre(p.nombre, categoria);
+  return Object.fromEntries(
+    Object.entries(delNombre).filter(([k]) => !propias[k] && !tieneEquivalente(propias, k)),
+  );
+}
+
+/** Las copias cortas que dejó un saneo anterior: una clave deducida del nombre, con el
+ *  mismo valor que se deduciría hoy, al lado de otra que dice lo mismo con más detalle.
+ *  Solo se quita lo que el saneo pudo haber puesto; lo que vino del proveedor, nunca. */
+function copiasDeducidas(p: SupplierProduct, categoria = p.categoria): string[] {
+  const propias = p.specs ?? {};
+  const delNombre = specsDelNombre(p.nombre, categoria);
+  return Object.keys(delNombre).filter((k) => propias[k] === delNombre[k] && tieneEquivalente(propias, k));
 }
 
 /** Aplica las correcciones y devuelve las listas ya saneadas, junto al diagnóstico de lo
@@ -148,7 +171,10 @@ export function sanear(listas: SupplierList[]): { listas: SupplierList[]; diagno
       .map((p) => {
         const categoria = categoriaCorrecta(p);
         // Las specs guardadas mandan sobre las deducidas: el saneo COMPLETA, no reescribe.
-        const specs = { ...specsDelNombre(p.nombre, categoria), ...(p.specs ?? {}) };
+        // Y retira las copias cortas que un saneo anterior dejó junto a la spec buena.
+        const quitar = new Set(copiasDeducidas(p, categoria));
+        const propias = Object.fromEntries(Object.entries(p.specs ?? {}).filter(([k]) => !quitar.has(k)));
+        const specs = { ...specsNuevas({ ...p, specs: propias }, categoria), ...propias };
         return { ...p, categoria, specs: Object.keys(specs).length ? specs : undefined };
       });
     return { ...lista, productos };

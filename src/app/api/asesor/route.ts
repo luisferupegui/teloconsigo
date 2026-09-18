@@ -24,6 +24,7 @@ import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
 import { marcasEnConsulta, esDeMarca, esMarcaDeComponente, sinMarcas } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
+import { claveCanonica } from "@/lib/specs-claves";
 import { CONTACTO } from "@/lib/contacto";
 
 // Andrea usa fs (settings + catálogo) → runtime Node, no Edge.
@@ -371,32 +372,25 @@ function capacidadesNormalizadas(nombre: string): string {
 // "S.O."; el catálogo publicado usa "ram", "gpu", "so". Aquí se buscaban en minúscula
 // exacta, así que de una lista entera NO coincidía ni una clave: la ficha se armaba solo
 // con lo que se pudiera adivinar del nombre y las specs buenas —memoria exacta, disco
-// NVMe, pantalla de 165Hz— se tiraban a la basura.
-const ALIAS_SPEC: Record<string, string> = {
-  procesador: "procesador", cpu: "procesador",
-  ram: "ram", memoria: "ram", memoriaram: "ram",
-  almacenamiento: "almacenamiento", disco: "almacenamiento", discoduro: "almacenamiento", ssd: "almacenamiento",
-  pantalla: "pantalla", monitor: "monitor",
-  gpu: "gpu", grafica: "gpu", tarjetagrafica: "gpu", tarjetadevideo: "gpu", video: "gpu",
-  so: "so", sistema: "so", sistemaoperativo: "so",
-  board: "board", placabase: "board", tarjetamadre: "board",
-  capacidad: "capacidad", incluye: "incluye",
-};
-
-const claveSpec = (k: string) =>
-  k.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
+// NVMe, pantalla de 165Hz— se tiraban a la basura. Qué clave es cuál lo decide
+// `claveCanonica`, en un módulo aparte porque el saneo de listas necesita la misma regla.
 
 /** Las specs de cualquier proveedor con las claves que entiende la ficha. Los valores se
  *  recortan: las listas meten el pliego entero en un campo ("Windows 11 Home ▪ Puertos:
- *  1x 3.5mm Combo Audio Jack, 1x HDMI 2.1 FRL…") y eso no es una viñeta, es un párrafo. */
+ *  1x 3.5mm Combo Audio Jack, 1x HDMI 2.1 FRL…") y eso no es una viñeta, es un párrafo.
+ *
+ *  Si dos claves dicen lo mismo ("ram": "16GB" y "Ram": "16GB DDR5-5200") gana la MÁS
+ *  COMPLETA. La corta es la que se deduce del nombre, y hubo listas saneadas que las
+ *  guardaron las dos: quedándose con la primera, la ficha perdía el DDR5 y los 165Hz. */
 function normalizarSpecs(specs: Record<string, string> | undefined): Record<string, string> {
   if (!specs) return {};
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(specs)) {
     if (typeof v !== "string" || !v.trim()) continue;
-    const clave = ALIAS_SPEC[claveSpec(k)] ?? claveSpec(k);
-    if (!out[clave]) out[clave] = recortarSpec(v);
+    const clave = claveCanonica(k);
+    if (!out[clave] || v.trim().length > out[clave].length) out[clave] = v.trim();
   }
+  for (const k of Object.keys(out)) out[k] = recortarSpec(out[k]);
   // "S.O.: No" es como la lista dice que el equipo viene sin sistema, y en la
   // ficha se leía "Sistema: No", que no le dice nada al cliente.
   if (out.so && /^(no|no\s*os|n\/?a|ninguno|sin\s*s\.?\s*o\.?)$/i.test(out.so.trim())) out.so = "Sin sistema operativo";
