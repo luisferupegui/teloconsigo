@@ -1546,11 +1546,18 @@ const USADO_US = /\b(used|refurb(ished)?|renewed|open[\s-]?box|pre[\s-]?owned|fo
 /** Servidores de una generación que el fabricante ya no fabrica. Un anuncio de un
  *  "HP ProLiant ML350 G9" como nuevo es inventario viejo o reacondicionado sin
  *  decirlo, y salía de "Mejor precio" en una cotización de servidor para base de
- *  datos: un equipo de 2014, sin garantía de fábrica. HPE G6–G9, Dell PowerEdge de
- *  12.ª y 13.ª generación (R720, T330…) e IBM/Lenovo System x M1–M5.
+ *  datos: un equipo de 2014, sin garantía de fábrica.
+ *
+ *  Se aceptan solo las generaciones vigentes: HPE Gen10 Plus, Gen11 y Gen12; Dell de
+ *  15.ª en adelante (T150, R350, R660…). Quedan fuera HPE G6–G10 —la Gen10 sin "Plus"
+ *  también, ya van dos generaciones después—, Dell de 12.ª a 14.ª (R720, T330, T440,
+ *  R640…) e IBM/Lenovo System x M1–M5. La 14.ª de Dell se agregó al ver en producción
+ *  un "T440" a un tercio del precio de un "T340", que es un modelo inferior: un
+ *  anuncio así es un reacondicionado que no lo dice.
  *  Solo se mira si el anuncio ES de un servidor: "G9" sola también es un Moto G9. */
 const SERVIDOR_EN_TITULO = /\b(proliant|poweredge|thinksystem|server|servidor)\b|\bsystem\s*x\d/i;
-const GENERACION_DESCONTINUADA = /\b(?:g[6-9]|gen\s?[6-9])\b|\b[rt][1-7][23]0\b|\bx3\d{3}\s*m[1-5]\b/i;
+const GENERACION_DESCONTINUADA =
+  /\b(?:g[6-9]|gen\s?[6-9])\b|\b(?:g|gen\s?)10\b(?!\s*(?:plus|\+))|\b[rt][1-7][234]0\b|\bx3\d{3}\s*m[1-5]\b/i;
 const esServidorDescontinuado = (titulo: string) =>
   SERVIDOR_EN_TITULO.test(titulo) && GENERACION_DESCONTINUADA.test(titulo);
 
@@ -3237,8 +3244,18 @@ function construirSeleccion(candidatos: OpcionSel[]): { etiqueta: string; nombre
   if (porPrecio.length <= 3) {
     elegidas = porPrecio;
   } else {
-    const medio = porPrecio[Math.floor(porPrecio.length / 2)];
-    elegidas = [porPrecio[0], medio, porPrecio[porPrecio.length - 1]];
+    // La del medio es la que se presenta como "Recomendado", y entre las intermedias
+    // se prefiere la que se entrega en 1 a 3 días: recomendarle a una empresa algo
+    // que tarda 6 a 10 teniendo una equivalente en Colombia no es recomendarle bien.
+    // Pasó con servidores: un ProLiant ML110 G11 en existencia local quedaba fuera
+    // porque el precio del medio le tocaba a un PowerEdge importado de hace dos
+    // generaciones. Si no hay intermedia local, la del medio de siempre.
+    const centro = porPrecio[Math.floor(porPrecio.length / 2)];
+    const localIntermedia = porPrecio
+      .slice(1, -1)
+      .filter((o) => o.entrega === "local")
+      .sort((a, b) => Math.abs(a.precio - centro.precio) - Math.abs(b.precio - centro.precio))[0];
+    elegidas = [porPrecio[0], localIntermedia ?? centro, porPrecio[porPrecio.length - 1]];
   }
 
   // 1 opción → sin etiqueta (no hay con qué comparar). La más barata SIEMPRE es la
