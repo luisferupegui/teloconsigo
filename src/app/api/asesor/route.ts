@@ -227,9 +227,11 @@ const fmtCOP = (n: number) =>
 
 // ── SPECS A PARTIR DEL NOMBRE ────────────────────────────────────────────────
 //
-// Ningún portátil de las listas trae specs estructuradas (0 de 78), así que la ficha
-// quedaba en el nombre crudo y el precio: el cliente no veía procesador, RAM, disco,
-// gráfica ni sistema. Todo eso SÍ está dentro del nombre; aquí se extrae.
+// Muchas filas de las listas no traen specs estructuradas, y sin ellas la ficha quedaba
+// en el nombre crudo y el precio: el cliente no veía procesador, RAM, disco, gráfica ni
+// sistema. Todo eso SÍ está dentro del nombre; aquí se extrae, y solo rellena los huecos
+// de las specs que el proveedor sí manda (ver `normalizarSpecs`: Ledacom las trae, con
+// otras claves, y por no reconocerlas se creyó durante un tiempo que no venían).
 // Regla: solo se afirma lo que el nombre dice. Nada se infiere ni se completa.
 
 // Las notas de IVA y el ruido comercial ("+ Servicio", "Onsite") se quitan en

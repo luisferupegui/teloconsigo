@@ -159,10 +159,10 @@ function renglones(fragmentos: Fragmento[]): { y: number; t: string }[] {
 
 /** ¿Puede este renglón ser parte del TÍTULO de una ficha?
  *
- *  No se usa `ES_PIE` tal cual: descarta todo renglón que empiece por un número,
- *  pensado para "1x HDMI", y los títulos largos se parten justo así —
- *  "Gaming Laptop HP Victus / 15-fb3019la AMD Ryzen 7…", "Asus TUF Gaming F16 … /
- *  16GB/RTX 5050…"—. Con esa regla el nombre se quedaba en "/Jaeger Gray". Lo que
+ *  Un renglón que empieza por un número SÍ puede serlo. La regla anterior los
+ *  descartaba todos, pensando en "1x HDMI", y los títulos largos se parten justo así
+ *  —"Gaming Laptop HP Victus / 15-fb3019la AMD Ryzen 7…", "Asus TUF Gaming F16 … /
+ *  16GB/RTX 5050…"—: el nombre se quedaba en "/Jaeger Gray". Lo que
  *  separa el título de la ficha anterior ya no es el contenido del renglón sino el
  *  aire entre ambos (ver `fichasDeColumna`), así que aquí basta con dejar fuera lo
  *  que nunca es un nombre: specs etiquetadas, puertos y el pie legal. */

@@ -10,9 +10,8 @@ import { tieneEquivalente } from "./specs-claves";
 // correcciones — típicamente el volumen de producción, que conserva sus propios archivos
 // y no recibe los de `data-defaults`.
 //
-// Vive aquí, y no dentro del script de consola, porque hay DOS formas de ejecutarlo: el
-// botón del panel y `scripts/sanear-listas.js`. Con la lógica en un solo sitio no pueden
-// desincronizarse y dar resultados distintos.
+// Se ejecuta desde el botón "Sanear listas importadas" del panel (el script de consola
+// que también lo corría se retiró el 2026-08-27).
 
 // Las reglas del IMPORTADOR se reutilizan tal cual. El saneo no es una lista aparte de
 // arreglos: es aplicar a lo ya importado exactamente lo que hoy se aplicaría al entrar,
