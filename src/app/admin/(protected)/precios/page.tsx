@@ -42,6 +42,7 @@ const CAT_LABELS: Record<string, { label: string; desc: string }> = {
   "mini-pc":         { label: "Mini-PC",                           desc: "Mini-PC, Intel NUC, barebone, mini computador" },
   "redes":           { label: "Redes (switches, routers, APs)",   desc: "Cisco, Ubiquiti, TP-Link…" },
   "mouse":           { label: "Mouse / Ratones",                  desc: "Inalámbrico, ergonómico, gaming" },
+  "audio-profesional": { label: "Audio profesional",             desc: "Tarjetas de sonido, interfaces, micrófonos y monitores de estudio (Digigram, Shure, KRK, Focusrite…)" },
   "auriculares":     { label: "Auriculares / Headsets",           desc: "Diademas, in-ear, USB-C" },
   "streaming":       { label: "Streaming / Capturadoras",         desc: "Elgato, Razer, OBS compatible" },
   "impresora":       { label: "Impresoras",                       desc: "Láser, inkjet, multifuncionales" },
@@ -60,6 +61,7 @@ const CAT_ORDER = [
   "accesorios",      // Accesorios generales
   "almacenamiento",  // Almacenamiento (SSD / HDD)
   "antivirus",       // Antivirus
+  "audio-profesional", // Audio profesional (estudio, radio, producción)
   "auriculares",     // Auriculares / Headsets
   "celular",         // Teléfonos celulares
   "escritorio",      // Computadores de escritorio

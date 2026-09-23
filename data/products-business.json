@@ -43,7 +43,7 @@
     "segmento": "movilidad-premium",
     "publicado": true,
     "descripcionUso": "",
-    "destacado": true,
+    "destacado": false,
     "enPromocion": true
   },
   {
@@ -65,7 +65,7 @@
     "usoCaso": "portatil-ejecutivo",
     "precioDesde": 3143000,
     "descripcionUso": "",
-    "destacado": true,
+    "destacado": false,
     "enPromocion": true,
     "segmento": "movilidad-premium",
     "publicado": true
@@ -358,7 +358,7 @@
     "usoCaso": "pc-empresarial",
     "precioDesde": 4990000,
     "descripcionUso": "",
-    "destacado": true,
+    "destacado": false,
     "enPromocion": true,
     "segmento": "productividad-oficina",
     "publicado": true
@@ -382,7 +382,7 @@
     "usoCaso": "pc-empresarial",
     "precioDesde": 3900000,
     "descripcionUso": "",
-    "destacado": true,
+    "destacado": false,
     "enPromocion": true,
     "segmento": "productividad-oficina",
     "publicado": true
@@ -732,7 +732,7 @@
     "segmento": "accesorios",
     "publicado": true,
     "descripcionUso": "",
-    "destacado": true,
+    "destacado": false,
     "enPromocion": true,
     "enAccesorios": false
   },
@@ -862,7 +862,7 @@
     "publicado": true,
     "descripcionUso": "",
     "destacado": false,
-    "enAccesorios": true,
+    "enAccesorios": false,
     "enPromocion": true
   },
   {
@@ -906,7 +906,7 @@
     "precioDesde": 421000,
     "segmento": "monitores",
     "publicado": true,
-    "enAccesorios": true,
+    "enAccesorios": false,
     "descripcionUso": "",
     "destacado": false,
     "enPromocion": true
@@ -1018,7 +1018,7 @@
     "descripcion": "Monitor Samsung 27\" IPS 120Hz. Mayor fluidez visual para diseñadores y analistas de datos.",
     "precioDesde": 803000,
     "descripcionUso": "",
-    "destacado": true,
+    "destacado": false,
     "enPromocion": true,
     "segmento": "monitores",
     "publicado": true
@@ -1384,7 +1384,7 @@
     "enPromocion": true,
     "segmento": "accesorios",
     "publicado": true,
-    "enAccesorios": true
+    "enAccesorios": false
   },
   {
     "referencia": "1733-KSD256",
@@ -1573,7 +1573,7 @@
     "specs": {},
     "descripcionUso": "Audífonos In ear Bluetooth Inalámbrico Soundcore P30i, reducción de ruido De 40db con ANC adaptativo soporte para móvil sonido superior y bajos potentes llamadas claras con Ia comodidad excepcional",
     "destacado": false,
-    "enAccesorios": true,
+    "enAccesorios": false,
     "enPromocion": false,
     "id": "manual-1780585108852",
     "slug": "audifonos-bluetooth-inalambrico-soundcore"
@@ -2743,5 +2743,255 @@
       "so": "Linux"
     },
     "descripcionUso": "Escritorio alto rendimiento · Monitor 23\""
+  },
+  {
+    "referencia": "PG-R78700F-RTX5060",
+    "id": "PG-R78700F-RTX5060",
+    "slug": "pc-alto-rendimiento-ryzen-7-8700f-16gb-512gb-rtx-5060-8gb",
+    "nombre": "PC Alto Rendimiento Ryzen 7 8700F 16GB 512GB + RTX 5060 8GB",
+    "marca": "Power Group",
+    "categoria": "pc",
+    "usoCaso": "pc-empresarial",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 4439000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "procesador": "AMD Ryzen 7 8700F (8C 16T)",
+      "ram": "16GB DDR5",
+      "almacenamiento": "512GB SSD M.2 NVMe",
+      "video": "NVIDIA RTX 5060 8GB"
+    },
+    "descripcionUso": "Equipo de escritorio de alto rendimiento para edición de audio y video, render y trabajo pesado. Disponible con entrega en 1 a 3 días hábiles.",
+    "destacado": true,
+    "enAccesorios": false,
+    "enPromocion": false
+  },
+  {
+    "referencia": "LS34G55T",
+    "id": "LS34G55T",
+    "slug": "monitor-curvo-samsung-odyssey-g55t-34-wqhd-165hz",
+    "nombre": "Monitor Curvo Samsung Odyssey G55T 34\" WQHD 165Hz",
+    "marca": "Samsung",
+    "categoria": "monitor",
+    "usoCaso": "monitor",
+    "segmento": "monitores",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 1440000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "pantalla": "34\" WQHD curvo (3440 x 1440)",
+      "refresco": "165 Hz",
+      "panel": "VA curvatura 1000R"
+    },
+    "descripcionUso": "Monitor curvo ultrawide de 34 pulgadas: una sola pantalla que reemplaza dos, ideal para edición, consolas de audio y multitarea.",
+    "destacado": true,
+    "enAccesorios": false,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "DIGIGRAM-ALP222E",
+    "id": "DIGIGRAM-ALP222E",
+    "slug": "digigram-alp222e-tarjeta-de-sonido-pcie-estereo-para-radio",
+    "nombre": "Digigram ALP222e Tarjeta de Sonido PCIe Estéreo para Radio",
+    "marca": "Digigram",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 3883000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "formato": "PCIe de bajo perfil",
+      "entradas": "Estéreo analógico balanceado y AES/EBU",
+      "uso": "Automatización y emisión de radio"
+    },
+    "descripcionUso": "Tarjeta de sonido profesional para estudios de radio y automatización de emisión. De las que casi nadie consigue en Colombia: te la conseguimos.",
+    "destacado": true,
+    "enAccesorios": false,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "SB-Z-SE",
+    "id": "SB-Z-SE",
+    "slug": "creative-sound-blaster-z-se-tarjeta-de-sonido-pcie",
+    "nombre": "Creative Sound Blaster Z SE Tarjeta de Sonido PCIe",
+    "marca": "Creative",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 716000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "formato": "PCIe",
+      "audio": "24-bit / 192 kHz, 116 dB SNR",
+      "incluye": "Amplificador de audífonos y micrófono de diadema"
+    },
+    "descripcionUso": "Tarjeta de sonido interna para producción, streaming y juegos: audio limpio, amplificador de audífonos y entrada de micrófono.",
+    "destacado": true,
+    "enAccesorios": false,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "SHURE-SM7B",
+    "id": "SHURE-SM7B",
+    "slug": "microfono-shure-sm7b-dinamico-cardioide-de-estudio",
+    "nombre": "Micrófono Shure SM7B Dinámico Cardioide de Estudio",
+    "marca": "Shure",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 2023000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "tipo": "Dinámico cardioide",
+      "conexion": "XLR",
+      "uso": "Radio, podcast y voz en estudio"
+    },
+    "descripcionUso": "El micrófono de referencia en radio y podcast: voz cálida, rechaza el ruido del cuarto y aguanta el uso diario.",
+    "destacado": true,
+    "enAccesorios": false,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "KRK-RP5G4",
+    "id": "KRK-RP5G4",
+    "slug": "monitores-de-estudio-krk-rokit-5-g4-unidad",
+    "nombre": "Monitores de Estudio KRK Rokit 5 G4 (unidad)",
+    "marca": "KRK",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 619000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "driver": "Woofer de 5\" biamplificado",
+      "ajuste": "DSP con 25 ajustes de sala",
+      "nota": "Precio por unidad"
+    },
+    "descripcionUso": "Monitores de estudio para mezclar con criterio: lo que escuchas es lo que grabaste. El precio es por unidad.",
+    "destacado": true,
+    "enAccesorios": false,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "ATH-M50X",
+    "id": "ATH-M50X",
+    "slug": "audifonos-de-estudio-audio-technica-ath-m50x",
+    "nombre": "Audífonos de Estudio Audio-Technica ATH-M50x",
+    "marca": "Audio-Technica",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 809000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "tipo": "Cerrados over-ear",
+      "drivers": "45 mm",
+      "cables": "Tres cables desmontables"
+    },
+    "descripcionUso": "Audífonos profesionales de monitoreo: aislamiento real y sonido fiel para grabar, mezclar y editar.",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "MAUDIO-AIR1924",
+    "id": "MAUDIO-AIR1924",
+    "slug": "interfaz-de-audio-m-audio-air-192-4-usb",
+    "nombre": "Interfaz de Audio M-Audio AIR 192|4 USB",
+    "marca": "M-Audio",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "creadores-produccion",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 712000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "entradas": "1 XLR/línea con phantom 48V",
+      "audio": "24-bit / 192 kHz",
+      "conexion": "USB-C"
+    },
+    "descripcionUso": "La puerta de entrada al audio profesional: conecta un micrófono XLR al computador con calidad de estudio.",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "KING-DTMAX256",
+    "id": "KING-DTMAX256",
+    "slug": "memoria-usb-kingston-datatraveler-max-256gb-usb-3-2-gen-2",
+    "nombre": "Memoria USB Kingston DataTraveler Max 256GB USB 3.2 Gen 2",
+    "marca": "Kingston",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "accesorios",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 255000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "capacidad": "256 GB",
+      "interfaz": "USB-A 3.2 Gen 2",
+      "velocidad": "Hasta 1000 MB/s de lectura"
+    },
+    "descripcionUso": "Memoria de 256GB con velocidad de SSD: mueve proyectos de audio y video pesados sin quedarte esperando.",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "bajoPedido": true
+  },
+  {
+    "referencia": "LOGI-MXM3S",
+    "id": "LOGI-MXM3S",
+    "slug": "mouse-logitech-mx-master-3s-inalambrico-silencioso",
+    "nombre": "Mouse Logitech MX Master 3S Inalámbrico Silencioso",
+    "marca": "Logitech",
+    "categoria": "accesorio",
+    "usoCaso": "accesorio",
+    "segmento": "accesorios",
+    "publicado": true,
+    "precio": null,
+    "precioDesde": 610000,
+    "precioIvaIncluido": false,
+    "proveedor": "manual",
+    "specs": {
+      "sensor": "8.000 DPI",
+      "bateria": "Hasta 70 días por carga",
+      "conexion": "Bluetooth y receptor USB-C"
+    },
+    "descripcionUso": "El mouse de referencia para trabajar todo el día: preciso, de clic silencioso y con scroll electromagnético.",
+    "destacado": false,
+    "enAccesorios": true,
+    "enPromocion": false,
+    "bajoPedido": true
   }
 ]

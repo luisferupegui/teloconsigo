@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   Send, Monitor, Laptop, Gamepad2, Building2, Headphones, Truck,
-  ShieldCheck, Award, Sparkles, ChevronRight, Cpu, Minimize2,
+  ShieldCheck, Award, Sparkles, ChevronRight, Cpu, Minimize2, Mic,
 } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string; hidden?: boolean };
@@ -71,6 +71,19 @@ const saludoProducto = (nombre: string) =>
 
 const SALUDO_ARMADOR =
   "¡Hola! Soy **Andrea** 😊\n\n¡Me encanta tu configuración! 🙌 Dame un momento que te confirmo el precio final y la entrega 🔍";
+
+// Llega desde el banner del estudio de radio. No hay un producto que cotizar todavía:
+// un estudio es un conjunto (el computador, la interfaz, los micrófonos…), así que
+// Andrea empieza preguntando qué necesita en vez de buscar algo suelto.
+const SALUDO_ESTUDIO =
+  "¡Hola! Soy **Andrea** 😊\n\n¿Estás montando o renovando un **estudio de audio, radio o podcast**? 🎙️ Te ayudo a equiparlo completo.\n\n¿Qué necesitas: el computador para producir o emitir, la interfaz de audio, los micrófonos, los monitores…?";
+
+const QUICK_ESTUDIO = [
+  { icon: Monitor,    label: "Computador para producción de audio" },
+  { icon: Building2,  label: "Equipo para una emisora de radio" },
+  { icon: Mic,        label: "Interfaz de audio y micrófonos" },
+  { icon: Headphones, label: "Monitores de estudio y audífonos" },
+];
 
 // ─── Render markdown: negritas + listas ───────────────────────────────────
 function applyBold(line: string) {
@@ -333,10 +346,11 @@ export default function AsesorPage({
   const ref    = refOrigen; // `ref` es nombre reservado como prop; dentro sí puede llamarse así
   const hasProducto = producto.length > 0;
   const isArmador   = ref === "armador";
+  const isEstudio   = ref === "estudio-audio";
 
   const initialMsg: Msg = {
     role: "assistant",
-    content: isArmador ? SALUDO_ARMADOR : hasProducto ? saludoProducto(producto) : SALUDO_GENERAL,
+    content: isArmador ? SALUDO_ARMADOR : hasProducto ? saludoProducto(producto) : isEstudio ? SALUDO_ESTUDIO : SALUDO_GENERAL,
   };
 
   const [messages,      setMessages]      = useState<Msg[]>([initialMsg]);
@@ -503,7 +517,9 @@ export default function AsesorPage({
     setIsTyping(true);
 
     const r = await preguntarAAndrea(
-      { messages: withUser, contexto: hasProducto ? { producto, ref, precio } : undefined },
+      // Del banner del estudio no llega producto, pero sí de dónde viene: con eso el
+      // servidor le da a Andrea la guía de equipos para audio.
+      { messages: withUser, contexto: hasProducto ? { producto, ref, precio } : isEstudio ? { producto: "", ref } : undefined },
       (acc) => {
         const parts = acc.split(SEP);
         const bubbles = parts
@@ -693,13 +709,13 @@ export default function AsesorPage({
             <div className="space-y-3 border-t border-zinc-100 px-5 py-4">
 
               {!hasProducto && !hasUserMsg && !showChoice && (
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {QUICK_GENERAL.map(({ icon: Icon, label }) => (
+                <div className={`grid grid-cols-2 gap-2 ${isEstudio ? "" : "sm:grid-cols-3"}`}>
+                  {(isEstudio ? QUICK_ESTUDIO : QUICK_GENERAL).map(({ icon: Icon, label }) => (
                     <button
                       key={label}
                       onClick={() => send(label)}
                       disabled={loading}
-                      className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-xs font-medium text-zinc-700 shadow-sm transition hover:border-[#1e6cff]/40 hover:bg-[#1e6cff]/5 hover:text-[#1e6cff] disabled:opacity-50 last:col-span-full"
+                      className={`flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-xs font-medium text-zinc-700 shadow-sm transition hover:border-[#1e6cff]/40 hover:bg-[#1e6cff]/5 hover:text-[#1e6cff] disabled:opacity-50 ${isEstudio ? "" : "last:col-span-full"}`}
                     >
                       <Icon className="h-4 w-4 shrink-0 text-[#1e6cff]" />
                       {label}

@@ -6,7 +6,7 @@ import { slugify } from "@/lib/products-types";
 const ALLOWED_FIELDS = [
   "nombre", "marca", "precio", "precioDesde", "precioIvaIncluido",
   "descripcionUso", "usoCaso", "categoria", "segmento", "publicado",
-  "destacado", "enAccesorios", "enPromocion",
+  "destacado", "enAccesorios", "enPromocion", "bajoPedido",
 ] as const;
 
 // Secciones del home con tope de capacidad (máx 12 cards c/u)

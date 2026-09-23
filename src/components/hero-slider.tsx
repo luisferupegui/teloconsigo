@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Cpu, Zap, Shield, Headphones } from "lucide-react";
+import { Cpu, Zap, Shield, Headphones, Mic } from "lucide-react";
 
 const SLIDES = [
   {
@@ -18,19 +18,39 @@ const SLIDES = [
     objectClass: "object-cover object-center",
     hasOverlay: false,
   },
+  {
+    // Estudio de radio: la línea de equipos de alto rendimiento para audio
+    // profesional. La imagen trae sus textos impresos, así que el alt dice lo mismo
+    // para quien no la ve (y para Google). En el celular el recorte se centra en la
+    // locutora y el micrófono, que es lo que cuenta la historia; el logo y el
+    // "Audio profesional" de los costados solo caben en pantalla ancha. Y en pantalla
+    // ancha el hero es más apaisado que la foto: centrada, el recorte se comía el logo
+    // de la pared y el "Audio profesional", que van arriba. Se ancla cerca del borde
+    // superior y lo que se pierde es la parte baja (la libreta y la taza).
+    img: "/hero-estudio-audio-v3.webp",
+    alt: "Estudio de radio equipado por teloconsigo.co — si existe, te lo conseguimos: audio profesional. La buena radio también se construye con tecnología.",
+    objectClass: "object-cover object-[68%_center] md:object-[center_12%]",
+    hasOverlay: false,
+  },
 ];
+
+/** El slide del estudio lleva su propio llamado a la acción. */
+const SLIDE_ESTUDIO = 2;
 
 const INTERVAL = 7000;
 
 export function HeroSlider() {
   const [current, setCurrent] = useState(0);
 
+  // Un temporizador por slide, que se reinicia con CADA cambio. Con un intervalo fijo,
+  // quien hacía clic en un punto podía ver el slide cambiar solo un segundo después,
+  // porque el reloj seguía contando desde antes del clic.
   useEffect(() => {
-    const timer = setInterval(() => {
+    const timer = setTimeout(() => {
       setCurrent((prev) => (prev + 1) % SLIDES.length);
     }, INTERVAL);
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearTimeout(timer);
+  }, [current]);
 
   return (
     <section
@@ -53,6 +73,10 @@ export function HeroSlider() {
             fill
             sizes="100vw"
             priority={i === 0}
+            // Los demás slides ocupan el mismo espacio visible, así que diferirlos no
+            // ahorra nada y sí puede dejar un slide vacío la primera vez que aparece
+            // en una conexión lenta. Se cargan de una, sin la prioridad del primero.
+            loading={i === 0 ? undefined : "eager"}
             className={slide.objectClass}
           />
         </div>
@@ -144,6 +168,35 @@ export function HeroSlider() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* ── Llamado del slide del estudio ──
+          Va abajo a la derecha, sobre el respaldo de la silla: la zona más oscura y
+          vacía de la foto, sin texto impreso ni nada que valga la pena tapar (la
+          consola y las manos quedan libres). No lleva al catálogo —ahí no hay
+          interfaces ni micrófonos que mostrar— sino a Andrea, que pregunta qué
+          necesita el estudio y lo cotiza completo. */}
+      <div
+        className="absolute bottom-14 right-6 lg:right-12 z-30 transition-opacity duration-1000"
+        style={{
+          opacity: current === SLIDE_ESTUDIO ? 1 : 0,
+          pointerEvents: current === SLIDE_ESTUDIO ? "auto" : "none",
+        }}
+        aria-hidden={current !== SLIDE_ESTUDIO}
+      >
+        <Link
+          href="/asesor?ref=estudio-audio"
+          tabIndex={current === SLIDE_ESTUDIO ? 0 : -1}
+          className="group flex items-center gap-3 rounded-full border border-white/15 bg-[#050a18]/70 py-2 pl-2 pr-5 text-white shadow-xl shadow-black/40 backdrop-blur-md transition hover:border-[#1e6cff]/60 hover:bg-[#050a18]/85"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e6cff] shadow-lg shadow-[#1e6cff]/40">
+            <Mic className="h-4 w-4" />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-sm font-bold">Cotiza tu estudio</span>
+            <span className="block text-[11px] text-zinc-400">Equipos de alto rendimiento para audio</span>
+          </span>
+        </Link>
       </div>
 
       {/* ── Indicadores de slide (dots) ── */}

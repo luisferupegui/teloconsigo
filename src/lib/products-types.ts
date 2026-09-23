@@ -91,6 +91,12 @@ export type BusinessProduct = {
   proveedor: "ledacom" | "infoshop" | "manual";
   specs: Record<string, string>;
   descripcionUso: string;
+  // `bajoPedido`: el producto se publica en la web pero NO hay disponibilidad local.
+  // Es la línea de "te lo consigo" —audio profesional, referencias que casi nadie trae—
+  // y se cotiza importándola. Andrea lo deja fuera de su búsqueda local justamente por
+  // eso: si entrara ahí, le prometería al cliente una entrega de 1 a 3 días que no se
+  // puede cumplir. Lo cotiza por web, con su entrega real de 6 a 10 días.
+  bajoPedido?: boolean;
   // Ubicación en el home (independientes): destacado = "Productos Destacados",
   // enAccesorios = "Accesorios & Esenciales", enPromocion = Promociones.
   destacado?: boolean;

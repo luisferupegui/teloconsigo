@@ -37,8 +37,15 @@ function parseStorage(val: string): [string, string] {
 
 function parseScreen(val: string): [string, string] {
   const size = val.match(/(\d+(?:[.,]\d+)?[""])/)?.[1] ?? val.slice(0, 5);
-  const res = val.match(/\b(FHD|QHD|4K|2K|WUXGA|WQXGA|UHD)\b/i)?.[1] ?? "FHD";
-  return [size.replace(",", "."), res.toUpperCase()];
+  // Sin coincidencia NO se inventa "FHD": un monitor de 3440×1440 anunciado como Full HD
+  // es un error que el cliente nota. Se intenta con la etiqueta, luego con los píxeles, y
+  // si no hay ninguna de las dos la card muestra solo el tamaño.
+  const etiqueta = val.match(/\b(FHD|WQHD|QHD|WUXGA|WQXGA|UHD|4K|2\.5K|2K|5K)\b/i)?.[1];
+  const px = val.match(/(\d{3,4})\s*[x×]\s*(\d{3,4})/);
+  const porPixeles = px
+    ? Number(px[1]) >= 3840 ? "4K" : Number(px[1]) >= 2560 ? "WQHD" : "FHD"
+    : "";
+  return [size.replace(",", "."), (etiqueta ?? porPixeles).toUpperCase()];
 }
 
 // ─── Config de specs ──────────────────────────────────────────────────────────

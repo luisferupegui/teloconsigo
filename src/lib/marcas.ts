@@ -28,6 +28,14 @@ const MARCAS = [
   "sennheiser", "genius", "redragon", "jbl", "bose", "sonos", "shure",
   "audio-technica", "audiotechnica", "t-dagger", "tdagger", "creative", "soundcore",
   "xiaomi", "jaltech", "klip xtreme", "klipxtreme", "micronics", "boetec",
+  // Audio profesional (estudio, radio y producción). Van aquí por la misma razón que
+  // las demás: quien pide una Digigram ALP222e no quiere que le ofrezcan una Marian
+  // "parecida" — y en EE.UU., que es donde se consigue esta línea, los anuncios de
+  // tarjetas de broadcast se mezclan entre sí con precios muy distintos.
+  "digigram", "audioscience", "marian", "axia", "audioarts", "solidyne",
+  "krk", "focusrite", "m-audio", "maudio", "presonus", "behringer", "mackie",
+  "akg", "neumann", "beyerdynamic", "adam audio", "genelec", "tascam", "yamaha",
+  "apogee", "universal audio", "antelope audio", "arturia", "steinberg",
   // Almacenamiento
   "wd", "western digital", "seagate", "sandisk", "kingspec", "lexar", "pny",
   "netac", "orico", "aorus", "pulskill",

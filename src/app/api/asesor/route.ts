@@ -417,7 +417,9 @@ function fichaSpecLines(specs: Record<string, string> | undefined): string[] {
     ["capacidad", "Capacidad"],
     ["ram", "RAM"], ["memoria", "RAM"],
     ["almacenamiento", "Almacenamiento"], ["disco", "Almacenamiento"],
-    ["monitor", "Pantalla"], ["pantalla", "Pantalla"],
+    // El monitor de un equipo de escritorio se llama "Monitor": con "Pantalla" se leía
+    // como la pantalla propia de un portátil.
+    ["monitor", "Monitor"], ["pantalla", "Pantalla"],
     ["gpu", "Gráfica"], ["grafica", "Gráfica"], ["tarjeta_grafica", "Gráfica"],
     ["board", "Placa base"], ["so", "Sistema"], ["incluye", "Incluye"],
   ];
@@ -548,7 +550,15 @@ function construirFicha(nombreCrudo: string, specs: Record<string, string> | und
   // pasaba el filtro de "nombra un CPU" porque el producto ES un CPU.
   const esEquipoCompleto = formatoDeProducto(categoria ?? "", nombre) !== null;
   const mon = esEquipoCompleto
-    ? monitorStatusFromName(`${nombre} ${reales.monitor ?? ""} ${reales.pantalla ?? ""}`, categoria)
+    // Si la lista trae el MONITOR como spec ("monitor": "ACER 23,8 KA242Y"), el equipo lo
+    // incluye aunque ni el nombre ni el valor digan "monitor" ni lleven las comillas de
+    // las pulgadas. Sin esa palabra delante, el detector no lo veía: la ficha decía
+    // "Solo torre (sin monitor)" y Andrea le ofrecía al cliente un monitor aparte para un
+    // combo que ya lo traía — dos monitores.
+    ? monitorStatusFromName(
+        `${nombre} ${reales.monitor && !/^(no|n\/?a|sin|ninguno)\b/i.test(reales.monitor) ? `monitor ${reales.monitor}` : ""} ${reales.pantalla ?? ""}`,
+        categoria,
+      )
     : null;
   const gpu = esEquipoCompleto ? null : notaGraficosCPU(nombre);
   // Un equipo sin Windows es una compra distinta, y el dato iba escondido entre las
@@ -593,7 +603,14 @@ const LINEA_DE_MARCA = /\b(optiplex|thinkcentre|thinkstation|prodesk|elitedesk|p
 
 /** Formato real de un producto. `null` = no es un equipo completo (componente,
  *  accesorio, monitor…) y por tanto el filtro de formato no le aplica. */
+/** Un accesorio PARA un equipo nombra al equipo, pero EMPIEZA por lo que es. "Vesa
+ *  Monitor E Optiplex Micro Core i5 V5D8N" es un soporte de $163.000, y por decir
+ *  "Optiplex" y "Core i5" salía como la torre de marca más barata en una cotización
+ *  de computadores de oficina. */
+const ES_ACCESORIO_DE_EQUIPO = /^\s*(vesa|soporte|base|bracket|montaje|kit|cable|cargador|adaptador|funda|malet[ií]n|morral|bater[ií]a|dock(ing)?|replicador|bandeja|riel(es)?)\b/i;
+
 function formatoDeProducto(categoria: string, nombre: string): Formato | null {
+  if (ES_ACCESORIO_DE_EQUIPO.test(nombre)) return null;
   const c = (categoria ?? "").toLowerCase();
 
   // Listas de proveedor: la categoría YA distingue el formato.
@@ -857,8 +874,11 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     };
   });
 
-  // 2) CATÁLOGO PUBLICADO — también disponibilidad local.
-  const catalogo: Row[] = loadPublishedBusinessProducts().map((p) => {
+  // 2) CATÁLOGO PUBLICADO — también disponibilidad local, MENOS lo marcado `bajoPedido`.
+  // Esa línea (audio profesional y demás referencias que se traen por encargo) se publica
+  // en la web con su "Desde $", pero no está en bodega: si entrara aquí, Andrea la
+  // ofrecería con entrega de 1 a 3 días. Va por `cotizar_web`, con sus 6 a 10 días reales.
+  const catalogo: Row[] = loadPublishedBusinessProducts().filter((p) => !p.bajoPedido).map((p) => {
     const precio = p.precioDesde ?? p.precio;
     const haystack = sinTildes([p.nombre, p.marca, p.descripcionUso, p.categoria, palabrasDeCategoria(p.categoria), p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase());
     return {
@@ -918,7 +938,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     .filter((x) => (precioMax !== null ? x.precio !== null && x.precio <= precioMax : true))
     // el filtro por segmento solo aplica al catálogo (las listas de proveedor no traen segmento)
     .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true))
-    .filter((x) => !soloEquipos || TIENE_CPU.test(x.prod.nombre))
+    .filter((x) => !soloEquipos || (TIENE_CPU.test(x.prod.nombre) && !ES_ACCESORIO_DE_EQUIPO.test(x.prod.nombre)))
     .filter((x) => !!formato || !soloPiezas || formatoDeProducto(x.prod.categoria, x.prod.nombre) === null)
     // Y tampoco vale un equipo completo que INCLUYA la pieza: a quien pedía audífonos le
     // salía una "Tab 10\" (4GB/128GB) + Combo Case/Audífonos", que es una tablet. El filtro
@@ -1114,6 +1134,23 @@ const SITIOS_US = [
   "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com",               // general
   "amazon.com", "ebay.com",                                                          // último recurso
 ];
+
+// AUDIO PROFESIONAL: las tiendas del sector primero. Buscando un Shure SM7B o unos KRK
+// en las tiendas generales salen anuncios de US$18 (falsos), de US$644 (combos con brazo
+// y audífonos) y de revendedores que piden el doble: de la misma Creative Sound Blaster
+// Z SE había desde US$49 usada hasta US$224 en un marketplace, cuando nueva vale US$99.
+// Estas tiendas venden el producto nuevo, suelto y a precio de lista.
+const SITIOS_AUDIO_US = [
+  "bhphotovideo.com", "sweetwater.com", "guitarcenter.com", "adorama.com",
+  "vintageking.com", "fullcompass.com", "bswusa.com", "zzounds.com", "musiciansfriend.com",
+  "broadcastersgeneralstore.com", "markertek.com",
+];
+const CONSULTA_AUDIO = /\b(audio|sonido|micr[oó]fono|microphone|interfaz|interface|mixer|mezcladora|consola|monitor(?:es)? de estudio|studio monitor|parlante|speaker|audífono|auricular|headphone|preamp|phantom|xlr|dante|aes|podcast|emisora|radio|daw|krk|shure|rode|audio-?technica|focusrite|digigram|behringer|yamaha hs|presonus|m-?audio|sound ?blaster)\b/i;
+
+/** Combos y lotes: no son el producto que pidió el cliente y su precio no se puede
+ *  comparar. "SM7B & Boom Arm Bundle" (US$541) o "Pair Studio Monitors" (el doble de
+ *  una unidad) entraban a la cotización como si fueran la unidad suelta. */
+const COMBO_US = /\b(bundle|combo|pack of|\d+[\s-]?pack|\bpair\b|\blot\b|with (?:stand|boom|arm|cable|case|shock|mic|headphones)|and (?:boom|stand|cable|headphones))\b/i;
 // Peso para ordenar resultados de Serper: menor = aparece primero en las opciones.
 // Prioridad B2B: alkosto/ktronix/pcfactory/falabella son las 4 referencias principales.
 // Las claves se comparan contra `quienVende` (vendedor + dominio, en minúsculas y sin tildes).
@@ -1194,6 +1231,13 @@ const ALTO_RENDIMIENTO_RE = /\b(rtx|gtx|quadro|geforce)\b|\brx\s?\d{3,4}\b|\bryz
 const escritorioTier = (n: string): string =>
   ALTO_RENDIMIENTO_RE.test(n) ? "escritorio-alto-rendimiento" : "escritorio";
 
+/** Audio profesional: equipos de estudio, radio y producción. Lo estrecho es a propósito
+ *  —`CONSULTA_AUDIO`, que solo decide en qué tiendas de EE.UU. buscar, puede darse el lujo
+ *  de ser amplio; esta regex cambia la categoría de margen y el orden de países, así que
+ *  "consola" (PlayStation), "radio" o "interfaz" sueltos no entran. */
+const AUDIO_PROFESIONAL =
+  /(tarjeta de sonido|sound ?card|sound ?blaster|interfaz de audio|audio interface|monitor(?:es)? de estudio|studio monitor|micr[oó]fono (?:de )?(?:estudio|condensador|din[aá]mico|xlr|profesional)|preamplificador|mezcladora|mesa de mezcla|consola de (?:audio|sonido)|\bxlr\b|phantom power|aud[ií]fonos? de estudio|\b(?:digigram|axia|audioarts|solidyne|krk|shure|sennheiser|beyerdynamic|audio-?technica|focusrite|presonus|m-?audio|r[oø]de|neumann|adam audio|genelec|mackie|\bakg\b|tascam|behringer|apogee|antelope audio|universal audio|yamaha hs\d)\b)/i;
+
 /** ¿El producto es un accesorio pequeño? Se deduce de su nombre, porque en la web no hay
  *  categoría: es lo único que tenemos para aplicarle la regla del negocio (entre
  *  candidatos que sirven igual, en accesorios pequeños se toma el de mayor valor). */
@@ -1205,6 +1249,13 @@ function esAccesorioPorNombre(nombre: string): boolean {
  *  y la clasificación de la consulta. Si no hay coincidencia usa "default". */
 function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): string {
   const n = (nombre ?? "").toLowerCase();
+  // AUDIO PROFESIONAL ANTES QUE TODO. Es la línea que casi nadie trae al país, así que
+  // su tabla de búsqueda apunta a EE.UU. primero; si cayera en otra categoría (un KRK en
+  // "monitor" por llamarse monitor de estudio, un SM7B en "streaming", un ATH-M50x en
+  // "auriculares") se buscaría en Colombia primero y volvería con lo poco que hay, caro.
+  // Las marcas listadas son de audio y solo de audio; las genéricas (Logitech, Samsung)
+  // se quedan fuera a propósito.
+  if (AUDIO_PROFESIONAL.test(n) && !TIENE_CPU.test(n))             return "audio-profesional";
   // "monitor" solo si NO es un equipo completo: un PC combo dice "+ Monitor 24\"" pero lleva CPU
   // → debe ir a escritorio, no a la categoría monitor (si no, un gaming con monitor no recibe su margen).
   if (/\bmonitor\b/.test(n) && !TIENE_CPU.test(n))                 return "monitor";
@@ -1563,11 +1614,12 @@ const GENERACION_DESCONTINUADA =
 const esServidorDescontinuado = (titulo: string) =>
   SERVIDOR_EN_TITULO.test(titulo) && GENERACION_DESCONTINUADA.test(titulo);
 
-/** Posición del vendedor dentro de SITIOS_US (menor = más prioritario). */
-function usStoreRank(source?: string, link?: string): number {
+/** Posición del vendedor dentro de la lista de tiendas (menor = más prioritario).
+ *  En consultas de audio manda la lista del sector; las generales quedan después. */
+function usStoreRank(source?: string, link?: string, tiendas: string[] = SITIOS_US): number {
   const hay = `${source ?? ""} ${link ?? ""}`.toLowerCase();
-  const i = SITIOS_US.findIndex((d) => hay.includes(d) || hay.includes(d.split(".")[0]));
-  return i === -1 ? SITIOS_US.length : i;
+  const i = tiendas.findIndex((d) => hay.includes(d) || hay.includes(d.split(".")[0]));
+  return i === -1 ? tiendas.length : i;
 }
 
 type UsCandidato = { i: number; title: string; store: string; usd: number; link: string };
@@ -1636,6 +1688,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     const title = it.title ?? "";
     if (USADO.test(title) || USADO_US.test(title)) continue;
     if (esServidorDescontinuado(title)) continue;
+    if (COMBO_US.test(title)) continue;
     if (esRuidoParaLaConsulta(title, consulta, isComputer)) continue;
     candidatos.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
   }
@@ -1650,11 +1703,28 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   const ordenados = candidatos.map((c) => c.usd).sort((a, b) => a - b);
   const medianaUsd = ordenados[Math.floor(ordenados.length / 2)];
   const pisoUsd = Math.max(5, medianaUsd * 0.35);
-  const creibles = candidatos.filter((c) => c.usd >= pisoUsd);
+  // Y un TECHO, por lo mismo al revés: un revendedor pidiendo el doble de lo que cuesta
+  // en la tienda del fabricante. Con pocos anuncios la mediana es frágil, así que el
+  // techo solo se aplica cuando hay con qué compararla.
+  const techoUsd = candidatos.length >= 4 ? medianaUsd * 2 : Infinity;
+  let creibles = candidatos.filter((c) => c.usd >= pisoUsd && c.usd <= techoUsd);
   if (creibles.length === 0) return [];
 
-  // Ordena por prioridad de tienda B2B y luego por precio; reindexa para el modelo.
-  creibles.sort((a, b) => usStoreRank(a.store, a.link) - usStoreRank(b.store, b.link) || a.usd - b.usd);
+  // LA MARCA QUE PIDIÓ EL CLIENTE TIENE QUE ESTAR EN EL ANUNCIO. Un "SM7B Dynamic Vocal
+  // Microphone for Podcasting" de US$115 sin la palabra "Shure" por ningún lado no es un
+  // SM7B: el de verdad vale US$399, y esa imitación entraba a la cotización a menos de la
+  // mitad. Con retroceso: si ningún anuncio nombra la marca, se sigue con la lista
+  // completa antes que dejar al cliente sin opciones.
+  const marcasPedidas = marcasEnConsulta(consulta);
+  if (marcasPedidas.length > 0) {
+    const deLaMarca = creibles.filter((c) => marcasPedidas.some((m) => esDeMarca(c.title, m)));
+    if (deLaMarca.length > 0) creibles = deLaMarca;
+  }
+
+  // Ordena por prioridad de tienda y luego por precio; reindexa para el modelo. En audio
+  // profesional manda la lista de tiendas del sector.
+  const tiendas = CONSULTA_AUDIO.test(consulta) ? [...SITIOS_AUDIO_US, ...SITIOS_US] : SITIOS_US;
+  creibles.sort((a, b) => usStoreRank(a.store, a.link, tiendas) - usStoreRank(b.store, b.link, tiendas) || a.usd - b.usd);
   const top = creibles.slice(0, 12).map((c, i) => ({ ...c, i }));
 
   // 3) Estructura (DeepSeek). El precio y la URL NO vienen del modelo: se re-adjuntan
@@ -3855,6 +3925,17 @@ export async function POST(req: Request): Promise<Response> {
   const ctx = body.contexto;
   const isArmador = ctx?.ref === "armador";
 
+  // Viene del banner del estudio de radio del inicio. El chat ya lo saludó
+  // preguntando qué necesita; lo que sigue es saber recomendar un estudio, que no es
+  // lo mismo que un computador de oficina: lo que arruina una grabación es el ruido
+  // del equipo y el que se trabe a mitad de una emisión, no la falta de gráfica.
+  const CONTEXTO_ESTUDIO_AUDIO = `CONTEXTO: el cliente llegó desde el banner de AUDIO PROFESIONAL del inicio (estudio de radio, podcast o producción). El chat ya le mostró un saludo preguntando qué necesita para su estudio; no lo repitas.
+Guía para recomendar (uso interno, no la recites):
+- Computador para producir o emitir: lo que manda es el procesador con buen rendimiento por núcleo (Core i7 / Ryzen 7 o superior), 32GB de RAM (16GB como mínimo para radio y podcast), SSD NVMe para proyectos y librerías, y que sea SILENCIOSO: el ruido del ventilador entra al micrófono. La tarjeta gráfica dedicada NO hace falta para audio; solo si además transmiten video.
+- Emisora al aire 24/7 (automatización de radio): prioriza estabilidad y confiabilidad, y ofrece una UPS para que un corte de luz no saque la emisora del aire.
+- Además del computador, un estudio lleva interfaz de audio, micrófonos, monitores de estudio y audífonos cerrados. Si pide alguno, cotízalo como cualquier producto (buscar_productos y, si no hay, cotizar_web).
+Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, podcast) y si ya tiene parte del equipo.`;
+
   // DATO YA DADO. El prompt manda preguntar carga y usuarios antes de buscar un
   // servidor, y aunque también dice "salvo que ya lo haya dicho", el modelo lo
   // pregunta igual: a "servidor para base de datos con 10 usuarios concurrentes"
@@ -3885,6 +3966,8 @@ export async function POST(req: Request): Promise<Response> {
     ? `${SYSTEM}\n\nCONTEXTO: el cliente llegó desde la página del producto **${ctx.producto}**${ctx.ref ? ` (ref ${ctx.ref})` : ""}. El chat ya le mostró el saludo de bienvenida mencionando el producto. Busca el precio y disponibilidad y preséntalos DIRECTAMENTE con tus 3 opciones — NO escribas texto de espera como "dame un momento" ni repitas el saludo, ve directo a las opciones.`
     : ctx?.producto
     ? `${SYSTEM}\n\nCONTEXTO: el cliente llegó interesado en "${ctx.producto}"${ctx.ref ? ` (interno ref ${ctx.ref})` : ""}. Salúdalo por su nombre de producto y ayúdalo con eso.`
+    : ctx?.ref === "estudio-audio"
+    ? `${SYSTEM}\n\n${CONTEXTO_ESTUDIO_AUDIO}`
     : SYSTEM;
   const system = systemBase + notaDatoDado;
 
