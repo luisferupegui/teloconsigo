@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   Star, Tag, Package, ChevronDown, ChevronUp,
   CheckCircle2, AlertCircle, ImageIcon, Save, Loader2,
-  Eye, EyeOff, Globe, Trash2,
+  Eye, EyeOff, Globe, Trash2, Truck,
 } from "lucide-react";
 import type { BusinessProduct, Segmento } from "@/lib/products-types";
 import { formatCOP, SEGMENTOS, SEGMENTO_LABEL, SEGMENTO_COLOR, HOME_MAX } from "@/lib/products-types";
@@ -24,8 +24,8 @@ type PlacementFlag = "destacado" | "enAccesorios";
 // ─── Badges de estado de publicación ───────────────────────────────────────────
 
 function StatusBadges({
-  publicado, destacado, enAccesorios, enPromocion,
-}: { publicado: boolean; destacado: boolean; enAccesorios: boolean; enPromocion: boolean }) {
+  publicado, destacado, enAccesorios, enPromocion, bajoPedido,
+}: { publicado: boolean; destacado: boolean; enAccesorios: boolean; enPromocion: boolean; bajoPedido: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
       {publicado ? (
@@ -50,6 +50,12 @@ function StatusBadges({
       {publicado && enPromocion && (
         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700" title="En Promociones">
           <Tag className="h-3 w-3" /> Promo
+        </span>
+      )}
+      {/* No depende de `publicado`: dice de dónde sale el producto, no dónde se muestra. */}
+      {bajoPedido && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700" title="Se consigue por encargo — Andrea lo cotiza con entrega de 6 a 10 días">
+          <Truck className="h-3 w-3" /> Bajo pedido
         </span>
       )}
     </div>
@@ -86,6 +92,7 @@ function ProductRow({
   const [destacado,   setDestacado]   = useState(Boolean(product.destacado));
   const [enAccesorios,setEnAccesorios]= useState(Boolean(product.enAccesorios));
   const [enPromocion, setEnPromocion] = useState(Boolean(product.enPromocion));
+  const [bajoPedido,  setBajoPedido]  = useState(Boolean(product.bajoPedido));
   // Estado de imágenes elevado a la fila → persiste al cerrar/reabrir el panel.
   const [cardUrl,     setCardUrl]     = useState(product.cardUrl);
 
@@ -141,6 +148,7 @@ function ProductRow({
           destacado,
           enAccesorios,
           enPromocion,
+          bajoPedido,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -184,7 +192,7 @@ function ProductRow({
           </p>
           {/* Estado en móvil */}
           <div className="mt-1 sm:hidden">
-            <StatusBadges publicado={publicado} destacado={destacado} enAccesorios={enAccesorios} enPromocion={enPromocion} />
+            <StatusBadges publicado={publicado} destacado={destacado} enAccesorios={enAccesorios} enPromocion={enPromocion} bajoPedido={bajoPedido} />
           </div>
         </div>
 
@@ -202,7 +210,7 @@ function ProductRow({
 
         {/* Estado (desktop) */}
         <div className="hidden w-44 shrink-0 sm:block">
-          <StatusBadges publicado={publicado} destacado={destacado} enAccesorios={enAccesorios} enPromocion={enPromocion} />
+          <StatusBadges publicado={publicado} destacado={destacado} enAccesorios={enAccesorios} enPromocion={enPromocion} bajoPedido={bajoPedido} />
         </div>
 
         {/* Acción */}
@@ -310,6 +318,36 @@ function ProductRow({
               )}
             </div>
 
+            {/* Disponibilidad — de dónde sale el producto */}
+            {/*
+              Publicar un producto equivale, para Andrea, a decir que lo tenemos aquí: lo
+              ofrece con entrega de 1 a 3 días hábiles. Para la línea de audio profesional
+              eso sería mentir —esas referencias se traen— así que van marcadas bajo pedido
+              y Andrea las cotiza con su entrega real de 6 a 10 días.
+
+              El interruptor está a la vista porque antes era un campo invisible del JSON:
+              se podía crear una tarjeta de sonido desde el panel y quedaba prometiendo una
+              entrega que nadie puede cumplir, sin que nada lo avisara.
+            */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Disponibilidad</span>
+              <div>
+                <button
+                  onClick={() => setBajoPedido((v) => !v)}
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition
+                    ${bajoPedido ? "border-sky-300 bg-sky-50 text-sky-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-sky-200"}`}
+                >
+                  <Truck className="h-4 w-4" />
+                  {bajoPedido ? "Bajo pedido — se consigue ✓" : "Disponible aquí (1 a 3 días)"}
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                {bajoPedido
+                  ? "Andrea no lo ofrece como disponible: lo cotiza y promete 6 a 10 días hábiles."
+                  : "Andrea lo ofrece como disponible, con entrega de 1 a 3 días hábiles. Márcalo bajo pedido si en realidad hay que traerlo."}
+              </p>
+            </div>
+
             {/* Guardar */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
@@ -394,6 +432,7 @@ export function ProductManager({
       : filter === "accesorios"  ? Boolean(p.enAccesorios)
       : filter === "promo"       ? Boolean(p.enPromocion)
       : filter === "sin-img"     ? !p.cardUrl
+      : filter === "bajo-pedido" ? Boolean(p.bajoPedido)
       : p.segmento === filter; // un segmento concreto
     const q = query.toLowerCase().trim();
     const matchQ = !q
@@ -443,6 +482,7 @@ export function ProductManager({
           <option value="accesorios">🧰 Accesorios & Esenciales</option>
           <option value="promo">🏷️ En Promociones</option>
           <option value="sin-img">🖼️ Sin imagen</option>
+          <option value="bajo-pedido">🚚 Bajo pedido (se consigue)</option>
           <option disabled>──── Categoría ────</option>
           {SEGMENTOS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>

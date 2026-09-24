@@ -144,6 +144,9 @@ export async function POST(req: NextRequest) {
       destacado:         Boolean(body.destacado),
       enAccesorios:      Boolean(body.enAccesorios),
       enPromocion:       Boolean(body.enPromocion),
+      // Sin esto el interruptor del formulario no llegaba a ninguna parte: el producto
+      // nacía como disponible y Andrea prometía 1 a 3 días por algo que hay que traer.
+      bajoPedido:        Boolean(body.bajoPedido),
       // required by type but derived
       id:   referencia,
       slug: slugify(String(body.nombre)),

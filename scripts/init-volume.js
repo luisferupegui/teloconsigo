@@ -77,6 +77,73 @@ for (const file of DATA_FILES) {
   }
 }
 
+
+// ── 1.5 Migraciones del catálogo ──────────────────────────────────────────────
+//
+// El volumen de Railway monta SOBRE /app/data, así que el catálogo que se edita en el
+// repositorio no llega nunca a producción: allí manda el que vive en el volumen y gestiona
+// el panel. Eso es lo correcto —el admin es el dueño del catálogo— pero deja un hueco.
+// Un cambio de vitrina decidido aquí (sacar seis cards del home y poner las de audio
+// profesional, con sus specs y su `bajoPedido`) no tenía forma de viajar, y rehacerlo a
+// mano en el panel significa diez productos escritos dos veces.
+//
+// Copiar el archivo encima tampoco vale: producción tiene productos importados que aquí
+// no existen y los perdería.
+//
+// Así que el cambio viaja como migración: un archivo dice qué productos deben existir y
+// qué referencias salen del home, se aplica UNA vez y queda anotado en el volumen. En el
+// siguiente deploy no hace nada — si el admin mueve luego esas cards desde el panel, se
+// quedan como él las dejó, que para eso es su panel.
+
+const MIGRACIONES_DIR = path.join(DATA_DEFAULTS, "migraciones");
+const APLICADAS_FILE  = path.join(DATA_DIR, "migraciones-aplicadas.json");
+
+const leerJson = (p, siFalla) => {
+  try { return JSON.parse(fs.readFileSync(p, "utf8")); } catch { return siFalla; }
+};
+
+if (fs.existsSync(MIGRACIONES_DIR)) {
+  const aplicadas = new Set(leerJson(APLICADAS_FILE, []));
+  const pendientes = fs.readdirSync(MIGRACIONES_DIR)
+    .filter((f) => f.endsWith(".json"))
+    .sort() // el nombre empieza por fecha: se aplican en orden
+    .map((f) => leerJson(path.join(MIGRACIONES_DIR, f), null))
+    .filter((m) => m && m.id && !aplicadas.has(m.id));
+
+  if (pendientes.length > 0) {
+    const catalogoFile = path.join(DATA_DIR, "products-business.json");
+    const catalogo = leerJson(catalogoFile, []);
+    const refDe = (p) => p.referencia ?? p.slug ?? p.id;
+    let tocados = 0;
+
+    for (const m of pendientes) {
+      // Primero se libera sitio. Cada sección del home admite 12 cards como máximo, así
+      // que si entran las nuevas antes de salir las viejas, las últimas no caben.
+      for (const ref of m.quitarDeVitrinas ?? []) {
+        const p = catalogo.find((x) => refDe(x) === ref);
+        if (p && (p.destacado || p.enAccesorios)) {
+          p.destacado = false;
+          p.enAccesorios = false;
+          tocados++;
+        }
+      }
+      // Un producto que ya existe NO se pisa: puede tener foto, precio corregido o un
+      // nombre editado desde el panel, y eso vale más que lo que traiga la migración.
+      for (const nuevo of m.productos ?? []) {
+        if (catalogo.some((x) => refDe(x) === nuevo.referencia)) continue;
+        catalogo.push(nuevo);
+        tocados++;
+      }
+      aplicadas.add(m.id);
+      console.log(`[init-volume] ✓ migración ${m.id}${m.descripcion ? ` — ${m.descripcion}` : ""}`);
+    }
+
+    if (tocados > 0) fs.writeFileSync(catalogoFile, JSON.stringify(catalogo, null, 2));
+    fs.writeFileSync(APLICADAS_FILE, JSON.stringify([...aplicadas], null, 2));
+    console.log(`[init-volume] Migraciones: ${pendientes.length} aplicada(s), ${tocados} producto(s) afectado(s).`);
+  }
+}
+
 // ── 2. Inicializar imágenes de productos ──────────────────────────────────────
 
 const IMG_DEFAULTS = path.join(ROOT, "public", "productos-defaults");

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Save, Loader2, Eye, EyeOff, Star, Package, Tag, AlertCircle, ArrowLeft,
+  Save, Loader2, Eye, EyeOff, Star, Package, Tag, AlertCircle, ArrowLeft, Truck,
 } from "lucide-react";
 import type { Segmento } from "@/lib/products-types";
 import { SEGMENTOS, HOME_MAX } from "@/lib/products-types";
@@ -55,6 +55,10 @@ export function NewProductForm({ destCount = 0, accCount = 0 }: { destCount?: nu
   const [destacado,   setDestacado]   = useState(false);
   const [enAccesorios,setEnAccesorios]= useState(false);
   const [enPromocion, setEnPromocion] = useState(false);
+  // Lo que se crea a mano suele ser justo lo que no tenemos aquí —la línea de audio
+  // profesional nació así—, pero el valor honesto por defecto sigue siendo "disponible":
+  // marcarlo es una decisión, no un descuido.
+  const [bajoPedido,  setBajoPedido]  = useState(false);
 
   // Una sola imagen para todo: se guarda como "card" y `resolveProductImage` la usa
   // también donde antes iba la de detalle.
@@ -87,6 +91,7 @@ export function NewProductForm({ destCount = 0, accCount = 0 }: { destCount?: nu
           destacado,
           enAccesorios,
           enPromocion,
+          bajoPedido,
         }),
       });
       const data = await res.json();
@@ -211,6 +216,23 @@ export function NewProductForm({ destCount = 0, accCount = 0 }: { destCount?: nu
                 </span>
               </p>
             )}
+            {/* Disponibilidad: decide qué entrega promete Andrea (1 a 3 días o 6 a 10). */}
+            <div className="space-y-2 pt-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Disponibilidad</span>
+              <div>
+                <button type="button" onClick={() => setBajoPedido((v) => !v)}
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition
+                    ${bajoPedido ? "border-sky-300 bg-sky-50 text-sky-700" : "border-zinc-200 bg-white text-zinc-500 hover:border-sky-200"}`}>
+                  <Truck className="h-4 w-4" />
+                  {bajoPedido ? "Bajo pedido — se consigue ✓" : "Disponible aquí (1 a 3 días)"}
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                {bajoPedido
+                  ? "Andrea no lo ofrece como disponible: lo cotiza y promete 6 a 10 días hábiles."
+                  : "Andrea lo ofrece como disponible, con entrega de 1 a 3 días hábiles. Márcalo bajo pedido si hay que traerlo."}
+              </p>
+            </div>
             {!publicado && (
               <p className="text-[11px] text-zinc-400">
                 El producto nace <strong>oculto</strong> (visible solo en el panel). Puedes dejar elegidas sus ubicaciones desde ya: se aplicarán en cuanto lo publiques.
