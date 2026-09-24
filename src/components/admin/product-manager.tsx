@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   Star, Tag, Package, ChevronDown, ChevronUp,
   CheckCircle2, AlertCircle, ImageIcon, Save, Loader2,
-  Eye, EyeOff, Globe, Trash2, Truck,
+  Eye, EyeOff, Globe, Trash2, Truck, ArrowUp, ArrowDown,
 } from "lucide-react";
 import type { BusinessProduct, Segmento } from "@/lib/products-types";
 import { formatCOP, SEGMENTOS, SEGMENTO_LABEL, SEGMENTO_COLOR, HOME_MAX } from "@/lib/products-types";
@@ -20,6 +20,21 @@ export type ManagedBusinessProduct = BusinessProduct & {
 };
 
 type PlacementFlag = "destacado" | "enAccesorios";
+
+/** La referencia con la que se conoce a un producto en todas partes. */
+const refDe = (p: BusinessProduct) => p.referencia ?? p.slug ?? p.id;
+
+// Qué filtro corresponde a cada vitrina del home. Solo estando en una de ellas
+// tiene sentido reordenar: en "Todos los productos" no hay una fila que ordenar.
+const SECCION_DEL_FILTRO: Record<string, PlacementFlag> = {
+  destacado:  "destacado",
+  accesorios: "enAccesorios",
+};
+
+const NOMBRE_SECCION: Record<PlacementFlag, string> = {
+  destacado:    "Productos Destacados",
+  enAccesorios: "Accesorios & Esenciales",
+};
 
 // ─── Badges de estado de publicación ───────────────────────────────────────────
 
@@ -66,11 +81,17 @@ function StatusBadges({
 
 function ProductRow({
   product, destCount, accCount, onPlacement,
+  posicion, primero, ultimo, onMover,
 }: {
   product: ManagedBusinessProduct;
   destCount: number;
   accCount: number;
   onPlacement: (flag: PlacementFlag, delta: number) => void;
+  /** Puesto en el home (1 = la primera que ve el cliente). Sin esto no se ordena. */
+  posicion?: number;
+  primero?: boolean;
+  ultimo?: boolean;
+  onMover?: (dir: -1 | 1) => void;
 }) {
   const identifier = product.referencia ?? product.slug ?? product.id;
 
@@ -174,6 +195,29 @@ function ProductRow({
       ${open ? "border-indigo-300" : "border-zinc-200"} ${!publicado ? "opacity-90" : ""}`}>
       {/* ── Header / fila ── */}
       <div className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
+        {/* Puesto en el home + flechas */}
+        {posicion !== undefined && (
+          <div className="flex shrink-0 flex-col items-center">
+            <button
+              onClick={() => onMover?.(-1)}
+              disabled={primero}
+              aria-label="Subir esta card"
+              className="rounded text-zinc-400 transition hover:text-indigo-600 disabled:opacity-25 disabled:hover:text-zinc-400"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </button>
+            <span className="text-[11px] font-bold tabular-nums text-zinc-500">{posicion}</span>
+            <button
+              onClick={() => onMover?.(1)}
+              disabled={ultimo}
+              aria-label="Bajar esta card"
+              className="rounded text-zinc-400 transition hover:text-indigo-600 disabled:opacity-25 disabled:hover:text-zinc-400"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         {/* Thumbnail */}
         <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white">
           {cardUrl ? (
@@ -405,8 +449,33 @@ export function ProductManager({
   products: ManagedBusinessProduct[];
   initialFilter?: string;
 }) {
+  const router = useRouter();
   const [filter, setFilter] = useState<string>(initialFilter);
   const [query,  setQuery]  = useState("");
+
+  // ── Orden de la vitrina ────────────────────────────────────────────────────
+  //
+  // Se mueve en la pantalla y se guarda cuando el orden está listo, no a cada
+  // flecha: acomodar doce cards son muchos clics y no tiene sentido reescribir el
+  // catálogo en cada uno. `orden` es la lista de referencias tal como quedó; en
+  // null manda el orden ya guardado.
+  const seccion = SECCION_DEL_FILTRO[filter];
+  const [orden,      setOrden]      = useState<string[] | null>(null);
+  const [sinGuardar, setSinGuardar] = useState(false);
+  const [ordenOk,    setOrdenOk]    = useState(false);
+  const [ordenError, setOrdenError] = useState<string | null>(null);
+  const [guardandoOrden, startOrden] = useTransition();
+
+  // Con una búsqueda activa la lista no es la vitrina completa, así que subir una
+  // card no diría en qué puesto del home queda. Se ordena sobre la lista entera.
+  const ordenable = Boolean(seccion) && query.trim() === "";
+
+  function cambiarFiltro(nuevo: string) {
+    setFilter(nuevo);
+    setOrden(null);
+    setSinGuardar(false);
+    setOrdenError(null);
+  }
 
   // Contadores vivos de las secciones del home (tope HOME_MAX por sección).
   const [destCount, setDestCount] = useState(() => products.filter((p) => p.destacado).length);
@@ -442,6 +511,57 @@ export function ProductManager({
     return matchFilter && matchQ;
   }), [products, filter, query]);
 
+  // Dentro de una vitrina la lista se ve como se ve en el home, no como está
+  // escrita en el archivo: de otro modo se ordenaría a ciegas.
+  const ordenadas = useMemo(() => {
+    if (!seccion) return filtered;
+    const campo = seccion === "destacado" ? "ordenDestacado" : "ordenAccesorios";
+    const puesto = (p: ManagedBusinessProduct) => {
+      if (orden) {
+        const i = orden.indexOf(refDe(p));
+        return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+      }
+      return p[campo] ?? Number.MAX_SAFE_INTEGER;
+    };
+    return [...filtered].sort((a, b) => puesto(a) - puesto(b));
+  }, [filtered, seccion, orden]);
+
+  function mover(ref: string, dir: -1 | 1) {
+    const base = orden ?? ordenadas.map(refDe);
+    const i = base.indexOf(ref);
+    const j = i + dir;
+    if (i === -1 || j < 0 || j >= base.length) return;
+    const siguiente = [...base];
+    [siguiente[i], siguiente[j]] = [siguiente[j], siguiente[i]];
+    setOrden(siguiente);
+    setSinGuardar(true);
+    setOrdenOk(false);
+    setOrdenError(null);
+  }
+
+  function guardarOrden() {
+    if (!seccion || !orden) return;
+    setOrdenError(null);
+    startOrden(async () => {
+      const res = await fetch("/api/admin/home-orden", {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ seccion, referencias: orden }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSinGuardar(false);
+        setOrdenOk(true);
+        // `orden` se conserva: ya es el orden guardado, y soltarlo aquí haría
+        // parpadear la lista con el anterior mientras llega el catálogo nuevo.
+        router.refresh();
+        setTimeout(() => setOrdenOk(false), 2500);
+      } else {
+        setOrdenError((data as { error?: string }).error ?? "No se pudo guardar el orden.");
+      }
+    });
+  }
+
   return (
     <div>
       {/* Stats */}
@@ -472,7 +592,7 @@ export function ProductManager({
         />
         <select
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          onChange={(e) => cambiarFiltro(e.target.value)}
           className="rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
         >
           <option value="all">Todos los productos</option>
@@ -489,6 +609,51 @@ export function ProductManager({
           ))}
         </select>
       </div>
+
+      {/* Orden de la vitrina */}
+      {seccion && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3">
+          <div className="min-w-[240px] flex-1">
+            <p className="text-sm font-bold text-indigo-900">
+              Orden de las cards en {NOMBRE_SECCION[seccion]}
+            </p>
+            <p className="mt-0.5 text-[11px] leading-snug text-indigo-700/80">
+              {ordenable
+                ? "Súbelas y bájalas con las flechas de la izquierda. La número 1 es la primera que ve el cliente al entrar."
+                : "Borra la búsqueda para poder reordenar: sobre una lista filtrada, subir una card no dice en qué puesto del home queda."}
+            </p>
+          </div>
+
+          {ordenable && sinGuardar && (
+            <button
+              onClick={() => { setOrden(null); setSinGuardar(false); }}
+              className="rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50"
+            >
+              Deshacer
+            </button>
+          )}
+          {ordenable && (
+            <button
+              onClick={guardarOrden}
+              disabled={!sinGuardar || guardandoOrden}
+              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:opacity-40"
+            >
+              {guardandoOrden ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {sinGuardar ? "Guardar orden" : "Orden guardado"}
+            </button>
+          )}
+          {ordenOk && (
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+              <CheckCircle2 className="h-4 w-4" /> Así queda en el home
+            </span>
+          )}
+          {ordenError && (
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-red-600">
+              <AlertCircle className="h-4 w-4" /> {ordenError}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Encabezado de columnas + contador integrado */}
       <div className="hidden rounded-t-xl border border-zinc-200 bg-zinc-50 sm:block">
@@ -513,13 +678,17 @@ export function ProductManager({
       </p>
 
       <div className="space-y-2 rounded-b-xl border-x border-b border-zinc-200 p-3 sm:mt-0">
-        {filtered.map((p) => (
+        {ordenadas.map((p, i) => (
           <ProductRow
             key={p.referencia ?? p.id}
             product={p}
             destCount={destCount}
             accCount={accCount}
             onPlacement={onPlacement}
+            posicion={ordenable ? i + 1 : undefined}
+            primero={i === 0}
+            ultimo={i === ordenadas.length - 1}
+            onMover={ordenable ? (dir) => mover(refDe(p), dir) : undefined}
           />
         ))}
         {filtered.length === 0 && (

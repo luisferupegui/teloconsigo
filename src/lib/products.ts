@@ -65,9 +65,21 @@ const homeRef = (p: BusinessProduct) => p.referencia ?? p.slug ?? p.id;
 export function pickHomeCards(
   all: BusinessProduct[],
   isChosen: (p: BusinessProduct) => boolean,
-  opts: { preferSegmentos?: string[]; exclude?: Set<string> } = {},
+  opts: {
+    preferSegmentos?: string[];
+    exclude?: Set<string>;
+    /** Posición elegida desde el panel. Sin número, la card va al final. */
+    orden?: (p: BusinessProduct) => number | undefined;
+  } = {},
 ): BusinessProduct[] {
-  const chosen = all.filter(isChosen).slice(0, HOME_MAX);
+  const elegidas = all.filter(isChosen);
+  // El orden lo decide el panel. Las que no tienen número quedan al final y entre
+  // ellas conservan el orden del archivo, porque `sort` es estable.
+  if (opts.orden) {
+    const pos = (p: BusinessProduct) => opts.orden!(p) ?? Number.MAX_SAFE_INTEGER;
+    elegidas.sort((a, b) => pos(a) - pos(b));
+  }
+  const chosen = elegidas.slice(0, HOME_MAX);
   if (chosen.length >= HOME_MIN) return chosen;
 
   // Backfill hasta el mínimo, sin repetir lo ya elegido ni lo excluido.

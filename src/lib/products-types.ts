@@ -102,6 +102,17 @@ export type BusinessProduct = {
   destacado?: boolean;
   enAccesorios?: boolean;
   enPromocion?: boolean;
+  // Posición de la card dentro de su vitrina, de menor a mayor. Hasta ahora las
+  // vitrinas salían en el orden en que los productos estaban escritos en el
+  // archivo —o sea, en el orden en que se importaron: nadie lo eligió—, y el
+  // primer lugar de la fila es el que más se mira.
+  //
+  // El número vive en el producto y no en una lista aparte para que no haya dos
+  // fuentes que puedan contradecirse: si la card sale de la vitrina o el producto
+  // se borra, su posición se va con él. Quien no tiene número va al final, que es
+  // donde debe aparecer una card recién agregada.
+  ordenDestacado?: number;
+  ordenAccesorios?: number;
 };
 
 export const formatCOP = (value: number) =>

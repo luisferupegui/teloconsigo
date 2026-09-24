@@ -40,13 +40,16 @@ export default function Home() {
   //   destacado → "Productos Destacados" · enAccesorios → "Accesorios & Esenciales"
   // Máx 12 por sección, mín 4 (auto-relleno). Ver pickHomeCards en lib/products.
   const allBusiness = loadPublishedBusinessProducts();
-  const featuredBusiness = pickHomeCards(allBusiness, (p) => !!p.destacado);
+  const featuredBusiness = pickHomeCards(allBusiness, (p) => !!p.destacado, {
+    orden: (p) => p.ordenDestacado,
+  });
   const usedRefs = new Set(
     featuredBusiness.map((p) => p.referencia ?? p.slug ?? p.id),
   );
   const accesorios = pickHomeCards(allBusiness, (p) => !!p.enAccesorios, {
     preferSegmentos: ["accesorios", "smart-home"],
     exclude: usedRefs,
+    orden: (p) => p.ordenAccesorios,
   });
 
   return (
