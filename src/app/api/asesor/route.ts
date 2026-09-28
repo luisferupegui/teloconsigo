@@ -1737,20 +1737,50 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
 
   if (candidatos.length === 0) return [];
 
-  // PRECIOS BASURA: Google Shopping cuela cifras que no son el precio del producto —
-  // accesorios del mismo anuncio, precios "desde", cuotas o placeholders. Caso real: un
-  // "Innodisk 1TB SSD SATA" listado en **US$1** salía cotizado al cliente en $100.000 COP
-  // (1 ÷ 0,7 + 25 de flete × 3.800). La fórmula era fiel; el dato de origen era falso.
-  // Se descarta lo que quede muy por debajo de la mediana del propio resultado, con un
-  // piso absoluto: nada real sale de EE.UU. por menos de US$5.
-  const ordenados = candidatos.map((c) => c.usd).sort((a, b) => a - b);
-  const medianaUsd = ordenados[Math.floor(ordenados.length / 2)];
-  const pisoUsd = Math.max(5, medianaUsd * 0.35);
-  // Y un TECHO, por lo mismo al revés: un revendedor pidiendo el doble de lo que cuesta
-  // en la tienda del fabricante. Con pocos anuncios la mediana es frágil, así que el
-  // techo solo se aplica cuando hay con qué compararla.
-  const techoUsd = candidatos.length >= 4 ? medianaUsd * 2 : Infinity;
+  // ── CUÁNTO CUESTA DE VERDAD: LO DICEN LAS TIENDAS SERIAS ───────────────────
+  //
+  // Google Shopping devuelve, para la MISMA consulta, la tienda que vende el producto
+  // nuevo y, al lado, un marketplace con una unidad usada, un modelo viejo o algo que solo
+  // se le parece. De la Creative Sound Blaster Z SE trajo cuarenta anuncios: Newegg a
+  // US$129,89, Micro Center a US$179,99 y Staples a US$126,49 conviviendo con eBay a
+  // US$49,99, US$29,99 y US$9,99.
+  //
+  // El piso se calculaba sobre la mediana de TODO ese revoltijo, que los anuncios basura
+  // arrastran hacia abajo, y con el 35% de una mediana ya hundida el de US$49,99 entraba
+  // tan campante. El cliente recibió una cotización de $306.000 por una tarjeta que cuesta
+  // unos US$123, y con ese costo se registró un pedido.
+  //
+  // Así que la referencia deja de ponerla el montón y la ponen las tiendas de la lista
+  // —B&H, Newegg, Amazon, Best Buy, Micro Center, Sweetwater, Guitar Center, Markertek…—,
+  // que venden nuevo y a precio de lista. Sobre su mediana se abre una banda estrecha: por
+  // debajo del 70% no es ese producto (es usado, es otro modelo, o es un accesorio del
+  // mismo anuncio) y por encima del 80% de sobreprecio es un revendedor.
+  //
+  // eBay queda FUERA de la referencia aunque esté en la lista: está ahí como último
+  // recurso para ENCONTRAR algo raro, no para decir cuánto vale. Justamente sus anuncios
+  // son los que hundían la mediana.
+  //
+  // Hacen falta DOS tiendas de referencia para fiarse. Con una sola, o con ninguna, se
+  // vuelve a la regla de antes —más floja, pero es lo único que queda—, con su piso
+  // absoluto: nada real sale de EE.UU. por menos de US$5.
+  const tiendas = CONSULTA_AUDIO.test(consulta) ? [...SITIOS_AUDIO_US, ...SITIOS_US] : SITIOS_US;
+  const mediana = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  const esDeReferencia = (c: UsCandidato) =>
+    usStoreRank(c.store, c.link, tiendas) < tiendas.length
+    && !/ebay/i.test(`${c.store} ${c.link}`);
+
+  const preciosRef = candidatos.filter(esDeReferencia).map((c) => c.usd);
+  const referencia = preciosRef.length >= 2 ? mediana(preciosRef) : null;
+  const medianaUsd = mediana(candidatos.map((c) => c.usd));
+
+  const pisoUsd  = referencia !== null ? Math.max(5, referencia * 0.7) : Math.max(5, medianaUsd * 0.35);
+  const techoUsd = referencia !== null ? referencia * 1.8
+                 : candidatos.length >= 4 ? medianaUsd * 2 : Infinity;
+
   let creibles = candidatos.filter((c) => c.usd >= pisoUsd && c.usd <= techoUsd);
+  if (referencia !== null && creibles.length < candidatos.length) {
+    console.warn(`[cotizar] EE.UU.: referencia US${referencia.toFixed(2)} en ${preciosRef.length} tienda(s) conocida(s); ${candidatos.length - creibles.length} anuncio(s) fuera de la banda US${pisoUsd.toFixed(0)}–${techoUsd.toFixed(0)}`);
+  }
   if (creibles.length === 0) return [];
 
   // LA MARCA QUE PIDIÓ EL CLIENTE TIENE QUE ESTAR EN EL ANUNCIO. Un "SM7B Dynamic Vocal
@@ -1765,8 +1795,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   }
 
   // Ordena por prioridad de tienda y luego por precio; reindexa para el modelo. En audio
-  // profesional manda la lista de tiendas del sector.
-  const tiendas = CONSULTA_AUDIO.test(consulta) ? [...SITIOS_AUDIO_US, ...SITIOS_US] : SITIOS_US;
+  // profesional manda la lista de tiendas del sector (`tiendas`, ya calculada arriba).
   // EL QUE NOMBRA LA REFERENCIA VA PRIMERO, por delante incluso de la tienda preferida.
   //
   // Solo se estructuran los doce primeros anuncios, y el orden era tienda y luego precio:
@@ -2373,11 +2402,25 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   }
   if (refUS.length > 0) {
     const medianaUS = mediana(refUS);
-    const piso = medianaUS * 0.4;
+    // Y un TECHO para lo de aquí, por la misma razón y al revés.
+    //
+    // Al cotizar unos KRK Rokit 5 G4 el cliente vio DOS veces la misma referencia: una a
+    // $695.000 con entrega de 6 a 10 días y otra a $2.970.000 con entrega de 1 a 3. Cuando
+    // preguntó por qué, Andrea le explicó que una venía de fuera y la otra de Colombia —
+    // que es verdad por dentro y un disparate por fuera: para el cliente es el mismo
+    // aparato al cuádruple de precio, y quien lee eso deja de creerle a las dos cifras.
+    //
+    // Un anuncio de aquí al doble de lo que cuesta traerlo no es la misma unidad: es un
+    // PAR de monitores, es un combo, o es un vendedor pidiendo lo que se le ocurre. No se
+    // pierde nada descartándolo, porque la opción importada —más barata— sigue ahí, que es
+    // justo lo que la tienda ofrece.
+    const piso  = medianaUS * 0.4;
+    const techo = medianaUS * 2;
     const antes = productosCO.length;
-    productosCO = productosCO.filter((p) => p.precioCOP >= piso);
+    const bajos = productosCO.filter((p) => p.precioCOP < piso).length;
+    productosCO = productosCO.filter((p) => p.precioCOP >= piso && p.precioCOP <= techo);
     if (productosCO.length < antes) {
-      console.warn(`[cotizar] ${antes - productosCO.length} listado(s) de Colombia por debajo de ${fmtCOP(piso)}: no son ese producto`);
+      console.warn(`[cotizar] Colombia: ${bajos} por debajo de ${fmtCOP(piso)} y ${antes - productosCO.length - bajos} por encima de ${fmtCOP(techo)}: no son la misma unidad`);
     }
   }
 

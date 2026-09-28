@@ -32,9 +32,15 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  EE.UU., sin las tiendas de aquí que lo tienen a ~$175.000, y el precio fijo por
  *  producto lo habría sostenido 7 días más.
  *
+ *  Y otra con el arreglo del precio de referencia de EE.UU. (2026-09-28): el piso salía
+ *  del 35% de la mediana de TODOS los anuncios, y esa mediana la hunden los de eBay. Se
+ *  cotizó una Creative Sound Blaster Z SE por un anuncio de US$49,99 —cuesta unos US$123—
+ *  y con ese costo se registró un pedido. Lo guardado con la regla vieja arrastraría siete
+ *  días más de precios fantasma, y el precio por producto los sostiene incluso más.
+ *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 15, 17, 40);
+const VALIDO_DESDE = Date.UTC(2026, 8, 28, 0, 0);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
