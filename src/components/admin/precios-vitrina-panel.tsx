@@ -136,8 +136,8 @@ export function PreciosVitrinaPanel({ flash }: { flash: (ok: boolean, msg: strin
             cotizar: esas derivan al cliente al teléfono, que es una venta que no se cierra.
             <br />
             <span className="text-zinc-400">
-              Tarda unos minutos y consume créditos de Serper (cada card son búsquedas en la web). Nada se
-              guarda hasta que apruebes los cambios.
+              Cada card se vuelve a cotizar desde cero, ignorando lo que hubiera guardado: por eso tarda
+              unos minutos y consume créditos de Serper. Nada se guarda hasta que apruebes los cambios.
             </span>
           </p>
 

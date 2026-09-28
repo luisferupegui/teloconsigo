@@ -337,10 +337,14 @@ export default function AsesorPage({
   producto,
   refOrigen,
   precio,
+  seccion,
 }: {
   producto: string;
   refOrigen: string;
   precio: string;
+  /** Sección del catálogo que el cliente estaba mirando al abrir el chat
+   *  (el slug de `/categoria/<slug>`). Vacío si llegó por otro lado. */
+  seccion: string;
 }) {
   const router = useRouter();
   const ref    = refOrigen; // `ref` es nombre reservado como prop; dentro sí puede llamarse así
@@ -468,7 +472,7 @@ export default function AsesorPage({
     setIsTyping(true);
     const doFetch = async () => {
       const r = await preguntarAAndrea(
-        { messages: [initialMsg], contexto: { producto, ref, precio }, autoInicio: true },
+        { messages: [initialMsg], contexto: { producto, ref, precio, seccion }, autoInicio: true },
         (acc) => {
           const parts = acc.split(SEP);
           const bubbles: Msg[] = parts.map((c) => c.trim()).filter((c) => c.length > 0).map((c) => ({ role: "assistant" as const, content: c }));
@@ -519,8 +523,10 @@ export default function AsesorPage({
 
     const r = await preguntarAAndrea(
       // Del banner del estudio no llega producto, pero sí de dónde viene: con eso el
-      // servidor le da a Andrea la guía de equipos para audio.
-      { messages: withUser, contexto: hasProducto ? { producto, ref, precio } : isEstudio ? { producto: "", ref } : undefined },
+      // servidor le da a Andrea la guía de equipos para audio. Y la SECCIÓN viaja en todos
+      // los mensajes, no solo en el primero: el cliente que entró desde Motherboards sigue
+      // hablando de boards en el tercer mensaje, y sin esto Andrea lo olvidaba al segundo.
+      { messages: withUser, contexto: hasProducto ? { producto, ref, precio, seccion } : isEstudio ? { producto: "", ref, seccion } : seccion ? { producto: "", seccion } : undefined },
       (acc) => {
         const parts = acc.split(SEP);
         const bubbles = parts

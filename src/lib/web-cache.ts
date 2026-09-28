@@ -73,12 +73,22 @@ export type QuoteProducto = {
   origen?: "us" | "co"; // "co" = conseguido en Colombia web; "us" = importado EE.UU.
 };
 
+/** Una oferta de un VENDEDOR DE MARKETPLACE ("Walmart - Seller", "Newegg.com - X"): un
+ *  tercero vendiendo dentro de una tienda grande, normalmente en promoción.
+ *
+ *  No se usa para cotizarle al cliente —el precio se lo ponen las tiendas serias— pero se
+ *  guarda para que el admin la vea al registrar el pedido: si la promoción es real, se
+ *  compra ahí y el margen del pedido sube, sin que el cliente haya recibido una cifra que
+ *  mañana ya no existe. */
+export type OfertaMarketplace = { tienda: string; usd: number; url: string };
+
 /** Comparación de mercado local (solo admin). */
 export type LocalData = {
   precioMercadoLocal?: number;
   fuenteLocal?: string;
   cantidadListados?: number;
   siteLocal?: string;
+  ofertaMarketplace?: OfertaMarketplace;
 };
 
 /** Entrada por-producto que recupera registrarPedido. */

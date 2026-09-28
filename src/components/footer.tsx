@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 import { ShieldCheck, Truck, CreditCard, Award, ArrowUp, Mail, MapPin } from "lucide-react";
 import { CONTACTO, whatsappUrl } from "@/lib/contacto";
@@ -66,6 +67,12 @@ const SOCIAL = [
 ];
 
 export function Footer() {
+  // Si el cliente está en una sección del catálogo, el chat arranca sabiéndolo: quien
+  // mira Motherboards y pincha "Cotiza Ya Mismo" está preguntando por una board.
+  const pathname = usePathname();
+  const seccion = pathname.startsWith("/categoria/") ? pathname.split("/")[2] ?? "" : "";
+  const hrefAndrea = seccion ? `/asesor?seccion=${encodeURIComponent(seccion)}` : "/asesor";
+
   return (
     <footer className="relative bg-[#050a18] text-zinc-300 mt-auto overflow-hidden">
       {/* Costura de luz en el borde superior: una hebra de 1px que se enciende en el
@@ -110,7 +117,9 @@ export function Footer() {
                 ["Catálogo completo", "/catalogo"],
                 ["Promociones",        "/soluciones"],
                 ["Armador de PC",     "/armador"],
-                ["Cotiza Ya Mismo",   "/asesor"],
+                // Desde una seccion del catalogo, el chat arranca sabiendo cual es
+                // (ver el mismo detalle en floating-whatsapp.tsx).
+                ["Cotiza Ya Mismo",   hrefAndrea],
               ].map(([label, href]) => (
                 <li key={label}><Link href={href} className="hover:text-[#4d8dff] transition">{label}</Link></li>
               ))}

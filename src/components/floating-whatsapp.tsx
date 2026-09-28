@@ -59,6 +59,15 @@ export function FloatingWhatsApp() {
 
   if (!mounted || pathname.startsWith("/asesor")) return null;
 
+  // DESDE DÓNDE PREGUNTA EL CLIENTE.
+  //
+  // El botón llevaba siempre a `/asesor` a secas, así que quien estaba mirando la sección
+  // de Motherboards y abría el chat para pedir "una board" le hablaba a Andrea desde
+  // ninguna parte: ella no tenía cómo saber qué estaba viendo, y entre las opciones le
+  // salían un equipo y un monitor. La página lo sabe; solo había que decírselo.
+  const seccion = pathname.startsWith("/categoria/") ? pathname.split("/")[2] ?? "" : "";
+  const hrefAndrea = seccion ? `/asesor?seccion=${encodeURIComponent(seccion)}` : "/asesor";
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2.5">
 
@@ -116,7 +125,7 @@ export function FloatingWhatsApp() {
 
             {/* CTA principal — Andrea */}
             <Link
-              href="/asesor"
+              href={hrefAndrea}
               className="mt-3 flex items-center justify-between rounded-xl bg-gradient-to-r from-[#1e6cff] to-[#4f8aff] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#1e6cff]/25 transition hover:brightness-105 hover:shadow-[#1e6cff]/40"
             >
               <span>{hasConversation ? "Retomar conversación" : "Hablar con Andrea"}</span>
@@ -159,7 +168,7 @@ export function FloatingWhatsApp() {
 
         {/* Botón avatar */}
         <Link
-          href="/asesor"
+          href={hrefAndrea}
           aria-label="Hablar con Andrea"
           className="relative flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full shadow-2xl shadow-black/20 ring-[3px] ring-white transition duration-200 hover:scale-105"
         >

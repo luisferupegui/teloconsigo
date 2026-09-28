@@ -47,6 +47,7 @@ export default async function Page({
       producto={uno(sp.producto)}
       refOrigen={uno(sp.ref)}
       precio={uno(sp.precio)}
+      seccion={uno(sp.seccion)}
     />
   );
 }

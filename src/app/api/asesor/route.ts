@@ -19,9 +19,10 @@ import {
 } from "@/lib/armador-cotizacion";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
-import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
+import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData, type OfertaMarketplace } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
+import { loadCategories } from "@/lib/categories";
 import { marcasEnConsulta, esDeMarca, esMarcaDeComponente, sinMarcas } from "@/lib/marcas";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "@/lib/specs-nombre";
 import { claveCanonica } from "@/lib/specs-claves";
@@ -484,6 +485,11 @@ function monitorStatusFromName(texto: string, categoria?: string): string | null
  *  ambigüedad; si no, no se dice nada (mejor callar que inventar). */
 function notaGraficosCPU(nombre: string): string | null {
   const n = nombre.toLowerCase();
+  // UNA BOARD NO TIENE GRÁFICOS: nombra procesadores para decir cuáles ACEPTA. Una
+  // "JGINYUE B450M Ti ARGB Motherboard AM4 Socket Ryzen 1000 5000 Processors" salía en una
+  // cotización de boards con la nota "🎮 Gráficos integrados básicos", que habla de un
+  // producto que el cliente no está comprando.
+  if (/\b(motherboard|mainboard|mobo|placa\s+(base|madre)|tarjeta\s+madre)\b/.test(n)) return null;
   const SIN     = "🎮 Sin gráficos integrados — necesita tarjeta de video aparte";
   const CON     = "🎮 Con gráficos integrados — funciona sin tarjeta de video";
   const BASICOS = "🎮 Gráficos integrados básicos — para juegos o diseño necesita tarjeta de video";
@@ -788,7 +794,10 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // cliente está pidiendo una PIEZA aunque ninguna de las tres listas la reconozca.
   // Sin este respaldo, cualquier categoría que faltara en las listas apagaba todas las
   // guardas a la vez y la búsqueda devolvía lo primero que puntuara.
-  const familiaConsulta = familiaDe(consulta);
+  // Y si la consulta no nombra ninguna, la pone la sección de la web desde la que está
+  // preguntando el cliente (`seccion` la inyecta el servidor, no Andrea). Ver
+  // `familiaDeSeccion`: orienta cuando el cliente no dice, nunca lo contradice.
+  const familiaConsulta = familiaDe(consulta) ?? familiaDeSeccion(String(input?.seccion ?? ""));
   const soloEquipos = clase === "equipo";
   // Un SERVIDOR es un equipo completo. "servidor" está en COMPONENT_QUERY —la lista de
   // palabras de pieza—, así que una búsqueda de servidor entraba en modo "solo piezas",
@@ -1267,7 +1276,16 @@ const CONSULTA_AUDIO = /\b(audio|sonido|micr[oó]fono|microphone|interfaz|interf
 /** Combos y lotes: no son el producto que pidió el cliente y su precio no se puede
  *  comparar. "SM7B & Boom Arm Bundle" (US$541) o "Pair Studio Monitors" (el doble de
  *  una unidad) entraban a la cotización como si fueran la unidad suelta. */
-const COMBO_US = /\b(bundle|combo|vocal studio|producer pack|recording pack|starter (?:pack|kit)|pack of|\d+[\s-]?pack|\bpair\b|\blot\b|with (?:stand|boom|arm|cable|case|shock|mic|headphones)|and (?:boom|stand|cable|headphones))\b/i;
+//
+// Se amplió con "kit", "package", "w/" y los accesorios que faltaban. Del Shure SM7B, los
+// anuncios que pasaban eran "SM7B ... and Broadcast Arm Kit" (US$558,99), "with Tabletop
+// Stand & XLR Cable Kit" (US$475,94), "w/Tripod Boom Stand Package" (US$493,20) y "and
+// Cloudlifter Kit" (US$596,95): ninguno es el micrófono solo, y entre los cuatro subían la
+// mediana de referencia de US$350 a US$440. Con el piso en el 70% de esa cifra inflada,
+// los US$279,99 de Guitar Center —una promoción real, en una tienda de las serias— caían
+// por debajo y se descartaban. El cliente terminaba pagando el precio de lista porque un
+// brazo de micrófono contaba como micrófono.
+const COMBO_US = /\b(bundle|combo|vocal studio|producer pack|recording pack|starter (?:pack|kit)|pack of|\d+[\s-]?pack|\bkit\b|\bpackage\b|\d+-person|\bpair\b|\blot\b|w\/|with (?:stand|boom|arm|cable|case|shock|mic|headphones|tripod)|and (?:boom|stand|cable|headphones|broadcast|tripod|cloud))\b/i;
 // Peso para ordenar resultados de Serper: menor = aparece primero en las opciones.
 // Prioridad B2B: alkosto/ktronix/pcfactory/falabella son las 4 referencias principales.
 // Las claves se comparan contra `quienVende` (vendedor + dominio, en minúsculas y sin tildes).
@@ -1436,7 +1454,7 @@ function inferirCategoriaMargen(nombre: string, clasificacion: Categoria): strin
 //    2. cotizar_web → Colombia y EE.UU. en el orden que fija el panel por categoría
 //       (`getSearchMode`): por defecto Colombia primero y EE.UU. solo si faltan opciones.
 const COMPUTER_QUERY  = /\b(laptop|port[aá]til|notebook|computador(a)?|desktop|pc de escritorio|todo en uno|all.?in.?one|aio|tablet|ipad|torre pc)\b/i;
-const COMPONENT_QUERY = /\b(motherboard|placa( base| madre)?|tarjeta madre|mainboard|memoria( ram)?|ram|ddr[2345]|disco( duro)?|hdd|ssd|nvme|m\.?2|sata|procesador|cpu|ryzen|core i[3579]|i[3579]-\w|xeon|pentium|celeron|tarjeta (de )?(video|gr[aá]fica|sonido|red|raid)|gpu|vga|rtx|gtx|radeon|geforce|raid|sound ?card|psu|fuente de poder|disipador|cooler|ventilador|refrigeraci[oó]n|switch|router|access point|punto de acceso|servidor|server|\bnas\b|storage|firewall)\b/i;
+const COMPONENT_QUERY = /\b(motherboard|placa( base| madre)?|tarjeta madre|mainboard|board|mobo|memoria( ram)?|ram|ddr[2345]|disco( duro)?|hdd|ssd|nvme|m\.?2|sata|procesador|cpu|ryzen|core i[3579]|i[3579]-\w|xeon|pentium|celeron|tarjeta (de )?(video|gr[aá]fica|sonido|red|raid)|gpu|vga|rtx|gtx|radeon|geforce|raid|sound ?card|psu|fuente de poder|disipador|cooler|ventilador|refrigeraci[oó]n|switch|router|access point|punto de acceso|servidor|server|\bnas\b|storage|firewall)\b/i;
 // Accesorios / consumo masivo: baratos y abundantes local → Colombia primero, EE.UU.
 // solo último recurso (importarlos no compensa el flete). Tienen PRECEDENCIA sobre
 // componente para que "memoria USB", "disco externo", "tarjeta SD" no vayan a EE.UU.
@@ -1501,7 +1519,10 @@ const FAMILIAS: [string, RegExp][] = [
   ["almacenamiento", /\b(ssd|nvme|hdd|disco\s+(duro|s[oó]lido)|m\.?2)\b/i],
   ["tarjeta-grafica",/\b(tarjeta\s+(de\s+)?(video|gr[aá]fica)|rtx|gtx|radeon|geforce|\bgpu\b)\b/i],
   ["procesador",     /\b(procesador|\bcpu\b|ryzen|core\s?i[3579]|xeon|threadripper)\b/i],
-  ["motherboard",    /\b(motherboard|mainboard|placa\s+(base|madre)|tarjeta\s+madre)\b/i],
+  // "Board" a secas es como se le dice aquí, y no estaba: quien escribía "una board para
+  // mi PC" no nombraba ninguna familia que reconociéramos. `\bboard\b` no se cuela dentro
+  // de "keyboard", que es una sola palabra.
+  ["motherboard",    /\b(motherboard|mainboard|\bboard\b|mobo|placa\s+(base|madre)|tarjeta\s+madre)\b/i],
   ["fuente",         /\b(fuente\s+de\s+poder|\bpsu\b|80\s?plus)\b/i],
   ["refrigeracion",  /\b(cooler|disipador|ventilador|refrigeraci[oó]n)\b/i],
   ["gabinete",       /\b(gabinete|chasis|\bcase\b)\b/i],
@@ -1522,9 +1543,68 @@ const CATEGORIA_EQUIPO = new Set([
   "all-in-one", "todo-en-uno", "mini-pc", "servidor", "pc-equipos-de-marca",
 ]);
 
-/** Familia concreta a la que pertenece un texto. `null` si no se reconoce ninguna. */
+/** Familia concreta a la que pertenece un texto. `null` si no se reconoce ninguna.
+ *
+ *  GANA LA QUE SE NOMBRA PRIMERO, no la que esté antes en la lista.
+ *
+ *  Se devolvía la primera familia de `FAMILIAS` que coincidiera en cualquier parte del
+ *  texto, y "procesador" está escrito antes que "motherboard": una consulta de
+ *  "board para un Ryzen 5" salía clasificada como PROCESADOR, y el cliente que pedía una
+ *  board recibía procesadores Ryzen. El mismo error que ya se había corregido en
+ *  `clasificarConsulta` —"gana el término que aparece ANTES"— seguía vivo aquí.
+ *
+ *  Lo que va después es para qué es: "board para Ryzen 5", "memoria RAM para un Core i5",
+ *  "disco para servidor". El producto es lo primero que se nombra; lo demás describe con
+ *  qué tiene que funcionar.
+ *
+ *  En EMPATE manda el orden de la lista, que es donde está escrita la precedencia por
+ *  especificidad: "Disco Sólido Externo" empieza en la misma letra como
+ *  almacenamiento-externo y como almacenamiento, y gana el externo porque va antes. */
 function familiaDe(texto: string): string | null {
-  return FAMILIAS.find(([, re]) => re.test(texto))?.[0] ?? null;
+  let nombre: string | null = null;
+  let donde = Infinity;
+  for (const [fam, re] of FAMILIAS) {
+    const i = texto.search(re);
+    if (i !== -1 && i < donde) { nombre = fam; donde = i; }
+  }
+  return nombre;
+}
+
+/** LA SECCIÓN DEL CATÁLOGO DESDE LA QUE PREGUNTA EL CLIENTE, TRADUCIDA A FAMILIA.
+ *
+ *  Quien está mirando Motherboards y escribe "cotízame una" no va a repetir la palabra:
+ *  para él está en la pantalla. Andrea no la veía, y la búsqueda salía a ciegas — con un
+ *  equipo y un monitor entre las tres opciones.
+ *
+ *  Solo se usa cuando la consulta NO nombra ninguna familia: si el cliente pregunta por
+ *  una impresora estando en Motherboards, manda lo que pidió. La sección orienta cuando
+ *  el cliente no dice; nunca lo contradice.
+ *
+ *  Las claves son los slugs de `data/categories.json`. Quedan fuera a propósito las
+ *  secciones que no son una familia de PIEZA —portátiles, equipos de escritorio y el
+ *  cajón de accesorios—: ahí acotar por familia no ayuda y estorba. */
+const FAMILIA_DE_SECCION: Record<string, string> = {
+  motherboards:         "motherboard",
+  procesadores:         "procesador",
+  "memoria-ram":        "memoria-ram",
+  "tarjetas-graficas":  "tarjeta-grafica",
+  "fuentes-de-poder":   "fuente",
+  monitores:            "monitor",
+  refrigeracion:        "refrigeracion",
+  redes:                "red",
+  "mouse-pad":          "mouse",
+  "auriculares-audio":  "audio",
+  "kits-streaming":     "captura",
+  almacenamiento:       "almacenamiento",
+  proteccion:           "proteccion",
+  teclados:             "teclado",
+  impresoras:           "impresora",
+};
+
+/** La familia de una sección del catálogo. `null` si no la conocemos o no viene ninguna.
+ *  `hasOwn` y no `in`: "constructor" in FAMILIA_DE_SECCION es true. */
+function familiaDeSeccion(seccion: string): string | null {
+  return seccion && Object.hasOwn(FAMILIA_DE_SECCION, seccion) ? FAMILIA_DE_SECCION[seccion] : null;
 }
 
 type Categoria = "equipo" | "componente" | "accesorio" | "otro";
@@ -1729,6 +1809,28 @@ const VENDEDOR_FUERA_DE_US = /\b(microless|desertcart|gear4music|techinn|musicst
 
 const USADO_US = /\b(used|refurb(ished)?|renewed|open[\s-]?box|pre[\s-]?owned|for parts|as[\s-]is)\b/i;
 
+/** UN VENDEDOR DENTRO DE UNA TIENDA NO ES LA TIENDA.
+ *
+ *  Google reporta a los terceros de un marketplace como "Tienda - Vendedor": "Walmart -
+ *  Cathys Express", "Newegg.com - Master Electronics", "Walmart - Seller". No son Walmart
+ *  ni Newegg vendiendo; son cualquiera vendiendo dentro de su web, con su propio precio,
+ *  su propia garantía y su propio stock de un día.
+ *
+ *  Se colaban como si fueran la tienda grande —el nombre la contiene— y hacían las dos
+ *  cosas que no deben: fijar el precio de referencia y ganar la cotización. Del ASUS TUF,
+ *  un solo vendedor de Newegg listaba el mismo portátil dieciséis veces entre US$1.459 y
+ *  US$2.929, y esas dieciséis cifras eran la mediana. Del Shure SM7B, "Walmart - Seller"
+ *  lo ofrecía a US$115 cuando Shure lo lista en US$439.
+ *
+ *  Lo que traen sí sirve para algo, y por eso no se tira: la más barata se guarda como
+ *  `ofertaMarketplace` para que el admin la vea al registrar el pedido. Si la promoción es
+ *  real, se compra ahí y el margen sube — sin que el cliente haya recibido una cifra que
+ *  mañana ya no existe.
+ *
+ *  Se exigen los espacios alrededor del guion: "B&H Photo-Video-Audio" y "Micro Center"
+ *  son una sola tienda. */
+const esVendedorDeMarketplace = (source?: string) => /\s[-–—]\s/.test(source ?? "");
+
 /** Servidores de una generación que el fabricante ya no fabrica. Un anuncio de un
  *  "HP ProLiant ML350 G9" como nuevo es inventario viejo o reacondicionado sin
  *  decirlo, y salía de "Mejor precio" en una cotización de servidor para base de
@@ -1812,7 +1914,11 @@ function consultaAmplia(q: string): string {
     .trim();
 }
 
-async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: boolean): Promise<WebProducto[]> {
+/** `apunte` es una libreta que el llamador presta para que la función anote lo que
+ *  encontró y no cotiza: la oferta de marketplace que el admin sí quiere ver. Va como
+ *  parámetro y no en el valor de retorno porque esta función tiene cinco salidas y la
+ *  libreta solo interesa en una. */
+async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: boolean, apunte?: { oferta?: OfertaMarketplace }): Promise<WebProducto[]> {
   const serperKey = getSerperApiKey();
   if (!serperKey) return [];
 
@@ -1934,6 +2040,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   //  caracteres de retroceso literales. Una regex rota no falla: deja pasar todo, callada.)
   const esDeReferencia = (c: UsCandidato) =>
     usStoreRank(c.store, c.link, tiendas) < tiendas.length
+    && !esVendedorDeMarketplace(c.store)
     && !/ebay|mercari|whatnot|reverb|jawa.gg|aliexpress|temu|wish/i.test(`${c.store} ${c.link}`);
 
   // ── LA REFERENCIA SE PREGUNTA AL MISMO PRODUCTO, EN ESE ORDEN ──────────────
@@ -1990,6 +2097,24 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     const deLaMarca = creibles.filter((c) => marcasPedidas.some((m) => esDeMarca(c.title, m)));
     if (deLaMarca.length > 0) creibles = deLaMarca;
   }
+
+  // Y EL PRECIO SE LO PONEN LAS TIENDAS, NO LOS VENDEDORES DE SU MARKETPLACE.
+  //
+  // Ver `esVendedorDeMarketplace`. Llegados aquí, lo que queda ya pasó la banda y el
+  // filtro de marca, así que son ofertas verosímiles — pero de un tercero, con su stock
+  // de un día. La más barata se aparta para el admin; al cliente se le cotiza con las
+  // tiendas.
+  //
+  // CON RETROCESO: si no queda ninguna tienda seria, se cotiza con ellos igual. Cuando son
+  // el único que vende el producto, un precio real de un marketplace es mejor respuesta
+  // que el teléfono del equipo.
+  const deMarketplace = creibles.filter((c) => esVendedorDeMarketplace(c.store));
+  const deTiendas = creibles.filter((c) => !esVendedorDeMarketplace(c.store));
+  if (apunte && deMarketplace.length > 0) {
+    const barata = deMarketplace.reduce((a, b) => (b.usd < a.usd ? b : a));
+    apunte.oferta = { tienda: barata.store, usd: barata.usd, url: barata.link };
+  }
+  if (deTiendas.length > 0) creibles = deTiendas;
 
   // Ordena por prioridad de tienda y luego por precio; reindexa para el modelo. En audio
   // profesional manda la lista de tiendas del sector (`tiendas`, ya calculada arriba).
@@ -2609,6 +2734,9 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   let productosCO: QuoteProducto[] = [];
   let productosUS: QuoteProducto[] = [];
   let localData: LocalData = {};
+  // La libreta donde la búsqueda de EE.UU. anota la oferta de marketplace que NO se cotiza
+  // pero que el admin sí quiere ver al registrar el pedido (ver `esVendedorDeMarketplace`).
+  const apunte: { oferta?: OfertaMarketplace } = {};
 
   if (mode === "co_only") {
     if (serperKey) {
@@ -2616,7 +2744,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
       ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta));
     }
   } else if (mode === "eeuu_only") {
-    productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
+    productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
   } else if (mode === "eeuu_co") {
     // EE.UU. primero; Colombia rellena si faltan opciones.
     //
@@ -2630,7 +2758,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     const colombiaEnCurso = serperKey
       ? fetchLocalViaSerper(consulta, serperKey, categoria === "equipo")
       : Promise.resolve<WebProducto[]>([]);
-    productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
+    productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
     // Se cuentan las que SOBREVIVEN al filtro de specs, no las que llegaron: un listado
     // que no confirma lo que pidió el cliente no es una opción (ver abajo).
     if (filtrarPorSpecs(productosUS, consulta).length < 3 && serperKey) {
@@ -2646,7 +2774,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     // descartaban DESPUÉS — y para entonces ya se había decidido no buscar en EE.UU.
     // Resultado: el cliente que pedía una USB de 64GB veía UNA sola opción, la local.
     if (filtrarPorSpecs(productosCO, consulta).length < 3) {
-      productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
+      productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
     }
   }
 
@@ -2754,8 +2882,9 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   const finales = filtrarPorTipoDisco(filtrarPorSpecs(productosFinales, consulta), consulta);
 
   // Solo se guarda lo que SÍ se encontró: ver el comentario de `web-cache.ts` sobre por
-  // qué lo vacío no se cachea.
-  if (finales.length > 0) saveQuote(consulta, finales, localData);
+  // qué lo vacío no se cachea. La oferta de marketplace viaja con el resto de la
+  // comparación de mercado, que es lo que lee `registrarPedido` para el admin.
+  if (finales.length > 0) saveQuote(consulta, finales, { ...localData, ofertaMarketplace: apunte.oferta });
 
   return respuestaCotizar(finales, consulta);
 }
@@ -2829,6 +2958,12 @@ function esEscritorioCompuesto(nombre: string): boolean {
   // 7600X … Desktop Processor" lleva la palabra "desktop" pero no describe un equipo (sin
   // RAM, sin disco, sin monitor) y salía etiquetada "🖥️ Solo torre (sin monitor)".
   if (/\b(processor|procesador|cpu)\b/.test(n) && !/\b(ram|ddr[2345]|ssd|nvme|hdd|monitor)\b/.test(n)) return false;
+  // Ni una BOARD, que nombra procesador y memoria para decir con qué es COMPATIBLE, no
+  // porque los traiga. Una "JGINYUE B450M Ti ARGB Motherboard AM4 Socket Ryzen 1000 5000
+  // Processors DDR4 3600 64GB Dual Channel Micro ATX" cumple "tiene CPU y tiene RAM" con
+  // las dos cosas que NO incluye, y se le ofrecía al cliente etiquetada "🖥️ Solo torre
+  // (sin monitor)" en una cotización de boards.
+  if (/\b(motherboard|mainboard|mobo|placa\s+(base|madre)|tarjeta\s+madre)\b/.test(n)) return false;
   if (/desktop|escritorio|all.?in.?one|\baio\b|ensamblad|\btorre\b|gaming pc|pc gamer|workstation/.test(n)) return true;
   const hasCPU = /ryzen|core ?i[3579]|\bi[3579][\s-]?\d|\bxeon\b|pentium|celeron/.test(n);
   const hasRAM = /\bram\b|\bddr[2345]\b/.test(n);
@@ -3379,6 +3514,23 @@ async function registrarPedido(input: unknown, acc: Acumulador): Promise<unknown
       url: quote.urlCompra || undefined,
     });
   }
+  // LA PROMOCIÓN QUE NO SE LE COTIZÓ AL CLIENTE, PERO QUE SÍ SE PUEDE COMPRAR.
+  //
+  // Un vendedor del marketplace de Walmart o de Newegg con el producto a mitad de precio
+  // no fija lo que se le cobra al cliente (ver `esVendedorDeMarketplace`): su stock dura
+  // un día y su garantía no es la de la tienda. Pero si la promoción sigue viva cuando hay
+  // que comprar, comprarla ahí es margen — y esa decisión es del negocio, con el enlace
+  // delante, no de un filtro automático.
+  const promo = quote?.ofertaMarketplace;
+  if (promo && promo.usd > 0) {
+    webSources.push({
+      fuente:   `${promo.tienda} (promoción)`,
+      tipo:     "eeuu",
+      costoCOP: cotizarImportacion(promo.usd, "component").copEstimado,
+      nota:     `US$${promo.usd.toLocaleString("es-CO", { minimumFractionDigits: 2 })} · vendedor del marketplace, NO se usó para cotizar. Verifica que siga disponible antes de comprar.`,
+      url:      promo.url || undefined,
+    });
+  }
   // Colombia: listados individuales vía Serper (~$0.001, barato), una opción por tienda.
   const listadosCO = await serperColombiaListings(producto.nombre, producto.modelo, producto.precioCOP);
   webSources.push(...listadosCO);
@@ -3531,6 +3683,9 @@ type Acumulador = {
   locales: OpcionSel[];
   /** Última consulta que se buscó localmente: sirve para cotizar la web sin el modelo. */
   ultimaConsulta?: string;
+  /** Sección del catálogo desde la que el cliente abrió el chat (slug de la categoría).
+   *  Acota la búsqueda cuando la consulta no nombra ninguna familia. */
+  seccion?: string;
   /** Cuántas opciones se le entregaron al modelo en la última selección. */
   mostradas?: number;
   web: OpcionSel[];
@@ -4173,7 +4328,9 @@ function soloLosSeleccionados<T extends { nombre?: string }>(productos: T[], sel
 async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulador): Promise<unknown> {
   try {
     if (name === "buscar_productos") {
-      const r = buscarProductos(input as Record<string, unknown>);
+      // La sección la pone el servidor, no el modelo: es de dónde viene el cliente, un
+      // dato de la navegación. Andrea no la inventa ni puede olvidarla.
+      const r = buscarProductos({ ...(input as Record<string, unknown>), seccion: acc.seccion ?? "" });
       acc.localDisponibles = r.localDisponibles;
       acc.ultimaConsulta = String((input as { consulta?: unknown })?.consulta ?? "").trim();
       for (const p of r.productos) {
@@ -4214,6 +4371,40 @@ async function runTool(ds: DeepSeek, name: string, input: unknown, acc: Acumulad
         const otras = await cotizarWeb(ds, sinMarca);
         guardar(otras.productos);
         if (otras.encontrados > 0) r = { ...otras, encontrados: r.encontrados + otras.encontrados, productos: [...r.productos, ...otras.productos] };
+      }
+
+      // EL MODELO EXACTO NO APARECE, PERO LA MARCA SIGUE EXISTIENDO.
+      //
+      // Un fabricante descontinúa una referencia y la reemplaza por otra: la ALP222e pasa a
+      // ALP442e, un portátil de este año sustituye al del año pasado. Cuando eso ocurre no
+      // hay nada que cotizar con ese nombre, y hasta ahora la respuesta era el teléfono del
+      // equipo — al cliente que nombró la marca, el modelo y lo que necesita, que es el que
+      // más cerca está de comprar.
+      //
+      // Así que antes de rendirse se busca lo MISMO sin la referencia: misma marca, misma
+      // descripción. Lo que vuelve son productos reales, con su precio real, y Andrea los
+      // ofrece diciendo lo que son — alternativas—, no haciéndolos pasar por lo que pidió.
+      //
+      // Solo si de verdad no quedó nada (ni local ni web) y si al quitar la referencia
+      // queda algo más que la marca sola: buscar "asus" a secas devuelve teléfonos y
+      // monitores, y eso no es una alternativa a un portátil, es ruido.
+      const referenciaPedida = referenciaDeConsulta(consulta);
+      if (r.encontrados === 0 && acc.locales.length === 0 && acc.web.length === 0 && referenciaPedida) {
+        const resto = consulta
+          .replace(new RegExp(referenciaPedida.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const palabras = resto.split(/\s+/).filter((w) => w.length > 1);
+        if (palabras.length >= 2 && marcasEnConsulta(resto).length > 0) {
+          const parecidos = await cotizarWeb(ds, resto);
+          guardar(parecidos.productos);
+          if (parecidos.encontrados > 0) {
+            r = {
+              ...parecidos,
+              nota: "INTERNO: la referencia exacta que pidió el cliente no aparece disponible — puede estar descontinuada o reemplazada por el fabricante—, pero SÍ conseguimos otros modelos de la MISMA marca, con precio real. En UN mensaje: dile con naturalidad que esa referencia puntual no la estamos manejando en este momento y que de la misma marca tienes estas opciones, y muéstralas COPIANDO los \"bloque\" del campo \"seleccion\" TAL CUAL. Di que son alternativas — NUNCA las presentes como si fueran la referencia que pidió. PROHIBIDO decir que buscaste, que no apareció o que hubo un problema. PROHIBIDO derivar al equipo: sí hay qué ofrecerle. PROHIBIDO inventar specs o precios. Cierra preguntándole si alguna le sirve.",
+            };
+          }
+        }
       }
 
       // Sin nada nuevo que sumar, pero con opciones locales en la mano: la nota de "esa
@@ -4437,7 +4628,7 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: "El asesor no está disponible en este momento.", code: "no_key" }, { status: 503 });
   }
 
-  let body: { messages?: ClientMsg[]; contexto?: { producto?: string; ref?: string; precio?: string }; autoInicio?: boolean };
+  let body: { messages?: ClientMsg[]; contexto?: { producto?: string; ref?: string; precio?: string; seccion?: string }; autoInicio?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -4512,7 +4703,26 @@ Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, pod
     : ctx?.ref === "estudio-audio"
     ? `${SYSTEM}\n\n${CONTEXTO_ESTUDIO_AUDIO}`
     : SYSTEM;
-  const system = systemBase + notaDatoDado;
+
+  // DESDE QUÉ SECCIÓN DE LA WEB PREGUNTA.
+  //
+  // El cliente que está viendo Motherboards y abre el chat para pedir "una board" no
+  // vuelve a escribir en qué sección está: para él es evidente, lo tiene en pantalla.
+  // Andrea no lo veía, y entre las tres opciones le salían un equipo y un monitor.
+  //
+  // Se le dice el nombre de la sección tal como la ve el cliente, y se le pide que lo
+  // ponga en la consulta. No basta con el prompt —por eso la sección también acota la
+  // búsqueda del lado del servidor, ver `familiaDeSeccion`—, pero sirve para lo que el
+  // servidor no puede: que la conversación tenga sentido y que la búsqueda en la web
+  // salga bien escrita desde el primer intento.
+  const seccionCat = ctx?.seccion
+    ? loadCategories().find((c) => c.slug === ctx.seccion)
+    : undefined;
+  const notaSeccion = seccionCat
+    ? `\n\nDE DÓNDE VIENE: el cliente estaba navegando la sección **${seccionCat.nombre}** del catálogo cuando abrió el chat. Salvo que te diga claramente otra cosa, lo que pide es de esa sección: inclúyela en la consulta de buscar_productos y cotizar_web (por ejemplo "${seccionCat.nombre.toLowerCase()} ..." + lo que él te diga) y NO le ofrezcas productos de otra familia. Si lo que pide no es de esa sección, atiéndelo con normalidad: el cliente manda sobre la sección.`
+    : "";
+
+  const system = systemBase + notaDatoDado + notaSeccion;
 
   // maxRetries: el cliente reintenta solo (429/5xx/red) con backoff antes de fallar.
   // keys = [panel, entorno]: si la del panel es rechazada (401/402) en el primer
@@ -4578,7 +4788,7 @@ Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, pod
       let reintentoVacio = false; // ya se repitió un turno que volvió sin nada (máx 1)
       // Opciones vistas en ESTA solicitud, por origen. El servidor elige y etiqueta las 3
       // finales sobre este acumulado (ver `poolDeCandidatos`).
-      const acc: Acumulador = { locales: [], web: [], localDisponibles: 0, compuestas: [] };
+      const acc: Acumulador = { locales: [], web: [], localDisponibles: 0, compuestas: [], seccion: ctx?.seccion ?? "" };
 
       // EL PRECIO DE LA CARD ES UNA PROMESA.
       //

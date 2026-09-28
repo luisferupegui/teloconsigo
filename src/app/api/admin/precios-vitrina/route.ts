@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadBusinessProducts, saveBusinessProducts } from "@/lib/products";
+import { invalidateCache } from "@/lib/web-cache";
 import type { BusinessProduct } from "@/lib/products-types";
 import { POST as preguntarleAAndrea } from "@/app/api/asesor/route";
 
@@ -92,6 +93,18 @@ export async function POST(req: NextRequest) {
     }
 
     const publicado = precioDe(card);
+
+    // SE PREGUNTA POR EL PRECIO DE HOY, NO POR EL QUE QUEDÓ GUARDADO.
+    //
+    // Las cotizaciones se cachean siete días y, dentro de ese plazo, el precio de un
+    // producto ya cotizado queda FIJADO a propósito: así el mismo artículo no cambia de
+    // precio entre dos mensajes del mismo cliente. Pero esta herramienta existe justamente
+    // para refrescar, y con el caché puesto medía el caché.
+    //
+    // Se notó con los KRK Rokit 5: la revisión los reportó a $1.494.000 sobre una card de
+    // $716.000 —un +109% alarmante— y al vaciar su entrada cotizaron $644.000, que es lo
+    // que valen. Lo viejo no era la card: era la cotización guardada.
+    invalidateCache(card.nombre);
     // El mismo cuerpo que manda el front cuando el cliente pincha "Cotiza ya mismo": el
     // contexto de la card y `autoInicio`, sin mensaje del cliente. Si se le preguntara de
     // otra forma se estaría midiendo otra conversación.
