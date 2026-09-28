@@ -648,7 +648,21 @@ type CustomerProduct = {
 // Un equipo completo SIEMPRE nombra su CPU; un accesorio/componente suelto (chasis,
 // cooler, fuente, SSD, RAM, monitor) no. En búsquedas de EQUIPO sirve para descartar ruido
 // (p. ej. "CHASIS ANTEC + 5 FANS" colado por "color", o un cooler con "PANTALLA RGB").
-const TIENE_CPU = /\b(ryzen|core\s?i[3579]|core\s?ultra|xeon|pentium|celeron|athlon|threadripper|i[3579]-\d{3,4})\b/i;
+// INTEL LE QUITÓ LA "i" A SUS PROCESADORES, y el catálogo ya está lleno de ellos.
+//
+// Desde 2024 la línea que no es Ultra se llama "Core 5 210H", "Core 7 240H", "Core 3 100U":
+// sin la i. Aquí solo se reconocía "Core i5", así que un equipo con el nombre nuevo no
+// contaba como equipo — y esta regex es la que decide, en una búsqueda de computador, si un
+// producto es una máquina o una pieza suelta.
+//
+// El daño era exactamente el de la vitrina: el ASUS TUF FX607VU, publicado, con precio y con
+// su referencia en el nombre, NO aparecía en la búsqueda local. No es que no lo tuviéramos;
+// es que su procesador se escribe como Intel lo escribe hoy. Y no era solo la card: los
+// anuncios de Alkosto, Ktronix y Falabella dicen "Intel Core 5" en casi todos los portátiles
+// que venden.
+//
+// `(?!\.\d)` deja fuera la velocidad de reloj: "8-Core 5.4GHz" habla de núcleos, no de gama.
+const TIENE_CPU = /\b(ryzen|core\s?i?[3579](?!\.\d)|core\s?ultra|xeon|pentium|celeron|athlon|threadripper|i[3579]-\d{3,4})\b/i;
 
 // ── ATRIBUTOS PEDIDOS: lo que el cliente dice con PALABRAS, no con cifras ─────
 //
@@ -990,7 +1004,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // "fundamentales" los 32GB para Docker y emuladores. Y un "servidor para virtualización"
   // podía salir con un NAS de 2GB de RAM, que es otra clase de equipo.
   const USO_EXIGENTE = /\b(dise[ñn]o|edici[oó]n|render|3d|modelado|gaming|gamer|juegos|streaming|\bia\b|inteligencia artificial|data science|autocad|photoshop|premiere|after\s?effects|solidworks|revit|workstation|alto rendimiento|desarrollo de software|programaci[oó]n|devops|docker|kubernetes|servidor|server|virtualizaci[oó]n|hipervisor|vmware|proxmox|hyper-?v|base de datos|sql server|postgres)\b/i;
-  const CPU_ENTRADA  = /\b(pentium|celeron|athlon|core\s?i3|\bi3-\d|ryzen\s?3)\b/i;
+  const CPU_ENTRADA  = /\b(pentium|celeron|athlon|core\s?i?3|\bi3-\d|ryzen\s?3)\b/i;
   const exigente = USO_EXIGENTE.test(consulta);
 
   // Y hay usos que además exigen GRÁFICA DEDICADA. Photoshop, Premiere, un render 3D o
@@ -1012,7 +1026,8 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // rendimiento (series H / HS / HX, 45-55W). Para diseño, edición, juegos o compilar,
   // un i7 de serie U no da la potencia sostenida por mucho que la etiqueta diga i7 — y
   // hasta ahora nada lo impedía: si acertaba era por relevancia, no por regla.
-  const CPU_BAJO_CONSUMO = /\b(?:i[3579][\s-]?\d{4}|ryzen\s?[3579]\s?\d{4}|ultra\s?[579]\s?\d{3})\s?u\b/i;
+  // Los de Intel sin la "i" llevan tres cifras, no cuatro: "Core 5 120U" (ver `TIENE_CPU`).
+  const CPU_BAJO_CONSUMO = /\b(?:i[3579][\s-]?\d{4}|core\s?[3579][\s-]?\d{3}|ryzen\s?[3579]\s?\d{4}|ultra\s?[579]\s?\d{3})\s?u\b/i;
 
   /** Para un uso exigente: fuera la gama de entrada, menos de 16GB de RAM y —cuando el
    *  trabajo se apoya en la GPU— los equipos completos sin gráfica dedicada. */
@@ -1144,6 +1159,79 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 // Tiendas de EE.UU. PRIORIZADAS para B2B/empresarial (el orden es la prioridad).
 // El precio de EE.UU. lo trae Serper Shopping (gl=us) y DeepSeek solo lo estructura:
 // DeepSeek no navega la web. Este orden es la prioridad de vendedor al rankear.
+/** TIENDAS OFICIALES DE FABRICANTE: la marca vendiendo directo, con precio publicado.
+ *
+ *  Son la respuesta más autoritativa que existe a "¿cuánto vale esto?" —es el precio de
+ *  lista de quien lo fabrica, no la oferta de un intermediario— y sirven en las dos
+ *  puntas del negocio:
+ *
+ *  · EN COLOMBIA resuelven el caso que ninguna cadena cubre. El ASUS TUF FX607VU de la
+ *    vitrina lo vende asus.com en $4.449.900 con la referencia exacta en el anuncio,
+ *    mientras el anuncio de Falabella del mismo portátil no la nombra y el resto de
+ *    vendedores que lo tienen no están en la lista. Sin asus.com esa card no se podía
+ *    cotizar y el cliente terminaba con el teléfono del equipo.
+ *
+ *  · EN EE.UU. anclan el precio de referencia. Del Logitech MX Master 3S, Logitech lo
+ *    lista en US$89,99 mientras Google devolvía al lado appstle.com en US$35,99: con el
+ *    precio de lista dentro de la mediana, la banda deja fuera esa clase de anuncio sin
+ *    tener que adivinar. Van DESPUÉS de las cadenas —el precio de lista es el más alto
+ *    que va a ver el cliente— y antes de eBay.
+ *
+ *  SE COMPARAN SOLO CONTRA EL VENDEDOR, Y COMPLETO. El nombre de una marca es una palabra
+ *  que aparece en todos los anuncios de sus productos, y el enlace de Google Shopping es
+ *  una redirección que lleva la consulta pegada dentro
+ *  ("google.com/search?...&q=logitech+mx+master+3s"): buscar "logitech" ahí dentro
+ *  convertiría en tienda oficial a cualquier revendedor del mundo. El vendedor oficial
+ *  llega como el dominio ("asus.com") o como el nombre de la marca a secas ("Logitech");
+ *  un revendedor llega como "Newegg.com - TECH EDGE" o "Walmart - Cathys Express".
+ *
+ *  Solo marcas cuya tienda publica precio. Se agregan a mano y a conciencia: una marca de
+ *  más aquí es una puerta para que un anuncio cualquiera se haga pasar por oficial. */
+const TIENDAS_DE_FABRICANTE = [
+  // Cómputo
+  "asus.com", "dell.com", "hp.com", "lenovo.com", "acer.com", "msi.com", "apple.com",
+  "gigabyte.com", "intel.com", "amd.com",
+  // Periféricos y almacenamiento
+  "logitech.com", "corsair.com", "razer.com", "hyperx.com", "kingston.com", "adata.com",
+  "seagate.com", "westerndigital.com", "sandisk.com", "crucial.com", "anker.com",
+  "belkin.com", "startech.com",
+  // Pantallas e impresión
+  "samsung.com", "lg.com", "viewsonic.com", "benq.com", "aoc.com", "epson.com",
+  "canon.com", "brother.com",
+  // Audio profesional
+  "shure.com", "rode.com", "audio-technica.com", "focusrite.com", "presonus.com",
+  "sennheiser.com", "krkmusic.com", "behringer.com", "creative.com",
+  // Redes, energía, almacenamiento en red, imagen
+  "tp-link.com", "netgear.com", "qnap.com", "synology.com", "apc.com", "dji.com",
+];
+const ES_FABRICANTE = new Set(TIENDAS_DE_FABRICANTE);
+
+/** El vendedor reducido a letras y números, sin "www.". Es lo único que tienen en común
+ *  las dos formas en que Google lo reporta: "Western Digital" y "westerndigital.com" son
+ *  la misma tienda, "TP-Link" y "tp-link.com" también, y "asus.com" y "asus.com.co"
+ *  quedan como "asuscom" y "asuscomco". */
+const vendedorPlano = (v?: string) =>
+  sinTildes(String(v ?? "")).trim().replace(/^www\./, "").replace(/[^a-z0-9]/g, "");
+
+/** Cómo se llama a sí misma la tienda oficial de una marca. La lista es cerrada a
+ *  propósito: se exige que el vendedor sea EXACTAMENTE una de estas formas, no que las
+ *  contenga, porque el nombre de la marca aparece en todos los anuncios de sus productos. */
+const COLAS_DE_TIENDA = ["", "com", "co", "comco", "colombia", "store", "storecolombia", "oficial", "officialstore", "shop", "eshop"];
+const formasDeFabricante = (dominio: string): string[] => {
+  const marca = vendedorPlano(dominio.slice(0, dominio.indexOf(".")));
+  return [...COLAS_DE_TIENDA.map((cola) => marca + cola), "tienda" + marca, "tiendaoficial" + marca];
+};
+const NOMBRES_DE_FABRICANTE = new Set(TIENDAS_DE_FABRICANTE.flatMap(formasDeFabricante));
+
+/** ¿El vendedor es la tienda oficial del fabricante? Con `dominio`, solo esa marca. */
+function esTiendaDeFabricante(source?: string, dominio?: string): boolean {
+  const v = vendedorPlano(source);
+  if (!v) return false;
+  return dominio === undefined
+    ? NOMBRES_DE_FABRICANTE.has(v)
+    : formasDeFabricante(dominio).includes(v);
+}
+
 const SITIOS_US = [
   "cdw.com", "serversupply.com", "provantage.com", "insight.com", "connection.com", // infraestructura empresarial
   "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com", "adorama.com", // general
@@ -1154,7 +1242,14 @@ const SITIOS_US = [
   // en el precio de referencia, y con la lista corta el criterio lo terminaba poniendo
   // quien más caro pedía.
   "walmart.com", "target.com", "costco.com", "samsclub.com", "staples.com", "officedepot.com",
-  "amazon.com", "ebay.com",                                                          // último recurso
+  "amazon.com",
+  // La marca vendiendo directo. Va aquí y no arriba a propósito: la tienda pesa más que
+  // el precio al elegir entre anuncios del MISMO producto, y el precio de lista del
+  // fabricante es el más alto que hay. Si una cadena lo tiene, que gane la cadena; si
+  // nadie lo tiene, el fabricante es mejor respuesta que un revendedor desconocido o que
+  // un "no logro confirmarte el precio".
+  ...TIENDAS_DE_FABRICANTE,
+  "ebay.com",                                                                        // último recurso
 ];
 
 // AUDIO PROFESIONAL: las tiendas del sector primero. Buscando un Shure SM7B o unos KRK
@@ -1241,7 +1336,9 @@ function quienVende(source?: string, link?: string): string {
 
 function isTechRetailerCO(source?: string, link?: string, allowPCStores = false): boolean {
   const hay = quienVende(source, link);
-  return TECH_RETAILERS_CO.test(hay) || (allowPCStores && PC_RETAILERS_CO.test(hay));
+  // La tienda oficial de la marca cuenta como tienda seria aquí igual que allá: vende
+  // directo, con precio publicado y con la referencia exacta en el anuncio.
+  return TECH_RETAILERS_CO.test(hay) || esTiendaDeFabricante(source) || (allowPCStores && PC_RETAILERS_CO.test(hay));
 }
 
 // Escritorio de ALTO RENDIMIENTO (gaming / edición de video / producción): debe tener GPU
@@ -1451,7 +1548,8 @@ type Categoria = "equipo" | "componente" | "accesorio" | "otro";
 // dice de qué formato es. Y para que "memoria RAM para un Core i5" siga siendo una pieza,
 // el CPU tiene que ser lo PRIMERO que se nombra: si antes hay una pieza o un accesorio,
 // ese es el producto principal y el CPU solo describe para qué equipo es.
-const CPU_EN_CONSULTA = /\b(core\s?i[3579]|i[3579]-\w|core\s?ultra|ryzen|xeon|pentium|celeron|athlon)\b/i;
+// Con y sin la "i": "Core i5" y "Core 5" son la misma gama (ver `TIENE_CPU`).
+const CPU_EN_CONSULTA = /\b(core\s?i?[3579](?!\.\d)|i[3579]-\w|core\s?ultra|ryzen|xeon|pentium|celeron|athlon)\b/i;
 const FORMATO_EN_CONSULTA = /\+\s*(?:monitor|pantalla)|\b(?:all.?in.?one|aio|todo.?en.?uno|port[aá]til|laptop|notebook|torre|workstation)\b/i;
 
 function pareceEquipoCompleto(q: string): boolean {
@@ -1668,6 +1766,9 @@ function usStoreRank(source?: string, link?: string, tiendas: string[] = SITIOS_
   // dominio y el nombre.
   const plano = hay.replace(/[^a-z0-9]/g, "");
   const i = tiendas.findIndex((d) => {
+    // Las del fabricante, al revés: nombre COMPLETO del vendedor y nada más. Buscar la
+    // marca por dentro haría oficial a cualquier anuncio (ver TIENDAS_DE_FABRICANTE).
+    if (ES_FABRICANTE.has(d)) return esTiendaDeFabricante(source, d);
     const dominio = d.split(".")[0];
     return hay.includes(d) || hay.includes(dominio) || plano.includes(dominio.replace(/[^a-z0-9]/g, ""));
   });
@@ -2014,7 +2115,7 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
 // Que el anuncio hable de una MÁQUINA. Más ancha que `CPU_EN_CONSULTA` a propósito: los
 // anuncios abrevian el procesador ("Latitude 5440 i5 16GB") y ahí el formato es la señal.
 const EQUIPO_EN_TITULO =
-  /\b(?:core\s?i[3579]|i[3579]|core\s?ultra|ryzen|xeon|pentium|celeron|athlon|laptop|port[aá]til|notebook|todo\s?en\s?uno|all.?in.?one|aio|pc|torre|desktop|workstation)\b/i;
+  /\b(?:core\s?i?[3579](?!\.\d)|i[3579]|core\s?ultra|ryzen|xeon|pentium|celeron|athlon|laptop|port[aá]til|notebook|todo\s?en\s?uno|all.?in.?one|aio|pc|torre|desktop|workstation)\b/i;
 
 /** Un disco duro (HDD), dicho de cualquiera de las formas en que lo escriben tiendas y
  *  clientes. "Mecánico" SOLO cuenta pegado a "disco" o "unidad": suelto, un "Teclado
@@ -2354,7 +2455,7 @@ function respuestaCotizar(productos: QuoteProducto[], consulta: string) {
 // El precio de Serper YA es de mercado/retail; el margen va por CATEGORÍA del producto. Los
 // escritorios de alto rendimiento (gaming/edición) usan "escritorio-alto-rendimiento" (12%,
 // competitivo); los básicos y demás conservan su margen de categoría configurado.
-function construirProductosCO(localParsed: WebProducto[], clasificacion: Categoria = "otro"): { productosCO: QuoteProducto[]; localData: LocalData } {
+function construirProductosCO(localParsed: WebProducto[], clasificacion: Categoria = "otro", consulta = ""): { productosCO: QuoteProducto[]; localData: LocalData } {
   // Mismo saneamiento que en EE.UU.: Google Shopping cuela precios que no son el del
   // producto (accesorios del anuncio, "desde", cuotas). Se descarta lo que quede muy por
   // debajo de la mediana del propio resultado.
@@ -2364,16 +2465,34 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
   const ordenadosCop = conPrecio.map((p) => p.copLocal as number).sort((a, b) => a - b);
   const pisoCop = ordenadosCop.length > 0 ? ordenadosCop[Math.floor(ordenadosCop.length / 2)] * 0.35 : 0;
 
+  // Un anuncio que nombra la referencia del fabricante ES el producto; los demás se le
+  // parecen. Ver el comentario del orden, más abajo.
+  const referenciaPedida = referenciaDeConsulta(consulta);
+  const nombraLaReferencia = (p: WebProducto) =>
+    referenciaPedida !== null && sinTildes(p.nombre ?? "").includes(referenciaPedida) ? 0 : 1;
+
   const locales = conPrecio
     .filter((p) => (p.copLocal as number) >= pisoCop)
     // La prioridad se buscaba en `fuente`, que es el enlace de Google Shopping —una
     // redirección donde la tienda no aparece— y sin pasar a minúsculas, así que ni
     // "Mercadolibre Colombia" contenía "mercadolibre". Todo pesaba 50 y el orden
     // Alkosto → … → MercadoLibre no se aplicaba nunca. Se mira quién vende de verdad.
+    // ── Y LA REFERENCIA MANDA SOBRE LA TIENDA PREFERIDA ───────────────────────
+    //
+    // Solo pasan las CINCO primeras, y el orden lo ponía únicamente la tienda. Del ASUS TUF
+    // FX607VU de la vitrina, el único anuncio que nombraba la referencia era el de asus.com
+    // —la marca vendiendo directo, en $4.449.900— y quedaba sexto, detrás de tres Alkosto,
+    // un Ktronix y un Falabella que eran otros modelos de la misma familia (FX607VJB,
+    // V3607VU, FX608JHI). Los cinco que pasaban se caían después en el filtro de specs, con
+    // razón, porque no eran el equipo: el cliente terminaba con el teléfono del equipo por
+    // un portátil que está publicado en internet con su referencia y su precio.
+    //
+    // Es la misma regla que ya vale para EE.UU.: la tienda preferida sirve para elegir
+    // entre anuncios DEL MISMO producto, no para elegir el producto.
     .sort((a, b) => {
       const prioridad = (p: WebProducto) =>
         Object.entries(PRIORIDAD_SITIO_CO).find(([k]) => quienVende(p.vendedor, p.fuente).includes(k))?.[1] ?? 50;
-      return prioridad(a) - prioridad(b);
+      return nombraLaReferencia(a) - nombraLaReferencia(b) || prioridad(a) - prioridad(b);
     });
 
   if (locales.length === 0) return { productosCO: [], localData: {} };
@@ -2494,7 +2613,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   if (mode === "co_only") {
     if (serperKey) {
       const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
-      ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
+      ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta));
     }
   } else if (mode === "eeuu_only") {
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo"));
@@ -2515,12 +2634,12 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     // Se cuentan las que SOBREVIVEN al filtro de specs, no las que llegaron: un listado
     // que no confirma lo que pidió el cliente no es una opción (ver abajo).
     if (filtrarPorSpecs(productosUS, consulta).length < 3 && serperKey) {
-      ({ productosCO, localData } = construirProductosCO(await colombiaEnCurso, categoria));
+      ({ productosCO, localData } = construirProductosCO(await colombiaEnCurso, categoria, consulta));
     }
   } else {
     // co_eeuu (default): Colombia primero; EE.UU. solo si faltan opciones.
     const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo") : [];
-    ({ productosCO, localData } = construirProductosCO(localParsed, categoria));
+    ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta));
     // El filtro de specs se aplica ANTES de decidir si hace falta EE.UU. Los títulos de
     // Google Shopping en Colombia suelen omitir la capacidad ("Memoria USB Kingston
     // DataTraveler 3.2" sin decir si es de 64 o de 128GB), así que esas tres opciones se
@@ -3554,7 +3673,29 @@ function esDeMarcaPedida(o: OpcionSel, marcas: string[]): boolean {
  *  propio artículo con el precio de otra tienda. Al cliente le llegaba la misma
  *  memoria Kingston a $40.000 y a $120.000 en la misma lista. */
 function webQueNoRepite(acc: Acumulador): OpcionSel[] {
-  return acc.web.filter(
+  // Y LA REFERENCIA EXACTA, YA CONSEGUIDA, NO ADMITE PARECIDOS MÁS CAROS.
+  //
+  // Si el cliente nombró una referencia de fabricante y una de nuestras opciones locales
+  // la nombra, ESE es el producto que pidió, con su precio y con entrega de 1 a 3 días. Lo
+  // que la web traiga de la misma familia sin esa referencia es, en el mejor de los casos,
+  // algo que se le parece; si además cuesta más, sobra.
+  //
+  // Pasó con el ASUS TUF FX607VU de la vitrina: al lado de nuestro precio de $4.688.000 se
+  // le ofrecía, etiquetado "Mejor rendimiento", un "ASUS TUF F16 16\" FHD+ 144Hz RTX 4050"
+  // de un revendedor a $8.068.000. El mismo portátil, casi al doble, en la misma respuesta.
+  // `mismoProducto` no los unía porque cada nombre trae cifras que el otro no —la
+  // referencia de un lado, "210H" y "144Hz" del otro—, y como regla general esa cautela
+  // está bien: evita confundir dos modelos parecidos. Solo que aquí no hay nada que
+  // adivinar, porque tenemos el que pidió.
+  //
+  // Lo más BARATO de la web sí pasa: ahí sí es una alternativa que el cliente agradece.
+  const referencia = referenciaDeConsulta(acc.ultimaConsulta ?? "");
+  const laNombra = (o: OpcionSel) => referencia !== null && sinTildes(o.nombre).includes(referencia);
+  const nuestros = acc.locales.filter(laNombra).map((l) => l.precio);
+  const web = nuestros.length > 0
+    ? acc.web.filter((w) => laNombra(w) || w.precio < Math.min(...nuestros))
+    : acc.web;
+  return web.filter(
     (w) => !acc.locales.some((l) => w.precio >= l.precio && mismoProducto(l.nombre, w.nombre)),
   );
 }

@@ -52,9 +52,13 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  regla el lector las tomaría por cotizaciones normales — siete días diciendo que no
  *  conseguimos productos que sí conseguimos.
  *
+ *  Y otra al aceptar las tiendas oficiales de fabricante (2026-09-28, noche): lo guardado
+ *  antes se decidió sin ellas. El ASUS TUF de la vitrina quedó cacheado como "sin precio"
+ *  cuando asus.com lo vende en $4.449.900 con la referencia exacta en el anuncio.
+ *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 28, 15, 30);
+const VALIDO_DESDE = Date.UTC(2026, 8, 28, 19, 0);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
