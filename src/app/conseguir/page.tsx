@@ -25,20 +25,22 @@ const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] ?? ""
 
 /** LO QUE EL CLIENTE VENÍA MIRANDO, ESCRITO POR NOSOTROS.
  *
- *  A esta página se llega desde ocho sitios distintos y todos le pasan algo en la URL:
- *  la ficha de un producto manda `ref`, el buscador manda `q`, una categoría manda `cat`.
- *  Nada de eso se leía: el cliente que acababa de pinchar un monitor concreto se
- *  encontraba una caja de texto vacía pidiéndole que describiera "marca, modelo,
- *  características" — lo que el sitio ya sabía y le acababa de quitar.
+ *  A esta página se llega desde varios sitios y todos le pasan algo en la URL: la ficha
+ *  de un producto manda `ref`, el buscador manda `q`, una categoría manda `cat`. Nada de
+ *  eso se leía: el cliente que acababa de pinchar un monitor concreto se encontraba una
+ *  caja de texto vacía pidiéndole que describiera "marca, modelo, características" — lo
+ *  que el sitio ya sabía y le acababa de quitar.
+ *
+ *  Son esos tres y nada más: se miran los enlaces que existen de verdad. Hubo aquí un
+ *  cuarto caso, `marca` + `linea`, que nació muerto — lo mandaba la card de línea del
+ *  catálogo, y esa card ahora lleva a Andrea.
  *
  *  Se devuelve TEXTO EDITABLE, no un campo bloqueado: es el punto de partida de su
  *  mensaje, y si venía por otra cosa lo borra y escribe. */
 function loQueVieneBuscando(sp: { [key: string]: string | string[] | undefined }): string {
-  const ref   = uno(sp.ref).trim();
-  const marca = uno(sp.marca).trim();
-  const linea = uno(sp.linea).trim();
-  const q     = uno(sp.q).trim();
-  const cat   = uno(sp.cat).trim();
+  const ref = uno(sp.ref).trim();
+  const q   = uno(sp.q).trim();
+  const cat = uno(sp.cat).trim();
 
   if (ref) {
     const p = loadPublishedBusinessProducts().find(
@@ -49,7 +51,6 @@ function loQueVieneBuscando(sp: { [key: string]: string | string[] | undefined }
       ? `Quiero cotizar: ${nombre}${p?.referencia ? ` (ref. ${p.referencia})` : ""}\n\nCantidad: `
       : `Quiero cotizar la referencia ${ref}.\n\nCantidad: `;
   }
-  if (marca || linea) return `Quiero cotizar: ${[marca, linea].filter(Boolean).join(" ")}\n\nModelo o características: \nCantidad: `;
   if (q)   return `Estaba buscando: "${q}"\n\n`;
   if (cat) {
     const nombre = loadCategories().find((c) => c.slug === cat)?.nombre;
