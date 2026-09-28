@@ -33,9 +33,48 @@ const CATEGORIA_LABEL: Record<string, string> = {
   accesorio: "Accesorios",
 };
 
-/** Nombre legible de una spec ("precio_iva" → "Precio iva"). */
+/** LAS CLAVES DE LAS SPECS SE ESCRIBEN SIN TILDES, Y LA FICHA LAS ENSEÑA TAL CUAL.
+ *
+ *  La etiqueta que ve el cliente era la clave con la primera letra en mayúscula, así que
+ *  las fichas decían "Camara", "Autonomia", "Garantia", "Grafica", "Tamanho" y —la peor—
+ *  "So" por el sistema operativo. Las claves se escriben sin tildes a propósito (es como
+ *  se guardan en todo el catálogo y como las teclea quien edita una ficha); lo que había
+ *  que arreglar es cómo se leen.
+ *
+ *  Lo que no esté en la tabla sigue como antes: guion bajo por espacio y mayúscula
+ *  inicial. */
+const ETIQUETA_SPEC: Record<string, string> = {
+  so:              "Sistema operativo",
+  camara:          "Cámara",
+  autonomia:       "Autonomía",
+  transmision:     "Transmisión",
+  estabilizacion:  "Estabilización",
+  garantia:        "Garantía",
+  grafica:         "Gráfica",
+  gpu:             "Gráfica",
+  ram:             "Memoria RAM",
+  tamanho:         "Tamaño",
+  tamano:          "Tamaño",
+  resolucion:      "Resolución",
+  conexion:        "Conexión",
+  bateria:         "Batería",
+  duracion:        "Duración",
+  capacidad:       "Capacidad",
+  interfaz:        "Interfaz",
+  compatibilidad:  "Compatibilidad",
+  dimensiones:     "Dimensiones",
+  tecnologia:      "Tecnología",
+  potencia:        "Potencia",
+  alimentacion:    "Alimentación",
+  iluminacion:     "Iluminación",
+  velocidad:       "Velocidad",
+  tiempo_respuesta: "Tiempo de respuesta",
+  frecuencia:      "Frecuencia de actualización",
+};
+
+/** Nombre legible de una spec ("so" → "Sistema operativo", "precio_iva" → "Precio iva"). */
 const etiquetaSpec = (k: string) =>
-  k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+  ETIQUETA_SPEC[k.toLowerCase()] ?? k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 
 function buscarProducto(slug: string): BusinessProduct | null {
   return loadPublishedBusinessProducts().find((p) => slugProducto(p) === slug) ?? null;

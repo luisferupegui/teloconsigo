@@ -1,0 +1,43 @@
+{
+  "id": "2026-09-28-fichas-clonadas",
+  "descripcion": "Dos cards publicadas clonando otro producto: se les quitan los restos del original",
+  "_porque": "Publicar una card copiando otra y cambiandole el nombre deja atras la referencia, el slug, las specs y la descripcion del producto original. El cliente veia un dron con specs de audifonos y un portatil gamer con la referencia de un ExpertBook.",
+  "renombrarReferencia": [
+    {
+      "_nota": "El dron DJI llevaba la referencia Y LA URL de los audifonos Audio-Technica: /producto/audifonos-de-estudio-audio-technica-ath-m50x mostraba un dron. La referencia se le ensena al cliente en la ficha y es como se le pide el producto al equipo.",
+      "de": "ATH-M50X",
+      "a": "DJI-MINI3-RC",
+      "slug": "dji-mini-3-drone-con-control-dji-rc"
+    },
+    {
+      "_nota": "El ASUS TUF llevaba la referencia del ASUS ExpertBook P3406 del que se clono. No se le pone FX607VU porque esa referencia ya la usa otro producto del catalogo (el FX607V de 512GB y RTX 3050): serian dos productos con la misma identidad. Se usa un codigo interno como el resto de las cards (LOGI-MXM3S, KING-DTMAX256, PB-ADP10K-ADATA).",
+      "de": "P3406CKANZ0441X",
+      "a": "ASUS-FX607VU-1TB"
+    }
+  ],
+  "corregir": [
+    {
+      "_nota": "Specs de AUDIFONOS en un dron, a la vista del cliente. Se reemplaza la ficha entera: no hay valor de dron que ponerle a 'drivers', esas claves sobran. Datos del DJI Mini 3 (no Pro) con control DJI RC, que es lo que dice el nombre.",
+      "referencia": "DJI-MINI3-RC",
+      "specsReemplazar": {
+        "peso": "Menos de 249 g (no requiere registro en la mayoría de países)",
+        "camara": "1/1.3\" CMOS, 12 MP, video 4K a 30 fps con HDR",
+        "estabilizacion": "Gimbal de 3 ejes, con giro vertical para grabar en formato retrato",
+        "autonomia": "Hasta 38 minutos de vuelo por batería",
+        "transmision": "DJI O2, hasta 10 km de alcance",
+        "control": "DJI RC con pantalla integrada (no necesita celular)"
+      }
+    },
+    {
+      "_nota": "La descripcion interna hablaba del ExpertBook P3406 con Ryzen AI: este equipo es un TUF gaming con Intel Core 5 y RTX 4050. Y el usoCaso decia 'portatil-ejecutivo', que es lo que lo hacia salir en busquedas de portatiles de oficina. La descripcionUso estaba vacia, asi que su ficha no tenia ni una linea que explicara para que sirve.",
+      "referencia": "ASUS-FX607VU-1TB",
+      "descripcion": "ASUS TUF Gaming F16 (FX607VU): Intel Core 5 210H, RTX 4050 y pantalla de 16\" FHD+ 144 Hz. Chasis TUF con certificación militar MIL-STD-810H.",
+      "usoCaso": "portatil-gaming",
+      "descripcionUso": "Portátil gamer de 16 pulgadas para jugar, editar video y trabajar con programas pesados. La RTX 4050 mueve los títulos actuales con fluidez y la pantalla de 144 Hz hace que el movimiento se vea limpio. El chasis TUF está pensado para aguantar el uso diario y los traslados.",
+      "specs": {
+        "_nota_so": "Decia 'Windows 11 Pro', heredado de la ficha del ExpertBook, que es una linea empresarial. Ni la pagina de ASUS ni ninguno de los 20 anuncios de esta referencia declaran la edicion, asi que no se cambia Pro por Home adivinando: se deja lo que si se puede sostener. Confirmar la edicion con el proveedor y ponerla exacta desde el panel.",
+        "so": "Windows 11"
+      }
+    }
+  ]
+}

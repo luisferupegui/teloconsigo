@@ -117,6 +117,52 @@ if (fs.existsSync(MIGRACIONES_DIR)) {
     let tocados = 0;
 
     for (const m of pendientes) {
+      // RENOMBRAR LA REFERENCIA, con su foto detrás. VA PRIMERO: todos los pasos de abajo
+      // buscan el producto POR su referencia, así que la identidad tiene que estar bien
+      // antes de tocar nada más — y así la misma migración que renombra puede corregir el
+      // producto llamándolo ya por su nombre nuevo.
+      //
+      // Una card publicada clonando otra se queda con la referencia de la original, y esa
+      // referencia se le enseña al cliente ("Ref. ATH-M50X" en un dron), nombra la carpeta
+      // de su foto y es como se le pide el producto al equipo. Cambiarla en el catálogo y
+      // dejar la foto donde estaba deja la card sin imagen, así que las dos cosas van
+      // juntas y aquí, que es el único sitio que toca el volumen de producción.
+      //
+      // NO se renombra si la referencia nueva ya existe: serían dos productos con la misma
+      // identidad, y a partir de ahí cualquiera de los dos puede ganar un pedido.
+      for (const cambio of m.renombrarReferencia ?? []) {
+        const { de, a } = cambio;
+        if (!de || !a || de === a) continue;
+        const p = catalogo.find((x) => refDe(x) === de);
+        if (!p) continue;
+        if (catalogo.some((x) => refDe(x) === a)) {
+          console.warn(`[init-volume] ⚠ no renombro ${de} → ${a}: esa referencia ya existe`);
+          continue;
+        }
+        p.referencia = a;
+        if (p.id === de) p.id = a;
+        // El slug es la URL del producto. Si venía del producto clonado, lleva su nombre
+        // ("/producto/audifonos-...-ath-m50x" para un dron) y hay que rehacerlo.
+        if (cambio.slug) p.slug = cambio.slug;
+
+        // La carpeta de imágenes se nombra aquí y no con la constante de más abajo:
+        // `const` no se puede usar antes de su línea, y este bloque va primero.
+        const fotos = path.join(ROOT, "public", "productos");
+        const viejo = path.join(fotos, de);
+        const nuevo = path.join(fotos, a);
+        try {
+          if (fs.existsSync(viejo) && !fs.existsSync(nuevo)) {
+            fs.renameSync(viejo, nuevo);
+            console.log(`[init-volume]   foto ${de} → ${a}`);
+          }
+        } catch (err) {
+          // La foto se puede volver a subir desde el panel; el catálogo no se deja a medias
+          // por eso. Se avisa y se sigue.
+          console.warn(`[init-volume] ⚠ no pude mover la foto de ${de}: ${err.message}`);
+        }
+        tocados++;
+      }
+
       // Primero se libera sitio. Cada sección del home admite 12 cards como máximo, así
       // que si entran las nuevas antes de salir las viejas, las últimas no caben.
       for (const ref of m.quitarDeVitrinas ?? []) {
@@ -151,12 +197,25 @@ if (fs.existsSync(MIGRACIONES_DIR)) {
         if (!p) continue;
         // Las claves que empiezan por guion bajo son notas para quien lea la migracion
         // —por qué se corrige esto—, no campos del producto: no viajan al catalogo.
-        const { referencia, specs, ...campos } = arreglo;
+        const { referencia, specs, specsReemplazar, ...campos } = arreglo;
+        // Las notas se quitan TAMBIÉN de dentro de las specs. Antes solo se limpiaban los
+        // campos de primer nivel, así que una nota escrita dentro de `specs` —el sitio
+        // natural para explicar por qué se corrige una spec— se habría publicado en la
+        // ficha, como una característica más del producto.
+        const sinNotas = (o) => Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith("_")));
         for (const k of Object.keys(campos)) if (k.startsWith("_")) delete campos[k];
         Object.assign(p, campos);
-        if (specs) p.specs = { ...p.specs, ...specs };
+        // `specs` MEZCLA (corrige un dato y deja el resto); `specsReemplazar` SUSTITUYE la
+        // ficha entera. Hizo falta porque mezclar no puede BORRAR: la card del dron DJI se
+        // publicó reutilizando la ficha de unos audífonos y arrastraba "Cerrados over-ear",
+        // "drivers 45 mm" y "Tres cables desmontables" — specs de audífonos en un dron, a
+        // la vista del cliente. No hay valor de dron que ponerle a "drivers"; esas claves
+        // sobran, no están mal.
+        if (specsReemplazar) p.specs = sinNotas(specsReemplazar);
+        else if (specs) p.specs = { ...p.specs, ...sinNotas(specs) };
         tocados++;
       }
+
       aplicadas.add(m.id);
       console.log(`[init-volume] ✓ migración ${m.id}${m.descripcion ? ` — ${m.descripcion}` : ""}`);
     }

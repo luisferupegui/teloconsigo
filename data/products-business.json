@@ -208,7 +208,7 @@
     "enPromocion": true
   },
   {
-    "referencia": "P3406CKANZ0441X",
+    "referencia": "ASUS-FX607VU-1TB",
     "nombre": "ASUS TUF 16\" Intel Core 5 RAM 16GB  Disco 1TB  RTX 4050 FX607VU ",
     "marca": "Asus",
     "categoria": "portatil",
@@ -219,14 +219,14 @@
       "ram": "16GB DDR5-5200",
       "almacenamiento": "1TB SSD NVMe PCIe 4.0",
       "pantalla": "16\" FHD+ (1920×1200) 16:10",
-      "so": "Windows 11 Pro",
+      "so": "Windows 11",
       "garantia": "1 año",
       "grafica": "NVIDIA GeForce RTX 4050"
     },
-    "descripcion": "Asus ExpertBook P3406 con NPU de 50 TOPS para IA. Pantalla WQXGA y Ryzen AI de última generación.",
-    "usoCaso": "portatil-ejecutivo",
+    "descripcion": "ASUS TUF Gaming F16 (FX607VU): Intel Core 5 210H, RTX 4050 y pantalla de 16\" FHD+ 144 Hz. Chasis TUF con certificación militar MIL-STD-810H.",
+    "usoCaso": "portatil-gaming",
     "precioDesde": 4688000,
-    "descripcionUso": "",
+    "descripcionUso": "Portátil gamer de 16 pulgadas para jugar, editar video y trabajar con programas pesados. La RTX 4050 mueve los títulos actuales con fluidez y la pantalla de 144 Hz hace que el movimiento se vea limpio. El chasis TUF está pensado para aguantar el uso diario y los traslados.",
     "destacado": true,
     "enPromocion": true,
     "segmento": "gaming-streaming",
@@ -3075,9 +3075,9 @@
     "ordenDestacado": 6
   },
   {
-    "referencia": "ATH-M50X",
-    "id": "ATH-M50X",
-    "slug": "audifonos-de-estudio-audio-technica-ath-m50x",
+    "referencia": "DJI-MINI3-RC",
+    "id": "DJI-MINI3-RC",
+    "slug": "dji-mini-3-drone-con-control-dji-rc",
     "nombre": "DJI Mini 3 Drone with DJI RC Remote",
     "marca": "DJI",
     "categoria": "accesorio",
@@ -3089,9 +3089,12 @@
     "precioIvaIncluido": false,
     "proveedor": "manual",
     "specs": {
-      "tipo": "Cerrados over-ear",
-      "drivers": "45 mm",
-      "cables": "Tres cables desmontables"
+      "peso": "Menos de 249 g (no requiere registro en la mayoría de países)",
+      "camara": "1/1.3\" CMOS, 12 MP, video 4K a 30 fps con HDR",
+      "estabilizacion": "Gimbal de 3 ejes, con giro vertical para grabar en formato retrato",
+      "autonomia": "Hasta 38 minutos de vuelo por batería",
+      "transmision": "DJI O2, hasta 10 km de alcance",
+      "control": "DJI RC con pantalla integrada (no necesita celular)"
     },
     "descripcionUso": "Esta versión del Mini 3 incluye el control remoto DJI RC, un mando sofisticado que utiliza una pantalla LCD integrada y la aplicación DJI Fly para que puedas despegar rápidamente, sin necesidad de un teléfono inteligente.",
     "destacado": false,
