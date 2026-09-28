@@ -3688,12 +3688,15 @@ function webQueNoRepite(acc: Acumulador): OpcionSel[] {
   // está bien: evita confundir dos modelos parecidos. Solo que aquí no hay nada que
   // adivinar, porque tenemos el que pidió.
   //
-  // Lo más BARATO de la web sí pasa: ahí sí es una alternativa que el cliente agradece.
+  // Basta con que cueste más: si el anuncio nombra la referencia es el mismo producto, y si
+  // no la nombra es algo que se le parece — en los dos casos ya tenemos el que pidió, y más
+  // barato. Lo más BARATO de la web sí pasa: ahí sí es una alternativa que el cliente
+  // agradece.
   const referencia = referenciaDeConsulta(acc.ultimaConsulta ?? "");
   const laNombra = (o: OpcionSel) => referencia !== null && sinTildes(o.nombre).includes(referencia);
   const nuestros = acc.locales.filter(laNombra).map((l) => l.precio);
   const web = nuestros.length > 0
-    ? acc.web.filter((w) => laNombra(w) || w.precio < Math.min(...nuestros))
+    ? acc.web.filter((w) => w.precio < Math.min(...nuestros))
     : acc.web;
   return web.filter(
     (w) => !acc.locales.some((l) => w.precio >= l.precio && mismoProducto(l.nombre, w.nombre)),
@@ -4576,6 +4579,38 @@ Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, pod
       // Opciones vistas en ESTA solicitud, por origen. El servidor elige y etiqueta las 3
       // finales sobre este acumulado (ver `poolDeCandidatos`).
       const acc: Acumulador = { locales: [], web: [], localDisponibles: 0, compuestas: [] };
+
+      // EL PRECIO DE LA CARD ES UNA PROMESA.
+      //
+      // Cuando el cliente llega pinchando una card de la vitrina, ya vio un precio. Que la
+      // conversación le diga otro —aunque llegue por un camino impecable— es lo único que no
+      // se puede hacer: es el mismo producto con dos precios, y el segundo siempre parece
+      // el truco.
+      //
+      // Y pasaba sin que hubiera un error en ninguna parte: el mismo ASUS TUF de la vitrina
+      // se cotizaba en $4.688.000 cuando Andrea lo encontraba en el catálogo y en $5.340.000
+      // cuando iba a la web y lo hallaba en asus.com —las dos cifras correctas, cada una por
+      // su lado—, según cuál herramienta eligiera llamar. Y en una de cada tres pruebas no
+      // llamaba ninguna que diera resultado y derivaba al equipo un producto publicado.
+      //
+      // Así que el producto de la card entra al acumulador ANTES de que Andrea hable. Desde
+      // ahí lo tiene siempre: es una opción más —la más barata casi siempre, porque es
+      // nuestra— y `webQueNoRepite` ya se encarga de que no le pongan al lado el mismo
+      // producto más caro.
+      if (!isArmador && ctx?.ref) {
+        const suya = loadPublishedBusinessProducts().find(
+          (p) => !p.bajoPedido && (p.referencia ?? p.slug ?? p.id) === ctx.ref,
+        );
+        const precioCard = suya ? suya.precioDesde ?? suya.precio : null;
+        if (suya && typeof precioCard === "number" && precioCard > 0) {
+          acc.locales.push({
+            nombre: suya.nombre,
+            precio: precioCard,
+            ficha: construirFicha(suya.nombre, suya.specs, precioCard, suya.categoria, suya.marca, suya.proveedor),
+            entrega: "local",
+          });
+        }
+      }
       try {
         // ARMADOR: la búsqueda se hace ANTES de que Andrea hable, y se le entrega hecha.
         // El cliente ya eligió cada pieza, así que no hay nada que preguntarle — pero el

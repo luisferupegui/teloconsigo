@@ -7,6 +7,7 @@ import {
   Star, Tag, Pencil, RefreshCw, ShieldCheck, ClipboardList,
 } from "lucide-react";
 import { ImageSlot } from "@/components/admin/image-slot";
+import { PreciosVitrinaPanel } from "@/components/admin/precios-vitrina-panel";
 import { PROVEEDORES_CONOCIDOS } from "@/lib/proveedores-conocidos";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -184,6 +185,7 @@ export function SupplierListsManager({ vista }: { vista: VistaListas }) {
           <ApiKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
           <SerperKeyPanel status={keyStatus} onChange={refreshKey} flash={flash} />
           <WebCachePanel flash={flash} />
+          <PreciosVitrinaPanel flash={flash} />
           <SaneoPanel flash={flash} onDone={refreshLists} />
           <FichasPanel flash={flash} onDone={refreshLists} />
         </>
