@@ -12,7 +12,8 @@
     "lint": "eslint",
     "import:ledacom": "node scripts/import-suppliers.mjs ledacom",
     "import:infoshop": "node scripts/import-suppliers.mjs infoshop",
-    "import:merge": "node scripts/import-suppliers.mjs merge"
+    "import:merge": "node scripts/import-suppliers.mjs merge",
+    "traer": "node scripts/traer-de-produccion.mjs"
   },
   "dependencies": {
     "jszip": "^3.10.1",

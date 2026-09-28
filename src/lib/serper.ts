@@ -21,7 +21,21 @@ async function serperPost(endpoint: string, body: object, apiKey: string): Promi
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(15000),
   });
-  if (!res.ok) throw new Error(`Serper ${endpoint} respondió ${res.status}`);
+  if (!res.ok) {
+    // EL MOTIVO IMPORTA, Y UNO MÁS QUE LOS DEMÁS.
+    //
+    // Con la cuenta sin saldo, Serper responde 400 "Not enough credits" y aquí se lanzaba
+    // un error que decía solo "respondió 400". Arriba, cada llamada lo recoge con un
+    // `.catch(() => [])` —para que una búsqueda caída no tumbe la conversación—, así que
+    // el síntoma era que TODAS las cotizaciones web volvían vacías y Andrea derivaba al
+    // equipo. Por fuera se ve igual que "no encontré ese producto", y así estuvo hasta que
+    // alguien probó la API a mano. Ahora se registra en claro y aparte.
+    const motivo = await res.text().catch(() => "");
+    if (/not enough credits|insufficient/i.test(motivo)) {
+      console.error("[serper] SIN CRÉDITOS: ninguna cotización web va a funcionar hasta recargar en serper.dev. Andrea seguirá respondiendo con lo de las listas.");
+    }
+    throw new Error(`Serper ${endpoint} respondió ${res.status}${motivo ? `: ${motivo.slice(0, 120)}` : ""}`);
+  }
   return (await res.json()) as Record<string, unknown>;
 }
 

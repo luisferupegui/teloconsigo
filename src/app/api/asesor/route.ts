@@ -19,7 +19,7 @@ import {
 } from "@/lib/armador-cotizacion";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
-import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
+import { getCachedQuery, saveQuote, saveEmptyQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
 import { marcasEnConsulta, esDeMarca, esMarcaDeComponente, sinMarcas } from "@/lib/marcas";
@@ -1688,12 +1688,20 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   // 2) Anuncios reales de EE.UU. (Serper). Solo NUEVOS y con precio parseable.
   let raw = await serperShopping(query, "us", serperKey).catch((): SerperShoppingItem[] => []);
   if (raw.length === 0) {
-    // Una vacía cuesta ~0,7 s y un reintento ~1,5 s: mucho menos que un turno de Andrea
-    // preguntándole al cliente el modelo que ya dio. Si simplificar no cambia nada, se
-    // repite igual, porque la intermitencia es real y un segundo intento a veces basta.
+    // Un segundo intento SOLO si de verdad es otra búsqueda.
+    //
+    // La consulta ancha quita palabras de relleno ("motherboard", "laptop", "new"…). Cuando
+    // la consulta no traía ninguna —que es lo normal en una referencia— devolvía la MISMA
+    // cadena y se repetía igual: un crédito por una búsqueda idéntica que ya sabíamos
+    // vacía. En los registros se leía "reintento con" seguido del mismo texto.
+    //
+    // Y si la consulta nombra una referencia de fabricante, el reintento bueno es el de
+    // más abajo, que pregunta por marca y referencia; hacer los dos es pagar dos veces.
     const amplia = consultaAmplia(query);
-    raw = await serperShopping(amplia || query, "us", serperKey).catch((): SerperShoppingItem[] => []);
-    console.warn(`[cotizar] EE.UU. vacío para "${query}"; reintento con "${amplia || query}" → ${raw.length}`);
+    if (amplia && amplia !== query && referenciaDeConsulta(consulta) === null) {
+      raw = await serperShopping(amplia, "us", serperKey).catch((): SerperShoppingItem[] => []);
+      console.warn(`[cotizar] EE.UU. vacío para "${query}"; reintento con "${amplia}" → ${raw.length}`);
+    }
   }
   const quedarse = (items: SerperShoppingItem[]): UsCandidato[] => {
     const out: UsCandidato[] = [];
@@ -2496,6 +2504,8 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   const finales = filtrarPorTipoDisco(filtrarPorSpecs(productosFinales, consulta), consulta);
 
   if (finales.length > 0) saveQuote(consulta, finales, localData);
+  // Y si no hubo nada, se anota igual: es la consulta que más búsquedas de pago gasta.
+  else saveEmptyQuote(consulta);
 
   return respuestaCotizar(finales, consulta);
 }
