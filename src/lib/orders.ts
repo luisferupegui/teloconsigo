@@ -6,7 +6,13 @@ const ORDERS_PATH   = path.join(process.cwd(), "data", "orders.json");
 const HISTORY_PATH  = path.join(process.cwd(), "data", "orders-history.json");
 const COUNTER_PATH  = path.join(process.cwd(), "data", "order-counter.json");
 
-export type OrderEstado = "pendiente" | "confirmado" | "enviado" | "entregado";
+// "cancelado" existe para que cancelar no sea borrar. Hasta ahora la única forma de
+// anular un pedido era la papelera, y con ella se iba todo: quién lo pidió, qué pidió, a
+// qué precio y por qué se cayó. Un pedido anulado es justo el que hay que poder mirar
+// después —se cotizó mal, el cliente se arrepintió, el proveedor no lo tenía—, así que se
+// queda en la lista, marcado, y la papelera vuelve a ser lo que debe ser: para lo que
+// nunca debió existir.
+export type OrderEstado = "pendiente" | "confirmado" | "enviado" | "entregado" | "cancelado";
 
 /** Una fuente de aprovisionamiento con su costo de adquisición (solo admin). */
 export type FuenteComparacion = {

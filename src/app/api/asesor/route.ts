@@ -19,7 +19,7 @@ import {
 } from "@/lib/armador-cotizacion";
 import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
-import { getCachedQuery, saveQuote, saveEmptyQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
+import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData } from "@/lib/web-cache";
 import { getSearchMode } from "@/lib/search-priority";
 import { palabrasDeCategoria } from "@/lib/sinonimos-categoria";
 import { marcasEnConsulta, esDeMarca, esMarcaDeComponente, sinMarcas } from "@/lib/marcas";
@@ -2531,8 +2531,39 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // Armar lista final: el mercado prioritario primero.
   // Se recortan a tres DESPUÉS de filtrar: si no, los tres huecos se los llevaban
   // listados que no cumplían lo pedido y las opciones buenas se quedaban fuera.
-  const validosCO = filtrarPorSpecs(productosCO, consulta);
-  const validosUS = filtrarPorSpecs(productosUS, consulta);
+  let validosCO = filtrarPorSpecs(productosCO, consulta);
+  let validosUS = filtrarPorSpecs(productosUS, consulta);
+
+  // ── UN PRODUCTO, UN PRECIO ─────────────────────────────────────────────────
+  //
+  // Al cotizar un MX Master 3S salieron las dos: "Logitech MX Master 3s for Business" a
+  // $522.000 con entrega de 6 a 10 días, y "Mouse Inalámbrico Logitech Mx Master 3s" a
+  // $670.000 con entrega de 1 a 3. Por dentro son dos anuncios de dos mercados; por fuera
+  // es el mismo mouse con dos precios, y eso no vende: el cliente deja de preguntarse cuál
+  // quiere y empieza a preguntarse por qué le cobramos $148.000 de más. Poner al cliente a
+  // arbitrar entre nuestros propios precios es negociar contra uno mismo.
+  //
+  // Así que del mismo producto se queda UNA opción. Y se queda la de COLOMBIA, porque en
+  // una compra de tecnología la entrega pesa más que un ahorro pequeño: nadie espera diez
+  // días para ahorrarse un 15%. Solo cuando importarlo ahorra de verdad —más de una cuarta
+  // parte del precio— la espera se justifica y gana el importado.
+  //
+  // Lo que se libera no se pierde: el hueco se lo lleva otro producto distinto, que es lo
+  // que el cliente sí quiere comparar.
+  const AHORRO_QUE_JUSTIFICA_ESPERAR = 1.25;
+  const fueraUS = new Set<number>();
+  const fueraCO = new Set<number>();
+  validosCO.forEach((co, i) => {
+    const j = validosUS.findIndex((us, k) => !fueraUS.has(k) && mismoProducto(co.nombre ?? "", us.nombre ?? ""));
+    if (j === -1) return;
+    if (co.precioCOP <= validosUS[j].precioCOP * AHORRO_QUE_JUSTIFICA_ESPERAR) fueraUS.add(j);
+    else fueraCO.add(i);
+  });
+  if (fueraUS.size + fueraCO.size > 0) {
+    console.warn(`[cotizar] mismo producto en los dos mercados: se quitaron ${fueraUS.size} importado(s) y ${fueraCO.size} de Colombia para no mostrarlo dos veces`);
+    validosCO = validosCO.filter((_, i) => !fueraCO.has(i));
+    validosUS = validosUS.filter((_, j) => !fueraUS.has(j));
+  }
   const productosFinales = (mode === "eeuu_co" || mode === "eeuu_only")
     ? [
         ...validosUS.slice(0, 3),
@@ -2551,9 +2582,9 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   // pide marca o modelo — es más honesto que ofrecerle otro producto.
   const finales = filtrarPorTipoDisco(filtrarPorSpecs(productosFinales, consulta), consulta);
 
+  // Solo se guarda lo que SÍ se encontró: ver el comentario de `web-cache.ts` sobre por
+  // qué lo vacío no se cachea.
   if (finales.length > 0) saveQuote(consulta, finales, localData);
-  // Y si no hubo nada, se anota igual: es la consulta que más búsquedas de pago gasta.
-  else saveEmptyQuote(consulta);
 
   return respuestaCotizar(finales, consulta);
 }
@@ -3258,6 +3289,9 @@ const ESTADO_CLIENTE: Record<OrderEstado, string> = {
   confirmado: "Confirmado — ya está en alistamiento",
   enviado:    "Enviado — va en camino",
   entregado:  "Entregado",
+  // Sin rodeos y sin excusas inventadas: si el cliente pregunta, se le dice, y se le deja
+  // la puerta abierta. Andrea no sabe POR QUÉ se anuló y no debe suponerlo.
+  cancelado:  "Cancelado — si necesitas retomarlo, dímelo y lo registramos de nuevo",
 };
 
 /** Estado de un pedido ya registrado. Exige número + correo o cédula: sin esa

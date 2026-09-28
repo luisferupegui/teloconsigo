@@ -11,16 +11,14 @@ import path from "path";
 const CACHE_PATH = path.join(process.cwd(), "data", "web-cache.json");
 export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
 
-/** Lo que NO dio resultado también se recuerda, pero poco.
- *
- *  Una consulta sin resultados es la MÁS cara de todas: no encuentra nada en el primer
- *  intento, así que dispara los reintentos —la consulta ancha, la de marca y referencia,
- *  en los dos países— y se va en hasta cinco búsquedas de pago. Y como no se guardaba
- *  nada, el siguiente cliente que preguntara lo mismo las volvía a gastar enteras.
- *
- *  Doce horas: lo bastante para no pagar dos veces el mismo "no hay", y lo bastante poco
- *  para que un producto que aparece hoy en una tienda se pueda cotizar hoy mismo. */
-export const WEB_CACHE_TTL_VACIA = 12 * 60 * 60 * 1000; // 12 horas
+// NO SE CACHEA LO VACÍO. Se intentó —una consulta sin resultados es la más cara, porque
+// dispara todos los reintentos en los dos países— y duró un día: la Digigram ALP222e dejó
+// de cotizarse en la web publicada. Google Shopping devuelve vacío de vez en cuando sin
+// motivo (está medido en este mismo archivo y en `fetchUsViaSerper`), y al guardar ese
+// vacío convertíamos un tropiezo de un segundo en doce horas diciéndole a TODOS los
+// clientes que no conseguimos un producto que sí conseguimos.
+//
+// Un crédito cuesta una milésima de dólar. Una cotización que no se da cuesta una venta.
 
 /** Nada guardado antes de esto se usa. Es cuando quedó en producción el arreglo de
  *  `deepseekJson` (29074bc, desplegado el 2026-09-15 a las 09:48 hora de Colombia).
@@ -49,9 +47,14 @@ export const WEB_CACHE_TTL_VACIA = 12 * 60 * 60 * 1000; // 12 horas
  *  y con ese costo se registró un pedido. Lo guardado con la regla vieja arrastraría siete
  *  días más de precios fantasma, y el precio por producto los sostiene incluso más.
  *
+ *  Y otra al quitar el cacheo de lo vacío (2026-09-28, tarde): las entradas que se
+ *  guardaron como "no hay resultados" tenían su propio vencimiento de 12 horas, y sin esa
+ *  regla el lector las tomaría por cotizaciones normales — siete días diciendo que no
+ *  conseguimos productos que sí conseguimos.
+ *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 28, 0, 0);
+const VALIDO_DESDE = Date.UTC(2026, 8, 28, 15, 30);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
@@ -86,7 +89,7 @@ export type WebQuote = {
   tokens?: string[];
 } & LocalData;
 
-type QueryEntry = { ts: number; productos: QuoteProducto[]; tokens?: string[]; vacia?: true } & LocalData;
+type QueryEntry = { ts: number; productos: QuoteProducto[]; tokens?: string[] } & LocalData;
 type CacheFile = { queries: Record<string, QueryEntry>; products: Record<string, WebQuote> };
 
 function load(): CacheFile {
@@ -204,9 +207,7 @@ export function mismaConsulta(a: string[], b: string[]): boolean {
 export function getCachedQuery(consulta: string): QueryEntry | null {
   const c = load();
   const now = Date.now();
-  // Las entradas vacías caducan mucho antes. Ver WEB_CACHE_TTL_VACIA.
-  const fresca = (e: QueryEntry) =>
-    e.vacia ? e.ts >= VALIDO_DESDE && now - e.ts < WEB_CACHE_TTL_VACIA : vigente(e.ts, now);
+  const fresca = (e: QueryEntry) => vigente(e.ts, now);
 
   const exacta = c.queries[cacheKey(consulta)];
   if (exacta && fresca(exacta)) return exacta;
@@ -223,16 +224,6 @@ export function getCachedQuery(consulta: string): QueryEntry | null {
 
 /** Guarda el resultado de una consulta e indexa cada producto por nombre, modelo Y url.
  *  La URL es la clave más estable: no cambia cuando Andrea reformatea el nombre al registrar. */
-/** Deja anotado que esta consulta no dio nada, para no volver a pagarla en 12 horas. */
-export function saveEmptyQuote(consulta: string): void {
-  const c = load();
-  prune(c);
-  c.queries[cacheKey(consulta)] = {
-    ts: Date.now(), productos: [], tokens: tokensConsulta(consulta), vacia: true,
-  };
-  save(c);
-}
-
 export function saveQuote(consulta: string, productos: QuoteProducto[], local: LocalData): void {
   const c = load();
   prune(c);

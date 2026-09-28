@@ -18,7 +18,10 @@
  *
  * Qué NO hace:
  *  - No borra productos. Lo que solo existe aquí (un borrador sin publicar, una prueba)
- *    se conserva al final de la lista.
+ *    se conserva al final de la lista, pero SIN sitio en las vitrinas del home: si en
+ *    producción se sacó una card, aquí tiene que desaparecer también. Si no, el home local
+ *    enseña nueve destacados donde la web publicada enseña ocho, y deja de servir para
+ *    revisar nada.
  *  - No sube nada. Las fotos se suben desde el panel de producción, que es donde el
  *    volumen las guarda de verdad.
  */
@@ -56,7 +59,11 @@ const local = JSON.parse(fs.readFileSync(CATALOGO, "utf8"));
 const enProduccion = new Set(publicados.map(refDe));
 // `imageUrl` y `url` los calcula el servidor al servir; no son parte del catálogo.
 const limpios = publicados.map(({ imageUrl, url, ...resto }) => resto);
-const soloLocales = local.filter((p) => !enProduccion.has(refDe(p)));
+const soloLocales = local
+  .filter((p) => !enProduccion.has(refDe(p)))
+  // Las vitrinas las manda producción entera: un producto que solo vive aquí no ocupa
+  // ninguna de sus doce casillas.
+  .map(({ destacado, enAccesorios, ordenDestacado, ordenAccesorios, ...resto }) => resto);
 
 fs.writeFileSync(CATALOGO, JSON.stringify([...limpios, ...soloLocales], null, 2));
 console.log(`catálogo · ${limpios.length} de producción + ${soloLocales.length} que solo existen aquí`);

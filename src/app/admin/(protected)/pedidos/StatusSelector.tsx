@@ -9,6 +9,8 @@ const ESTADOS: { value: OrderEstado; label: string; color: string }[] = [
   { value: "confirmado", label: "Confirmado", color: "bg-blue-100 text-blue-700 border-blue-200" },
   { value: "enviado",    label: "Enviado",    color: "bg-purple-100 text-purple-700 border-purple-200" },
   { value: "entregado",  label: "Entregado",  color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  // Va al final y en rojo apagado: es una salida, no un paso del camino.
+  { value: "cancelado",  label: "Cancelado",  color: "bg-rose-100 text-rose-700 border-rose-200" },
 ];
 
 export function StatusSelector({ orderId, current }: { orderId: string; current: OrderEstado }) {
