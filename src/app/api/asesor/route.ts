@@ -1165,7 +1165,7 @@ const CONSULTA_AUDIO = /\b(audio|sonido|micr[oó]fono|microphone|interfaz|interf
 /** Combos y lotes: no son el producto que pidió el cliente y su precio no se puede
  *  comparar. "SM7B & Boom Arm Bundle" (US$541) o "Pair Studio Monitors" (el doble de
  *  una unidad) entraban a la cotización como si fueran la unidad suelta. */
-const COMBO_US = /\b(bundle|combo|pack of|\d+[\s-]?pack|\bpair\b|\blot\b|with (?:stand|boom|arm|cable|case|shock|mic|headphones)|and (?:boom|stand|cable|headphones))\b/i;
+const COMBO_US = /\b(bundle|combo|vocal studio|producer pack|recording pack|starter (?:pack|kit)|pack of|\d+[\s-]?pack|\bpair\b|\blot\b|with (?:stand|boom|arm|cable|case|shock|mic|headphones)|and (?:boom|stand|cable|headphones))\b/i;
 // Peso para ordenar resultados de Serper: menor = aparece primero en las opciones.
 // Prioridad B2B: alkosto/ktronix/pcfactory/falabella son las 4 referencias principales.
 // Las claves se comparan contra `quienVende` (vendedor + dominio, en minúsculas y sin tildes).
@@ -1792,12 +1792,58 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   // vuelve a la regla de antes —más floja, pero es lo único que queda—, con su piso
   // absoluto: nada real sale de EE.UU. por menos de US$5.
   const tiendas = CONSULTA_AUDIO.test(consulta) ? [...SITIOS_AUDIO_US, ...SITIOS_US] : SITIOS_US;
-  const mediana = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  // La mediana de verdad: con un número PAR de precios se promedian los dos del medio. Con
+  // dos cifras —US$59,99 de una oferta suelta y US$229,99 del modelo grande— tomar "el del
+  // medio" devolvía el más caro; promediados dan US$145, que es lo que cuesta el aparato.
+  const mediana = (xs: number[]) => {
+    const o = [...xs].sort((a, b) => a - b);
+    const m = Math.floor(o.length / 2);
+    return o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2;
+  };
+  // Los MARKETPLACES no ponen el precio de referencia, aunque estén en la lista de sitios.
+  // eBay está ahí como último recurso para ENCONTRAR algo raro; Mercari, Reverb y Whatnot
+  // son de segunda mano por definición. Sus anuncios son los que hunden la mediana: de la
+  // M-Audio AIR 192|4, cinco de los ocho precios que contaban como "tienda seria" eran de
+  // eBay, y con ellos la referencia salió en US$75 para una interfaz que se vende a US$140.
+  //
+  // (Esta exclusión existía desde el primer arreglo y no funcionaba: al escribir el archivo
+  //  desde la consola, los límites de palabra de la expresión regular quedaron como
+  //  caracteres de retroceso literales. Una regex rota no falla: deja pasar todo, callada.)
   const esDeReferencia = (c: UsCandidato) =>
     usStoreRank(c.store, c.link, tiendas) < tiendas.length
-    && !/ebay/i.test(`${c.store} ${c.link}`);
+    && !/ebay|mercari|whatnot|reverb|jawa.gg|aliexpress|temu|wish/i.test(`${c.store} ${c.link}`);
 
-  const preciosRef = candidatos.filter(esDeReferencia).map((c) => c.usd);
+  // ── LA REFERENCIA SE PREGUNTA AL MISMO PRODUCTO, EN ESE ORDEN ──────────────
+  //
+  // Una marca no tiene UN precio. Buscando una M-Audio AIR 192|4 llegan sus M-Track, que
+  // son otra gama y cuestan la mitad; buscando una Digigram ALP222e llegan las ALP-Dante y
+  // las ALP442e, que cuestan el doble. Dejar que opinen sobre el precio es preguntarle a un
+  // producto distinto, y se notó en las dos direcciones: la M-Audio salió a US$60 cuando
+  // vale US$145, y la Digigram —que vale US$782— quedó por debajo de un piso de US$1.029
+  // calculado con sus hermanas caras, así que no se pudo cotizar y el cliente acabó con el
+  // teléfono del equipo.
+  //
+  // Se pregunta por escalones, del más parecido al menos:
+  //   1. anuncios con el MODELO exacto que pidió el cliente ("alp222e", "1924", "g4");
+  //   2. si no hay dos, los de la misma LÍNEA ("air", "rokit");
+  //   3. si tampoco, todas las tiendas conocidas.
+  // Dos cifras es el mínimo para hablar de un precio: con una sola no hay con qué
+  // contrastar, y es justo así como entra una oferta suelta haciéndose pasar por el precio.
+  const modeloPedido = pegarModelo(sinTildes(consulta.toLowerCase()))
+    .split(/\s+/)
+    .filter((t) => t.length >= 2 && /\d/.test(t));
+  const lineaPedida = palabrasDeModelo(consulta);
+
+  const trae = (c: UsCandidato, palabras: string[]) => {
+    const t = pegarModelo(sinTildes(c.title.toLowerCase()));
+    return palabras.every((w) => t.includes(w));
+  };
+
+  const conocidos = candidatos.filter(esDeReferencia);
+  const delModelo = modeloPedido.length > 0 ? conocidos.filter((c) => trae(c, modeloPedido)) : [];
+  const deLaLinea = lineaPedida.length > 0 ? conocidos.filter((c) => trae(c, lineaPedida)) : [];
+  const base = delModelo.length >= 2 ? delModelo : deLaLinea.length >= 2 ? deLaLinea : conocidos;
+  const preciosRef = base.map((c) => c.usd);
   const referencia = preciosRef.length >= 2 ? mediana(preciosRef) : null;
   const medianaUsd = mediana(candidatos.map((c) => c.usd));
 
@@ -2156,7 +2202,7 @@ function palabrasDeLinea(consulta: string): string[] {
 function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
   // Las tiendas escriben "64 GB" y el cliente "64gb": se pega la cifra a su unidad en
   // ambos lados para que un espacio no descarte el producto correcto.
-  const pegar = (t: string) => t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2");
+  const pegar = (t: string) => pegarModelo(t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2"));
   const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
   const textoDe = (p: QuoteProducto) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`;
 
@@ -3393,9 +3439,18 @@ const SINONIMOS: Record<string, string> = {
   impresora: "printer", portatil: "laptop", parlante: "speaker", parlantes: "speaker",
 };
 
+/** Junta el modelo que cada tienda parte a su manera: "AIR 192|4", "192/4", "192 X4" y
+ *  "1924" son el mismo aparato, y la 192|6 es otro.
+ *
+ *  Sin esto, "192|4" se rompía en "192" y "4" —y "4" ni siquiera contaba, por corto—, así
+ *  que los anuncios de la 192|6, la 192|8 y la 192|14 entraban como si fueran el modelo
+ *  pedido. Con ellos dentro, el precio de referencia de una AIR 192|4 salió en US$60 y el
+ *  cliente vio $376.000 por una interfaz que en Colombia se vende a $685.000. */
+const pegarModelo = (t: string) => t.replace(/(\d)\s*[|/xi]\s*(\d)/gi, "$1$2");
+
 function tokensDistintivos(nombre: string): string[] {
   return [...new Set(
-    nombre.toLowerCase()
+    pegarModelo(nombre.toLowerCase())
       .normalize("NFD").replace(/[̀-ͯ]/g, "")
       .replace(/[^a-z0-9ñ]+/g, " ")
       .replace(/(\d)\s+(gb|tb)\b/g, "$1$2")

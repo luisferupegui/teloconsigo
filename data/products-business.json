@@ -215,12 +215,13 @@
     "precio": 4688000,
     "precioIvaIncluido": true,
     "specs": {
-      "procesador": "AMD Ryzen AI 7-350 (8C 16T, 2.0–5.0 GHz, NPU 50 TOPS)",
-      "ram": "16GB DDR5",
-      "almacenamiento": "1TB SSD",
-      "pantalla": "14\" WQXGA (2560×1600)",
+      "procesador": "Intel Core 5 210H (8 núcleos, 12 hilos, hasta 4.8 GHz)",
+      "ram": "16GB DDR5-5200",
+      "almacenamiento": "1TB SSD NVMe PCIe 4.0",
+      "pantalla": "16\" FHD+ (1920×1200) 16:10",
       "so": "Windows 11 Pro",
-      "garantia": "1 año"
+      "garantia": "1 año",
+      "grafica": "NVIDIA GeForce RTX 4050"
     },
     "descripcion": "Asus ExpertBook P3406 con NPU de 50 TOPS para IA. Pantalla WQXGA y Ryzen AI de última generación.",
     "usoCaso": "portatil-ejecutivo",

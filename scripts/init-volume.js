@@ -134,6 +134,26 @@ if (fs.existsSync(MIGRACIONES_DIR)) {
         catalogo.push(nuevo);
         tocados++;
       }
+
+      // CORREGIR un producto que YA está allá. Es la excepción a la regla de arriba, y se
+      // usa para arreglar un dato que está mal a la vista del cliente.
+      //
+      // Hizo falta con el ASUS TUF: se publicó reutilizando la ficha de un ExpertBook, y la
+      // card anunciaba "AMD Ryzen" y una pantalla de 14" en un portátil que es Intel Core 5
+      // de 16". Las specs no se podían tocar desde el panel —ya sí— y el catálogo del
+      // repositorio no llega a producción, así que no había por dónde.
+      //
+      // Se tocan SOLO los campos que la migración nombra, no el producto entero: el precio,
+      // las banderas y el orden que el admin haya puesto se quedan como están. Y se aplica
+      // una vez, como todo aquí: si mañana él edita esa ficha, manda la suya.
+      for (const arreglo of m.corregir ?? []) {
+        const p = catalogo.find((x) => refDe(x) === arreglo.referencia);
+        if (!p) continue;
+        const { referencia, specs, ...campos } = arreglo;
+        Object.assign(p, campos);
+        if (specs) p.specs = { ...p.specs, ...specs };
+        tocados++;
+      }
       aplicadas.add(m.id);
       console.log(`[init-volume] ✓ migración ${m.id}${m.descripcion ? ` — ${m.descripcion}` : ""}`);
     }

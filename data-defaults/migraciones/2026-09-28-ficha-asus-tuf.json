@@ -1,0 +1,16 @@
+{
+  "id": "2026-09-28-ficha-asus-tuf",
+  "descripcion": "La card del ASUS TUF anunciaba un AMD Ryzen y una pantalla de 14: son las specs del ExpertBook cuya ficha se reutilizo",
+  "corregir": [
+    {
+      "referencia": "P3406CKANZ0441X",
+      "specs": {
+        "procesador": "Intel Core 5 210H (8 núcleos, 12 hilos, hasta 4.8 GHz)",
+        "ram": "16GB DDR5-5200",
+        "almacenamiento": "1TB SSD NVMe PCIe 4.0",
+        "pantalla": "16\" FHD+ (1920×1200) 16:10",
+        "grafica": "NVIDIA GeForce RTX 4050"
+      }
+    }
+  ]
+}
