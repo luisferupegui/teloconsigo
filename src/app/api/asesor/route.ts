@@ -933,8 +933,23 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     // Una estación de trabajo con Xeon no es un servidor: no trae RAID ni fuente redundante.
     !/\b(workstation|precision)\b/i.test(p.nombre);
 
+  // NO SABEMOS QUÉ ES LO QUE PIDE. Ni la clase (equipo, pieza, accesorio), ni la familia,
+  // ni una palabra de uso que traducir a hardware: es el caso del producto que sencillamente
+  // no vendemos —un dron, una consola, un televisor—. Ahí las tres guardas quedan apagadas a
+  // la vez y salía "lo primero que puntuara": a quien pidió un "DJI Mini 3 Drone with DJI RC
+  // Remote" le ofrecimos un adaptador de red de $37.000, que compartía la palabra "mini", y
+  // dos portátiles gaming. El cliente vio, con razón, que no lo estábamos escuchando.
+  //
+  // Sin saber qué es, lo único que queda es exigir que el producto se parezca DE VERDAD a lo
+  // que pidió: la mitad de sus palabras, no una suelta. Si no llega nada, la respuesta
+  // correcta es que no hay disponibilidad local y que Andrea lo consiga por web — que es
+  // justo el negocio: el dron se cotiza fuera y se entrega en 6 a 10 días.
+  const sinClasificar = clase === "otro" && familiaConsulta === null && extras === "" && terms.length >= 3;
+  const minimoParecido = Math.ceil(terms.length / 2);
+
   const combinados = [...locales, ...catalogo]
     .filter((x) => x.score > 0)
+    .filter((x) => !sinClasificar || x.score >= minimoParecido)
     .filter((x) => (precioMax !== null ? x.precio !== null && x.precio <= precioMax : true))
     // el filtro por segmento solo aplica al catálogo (las listas de proveedor no traen segmento)
     .filter((x) => (segmento && x.prioridad === 1 ? x.prod.segmento === SEGMENTO_LABEL[segmento] : true))
@@ -1680,18 +1695,46 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     raw = await serperShopping(amplia || query, "us", serperKey).catch((): SerperShoppingItem[] => []);
     console.warn(`[cotizar] EE.UU. vacío para "${query}"; reintento con "${amplia || query}" → ${raw.length}`);
   }
-  const candidatos: UsCandidato[] = [];
-  for (const it of raw) {
-    const usd = parseUsdPrice(it.price);
-    if (!usd) continue;
-    if (it.condition && it.condition !== "new") continue;
-    const title = it.title ?? "";
-    if (USADO.test(title) || USADO_US.test(title)) continue;
-    if (esServidorDescontinuado(title)) continue;
-    if (COMBO_US.test(title)) continue;
-    if (esRuidoParaLaConsulta(title, consulta, isComputer)) continue;
-    candidatos.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
+  const quedarse = (items: SerperShoppingItem[]): UsCandidato[] => {
+    const out: UsCandidato[] = [];
+    for (const it of items) {
+      const usd = parseUsdPrice(it.price);
+      if (!usd) continue;
+      if (it.condition && it.condition !== "new") continue;
+      const title = it.title ?? "";
+      if (USADO.test(title) || USADO_US.test(title)) continue;
+      if (esServidorDescontinuado(title)) continue;
+      if (COMBO_US.test(title)) continue;
+      if (esRuidoParaLaConsulta(title, consulta, isComputer)) continue;
+      out.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
+    }
+    return out;
+  };
+
+  let candidatos = quedarse(raw);
+
+  // LA REFERENCIA SOLA, TAMBIÉN AQUÍ — y aquí es donde más importa, porque es el negocio.
+  //
+  // Con el nombre entero de la tarjeta ("ASUS TUF 16\" Intel Core 5 RAM 16GB Disco 1TB RTX
+  // 4050 FX607VU") Shopping devolvió cuarenta anuncios de portátiles ASUS parecidos y UNO
+  // solo con la referencia, titulado sin la palabra ASUS, que el filtro de marca iba a
+  // descartar de todos modos. Resultado: ni Colombia ni EE.UU. daban precio y Andrea
+  // terminaba dándole al cliente el teléfono del equipo.
+  //
+  // Preguntando "asus fx607vu" salen seis anuncios del equipo exacto. Un portátil que se
+  // consigue deja de ser una llamada perdida.
+  const referenciaUS = referenciaDeConsulta(consulta);
+  const marcaUS = referenciaUS ? marcaDelProducto(consulta) : "";
+  if (referenciaUS && !yaEstaLaReferencia(candidatos.map((c) => c.title), referenciaUS, marcaUS)) {
+    const porReferencia = await serperShopping(`${marcaUS} ${referenciaUS}`.trim(), "us", serperKey)
+      .catch((): SerperShoppingItem[] => []);
+    const vistos = new Set(candidatos.map((c) => c.link || c.title));
+    candidatos = [
+      ...quedarse(porReferencia).filter((c) => !vistos.has(c.link || c.title)),
+      ...candidatos,
+    ];
   }
+
   if (candidatos.length === 0) return [];
 
   // PRECIOS BASURA: Google Shopping cuela cifras que no son el precio del producto —
@@ -1724,7 +1767,19 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   // Ordena por prioridad de tienda y luego por precio; reindexa para el modelo. En audio
   // profesional manda la lista de tiendas del sector.
   const tiendas = CONSULTA_AUDIO.test(consulta) ? [...SITIOS_AUDIO_US, ...SITIOS_US] : SITIOS_US;
-  creibles.sort((a, b) => usStoreRank(a.store, a.link, tiendas) - usStoreRank(b.store, b.link, tiendas) || a.usd - b.usd);
+  // EL QUE NOMBRA LA REFERENCIA VA PRIMERO, por delante incluso de la tienda preferida.
+  //
+  // Solo se estructuran los doce primeros anuncios, y el orden era tienda y luego precio:
+  // con cincuenta anuncios de portátiles ASUS parecidos, los seis que SÍ decían "FX607VU"
+  // —de tiendas que no están en la lista de preferidas— quedaban fuera de esos doce y el
+  // cliente acababa sin precio para el equipo que pidió. La tienda preferida sirve para
+  // elegir entre anuncios DEL MISMO producto; no para elegir el producto.
+  const nombraLaReferencia = (t: string) =>
+    referenciaUS !== null && t.toLowerCase().includes(referenciaUS) ? 0 : 1;
+  creibles.sort((a, b) =>
+    nombraLaReferencia(a.title) - nombraLaReferencia(b.title)
+    || usStoreRank(a.store, a.link, tiendas) - usStoreRank(b.store, b.link, tiendas)
+    || a.usd - b.usd);
   const top = creibles.slice(0, 12).map((c, i) => ({ ...c, i }));
 
   // 3) Estructura (DeepSeek). El precio y la URL NO vienen del modelo: se re-adjuntan
@@ -1769,19 +1824,50 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
 // comparación del admin (benchmark de mercado), NUNCA en las opciones al cliente (evita
 // el doble margen: el precio de Janus ya es retail).
 async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer = false, strictRetailerFilter = true, allowPCSpecialists = false): Promise<WebProducto[]> {
-  const raw = await serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []);
-  const local: WebProducto[] = [];
-  for (const it of raw) {
-    const cop = parseCopPrice(it.price);
-    if (!cop) continue;
-    if (esRuidoParaLaConsulta(it.title ?? "", consulta, isComputer)) continue;
-    // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
-    if (it.condition && it.condition !== "new") continue;
-    if (USADO.test(it.title ?? "")) continue;
-    if (esServidorDescontinuado(it.title ?? "")) continue;
-    if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link, allowPCSpecialists)) continue;
-    local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true, vendedor: it.source });
+  const quedarse = (raw: SerperShoppingItem[]): WebProducto[] => {
+    const local: WebProducto[] = [];
+    for (const it of raw) {
+      const cop = parseCopPrice(it.price);
+      if (!cop) continue;
+      if (esRuidoParaLaConsulta(it.title ?? "", consulta, isComputer)) continue;
+      // Excluir usados/reacondicionados: campo condition de Serper y palabras clave en el título.
+      if (it.condition && it.condition !== "new") continue;
+      if (USADO.test(it.title ?? "")) continue;
+      if (esServidorDescontinuado(it.title ?? "")) continue;
+      if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link, allowPCSpecialists)) continue;
+      local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true, vendedor: it.source });
+    }
+    return local;
+  };
+
+  let local = quedarse(await serperShopping(consulta, "co", apiKey).catch((): SerperShoppingItem[] => []));
+
+  // LA REFERENCIA SOLA ENCUENTRA LO QUE LA CONSULTA LARGA NO.
+  //
+  // Cuando el cliente llega desde una tarjeta, la consulta es el nombre entero del
+  // producto: "ASUS TUF 16\" Intel Core 5 RAM 16GB Disco 1TB RTX 4050 FX607VU". Google
+  // Shopping no exige que el anuncio diga todo eso —devuelve lo que se le PARECE— y con esa
+  // consulta trajo portátiles de la misma familia pero de otro modelo (FX607VJB, FX607VJR,
+  // V3607VH) y, del modelo correcto, solo anuncios de tiendas que no despachan aquí. Todos
+  // se cayeron, con razón, y Andrea acabó dándole el teléfono del equipo por un portátil que
+  // está en Éxito y en Alkosto.
+  //
+  // Buscar "ASUS FX607VU" —marca y referencia, como lo escribiría cualquiera— sí lo trae de
+  // esas tiendas. Se pide solo cuando hace falta: si entre lo que ya quedó hay un anuncio
+  // que nombre la referencia, no se gasta una segunda consulta. Y se mira DESPUÉS de filtrar,
+  // no antes: un anuncio del fabricante que no vende en Colombia no cuenta como encontrado.
+  const referencia = referenciaDeConsulta(consulta);
+  const marca = referencia ? marcaDelProducto(consulta) : "";
+  if (referencia && !yaEstaLaReferencia(local.map((p) => p.nombre ?? ""), referencia, marca)) {
+    const porReferencia = quedarse(
+      await serperShopping(`${marca} ${referencia}`.trim(), "co", apiKey)
+        .catch((): SerperShoppingItem[] => []),
+    );
+    // Delante los de la referencia: son el producto, no algo que se le parece.
+    const yaEsta = new Set(local.map((p) => p.fuente || p.nombre));
+    local = [...porReferencia.filter((p) => !yaEsta.has(p.fuente || p.nombre)), ...local];
   }
+
   return local;
 }
 
@@ -1952,6 +2038,20 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
   const pegar = (t: string) => t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2");
   const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
   const textoDe = (p: QuoteProducto) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`;
+
+  // LA REFERENCIA DEL FABRICANTE MANDA SOBRE LAS DEMÁS CIFRAS.
+  //
+  // Un anuncio que dice "FX607VU" ES ese portátil: la referencia identifica el equipo
+  // entero, y la RAM, el disco y la gráfica son las suyas, las repita o no el título. Pero
+  // se exigían TODAS las cifras de la consulta y las tiendas abrevian, así que el anuncio
+  // correcto se caía por no deletrear "16gb", "1tb" y "4050".
+  //
+  // Es la misma precedencia que ya vale para la marca (ver `filtrarPorMarcaYCifras`):
+  // quien nombra la referencia ya decidió, y exigirle además al vendedor que escriba el
+  // título como lo escribimos nosotros deja al cliente sin la opción que sí existe.
+  const referencia = referenciaDeConsulta(consulta);
+  const diceReferencia = (p: QuoteProducto) =>
+    referencia !== null && pegar(`${p.nombre ?? ""} ${p.modelo ?? ""}`).includes(referencia);
   // La palabra de línea se busca en el nombre y el modelo, no en las specs.
   const lineas = palabrasDeLinea(consulta);
   const diceLinea = (p: QuoteProducto) => {
@@ -1965,7 +2065,7 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
     productos,
     textoDe,
     consulta,
-    (p) => exig.every((t) => pegar(textoDe(p)).includes(t)) && diceLinea(p),
+    (p) => diceReferencia(p) || (exig.every((t) => pegar(textoDe(p)).includes(t)) && diceLinea(p)),
     (p) => `${p.nombre ?? ""} ${p.marca ?? ""} ${p.modelo ?? ""}`,
   );
   // Y los atributos que el cliente pidió con palabras (inalámbrico, mecánico, láser…),
@@ -1974,6 +2074,50 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
 }
 
 // Respuesta estándar de cotizar_web hacia Andrea.
+/** La REFERENCIA del fabricante que nombra la consulta: "fx607vu", "b760-plus",
+ *  "5600g", "i7-13620h". `null` si no hay ninguna.
+ *
+ *  Un término con letras y TRES o más cifras. Quedan fuera las capacidades ("16gb",
+ *  "1tb"), las memorias ("ddr5") y lo que solo lleva una o dos cifras ("m.2", "usb3.2",
+ *  "win11"): ninguno identifica un producto por sí solo, y tomarlos por referencia haría
+ *  pasar por buena cualquier opción que los mencione.
+ *
+ *  Es más estricta que `nombraModelo`, que solo pregunta si el cliente dio ALGÚN modelo
+ *  para no volver a pedírselo. Aquí se trata de identificar el producto concreto. */
+/** La marca del PRODUCTO que nombra la consulta, no la de su procesador. `marcasEnConsulta`
+ *  devuelve primero la coincidencia más larga, y en "ASUS TUF … Intel Core 5 … FX607VU" eso
+ *  era "intel": preguntarle a una tienda por "intel fx607vu" no significa nada. */
+function marcaDelProducto(consulta: string): string {
+  return marcasEnConsulta(consulta).find((m) => !esMarcaDeComponente(m)) ?? "";
+}
+
+/** ¿Entre estos anuncios hay ya uno que sea el producto pedido: su referencia Y su marca?
+ *
+ *  Se piden las dos cosas porque el filtro de marca que viene después exige la marca de
+ *  todas formas: un anuncio titulado "TUF Gaming F16 FX607VU-RL096W", sin la palabra ASUS,
+ *  nombra la referencia pero se va a caer igual, así que contarlo como encontrado deja al
+ *  cliente sin opciones. */
+function yaEstaLaReferencia(titulos: string[], referencia: string, marca: string): boolean {
+  return titulos.some((t) => {
+    const x = t.toLowerCase();
+    return x.includes(referencia) && (marca === "" || x.includes(marca));
+  });
+}
+
+function referenciaDeConsulta(consulta: string): string | null {
+  return consulta
+    .toLowerCase()
+    .replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2")
+    .split(/\s+/)
+    .map((t) => t.replace(/^[^a-z0-9]+/, "").replace(/[^a-z0-9-]+$/, ""))
+    .find((t) =>
+      t.length >= 4
+      && /[a-z]/.test(t)
+      && (t.match(/\d/g) ?? []).length >= 3
+      && !/^\d+(?:[.,]\d+)?(gb|tb|mb|hz|w|mah|mm|cm|in)$/.test(t)
+      && !/^ddr[2-5]$/.test(t)) ?? null;
+}
+
 /** ¿La consulta ya nombra un MODELO concreto? Un término con letras y cifras que no sea
  *  una capacidad ni un tipo de memoria: "b760-plus", "5600g", "rtx4060", "3s". En "memoria
  *  USB 64GB" no lo hay — ahí sí tiene sentido preguntarle al cliente la marca o el modelo. */
