@@ -192,13 +192,18 @@ export function BusinessFeaturedCard({
         {/* Separador */}
         <div className="my-3 h-px bg-zinc-100" />
 
-        {/* Grid de specs — 2×2 en móvil para que quepan en la card estrecha */}
+        {/* Grid de specs — 2×2 en móvil para que quepan en la card estrecha.
+            Con UNA sola spec no hay columnas que repartir: centrarla dejaba el icono
+            flotando en medio de la card, como si faltara algo al lado. Un monitor se
+            describe con su tamaño y ya; alineado a la izquierda se lee como un dato,
+            no como un hueco. */}
         {specs.length > 0 && (
           <div className={`grid gap-y-2
-            ${specs.length >= 4 ? "grid-cols-2" : specs.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+            ${specs.length >= 4 ? "grid-cols-2" : specs.length === 3 ? "grid-cols-3" : specs.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
             {specs.map(({ Icon, main, sub }, i) => (
               <div key={i}
-                className={`flex flex-col items-center gap-1 text-center px-1.5
+                className={`flex flex-col gap-1
+                  ${specs.length === 1 ? "items-start text-left" : "items-center text-center px-1.5"}
                   ${(specs.length >= 4 ? i % 2 === 0 : i < specs.length - 1)
                     ? "border-r border-zinc-100" : ""}`}
               >

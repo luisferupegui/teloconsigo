@@ -1633,7 +1633,24 @@ const esServidorDescontinuado = (titulo: string) =>
  *  En consultas de audio manda la lista del sector; las generales quedan después. */
 function usStoreRank(source?: string, link?: string, tiendas: string[] = SITIOS_US): number {
   const hay = `${source ?? ""} ${link ?? ""}`.toLowerCase();
-  const i = tiendas.findIndex((d) => hay.includes(d) || hay.includes(d.split(".")[0]));
+  // LA LISTA SON DOMINIOS; GOOGLE REPORTA NOMBRES.
+  //
+  // Serper devuelve el vendedor como lo escribe la tienda —"Guitar Center", "Best Buy",
+  // "Micro Center", "B&H Photo-Video"— y el enlace es una redirección de Google, así que
+  // el dominio tampoco aparece por ningún lado. Comparando tal cual, "guitarcenter" no
+  // encuentra "Guitar Center" por un espacio, y las tiendas que mejor conocemos quedaban
+  // catalogadas como desconocidas: en una cotización de monitores KRK, de todo lo que
+  // trajo Google solo DOS anuncios contaron como tienda seria, cuando media página era de
+  // Guitar Center. Con la referencia de precio apoyada en dos cifras, cualquier oferta
+  // suelta mandaba.
+  //
+  // Se compara también sin puntuación ni espacios, que es lo que tienen en común el
+  // dominio y el nombre.
+  const plano = hay.replace(/[^a-z0-9]/g, "");
+  const i = tiendas.findIndex((d) => {
+    const dominio = d.split(".")[0];
+    return hay.includes(d) || hay.includes(dominio) || plano.includes(dominio.replace(/[^a-z0-9]/g, ""));
+  });
   return i === -1 ? tiendas.length : i;
 }
 
@@ -1690,17 +1707,20 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   if (raw.length === 0) {
     // Un segundo intento SOLO si de verdad es otra búsqueda.
     //
-    // La consulta ancha quita palabras de relleno ("motherboard", "laptop", "new"…). Cuando
-    // la consulta no traía ninguna —que es lo normal en una referencia— devolvía la MISMA
-    // cadena y se repetía igual: un crédito por una búsqueda idéntica que ya sabíamos
-    // vacía. En los registros se leía "reintento con" seguido del mismo texto.
+    // Si la consulta nombra una referencia de fabricante, el reintento bueno es el de más
+    // abajo, que pregunta por marca y referencia: hacer los dos es pagar dos veces por lo
+    // mismo. Sin referencia sí se reintenta, incluso con la consulta tal cual.
     //
-    // Y si la consulta nombra una referencia de fabricante, el reintento bueno es el de
-    // más abajo, que pregunta por marca y referencia; hacer los dos es pagar dos veces.
-    const amplia = consultaAmplia(query);
-    if (amplia && amplia !== query && referenciaDeConsulta(consulta) === null) {
-      raw = await serperShopping(amplia, "us", serperKey).catch((): SerperShoppingItem[] => []);
-      console.warn(`[cotizar] EE.UU. vacío para "${query}"; reintento con "${amplia}" → ${raw.length}`);
+    // Repetir la misma búsqueda parece un crédito tirado, y por eso se quitó — pero se
+    // notó enseguida: pedir tres veces seguidas unos "KRK Rokit 5 G4" daba US$110, US$110
+    // y, en medio, NADA de EE.UU. Sin nada de allá no hay con qué comparar lo de aquí, y
+    // por ese hueco se coló otra vez el anuncio colombiano de $2.970.000 que el techo
+    // debía frenar. La intermitencia de Google Shopping es real y un segundo intento
+    // basta: un crédito es mucho más barato que una cotización al cuádruple.
+    if (referenciaDeConsulta(consulta) === null) {
+      const amplia = consultaAmplia(query);
+      raw = await serperShopping(amplia || query, "us", serperKey).catch((): SerperShoppingItem[] => []);
+      console.warn(`[cotizar] EE.UU. vacío para "${query}"; reintento con "${amplia || query}" → ${raw.length}`);
     }
   }
   const quedarse = (items: SerperShoppingItem[]): UsCandidato[] => {
@@ -1813,10 +1833,38 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   // elegir entre anuncios DEL MISMO producto; no para elegir el producto.
   const nombraLaReferencia = (t: string) =>
     referenciaUS !== null && t.toLowerCase().includes(referenciaUS) ? 0 : 1;
+
+  // ── Y ENTRE LOS QUE SÍ SON EL PRODUCTO, MANDA EL REPRESENTATIVO ────────────
+  //
+  // Un anuncio suelto es una anécdota; tres tiendas serias son un mercado. Del mismo KRK
+  // Rokit 5 G4, Guitar Center tenía una unidad a US$109,99 y otra a US$199,99, y como el
+  // desempate era "el más barato", la cotización salía US$110 un día y US$200 otro: el
+  // mismo monitor a mitad de precio según la hora, que es justo lo que hace desconfiar al
+  // cliente. Ahora, entre anuncios que ya pasaron la banda, gana el que está MÁS CERCA de
+  // lo que piden las tiendas conocidas, no el que va más abajo.
+  //
+  // Se usa la MEDIANA y no el promedio: con tres cifras se parecen, pero si una se
+  // desmadra el promedio se la lleva y la mediana no se entera. Y hacen falta tres
+  // tiendas para hablar de consenso; con dos, la mediana es solo "una de las dos".
+  //
+  // Lo que NO se hace es mostrar el promedio como precio. La ficha lleva el nombre, la
+  // tienda y el enlace de UN anuncio concreto, y `registrarPedido` toma ese precio como el
+  // del pedido: una cifra calculada que no le corresponda a ningún anuncio sería un precio
+  // que nadie puede cobrar ni verificar. Se elige el anuncio representativo; el precio
+  // sigue siendo el suyo, real.
+  const hayConsenso = preciosRef.length >= 3 && referencia !== null;
+  const lejosDelConsenso = (c: UsCandidato) =>
+    hayConsenso ? Math.abs(c.usd - (referencia as number)) : 0;
+
   creibles.sort((a, b) =>
     nombraLaReferencia(a.title) - nombraLaReferencia(b.title)
+    || lejosDelConsenso(a) - lejosDelConsenso(b)
     || usStoreRank(a.store, a.link, tiendas) - usStoreRank(b.store, b.link, tiendas)
     || a.usd - b.usd);
+
+  if (hayConsenso) {
+    console.warn(`[cotizar] EE.UU.: consenso de ${preciosRef.length} tiendas conocidas en US${(referencia as number).toFixed(2)}; manda el anuncio más cercano, no el más barato`);
+  }
   const top = creibles.slice(0, 12).map((c, i) => ({ ...c, i }));
 
   // 3) Estructura (DeepSeek). El precio y la URL NO vienen del modelo: se re-adjuntan

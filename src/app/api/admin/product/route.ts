@@ -9,6 +9,36 @@ const ALLOWED_FIELDS = [
   "destacado", "enAccesorios", "enPromocion", "bajoPedido",
 ] as const;
 
+// ─── La ficha técnica ────────────────────────────────────────────────────────
+//
+// No se podía tocar desde el panel, y eso se ve en la tienda: al reutilizar la ficha de
+// un ASUS ExpertBook para publicar un TUF Gaming, el nombre y el precio se corrigieron
+// pero la ficha siguió anunciando un "AMD Ryzen" y una pantalla de 14" en un equipo que
+// es Core 5 de 16". El cliente lee las specs de la card antes que nada, así que una ficha
+// vieja no es un detalle: es información falsa en la vitrina.
+//
+// Va aparte de ALLOWED_FIELDS porque no es un valor suelto sino un diccionario, y lo que
+// llegue por HTTP no se guarda tal cual: se recorta, se descartan las filas sin nombre o
+// sin valor, y se limita el tamaño. La ficha se muestra en la web y acaba en el JSON-LD
+// que indexa Google; no es sitio para texto sin revisar.
+const SPECS_MAX = 14;
+const CLAVE_MAX = 40;
+const VALOR_MAX = 200;
+
+function specsSaneadas(valor: unknown): Record<string, string> | null {
+  if (typeof valor !== "object" || valor === null || Array.isArray(valor)) return null;
+  const limpio: Record<string, string> = {};
+  for (const [k, v] of Object.entries(valor as Record<string, unknown>)) {
+    if (typeof v !== "string") continue;
+    const clave = k.trim().slice(0, CLAVE_MAX);
+    const texto = v.trim().replace(/\s+/g, " ").slice(0, VALOR_MAX);
+    if (!clave || !texto) continue;
+    limpio[clave] = texto;
+    if (Object.keys(limpio).length >= SPECS_MAX) break;
+  }
+  return limpio;
+}
+
 // Secciones del home con tope de capacidad (máx 12 cards c/u)
 const HOME_SECTIONS = {
   destacado:    "Productos Destacados",
@@ -82,6 +112,13 @@ export async function PATCH(req: NextRequest) {
     const safe: Record<string, unknown> = {};
     for (const key of ALLOWED_FIELDS) {
       if (key in updates) safe[key] = updates[key];
+    }
+    if ("specs" in updates) {
+      const specs = specsSaneadas(updates.specs);
+      if (specs === null) {
+        return NextResponse.json({ error: "La ficha técnica llegó con un formato que no entiendo." }, { status: 400 });
+      }
+      safe.specs = specs;
     }
 
     // Tope de 12 cards por sección del home (solo al ACTIVAR una nueva)

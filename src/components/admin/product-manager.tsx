@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   Star, Tag, Package, ChevronDown, ChevronUp,
   CheckCircle2, AlertCircle, ImageIcon, Save, Loader2,
-  Eye, EyeOff, Globe, Trash2, Truck, ArrowUp, ArrowDown,
+  Eye, EyeOff, Globe, Trash2, Truck, ArrowUp, ArrowDown, Plus, X,
 } from "lucide-react";
 import type { BusinessProduct, Segmento } from "@/lib/products-types";
 import { formatCOP, SEGMENTOS, SEGMENTO_LABEL, SEGMENTO_COLOR, HOME_MAX } from "@/lib/products-types";
@@ -114,6 +114,11 @@ function ProductRow({
   const [enAccesorios,setEnAccesorios]= useState(Boolean(product.enAccesorios));
   const [enPromocion, setEnPromocion] = useState(Boolean(product.enPromocion));
   const [bajoPedido,  setBajoPedido]  = useState(Boolean(product.bajoPedido));
+  // La ficha se edita como filas y no como texto libre porque es un diccionario: cada
+  // fila es "qué" y "cuánto", y así se puede corregir un dato sin reescribir el resto.
+  const [specs, setSpecs] = useState<[string, string][]>(
+    Object.entries(product.specs ?? {}).map(([k, v]) => [k, String(v)]),
+  );
   // Estado de imágenes elevado a la fila → persiste al cerrar/reabrir el panel.
   const [cardUrl,     setCardUrl]     = useState(product.cardUrl);
 
@@ -170,6 +175,10 @@ function ProductRow({
           enAccesorios,
           enPromocion,
           bajoPedido,
+          // Las filas vacías no se guardan: son las que quedaron a medio escribir.
+          specs: Object.fromEntries(
+            specs.map(([k, v]) => [k.trim(), v.trim()]).filter(([k, v]) => k && v),
+          ),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -308,6 +317,62 @@ function ProductRow({
               <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} rows={3}
                         className="resize-none rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
             </label>
+
+            {/* Ficha técnica */}
+            {/*
+              Hasta ahora esto no se podía tocar desde el panel, y se notó: al reutilizar la
+              ficha de un ASUS ExpertBook para publicar un TUF Gaming, el nombre y el precio
+              se corrigieron y la ficha siguió anunciando un "AMD Ryzen" y una pantalla de
+              14" en un equipo que es Core 5 de 16". Quien mira una card lee las specs antes
+              que nada, así que eso no es un detalle suelto: es información falsa en la
+              vitrina, y además viaja al JSON-LD que indexa Google.
+            */}
+            <div className="space-y-2">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Ficha técnica</span>
+                <span className="text-[10px] text-zinc-400">
+                  En la card salen con icono: <code className="font-mono">procesador</code>, <code className="font-mono">ram</code>, <code className="font-mono">almacenamiento</code> y <code className="font-mono">pantalla</code>
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {specs.map(([clave, valor], i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      value={clave}
+                      onChange={(e) => setSpecs((xs) => xs.map((x, j) => (j === i ? [e.target.value, x[1]] : x)))}
+                      placeholder="procesador"
+                      className="w-40 shrink-0 rounded-lg border border-zinc-300 px-3 py-2 font-mono text-xs focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    />
+                    <input
+                      value={valor}
+                      onChange={(e) => setSpecs((xs) => xs.map((x, j) => (j === i ? [x[0], e.target.value] : x)))}
+                      placeholder="Intel Core 5 210H"
+                      className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    />
+                    <button
+                      onClick={() => setSpecs((xs) => xs.filter((_, j) => j !== i))}
+                      aria-label="Quitar esta fila"
+                      className="shrink-0 rounded-lg border border-zinc-200 p-2 text-zinc-400 transition hover:border-red-200 hover:text-red-500"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setSpecs((xs) => [...xs, ["", ""]])}
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-500 transition hover:border-indigo-300 hover:text-indigo-600"
+              >
+                <Plus className="h-3.5 w-3.5" /> Agregar dato
+              </button>
+              {specs.length === 0 && (
+                <p className="text-[11px] text-zinc-400">
+                  Sin ficha, la card sale con el nombre y el precio y nada más.
+                </p>
+              )}
+            </div>
 
             {/* Visibilidad y ubicación en el home */}
             <div className="space-y-2">
