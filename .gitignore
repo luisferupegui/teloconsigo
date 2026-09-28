@@ -85,3 +85,7 @@ data/lineas-img/
 # a partir del catálogo del momento, así que versionarlas sólo guarda una foto vieja
 IMAGENES-POR-GENERAR.*
 IMAGENES-IMPRESORAS.md
+
+# gestor de paquetes y artefactos de compilacion
+# Este proyecto usa pnpm (ver pnpm-workspace.yaml y start-dev.cmd).
+package-lock.json

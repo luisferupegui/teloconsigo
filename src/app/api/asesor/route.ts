@@ -758,7 +758,7 @@ function filtrarPorMarcaYCifras<T>(
 }
 
 function buscarProductos(input: Record<string, unknown>): { encontrados: number; totalCompatibles: number; localDisponibles: number; productos: CustomerProduct[]; nota: string } {
-  const consulta = String(input?.consulta ?? "").toLowerCase().trim();
+  const consulta = sinMiles(String(input?.consulta ?? "").toLowerCase().trim());
   const segmento = input?.segmento as Segmento | undefined;
   const precioMax = typeof input?.precioMax === "number" ? input.precioMax : null;
   const limite = Math.min(Math.max(Number(input?.limite) || 10, 1), 15);
@@ -862,7 +862,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
     const precio = applyMargin(p.precio_costo, p.categoria, margins, p.nombre);
     // Se añaden las formas de nombrar la categoría ("placa", "cpu", "pantalla"): el nombre
     // de un producto casi nunca las dice, y el cliente casi siempre usa una de ellas.
-    const haystack = sinTildes([p.nombre, p.marca, p.categoria, palabrasDeCategoria(p.categoria), Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase());
+    const haystack = sinMiles(sinTildes([p.nombre, p.marca, p.categoria, palabrasDeCategoria(p.categoria), Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase()));
     return {
       score: score(haystack), precio, prioridad: 0, haystack,
       prod: {
@@ -880,7 +880,7 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
   // ofrecería con entrega de 1 a 3 días. Va por `cotizar_web`, con sus 6 a 10 días reales.
   const catalogo: Row[] = loadPublishedBusinessProducts().filter((p) => !p.bajoPedido).map((p) => {
     const precio = p.precioDesde ?? p.precio;
-    const haystack = sinTildes([p.nombre, p.marca, p.descripcionUso, p.categoria, palabrasDeCategoria(p.categoria), p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase());
+    const haystack = sinMiles(sinTildes([p.nombre, p.marca, p.descripcionUso, p.categoria, palabrasDeCategoria(p.categoria), p.usoCaso, p.segmento ? SEGMENTO_LABEL[p.segmento] : "", Object.values(p.specs ?? {}).join(" "), capacidadesNormalizadas(p.nombre)].join(" ").toLowerCase()));
     return {
       score: score(haystack), precio, prioridad: 1, haystack,
       prod: {
@@ -1880,37 +1880,21 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   const nombraLaReferencia = (t: string) =>
     referenciaUS !== null && t.toLowerCase().includes(referenciaUS) ? 0 : 1;
 
-  // ── Y ENTRE LOS QUE SÍ SON EL PRODUCTO, MANDA EL REPRESENTATIVO ────────────
+  // ── Y ENTRE LOS QUE SÍ SON EL PRODUCTO, EL MEJOR PRECIO ────────────────────
   //
-  // Un anuncio suelto es una anécdota; tres tiendas serias son un mercado. Del mismo KRK
-  // Rokit 5 G4, Guitar Center tenía una unidad a US$109,99 y otra a US$199,99, y como el
-  // desempate era "el más barato", la cotización salía US$110 un día y US$200 otro: el
-  // mismo monitor a mitad de precio según la hora, que es justo lo que hace desconfiar al
-  // cliente. Ahora, entre anuncios que ya pasaron la banda, gana el que está MÁS CERCA de
-  // lo que piden las tiendas conocidas, no el que va más abajo.
+  // El consenso de las tiendas conocidas ya hizo su trabajo: puso la banda y dejó fuera lo
+  // que no puede ser este producto. Dentro de ella todo lo que queda es una oferta real de
+  // una tienda real, así que gana la más barata — que es a lo que el cliente viene.
   //
-  // Se usa la MEDIANA y no el promedio: con tres cifras se parecen, pero si una se
-  // desmadra el promedio se la lleva y la mediana no se entera. Y hacen falta tres
-  // tiendas para hablar de consenso; con dos, la mediana es solo "una de las dos".
-  //
-  // Lo que NO se hace es mostrar el promedio como precio. La ficha lleva el nombre, la
-  // tienda y el enlace de UN anuncio concreto, y `registrarPedido` toma ese precio como el
-  // del pedido: una cifra calculada que no le corresponda a ningún anuncio sería un precio
-  // que nadie puede cobrar ni verificar. Se elige el anuncio representativo; el precio
-  // sigue siendo el suyo, real.
-  const hayConsenso = preciosRef.length >= 3 && referencia !== null;
-  const lejosDelConsenso = (c: UsCandidato) =>
-    hayConsenso ? Math.abs(c.usd - (referencia as number)) : 0;
-
+  // Se probó lo contrario, elegir el anuncio más cercano a la mediana, y el resultado fue
+  // cobrar de más: del Shure SM7B, que B&H y Sweetwater listan en US$399, la mediana salía
+  // en US$438 por los revendedores y se cotizaba con ellos. La mediana sirve para saber
+  // cuánto vale algo, no para decidir a quién comprárselo.
   creibles.sort((a, b) =>
     nombraLaReferencia(a.title) - nombraLaReferencia(b.title)
-    || lejosDelConsenso(a) - lejosDelConsenso(b)
     || usStoreRank(a.store, a.link, tiendas) - usStoreRank(b.store, b.link, tiendas)
     || a.usd - b.usd);
 
-  if (hayConsenso) {
-    console.warn(`[cotizar] EE.UU.: consenso de ${preciosRef.length} tiendas conocidas en US${(referencia as number).toFixed(2)}; manda el anuncio más cercano, no el más barato`);
-  }
   const top = creibles.slice(0, 12).map((c, i) => ({ ...c, i }));
 
   // 3) Estructura (DeepSeek). El precio y la URL NO vienen del modelo: se re-adjuntan
@@ -2202,7 +2186,7 @@ function palabrasDeLinea(consulta: string): string[] {
 function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuoteProducto[] {
   // Las tiendas escriben "64 GB" y el cliente "64gb": se pega la cifra a su unidad en
   // ambos lados para que un espacio no descarte el producto correcto.
-  const pegar = (t: string) => pegarModelo(t.toLowerCase().replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2"));
+  const pegar = (t: string) => pegarModelo(sinMiles(t.toLowerCase()).replace(/(\d)\s+(gb|tb|mb|hz|mhz|w)\b/g, "$1$2"));
   const exig = pegar(consulta).split(/\s+/).filter((t) => t.length >= 2 && /[0-9]/.test(t));
   const textoDe = (p: QuoteProducto) => `${p.nombre ?? ""} ${p.modelo ?? ""} ${p.specs ?? ""}`;
 
@@ -3446,6 +3430,17 @@ const SINONIMOS: Record<string, string> = {
  *  que los anuncios de la 192|6, la 192|8 y la 192|14 entraban como si fueran el modelo
  *  pedido. Con ellos dentro, el precio de referencia de una AIR 192|4 salió en US$60 y el
  *  cliente vio $376.000 por una interfaz que en Colombia se vende a $685.000. */
+/** Los miles, sin el punto: "10.000mAh" y "10000mAh" son la misma batería.
+ *
+ *  El Power Bank ADATA de la vitrina no se podía cotizar. Está en las listas y está en el
+ *  catálogo, pero la card lo llama "10.000mAh" y la consulta llegaba escrita "10000mAh",
+ *  así que la cifra exigida no aparecía por ningún lado y la búsqueda volvía vacía. El
+ *  cliente que pinchaba esa card recibía un "no logro confirmarte el precio" por un punto.
+ *
+ *  Solo se tocan los grupos de TRES dígitos, que es como se escriben los miles: "22.5W"
+ *  y "1.5TB" son decimales y se quedan como están. */
+const sinMiles = (t: string) => t.replace(/\d{1,3}(?:[.,]\d{3})+/g, (m) => m.replace(/[.,]/g, ""));
+
 const pegarModelo = (t: string) => t.replace(/(\d)\s*[|/xi]\s*(\d)/gi, "$1$2");
 
 function tokensDistintivos(nombre: string): string[] {

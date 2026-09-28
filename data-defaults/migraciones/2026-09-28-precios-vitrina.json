@@ -1,0 +1,42 @@
+{
+  "id": "2026-09-28-precios-vitrina",
+  "descripcion": "Precios de las cards del home puestos al dia contra lo que Andrea cotiza de verdad",
+  "corregir": [
+    {
+      "_nota": "Estaba POR DEBAJO DEL COSTO: la lista lo trae a $705.000 y la card pedia $512.000",
+      "referencia": "5004-KXS1000-1T",
+      "precioDesde": 750000,
+      "precio": 750000
+    },
+    {
+      "_nota": "El Rokit 5 G4 se consigue a US$134; la card venia de una oferta suelta de US$110",
+      "referencia": "KRK-RP5G4",
+      "precioDesde": 716000,
+      "precio": 716000
+    },
+    {
+      "_nota": "La ALP222e sale mas barata de lo publicado: B&H y Vintage King la tienen a US$662",
+      "referencia": "DIGIGRAM-ALP222E",
+      "precioDesde": 3300000,
+      "precio": 3300000
+    },
+    {
+      "_nota": "Dron DJI Mini 3: en tiendas colombianas esta a $2.190.000, no a $2.657.000",
+      "referencia": "ATH-M50X",
+      "precioDesde": 2190000,
+      "precio": 2190000
+    },
+    {
+      "_nota": "Combo MK235: el mas barato de las listas queda en $180.000",
+      "referencia": "6416-MK235",
+      "precioDesde": 180000,
+      "precio": 180000
+    },
+    {
+      "_nota": "Camara web: $99.000 ya no alcanza, la mas barata que se consigue son $160.000",
+      "referencia": "manual-1780590058013",
+      "precioDesde": 160000,
+      "precio": 160000
+    }
+  ]
+}

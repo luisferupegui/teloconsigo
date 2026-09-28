@@ -396,7 +396,8 @@ export default function AsesorPage({
     setAutoStarted(true);
     setLoading(false); // si hasProducto=true loading arrancó true; al restaurar se habilita el input
     if (!data) { setShowChoice(false); restoredRef.current = true; return; }
-    let { msgs, la, is } = data;
+    const { msgs, la } = data;
+    let { is } = data;
     const elapsed    = Date.now() - la;
     const extraMsgs: Msg[] = [];
     if (is !== "archived") {

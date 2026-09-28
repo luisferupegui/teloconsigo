@@ -5,6 +5,7 @@ import { HeroSlider } from "@/components/hero-slider";
 import { BrandMarquee } from "@/components/brand-marquee";
 import { StatsSection } from "@/components/counter";
 import { loadPublishedBusinessProducts, pickHomeCards } from "@/lib/products";
+import { formatCOP } from "@/lib/products-types";
 import { resolveProductImage } from "@/lib/product-images";
 import { ScrollToHash } from "@/components/scroll-to-hash";
 import { BusinessFeaturedCard } from "@/components/business-featured-card";
@@ -51,6 +52,17 @@ export default function Home() {
     exclude: usedRefs,
     orden: (p) => p.ordenAccesorios,
   });
+
+  // EL "DESDE" LO PONE LA CARD MÁS BARATA QUE SE ESTÁ MOSTRANDO.
+  //
+  // Estaba escrito a mano —"Desde $104.000"— de cuando la vitrina tenía otros productos.
+  // Hoy la más barata de las doce cuesta el doble, así que la etiqueta prometía un precio
+  // que la propia página desmentía tres centímetros más abajo. Un "desde" que no le
+  // corresponde a ninguna card no es un gancho: es un motivo para desconfiar del resto.
+  const desdeAccesorios = accesorios
+    .map((p) => p.precioDesde ?? p.precio)
+    .filter((n): n is number => typeof n === "number" && n > 0)
+    .reduce<number | null>((min, n) => (min === null || n < min ? n : min), null);
 
   return (
     <div className="flex flex-col bg-[#080d14]">
@@ -119,9 +131,11 @@ export default function Home() {
                 <h3 className="font-display text-xl font-black text-white">
                   ACCESORIOS & ESENCIALES
                 </h3>
-                <span className="rounded-full bg-orange-500 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
-                  Desde $104.000
-                </span>
+                {desdeAccesorios !== null && (
+                  <span className="rounded-full bg-orange-500 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                    Desde {formatCOP(desdeAccesorios)}
+                  </span>
+                )}
               </div>
               <Link
                 href="/soluciones#accesorio"

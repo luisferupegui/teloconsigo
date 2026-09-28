@@ -149,7 +149,10 @@ if (fs.existsSync(MIGRACIONES_DIR)) {
       for (const arreglo of m.corregir ?? []) {
         const p = catalogo.find((x) => refDe(x) === arreglo.referencia);
         if (!p) continue;
+        // Las claves que empiezan por guion bajo son notas para quien lea la migracion
+        // —por qué se corrige esto—, no campos del producto: no viajan al catalogo.
         const { referencia, specs, ...campos } = arreglo;
+        for (const k of Object.keys(campos)) if (k.startsWith("_")) delete campos[k];
         Object.assign(p, campos);
         if (specs) p.specs = { ...p.specs, ...specs };
         tocados++;

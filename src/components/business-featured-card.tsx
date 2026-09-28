@@ -251,7 +251,7 @@ export function BusinessFeaturedCard({
         <div className="mt-3 w-full rounded-xl bg-indigo-600 py-3 text-center
                         text-sm font-bold text-white transition-colors
                         group-hover:bg-indigo-700">
-          Cotiza Ya Mismo
+          Cotiza ya mismo
         </div>
 
       </div>
