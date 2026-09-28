@@ -21,8 +21,11 @@ const INITIAL: FormState = {
   ciudad:      "",
 };
 
-export default function ConseguirPage() {
-  const [form,    setForm]    = useState<FormState>(INITIAL);
+/** `descripcionInicial` la arma el servidor con lo que el cliente venía mirando (ver
+ *  ./page.tsx). Llega como prop y no se lee aquí con `useSearchParams` por lo mismo que
+ *  en /asesor: ese hook obliga a un `<Suspense>` que repinta la página en el cliente. */
+export default function ConseguirPage({ descripcionInicial = "" }: { descripcionInicial?: string }) {
+  const [form,    setForm]    = useState<FormState>({ ...INITIAL, descripcion: descripcionInicial });
   const [enviado, setEnviado] = useState(false);
   const [sending, setSending] = useState(false);
   const [error,   setError]   = useState<string | null>(null);

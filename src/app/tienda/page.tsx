@@ -40,14 +40,18 @@ const resolveLineImg = (catSlug: string, linea: Linea) =>
 
 function LineaCard({
   linea,
+  catSlug,
   CatIcon,
   imageUrl,
 }: {
   linea: Linea;
+  catSlug: string;
   CatIcon: React.ComponentType<{ className?: string }>;
   imageUrl: string | null;
 }) {
-  const href = `/asesor?producto=${encodeURIComponent(`${linea.marca} ${linea.nombre}`)}`;
+  // Con la seccion, igual que en /categoria/[slug]: Andrea abre sabiendo de que parte del
+  // catalogo viene el cliente, y acota la busqueda a esa familia.
+  const href = `/asesor?producto=${encodeURIComponent(`${linea.marca} ${linea.nombre}`)}&seccion=${encodeURIComponent(catSlug)}`;
   return (
     <Link
       href={href}
@@ -311,6 +315,7 @@ export default async function TiendaPage({
                       <LineaCard
                         key={linea.slug}
                         linea={linea}
+                        catSlug={catActiva.slug}
                         CatIcon={catActiva.Icon}
                         imageUrl={resolveLineImg(catActiva.slug, linea)}
                       />

@@ -63,7 +63,17 @@ function LineaCard({
   // luego la imagen que trae el repositorio. Esta página solo miraba `linea.imagen`,
   // así que una imagen cambiada desde el panel no llegaba a verse aquí.
   const imageUrl = resolveLineImage(catSlug, linea.slug, linea.imagen);
-  const href = `/conseguir?cat=${catSlug}&marca=${encodeURIComponent(linea.marca)}&linea=${encodeURIComponent(linea.nombre)}`;
+  // "Cotizar" lleva a Andrea, no al formulario.
+  //
+  // El botón principal del catálogo —el de cada línea de cada categoría— iba a
+  // `/conseguir`, que es el formulario de "no lo encuentro": el cliente que pinchaba
+  // "ASUS TUF Gaming" aterrizaba en una caja de texto vacía a escribir de cero lo que
+  // acababa de señalar con el dedo. Y la URL le pasaba marca, línea y categoría, que el
+  // formulario ni miraba.
+  //
+  // Es el mismo enlace que /tienda ya usaba para sus líneas, más la sección: Andrea abre
+  // sabiendo qué producto y de qué parte del catálogo viene.
+  const href = `/asesor?producto=${encodeURIComponent(`${linea.marca} ${linea.nombre}`)}&seccion=${encodeURIComponent(catSlug)}`;
   return (
     <Link
       href={href}
