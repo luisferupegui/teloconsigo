@@ -1146,7 +1146,14 @@ function buscarProductos(input: Record<string, unknown>): { encontrados: number;
 // DeepSeek no navega la web. Este orden es la prioridad de vendedor al rankear.
 const SITIOS_US = [
   "cdw.com", "serversupply.com", "provantage.com", "insight.com", "connection.com", // infraestructura empresarial
-  "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com",               // general
+  "newegg.com", "bhphotovideo.com", "bestbuy.com", "microcenter.com", "adorama.com", // general
+  // Las grandes cadenas. Faltaban, y no es un detalle: del ASUS TUF FX607VU, el único
+  // anuncio que quedaba era el de un revendedor a US$1.706 —$8.500.000 puestos aquí— con
+  // Walmart ofreciendo el mismo portátil a US$1.045 sin que contara como tienda conocida.
+  // Que una tienda no esté en la lista no la vuelve sospechosa, pero sí la deja sin voz
+  // en el precio de referencia, y con la lista corta el criterio lo terminaba poniendo
+  // quien más caro pedía.
+  "walmart.com", "target.com", "costco.com", "samsclub.com", "staples.com", "officedepot.com",
   "amazon.com", "ebay.com",                                                          // último recurso
 ];
 
@@ -1609,6 +1616,19 @@ function parseUsdPrice(s?: string): number | null {
 }
 
 // Segunda mano en inglés (Serper US). Complementa a USADO (español).
+/** Vendedores que NO están en Estados Unidos, por mucho que Google los devuelva en una
+ *  búsqueda con gl=us.
+ *
+ *  Importa porque el precio de EE.UU. no se muestra tal cual: se le aplica la fórmula de
+ *  importación, que suma un flete pensado para traer algo DESDE ALLÁ. Un anuncio de Dubái
+ *  o de Alemania pasado por esa fórmula da una cifra que no le corresponde a nadie.
+ *
+ *  Pasó con el ASUS TUF FX607VU: el único anuncio con esa referencia venía de
+ *  Microless.com, que está en Emiratos, y de ahí salió una cotización de casi $7.000.000
+ *  para un portátil que en Colombia se consigue en $4.400.000. El dato era real; el país,
+ *  no. */
+const VENDEDOR_FUERA_DE_US = /\b(microless|desertcart|gear4music|techinn|musicstore|banggood|aliexpress|alibaba|temu|dhgate|made-in-china|lazada|jumia|mercadolibre|falabella|linio)\b/i;
+
 const USADO_US = /\b(used|refurb(ished)?|renewed|open[\s-]?box|pre[\s-]?owned|for parts|as[\s-]is)\b/i;
 
 /** Servidores de una generación que el fabricante ya no fabrica. Un anuncio de un
@@ -1733,6 +1753,8 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
       if (USADO.test(title) || USADO_US.test(title)) continue;
       if (esServidorDescontinuado(title)) continue;
       if (COMBO_US.test(title)) continue;
+      // Ni el precio ni el flete de una tienda que no está en EE.UU. sirven aquí.
+      if (VENDEDOR_FUERA_DE_US.test(`${it.source ?? ""} ${it.link ?? ""}`)) continue;
       if (esRuidoParaLaConsulta(title, consulta, isComputer)) continue;
       out.push({ i: 0, title, store: it.source ?? "", usd, link: it.link ?? "" });
     }
