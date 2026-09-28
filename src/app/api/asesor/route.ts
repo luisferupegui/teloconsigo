@@ -2040,6 +2040,42 @@ const esCifraDeSpec = (t: string) =>
 const esTokenDeModelo = (t: string) =>
   !esCifraDeSpec(t) && ((/[a-z]/.test(t) && /\d/.test(t)) || /^\d{3,}$/.test(t));
 
+/** La LÍNEA que el cliente escribe PEGADA A LA MARCA, cuando el modelo no lleva cifras.
+ *
+ *  "Creative Sound Blaster Z SE" no tiene un solo término con número: ni las cifras
+ *  exigibles ni `palabrasDeLinea` —que se apoya en un token de modelo— tenían nada que
+ *  exigir, y el filtro daba por buena una "Creative Labs PCMCIA Sound Blaster Audigy 2 ZS
+ *  Notebook". Comparte la marca y comparte "Sound Blaster", que es la familia entera de
+ *  Creative desde hace treinta años. Al cliente que pidió una Z SE le ofrecimos como
+ *  "mejor rendimiento" una tarjeta de otra década.
+ *
+ *  Lo que distingue un modelo de otro dentro de la misma familia son justo esas palabras
+ *  pegadas a la marca. Se toman hasta que aparece algo que ya identifica por su cuenta (un
+ *  token de modelo, una cifra) o algo que no identifica nada (una palabra genérica, otra
+ *  marca). En "Creative Sound Blaster Z SE Tarjeta de Sonido" son "sound blaster z se"; en
+ *  "Shure SM7B Dinámico" no es ninguna, porque SM7B ya identifica solo.
+ *
+ *  Quien las usa las exige CON RETROCESO: si ningún anuncio las trae, no eran una línea
+ *  sino una descripción del cliente ("tarjeta de sonido Creative interna"), y exigir
+ *  "interna" a unas tiendas que escriben en inglés dejaría al cliente sin nada. */
+function palabrasDeModelo(consulta: string): string[] {
+  const q = sinTildes(consulta);
+  const deMarca = new Set(marcasEnConsulta(q).flatMap((m) => m.split(/[\s-]+/)));
+  const t = q.split(/\s+/).filter(Boolean);
+  const iMarca = t.findIndex((w) => deMarca.has(w));
+  if (iMarca === -1) return [];
+
+  const linea: string[] = [];
+  for (let i = iMarca + 1; i < t.length && linea.length < 4; i++) {
+    const w = t[i];
+    // Otra marca, algo con cifras o una palabra que no distingue nada: la línea terminó.
+    if (deMarca.has(w) || /\d/.test(w) || PALABRAS_NO_DE_LINEA.has(w)) break;
+    if (!/^[a-z][a-z-]*$/.test(w)) break;
+    linea.push(w);
+  }
+  return linea;
+}
+
 /** Las palabras de línea que exige la consulta. Ver el bloque de arriba. */
 function palabrasDeLinea(consulta: string): string[] {
   const q = sinTildes(consulta);
@@ -2087,6 +2123,17 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
     const nombre = sinTildes(`${p.nombre ?? ""} ${p.modelo ?? ""}`);
     return lineas.every((w) => new RegExp(`(^|[^a-z0-9])${w}([^a-z0-9]|$)`).test(nombre));
   };
+
+  // Y las palabras que distinguen el modelo dentro de su familia ("Sound Blaster **Z SE**",
+  // "MX **Master**" frente a "MX Anywhere"). Ver `palabrasDeModelo`: se exigen solo si algún
+  // anuncio las trae; si no, el cliente estaba describiendo, no nombrando, y exigirlas
+  // dejaría la respuesta vacía.
+  const modelo = palabrasDeModelo(consulta);
+  const diceModelo = (p: QuoteProducto) => {
+    const nombre = sinTildes(`${p.nombre ?? ""} ${p.modelo ?? ""}`);
+    return modelo.every((w) => new RegExp(`(^|[^a-z0-9])${w}([^a-z0-9]|$)`).test(nombre));
+  };
+  const exigirModelo = modelo.length > 0 && productos.some(diceModelo);
   // Misma precedencia que en las listas: la marca antes que las cifras. Aquí el daño era
   // el mismo — el cliente pide una marca, la consulta llega con cifras que no cumple
   // ninguna opción de esa marca, y acababa viendo otras. Ver `filtrarPorMarcaYCifras`.
@@ -2094,7 +2141,8 @@ function filtrarPorSpecs(productos: QuoteProducto[], consulta: string): QuotePro
     productos,
     textoDe,
     consulta,
-    (p) => diceReferencia(p) || (exig.every((t) => pegar(textoDe(p)).includes(t)) && diceLinea(p)),
+    (p) => diceReferencia(p)
+        || (exig.every((t) => pegar(textoDe(p)).includes(t)) && diceLinea(p) && (!exigirModelo || diceModelo(p))),
     (p) => `${p.nombre ?? ""} ${p.marca ?? ""} ${p.modelo ?? ""}`,
   );
   // Y los atributos que el cliente pidió con palabras (inalámbrico, mecánico, láser…),
