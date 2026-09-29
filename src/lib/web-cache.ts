@@ -57,9 +57,20 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  ASUS TUF de la vitrina quedó cacheado en $6.974.000 —un revendedor de EE.UU.— cuando lo
  *  tenemos publicado en $4.688.000 y asus.com lo vende aquí en $4.449.900.
  *
+ *  Y otra al dejar de fiarse de un anuncio suelto (2026-09-29): el Shure SM7B quedó
+ *  cacheado en $1.160.000, calculado sobre un MercadoLibre de $852.118 que ahora el piso
+ *  de mercado descarta. Se arregló la regla y NO se toco esta fecha, así que el arreglo se
+ *  desplegó y el cliente siguió viendo el precio viejo — que es exactamente el fallo que
+ *  esta constante existe para evitar.
+ *
+ *  SI CAMBIAS CÓMO SE DECIDE UN PRECIO, CAMBIA ESTA FECHA EN EL MISMO COMMIT. El caché
+ *  guarda respuestas, no razonamientos: una regla nueva no reescribe lo ya guardado, y
+ *  durante siete días el cliente sigue recibiendo lo que decidió la regla vieja. No falla
+ *  nada, no se ve en los logs y el arreglo parece no funcionar.
+ *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 28, 19, 30);
+const VALIDO_DESDE = Date.UTC(2026, 8, 29, 21, 0);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
