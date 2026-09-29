@@ -53,8 +53,14 @@ const BENEFITS = [
 ];
 
 // ─── Sidebar — productos más buscados ────────────────────────────────────────
+// OJO: estas rutas apuntan a la foto de un producto REAL, por su referencia. Si una
+// referencia se renombra (ver `renombrarReferencia` en scripts/init-volume.js), la imagen
+// de aquí deja de existir y el bloque sale con el icono de imagen rota — sin que falle
+// nada más, que es lo que lo hace fácil de pasar por alto. Pasó con el portátil: su
+// referencia dejó de ser P3406CKANZ0441X (era la de un ExpertBook) y esta ruta se quedó
+// apuntando a una carpeta que ya no está.
 const TOP_PRODUCTS = [
-  { img: "/productos/P3406CKANZ0441X/card.png",   name: "Portátiles",            desc: "Para trabajo y estudio",          q: "Busco un portátil" },
+  { img: "/productos/ASUS-FX607VU-1TB/card.png",  name: "Portátiles",            desc: "Para trabajo y estudio",          q: "Busco un portátil" },
   { img: "/productos/LS27F320GANX/card.png",       name: "Monitores",             desc: "Más pantalla, más productividad", q: "Quiero un monitor" },
   { img: "/productos/13C50021LD/card.png",         name: "Equipos de escritorio", desc: "Potencia para hogar y oficina",   q: "Necesito un equipo de escritorio" },
   { img: "/productos/1115-KDT128/card.png",        name: "Accesorios",            desc: "Memorias USB, hubs, cables y más",   q: "Busco accesorios para mi PC: memorias USB, hubs o cables" },

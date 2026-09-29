@@ -2186,7 +2186,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
 // allowPCSpecialists=true → además acepta especialistas en PCs (Janus). Solo se usa en la
 // comparación del admin (benchmark de mercado), NUNCA en las opciones al cliente (evita
 // el doble margen: el precio de Janus ya es retail).
-async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer = false, strictRetailerFilter = true, allowPCSpecialists = false): Promise<WebProducto[]> {
+async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer = false, strictRetailerFilter = true, allowPCSpecialists = false, apunte?: { mercado?: number[] }): Promise<WebProducto[]> {
   const quedarse = (raw: SerperShoppingItem[]): WebProducto[] => {
     const local: WebProducto[] = [];
     for (const it of raw) {
@@ -2197,6 +2197,23 @@ async function fetchLocalViaSerper(consulta: string, apiKey: string, isComputer 
       if (it.condition && it.condition !== "new") continue;
       if (USADO.test(it.title ?? "")) continue;
       if (esServidorDescontinuado(it.title ?? "")) continue;
+
+      // LA LISTA DE TIENDAS DICE A QUIÉN LE COMPRAMOS, NO CUÁNTO VALE LA COSA.
+      //
+      // Aquí se descartaba el anuncio y se olvidaba su precio, y con él la única prueba de
+      // cuánto cuesta el producto en Colombia. Del Shure SM7B, Google devolvió once
+      // anuncios: TMS Music $2.131.000, La Casa Audiostore $2.300.000, Hipercentro
+      // $2.131.000, Sonido En Vivo $2.390.000, sonorizamos $2.259.000… y de todos ellos
+      // solo UNO estaba en la lista de tiendas — un MercadoLibre de $852.118. Al quedarse
+      // solo, su propio precio era la mediana, no había con qué contrastarlo y se cotizó
+      // el micrófono en $1.160.000: menos de la mitad de lo que cuesta en cualquier tienda
+      // seria del país. El SM7B es de los micrófonos más falsificados que hay.
+      //
+      // Así que el precio de esos anuncios SÍ se guarda: sirve de referencia de mercado
+      // (ver `construirProductosCO`). Vender, seguimos vendiendo solo por las tiendas de la
+      // lista — que es para lo que está la lista.
+      if (apunte) (apunte.mercado ??= []).push(cop);
+
       if (strictRetailerFilter && !isTechRetailerCO(it.source, it.link, allowPCSpecialists)) continue;
       local.push({ source: "local", nombre: it.title, copLocal: cop, fuente: it.link ?? "", disponible: true, vendedor: it.source });
     }
@@ -2580,7 +2597,7 @@ function respuestaCotizar(productos: QuoteProducto[], consulta: string) {
 // El precio de Serper YA es de mercado/retail; el margen va por CATEGORÍA del producto. Los
 // escritorios de alto rendimiento (gaming/edición) usan "escritorio-alto-rendimiento" (12%,
 // competitivo); los básicos y demás conservan su margen de categoría configurado.
-function construirProductosCO(localParsed: WebProducto[], clasificacion: Categoria = "otro", consulta = ""): { productosCO: QuoteProducto[]; localData: LocalData } {
+function construirProductosCO(localParsed: WebProducto[], clasificacion: Categoria = "otro", consulta = "", mercadoCO: number[] = []): { productosCO: QuoteProducto[]; localData: LocalData } {
   // Mismo saneamiento que en EE.UU.: Google Shopping cuela precios que no son el del
   // producto (accesorios del anuncio, "desde", cuotas). Se descarta lo que quede muy por
   // debajo de la mediana del propio resultado.
@@ -2588,13 +2605,45 @@ function construirProductosCO(localParsed: WebProducto[], clasificacion: Categor
     (p) => typeof p.copLocal === "number" && (p.copLocal as number) > 0 && p.disponible !== false,
   );
   const ordenadosCop = conPrecio.map((p) => p.copLocal as number).sort((a, b) => a - b);
-  const pisoCop = ordenadosCop.length > 0 ? ordenadosCop[Math.floor(ordenadosCop.length / 2)] * 0.35 : 0;
+
+  // EL PISO LO PONE EL MERCADO, NO LOS DOS ANUNCIOS QUE PASARON EL FILTRO.
+  //
+  // El piso se calculaba sobre la mediana de lo que YA había pasado la lista de tiendas, y
+  // cuando de toda la búsqueda solo pasa un anuncio, su mediana es él mismo: se comparaba
+  // consigo mismo y siempre se aprobaba. Por ahí entró un MercadoLibre del Shure SM7B a
+  // $852.118 —cotizado al cliente en $1.160.000— cuando las nueve tiendas de audio del
+  // país que Google devolvió en esa misma búsqueda lo tienen entre $2.131.000 y $2.492.000.
+  //
+  // `mercado` trae los precios de TODOS los anuncios colombianos verosímiles de esa
+  // búsqueda, pasen o no la lista de tiendas (ver `fetchLocalViaSerper`). Con tres o más
+  // hay mediana de verdad, y por debajo del 60% de esa cifra no es el mismo producto: es
+  // una copia, un repuesto o un accesorio del anuncio. Un 40% de descuento real sigue
+  // pasando; el SM7B de $852.118 estaba al 40% del precio, que es otra cosa.
+  //
+  // Con menos de tres precios se vuelve a la regla vieja, que es floja pero es lo que hay.
+  const mercado = mercadoCO.filter((x) => x > 0).sort((a, b) => a - b);
+  const medianaDe = (xs: number[]) => {
+    const m = Math.floor(xs.length / 2);
+    return xs.length % 2 ? xs[m] : (xs[m - 1] + xs[m]) / 2;
+  };
+  const pisoCop = mercado.length >= 3
+    ? medianaDe(mercado) * 0.6
+    : ordenadosCop.length > 0 ? medianaDe(ordenadosCop) * 0.35 : 0;
 
   // Un anuncio que nombra la referencia del fabricante ES el producto; los demás se le
   // parecen. Ver el comentario del orden, más abajo.
   const referenciaPedida = referenciaDeConsulta(consulta);
   const nombraLaReferencia = (p: WebProducto) =>
     referenciaPedida !== null && sinTildes(p.nombre ?? "").includes(referenciaPedida) ? 0 : 1;
+
+  const descartados = conPrecio.filter((p) => (p.copLocal as number) < pisoCop);
+  if (descartados.length > 0) {
+    console.warn(
+      `[cotizar] Colombia: ${descartados.length} anuncio(s) por debajo de ${fmtCOP(Math.round(pisoCop))}` +
+      `${mercado.length >= 3 ? ` (60% de la mediana de ${mercado.length} anuncios del mercado)` : ""}: ` +
+      descartados.map((p) => `${p.vendedor} ${fmtCOP(p.copLocal as number)}`).join(" · "),
+    );
+  }
 
   const locales = conPrecio
     .filter((p) => (p.copLocal as number) >= pisoCop)
@@ -2736,12 +2785,12 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
   let localData: LocalData = {};
   // La libreta donde la búsqueda de EE.UU. anota la oferta de marketplace que NO se cotiza
   // pero que el admin sí quiere ver al registrar el pedido (ver `esVendedorDeMarketplace`).
-  const apunte: { oferta?: OfertaMarketplace } = {};
+  const apunte: { oferta?: OfertaMarketplace; mercado?: number[] } = {};
 
   if (mode === "co_only") {
     if (serperKey) {
-      const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo");
-      ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta));
+      const localParsed = await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo", true, false, apunte);
+      ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta, apunte.mercado ?? []));
     }
   } else if (mode === "eeuu_only") {
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
@@ -2756,18 +2805,18 @@ async function cotizarWeb(ds: DeepSeek, consulta: string) {
     // `fetchLocalViaSerper` ya atrapa sus errores, así que si no se usa no queda una
     // promesa rechazada suelta.
     const colombiaEnCurso = serperKey
-      ? fetchLocalViaSerper(consulta, serperKey, categoria === "equipo")
+      ? fetchLocalViaSerper(consulta, serperKey, categoria === "equipo", true, false, apunte)
       : Promise.resolve<WebProducto[]>([]);
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
     // Se cuentan las que SOBREVIVEN al filtro de specs, no las que llegaron: un listado
     // que no confirma lo que pidió el cliente no es una opción (ver abajo).
     if (filtrarPorSpecs(productosUS, consulta).length < 3 && serperKey) {
-      ({ productosCO, localData } = construirProductosCO(await colombiaEnCurso, categoria, consulta));
+      ({ productosCO, localData } = construirProductosCO(await colombiaEnCurso, categoria, consulta, apunte.mercado ?? []));
     }
   } else {
     // co_eeuu (default): Colombia primero; EE.UU. solo si faltan opciones.
-    const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo") : [];
-    ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta));
+    const localParsed = serperKey ? await fetchLocalViaSerper(consulta, serperKey, categoria === "equipo", true, false, apunte) : [];
+    ({ productosCO, localData } = construirProductosCO(localParsed, categoria, consulta, apunte.mercado ?? []));
     // El filtro de specs se aplica ANTES de decidir si hace falta EE.UU. Los títulos de
     // Google Shopping en Colombia suelen omitir la capacidad ("Memoria USB Kingston
     // DataTraveler 3.2" sin decir si es de 64 o de 128GB), así que esas tres opciones se
