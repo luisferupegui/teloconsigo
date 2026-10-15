@@ -18,7 +18,7 @@ import {
   placaEquivalente, ENSAMBLE_COP,
   type PiezaCotizada,
 } from "@/lib/armador-cotizacion";
-import { loadActiveProducts, loadMargins, applyMargin, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
+import { loadActiveProducts, loadMargins, applyMargin, costoImposible, type ActiveProduct, type Margins } from "@/lib/supplier-catalog";
 import { serperShopping, type SerperShoppingItem } from "@/lib/serper";
 import { getCachedQuery, saveQuote, getWebQuote, getWebQuoteStrict, getWebQuoteFuzzy, type QuoteProducto, type LocalData, type OfertaMarketplace } from "@/lib/web-cache";
 import { getSearchMode, type SearchMode } from "@/lib/search-priority";
@@ -3777,7 +3777,10 @@ async function registrarPedido(input: unknown, acc: Acumulador): Promise<unknown
   if (precioAutoritativo != null && precioAutoritativo > 0) producto.precioCOP = precioAutoritativo;
   if (configCotizada?.costo != null) {
     costoTotalCOP = configCotizada.costo;
-    proveedorLocal = "manual"; // "Estimado por piezas" en el panel: es la suma de sus piezas
+    // Un equipo listo de las listas tiene proveedor; uno de tienda, su enlace; una
+    // configuración por piezas es "manual" ("Estimado por piezas" en el panel).
+    proveedorLocal = configCotizada.proveedor ?? (configCotizada.url ? undefined : "manual");
+    urlCompra = configCotizada.url ?? urlCompra;
   }
 
   // El nombre que se guarda es el de la opción MOSTRADA, no el que escriba Andrea: al
@@ -4649,19 +4652,31 @@ async function cotizarConfiguracion(ds: DeepSeek, config: string): Promise<Cotiz
 // la ficha (`INCLUYE_MONITOR`), que exige la palabra o las comillas de pulgadas.
 const LISTADO_CON_PANTALLA = /\b(monitor|pantalla|display|led|lcd)\b|\b(?:1[89]|2\d|3\d)(?:[.,]\d)?\s*(?:"|''|pulg)/i;
 
+/** Búsqueda en las tiendas de equipos ARMADOS parecidos a una configuración: procesador y
+ *  gráfica, que son lo que manda el precio. `null` si la configuración no nombra ninguno. */
+function consultaDeEquiposParecidos(config: string): string | null {
+  const gpu = config.toLowerCase().match(/\b(?:rtx|gtx|rx)\s?\d{3,4}\b/)?.[0] ?? "";
+  const piezas = [cpuFrase(config), gpu].filter(Boolean).join(" ").trim();
+  return piezas ? `computador escritorio ${piezas}` : null;
+}
+
+/** Los equipos armados que venden las tiendas, parecidos a la configuración. UNA búsqueda
+ *  por configuración: la usan la referencia de mercado y la comparación con equipos listos. */
+function equiposWebParecidos(ds: DeepSeek, config: string): Promise<(QuoteProducto & { ficha?: string })[]> {
+  const consulta = consultaDeEquiposParecidos(config);
+  if (!consulta) return Promise.resolve([]);
+  return memorizado(`equipos|${consulta}`, async () => (await cotizarWeb(ds, consulta)).productos as (QuoteProducto & { ficha?: string })[]);
+}
+
 async function referenciaDeMercado(
   ds: DeepSeek,
   config: string,
   conMonitor: boolean,
 ): Promise<{ precio: number; muestras: number } | null> {
-  const gpu = config.toLowerCase().match(/\b(?:rtx|gtx|rx)\s?\d{3,4}\b/)?.[0] ?? "";
-  const piezas = [cpuFrase(config), gpu].filter(Boolean).join(" ").trim();
-  if (!piezas) return null;
-
-  const r = await cotizarWeb(ds, `computador escritorio ${piezas}`);
+  const productos = await equiposWebParecidos(ds, config);
   // Solo listados de COLOMBIA: de ellos conocemos el precio de tienda. En un importado
   // lo que tenemos es nuestro propio costo puesto aquí, que no es un precio de mercado.
-  const retail = (r.productos as QuoteProducto[])
+  const retail = productos
     .filter((p) => p.origen === "co" && p.costoTotalCOP > 0)
     .filter((p) => LISTADO_CON_PANTALLA.test(p.nombre ?? "") === conMonitor)
     .map((p) => p.costoTotalCOP)
@@ -4670,6 +4685,265 @@ async function referenciaDeMercado(
   // Con una sola muestra no hay mercado que valga: podría ser un anuncio suelto.
   if (retail.length < 2) return null;
   return { precio: retail[Math.floor(retail.length / 2)], muestras: retail.length };
+}
+
+// ── ¿HAY UN EQUIPO LISTO QUE DÉ LO MISMO POR MENOS? ──────────────────────────
+//
+// Un equipo a la medida se cotiza sumando piezas, y cada pieza lleva su margen. Un equipo
+// ya armado —de nuestras listas (Power Group, Janus, Compumax…) o en promoción en una
+// tienda de confianza— puede salir más barato con lo mismo o más adentro. Venderle al
+// cliente las piezas sueltas más caras teniendo eso a la mano es perder la venta contra
+// la tienda de al lado.
+//
+// "Lo mismo o más" es una regla DURA, no una opinión: procesador de la misma gama o mayor
+// y de la misma generación o más nueva, gráfica de la misma clase y generación o mejor (una
+// RTX 4060 no iguala a una 5060), igual o más memoria y disco, y el monitor que eligió. Lo
+// que el anuncio no dice no se da por cumplido. Si el equipo listo es solo la torre, se le
+// suma lo que le falta para igualar la configuración (el monitor, el combo, el disco
+// adicional) con el MISMO precio que ya se cotizó para esas piezas.
+//
+// No entran en la comparación placa, fuente, gabinete ni refrigeración: en un equipo armado
+// vienen las del fabricante, y Andrea se lo dice al cliente.
+
+/** El ahorro mínimo para proponer un equipo listo: por menos no vale la pena cambiarle al
+ *  cliente las piezas que eligió. */
+const AHORRO_MINIMO_COP = 100_000;
+const AHORRO_MINIMO_PCT = 0.03;
+
+type RequisitoMonitor = { pulgadas: number; hz: number; resolucion: number; curvo: boolean; doble: boolean };
+type Requisitos = {
+  cpuGama: number; cpuEpoca: number;
+  /** `puntajeGpu` de la gráfica pedida; 0 = gráficos integrados (cualquier equipo sirve). */
+  gpu: number;
+  ramGB: number; discoGB: number;
+  monitor: RequisitoMonitor | null;
+};
+
+/** Generación de la plataforma, comparable entre marcas: Ryzen 5000 ≈ Core 12ª (2),
+ *  Ryzen 7000/8000 ≈ Core 13ª/14ª ≈ Core Ultra (3), Ryzen 9000 (4). `null` si no se reconoce. */
+function epocaDeCpu(texto: string): number | null {
+  const t = texto.toLowerCase();
+  let m = t.match(/\bryzen\s?\d\s?[- ]?\s?(\d)\d{3}/);
+  if (m) { const d = Number(m[1]); return d <= 3 ? 1 : d <= 5 ? 2 : d <= 8 ? 3 : 4; }
+  if (/\bcore\s?ultra\b/.test(t)) return 3;
+  m = t.match(/\bi[3579][\s-]?(\d{4,5})/);
+  if (m) { const g = m[1].length === 5 ? Number(m[1].slice(0, 2)) : Number(m[1][0]); return g <= 11 ? 1 : g === 12 ? 2 : 3; }
+  if (/\bcore\s?[3579]\s?\d{3}[a-z]{0,2}\b/.test(t)) return 3;
+  if (/\b(threadripper|xeon|epyc)\b/.test(t)) return 3;
+  return null;
+}
+
+/** Clase de la gráfica (ver `claseDeGpu`) y, dentro de la clase, su generación: una RTX
+ *  5060 y una RX 9060 empatan; una RTX 4060 queda un paso abajo. 0 = sin gráfica dedicada. */
+function puntajeGpu(texto: string): number {
+  const clase = claseDeGpu(texto);
+  if (clase == null) return 0;
+  const t = texto.toLowerCase();
+  const nv = t.match(/\b(?:rtx|gtx)\s?-?(\d)\d{3}\b/);
+  const rx = t.match(/\brx\s?(\d)\d{3}\b/);
+  const gen = nv ? Number(nv[1]) : rx ? ({ 6: 3, 7: 4, 9: 5 } as Record<number, number>)[Number(rx[1])] ?? 3 : 3;
+  return clase * 10 + gen;
+}
+
+function monitorDeTexto(texto: string): RequisitoMonitor | null {
+  const t = texto.toLowerCase();
+  const pulgadas = Number((t.match(/\b(\d{2}(?:[.,]\d)?)\s*(?:"|''|”|pulg)/)?.[1] ?? "").replace(",", "."));
+  if (!pulgadas) return null;
+  return {
+    pulgadas,
+    hz: Number(t.match(/\b(\d{2,3})\s*hz\b/)?.[1] ?? 0),
+    resolucion: /\b(4k|2160p?|uhd)\b/.test(t) ? 2160 : /\b(1440p?|2k|qhd|2560)\b/.test(t) ? 1440 : 0,
+    curvo: /\b(curv[oa]s?|curved)\b/.test(t),
+    doble: /\bdoble\b/.test(t),
+  };
+}
+
+const capacidadGB = (valor: string): number => {
+  const m = valor.match(/(\d+(?:[.,]\d)?)\s*(TB|GB)/i);
+  if (!m) return 0;
+  const n = Number(m[1].replace(",", "."));
+  return /tb/i.test(m[2]) ? n * 1024 : n;
+};
+
+/** Lo que tiene que igualar un equipo listo, leído de las piezas ya cotizadas. */
+function requisitosDe(piezas: PiezaCotizada[]): Requisitos | null {
+  const por = (etiqueta: string) => piezas.find((p) => p.etiqueta.toLowerCase() === etiqueta);
+  const cpu = por("procesador");
+  if (!cpu) return null;
+  const cpuGama = gamaDeCpu(cpu.valor);
+  const cpuEpoca = epocaDeCpu(cpu.valor);
+  if (cpuGama == null || cpuEpoca == null) return null;
+  const monitor = por("monitor");
+  return {
+    cpuGama, cpuEpoca,
+    gpu: puntajeGpu(por("tarjeta gráfica")?.valor ?? ""),
+    ramGB: capacidadGB(por("memoria ram")?.valor ?? ""),
+    discoGB: capacidadGB(por("almacenamiento")?.valor ?? ""),
+    monitor: monitor ? monitorDeTexto(monitor.valor) ?? { pulgadas: 0, hz: 0, resolucion: 0, curvo: false, doble: false } : null,
+  };
+}
+
+type EquipoListo = {
+  nombre: string;
+  /** Nombre + specs: lo que se compara contra los requisitos y lo que muestra su ficha. */
+  texto: string;
+  precio: number;
+  costo?: number;
+  entrega: OpcionSel["entrega"];
+  proveedor?: string;
+  url?: string;
+};
+
+/** ¿Este equipo listo da lo mismo o más? Devuelve las piezas de la configuración que hay
+ *  que sumarle para igualarla (monitor, combo, disco adicional), o `null` si no alcanza. */
+// Procesadores de portátil de bajo consumo (serie U, 15 W). Un "Compumax Ryzen 7 5825U" dice
+// "Ryzen 7", pero rinde menos que el Core i5-12400 de escritorio que pedía la configuración.
+const CPU_DE_BAJO_CONSUMO = /\b(?:i[3579][\s-]?\d{4,5}|core\s?[3579][\s-]?\d{3}|ryzen\s?[3579]\s?[- ]?\d{4}|ultra\s?[579]\s?\d{3})\s?u\b/i;
+
+function queLeFalta(equipo: EquipoListo, req: Requisitos, piezas: PiezaCotizada[]): PiezaCotizada[] | null {
+  const t = equipo.texto;
+  if (CPU_DE_BAJO_CONSUMO.test(t)) return null; // el armador y el chat solo configuran CPUs de escritorio
+  if ((gamaDeCpu(t) ?? 0) < req.cpuGama) return null;
+  if ((epocaDeCpu(t) ?? 0) < req.cpuEpoca) return null;
+  if (req.gpu > 0 && puntajeGpu(t) < req.gpu) return null;
+  const { ram, disco } = ramYDisco(sinVram(t));
+  if ((ram ?? 0) < req.ramGB) return null;
+  if ((disco ?? 0) < req.discoGB * 0.9) return null; // las listas escriben 480/500/512 para el mismo disco
+
+  const por = (etiqueta: string) => piezas.find((p) => p.etiqueta.toLowerCase() === etiqueta);
+  const extras: PiezaCotizada[] = [];
+  const traeMonitor = /Incluye monitor|Todo-en-uno/.test(monitorStatusFromName(t) ?? "");
+  if (req.monitor) {
+    if (traeMonitor) {
+      // El monitor que trae tiene que valer lo que el cliente eligió. Uno doble no se puede
+      // comparar con uno solo, y del que el anuncio no da medidas no se puede afirmar nada.
+      const m = monitorDeTexto(t);
+      const r = req.monitor;
+      if (r.doble || !m) return null;
+      if (m.pulgadas < r.pulgadas - 0.6) return null; // 23,8" cuenta como 24"
+      if (r.hz && m.hz < r.hz) return null;
+      if (r.resolucion && m.resolucion < r.resolucion) return null;
+      if (r.curvo && !m.curvo) return null;
+    } else {
+      const monitor = por("monitor");
+      if (monitor) extras.push(monitor);
+    }
+  }
+  // Trae periféricos si dice teclado o mouse. "Combo" a secas no basta: en el detalle de un
+  // equipo de Compuoriente, "combo" era el conector de audífonos ("Headphone-Microphone combo").
+  const combo = por("teclado y mouse");
+  if (combo && !/\b(teclado|keyboard|mouse|rat[oó]n)\b/i.test(t)) extras.push(combo);
+  const adicional = por("disco adicional");
+  if (adicional) extras.push(adicional);
+  return extras;
+}
+
+/** Equipos armados de NUESTRAS listas (ensamblados y torres de marca). */
+function equiposListosDeListas(): EquipoListo[] {
+  const margins = loadMargins();
+  return loadActiveProducts()
+    .filter((p) => p.precio_costo > 0 && !costoImposible(p))
+    .filter((p) => { const f = formatoDeProducto(p.categoria, p.nombre); return f === "ensamblado" || f === "torre-marca"; })
+    .map((p) => ({
+      nombre: p.nombre,
+      texto: `${p.nombre} ${Object.values(p.specs ?? {}).join(" ")}`,
+      precio: applyMargin(p.precio_costo, p.categoria, margins, p.nombre),
+      costo: p.precio_costo,
+      entrega: "local" as const,
+      proveedor: p.proveedor,
+    }));
+}
+
+/** Equipos armados de tiendas de confianza, con nuestro precio de "te lo conseguimos". */
+function equiposListosDeTiendas(productos: (QuoteProducto & { ficha?: string })[]): EquipoListo[] {
+  return productos
+    .filter((p) => p.precioCOP > 0)
+    .filter((p) => { const f = formatoDeProducto("", p.nombre ?? ""); return f === "ensamblado" || f === "torre-marca"; })
+    .map((p) => ({
+      nombre: p.nombre ?? "",
+      texto: `${p.nombre ?? ""} ${p.specs ?? ""}`,
+      precio: p.precioCOP,
+      costo: p.costoTotalCOP > 0 ? p.costoTotalCOP : undefined,
+      entrega: p.origen === "co" ? "local" as const : "us" as const,
+      url: p.fuente,
+    }));
+}
+
+/** La ficha del equipo listo, armada con LOS MISMOS datos que se verificaron contra la
+ *  configuración. Su ficha de lista no sirve: Compuoriente vende "INTEL CORE i5 12400
+ *  PROCESADOR" —un equipo completo con 16GB, 512GB y monitor de 23,8", nombrado por su
+ *  procesador y con el resto en un campo de detalle— y esa ficha decía "Solo torre" y "la
+ *  memoria te la confirmo", justo lo contrario de lo que se había comprobado. */
+function fichaDeEquipoListo(equipo: EquipoListo, extras: PiezaCotizada[], total: number): { titulo: string; ficha: string } {
+  const t = equipo.texto;
+  const cpu = procesadorDesdeNombre(t);
+  const gpu = claseDeGpu(t) != null ? graficaDesdeNombre(t) : null;
+  const { ram, disco } = ramYDisco(sinVram(t));
+  const tam = (gb: number) => (gb >= 1024 && gb % 1024 === 0 ? `${gb / 1024}TB` : `${gb}GB`);
+  const traeMonitor = /Incluye monitor/.test(monitorStatusFromName(t) ?? "");
+  const mon = traeMonitor ? monitorDeTexto(t) : null;
+  const sumaMonitor = extras.some((p) => p.categorias.includes("monitor"));
+
+  // El nombre de la lista, salvo cuando es solo el del procesador: entonces se dice qué es.
+  const limpio = limpiarNombre(equipo.nombre).replace(/\bprocesador\b/gi, "").replace(/\s+/g, " ").trim();
+  const nombraCapacidades = Object.values(ramYDisco(sinVram(equipo.nombre))).some((v) => v != null);
+  const titulo = nombraCapacidades || !cpu
+    ? limpio
+    : `Equipo ${cpu}${ram ? ` ${ram}GB` : ""}${disco ? ` ${tam(disco)}` : ""}${traeMonitor ? " + Monitor" : ""}`;
+
+  const lineas = [
+    cpu ? `- Procesador: ${cpu}` : "",
+    `- Gráfica: ${gpu ?? "gráficos integrados"}`,
+    ram ? `- Memoria RAM: ${ram}GB` : "",
+    disco ? `- Almacenamiento: ${tam(disco)}${/\b(ssd|nvme|m\.?2)\b/i.test(t) ? " SSD" : ""}` : "",
+    traeMonitor ? `- Monitor: ${mon ? `${mon.pulgadas}"${mon.hz ? ` ${mon.hz}Hz` : ""}` : "incluido"}` : "",
+    ...extras.map((p) => `➕ ${p.etiqueta}: ${p.valor}`),
+    !traeMonitor && !sumaMonitor ? "🖥️ Solo torre (sin monitor)" : "",
+  ].filter(Boolean);
+  return { titulo, ficha: [`**${titulo}**`, ...lineas, `💲 ${fmtCOP(total)}`].join("\n") };
+}
+
+type AlternativaLista = { opcion: OpcionSel; costo?: number; ahorro: number; proveedor?: string; url?: string };
+
+/** El equipo listo más barato que da lo mismo o más que la configuración cotizada, ya con
+ *  lo que le falte sumado. `null` si no hay ninguno que ahorre lo suficiente. */
+async function alternativaLista(ds: DeepSeek, config: string, cot: CotizacionArmador): Promise<AlternativaLista | null> {
+  const req = requisitosDe(cot.piezas);
+  if (!req) return null;
+  // La búsqueda en tiendas es la MISMA de la referencia de mercado (ya hecha y memorizada);
+  // si aún no terminó, no se espera más que a ella.
+  const deTiendas = await conTope(equiposWebParecidos(ds, config), TOPE_MERCADO_MS, []);
+  const candidatos = [...equiposListosDeListas(), ...equiposListosDeTiendas(deTiendas)];
+
+  const limite = cot.total - Math.max(AHORRO_MINIMO_COP, cot.total * AHORRO_MINIMO_PCT);
+  let mejor: { equipo: EquipoListo; extras: PiezaCotizada[]; total: number } | null = null;
+  for (const equipo of candidatos) {
+    const extras = queLeFalta(equipo, req, cot.piezas);
+    if (!extras) continue;
+    const total = equipo.precio + extras.reduce((t, p) => t + p.precio, 0);
+    if (total > limite) continue;
+    if (!mejor || total < mejor.total) mejor = { equipo, extras, total };
+  }
+  if (!mejor) return null;
+
+  const { equipo, extras, total } = mejor;
+  const { titulo, ficha } = fichaDeEquipoListo(equipo, extras, total);
+  const entrega: OpcionSel["entrega"] =
+    equipo.entrega === "us" || extras.some((p) => p.entrega === "us") ? "us" : "local";
+  const costo = equipo.costo != null && extras.every((p) => p.costo != null)
+    ? equipo.costo + extras.reduce((t, p) => t + (p.costo ?? 0), 0)
+    : undefined;
+  console.warn(`[asesor] equipo listo: "${titulo}"${extras.length ? ` + ${extras.map((p) => p.valor).join(" + ")}` : ""} ${fmtCOP(total)} vs a la medida ${fmtCOP(cot.total)}`);
+  return {
+    opcion: {
+      nombre: `Equipo listo — ${titulo}${extras.length ? ` + ${extras.map((p) => p.valor).join(" + ")}` : ""}`,
+      precio: total, ficha, entrega,
+    },
+    costo,
+    ahorro: cot.total - total,
+    proveedor: equipo.proveedor,
+    url: equipo.url,
+  };
 }
 
 // Cuánto puede separarse nuestro precio del mercado antes de considerarlo desfasado. La
@@ -4704,17 +4978,22 @@ function fichaDeConfiguracion(perfil: string, piezas: PiezaCotizada[], total: nu
 // configuración solo existe en lo que Andrea escribió — y ese historial lo manda el
 // navegador, así que no sirve para fijar un precio. Sin esto, el pedido se registraba por
 // el precio de un PC prefabricado "parecido" (`costoEscritorioConfig`), no por el cotizado.
-type ConfiguracionCotizada = { opcion: OpcionSel; costo?: number; ts: number };
+type ConfiguracionCotizada = {
+  opcion: OpcionSel; costo?: number; ts: number;
+  /** Para un equipo listo: de qué lista sale (el admin sabe a quién comprárselo) o en qué
+   *  tienda está. Una configuración por piezas no tiene ninguno: es "estimado por piezas". */
+  proveedor?: string; url?: string;
+};
 const configuracionesCotizadas = new Map<string, ConfiguracionCotizada>();
 const VIGENCIA_CONFIGURACION_MS = 24 * 3600_000;
 const claveConfig = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-function recordarConfiguracion(opcion: OpcionSel, costo?: number) {
+function recordarConfiguracion(opcion: OpcionSel, costo?: number, origen: { proveedor?: string; url?: string } = {}) {
   const ahora = Date.now();
   for (const [k, v] of configuracionesCotizadas) {
     if (ahora - v.ts > VIGENCIA_CONFIGURACION_MS) configuracionesCotizadas.delete(k);
   }
-  configuracionesCotizadas.set(claveConfig(opcion.nombre), { opcion, costo, ts: ahora });
+  configuracionesCotizadas.set(claveConfig(opcion.nombre), { opcion, costo, ts: ahora, ...origen });
 }
 
 /** La configuración cotizada que Andrea está registrando. Al registrar suele recortar el
@@ -4758,29 +5037,59 @@ async function configurarYCotizar(ds: DeepSeek, input: unknown, acc: Acumulador)
   acc.alargarTope?.();
   const cotizaciones = await Promise.all(equipos.map((e) => cotizarConfiguracionCompartida(ds, e.resumen)));
 
-  let listos = equipos
+  const cotizados = equipos
     .map((e, i) => ({ e, c: cotizaciones[i] }))
     .filter(({ c }) => c.piezas.length > 0 && c.faltantes.length === 0 && c.pendientes.length === 0);
   const hayPendientes = cotizaciones.some((c) => c.pendientes.length > 0);
+
+  // POR CADA NIVEL, LO MÁS BARATO QUE CUMPLA. La configuración por piezas o, si un equipo
+  // ya armado —de las listas o en promoción en una tienda— da lo mismo o más por menos,
+  // ese (ver `alternativaLista`). Al cliente del chat le importa el equipo que recibe, no
+  // cómo se arma: venderle piezas sueltas más caras sería perder la venta.
+  type Candidata = { nivel: Nivel; opcion: OpcionSel; costo?: number; proveedor?: string; url?: string; ahorro?: number };
+  let candidatas: Candidata[] = await Promise.all(cotizados.map(async ({ e, c }): Promise<Candidata> => {
+    const lista = await alternativaLista(ds, e.resumen, c);
+    if (lista) {
+      return { nivel: e.nivel, opcion: lista.opcion, costo: lista.costo, proveedor: lista.proveedor, url: lista.url, ahorro: lista.ahorro };
+    }
+    const titulo = `${e.perfil.label} ${NIVEL_LABEL[e.nivel]}`;
+    const opcion: OpcionSel = {
+      nombre: `${titulo} — ensamblado a la medida: ${c.piezas.map((p) => p.valor).join(" · ")}`,
+      precio: c.total,
+      ficha: fichaDeConfiguracion(titulo, c.piezas, c.total, soloTorre === true),
+      entrega: c.entrega,
+    };
+    // El costo de las piezas, para que el admin vea el margen real del equipo cotizado y
+    // no el de un PC prefabricado parecido. Si alguna pieza no tiene costo, no se afirma.
+    const costo = c.piezas.every((p) => p.costo != null)
+      ? c.piezas.reduce((t, p) => t + (p.costo ?? 0), 0) + ENSAMBLE_COP
+      : undefined;
+    return { nivel: e.nivel, opcion, costo };
+  }));
+
+  // Un nivel que cuesta lo mismo o más que uno de arriba sobra: el de arriba da más por
+  // menos. Pasa cuando un equipo listo iguala la configuración recomendada por menos de lo
+  // que costaba la económica armada por piezas.
+  candidatas = candidatas.filter((x, i) => !candidatas.slice(i + 1).some((y) => y.opcion.precio <= x.opcion.precio));
 
   // Con presupuesto, solo lo que cabe (con un 10% de holgura: un cliente que dice "unos 5
   // millones" no descarta uno de 5,3). Si no cabe ninguno, se le muestra el más económico y
   // se le dice con claridad, en vez de esconderle que su tope no alcanza.
   let notaPresupuesto = "";
   const tope = typeof presupuesto === "number" && presupuesto > 0 ? presupuesto * 1.1 : null;
-  if (tope && listos.length > 0) {
-    const caben = listos.filter(({ c }) => c.total <= tope);
+  if (tope && candidatas.length > 0) {
+    const caben = candidatas.filter((x) => x.opcion.precio <= tope);
     if (caben.length > 0) {
-      listos = caben;
+      candidatas = caben;
     } else {
-      listos = [listos.reduce((a, b) => (b.c.total < a.c.total ? b : a))];
+      candidatas = [candidatas.reduce((a, b) => (b.opcion.precio < a.opcion.precio ? b : a))];
       notaPresupuesto =
         ` El equipo más económico para ese uso supera su presupuesto de ${fmtCOP(Number(presupuesto))}: díselo con naturalidad, ` +
         "explica que es lo mínimo recomendable para ese trabajo y ofrece ajustarlo (sin monitor si ya tiene, o con otra gráfica).";
     }
   }
 
-  if (listos.length === 0) {
+  if (candidatas.length === 0) {
     console.warn(`[asesor] configurar_equipo ${String(uso)}: ${hayPendientes ? "piezas pendientes" : "sin precio"}`);
     return {
       encontrados: 0,
@@ -4793,30 +5102,20 @@ async function configurarYCotizar(ds: DeepSeek, input: unknown, acc: Acumulador)
     };
   }
 
-  const opciones = listos.map(({ e, c }) => {
-    const titulo = `${e.perfil.label} ${NIVEL_LABEL[e.nivel]}`;
-    const ficha = fichaDeConfiguracion(titulo, c.piezas, c.total, soloTorre === true);
-    const opcion: OpcionSel = {
-      nombre: `${titulo} — ensamblado a la medida: ${c.piezas.map((p) => p.valor).join(" · ")}`,
-      precio: c.total,
-      ficha,
-      entrega: c.entrega,
-    };
-    // El costo de las piezas, para que el admin vea el margen real del equipo cotizado y
-    // no el de un PC prefabricado parecido. Si alguna pieza no tiene costo, no se afirma.
-    const costo = c.piezas.every((p) => p.costo != null)
-      ? c.piezas.reduce((t, p) => t + (p.costo ?? 0), 0) + ENSAMBLE_COP
-      : undefined;
-    recordarConfiguracion(opcion, costo);
-    const etiqueta = listos.length > 1 ? ETIQUETA_NIVEL[e.nivel] : "";
+  const opciones = candidatas.map((x) => {
+    recordarConfiguracion(x.opcion, x.costo, { proveedor: x.proveedor, url: x.url });
+    const etiqueta = candidatas.length > 1 ? ETIQUETA_NIVEL[x.nivel] : "";
+    const listo = x.ahorro != null
+      ? `💡 Ya armado: trae lo mismo o más que la configuración ${NIVEL_LABEL[x.nivel].toLowerCase()} y sale ${fmtCOP(x.ahorro)} más barato`
+      : "";
     return {
-      opcion,
+      opcion: x.opcion,
       sel: {
         etiqueta,
-        nombre: opcion.nombre,
-        precioCOP: opcion.precio,
-        bloque: `${etiqueta ? `${etiqueta}\n` : ""}${ficha}\n${ENTREGA_TXT[opcion.entrega]}`,
-        entrega: opcion.entrega,
+        nombre: x.opcion.nombre,
+        precioCOP: x.opcion.precio,
+        bloque: [etiqueta, listo, x.opcion.ficha, ENTREGA_TXT[x.opcion.entrega]].filter(Boolean).join("\n"),
+        entrega: x.opcion.entrega,
       },
     };
   });
@@ -4824,15 +5123,20 @@ async function configurarYCotizar(ds: DeepSeek, input: unknown, acc: Acumulador)
   acc.compuestas = opciones.map((o) => o.opcion);
   acc.mostradas = opciones.length;
   acc.esConfiguracion = true;
-  console.warn(`[asesor] configurar_equipo ${String(uso)}: ${opciones.map((o) => `${o.sel.etiqueta.replace(/\*/g, "") || "única"} ${fmtCOP(o.opcion.precio)}`).join(" · ")}`);
+  console.warn(`[asesor] configurar_equipo ${String(uso)}: ${candidatas.map((x) => `${NIVEL_LABEL[x.nivel]}${x.ahorro != null ? " (listo)" : ""} ${fmtCOP(x.opcion.precio)}`).join(" · ")}`);
 
+  const hayListos = candidatas.some((x) => x.ahorro != null);
   return {
     encontrados: opciones.length,
     seleccion: {
       instruccion:
-        "INTERNO: estas son las configuraciones que el sistema armó para su uso con nuestra guía técnica, cotizadas pieza por " +
-        "pieza. Copia cada \"bloque\" TAL CUAL y en este orden. Delante, una frase cálida; entre una y otra no hace falta nada " +
-        "más. Detrás, en dos o tres líneas sencillas, para qué le alcanza cada nivel en SU trabajo, y pregúntale cuál prefiere. " +
+        "INTERNO: estas son las opciones que el sistema armó para su uso con nuestra guía técnica. Copia cada \"bloque\" TAL CUAL " +
+        "y en este orden. Delante, una frase cálida; entre una y otra no hace falta nada más. Detrás, en dos o tres líneas " +
+        "sencillas, para qué le alcanza cada nivel en SU trabajo, y pregúntale cuál prefiere. " +
+        (hayListos
+          ? "Las que dicen \"Ya armado\" son equipos listos que dan lo mismo o más que armarlo pieza por pieza y salen más baratos: " +
+            "preséntalo como una ventaja (ya viene armado y probado, ahorra plata). "
+          : "") +
         "NO cambies piezas ni precios, NO agregues otros equipos, NO menciones listas, proveedores ni de dónde sale cada pieza." +
         (tope ? "" : " Como no dio presupuesto, cierra diciendo que si tiene un tope se lo ajustas.") +
         (soloTorre === true ? " Ya tiene monitor, teclado y mouse: NO se los ofrezcas." : "") + notaPresupuesto,
@@ -5256,7 +5560,7 @@ Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, pod
     ? `${SYSTEM}\n\nCONTEXTO ARMADOR DE PC: el cliente armó esta configuración a la medida y quiere cotizarla: "${ctx?.producto}". El chat ya mostró el saludo. Reglas para este caso:
 - ⛔ CERO PREGUNTAS ANTES DE COTIZAR — esta regla ANULA cualquier otra de más abajo. El cliente ya eligió cada pieza en el armador: ya sabes el uso, el formato, la gama y el presupuesto. NO preguntes por el uso, NI por el formato, NI por la marca, NI por el presupuesto, NI por "algún detalle adicional".
 - PROHIBIDO REVELAR LA COCINA (igual de innegociable que siempre): JAMÁS digas que "no lo tenemos pre-ensamblado", "no está en configuración estándar", "lo coordinamos con un especialista", "precio real de cada pieza" ni nada que delate que la build exacta no está en stock. Para el cliente, armar su equipo a la medida es lo más normal del mundo y tú lo resuelves.
-- La cotización de SU equipo te la entrega el sistema ya hecha, pieza por pieza (campo "seleccion"). Preséntala COPIANDO su "bloque" TAL CUAL: no cambies piezas ni precio, no busques otros equipos ni ofrezcas alternativas. Es SU equipo, no una opción entre varias.
+- La cotización de SU equipo te la entrega el sistema ya hecha, pieza por pieza (campo "seleccion"). Preséntala COPIANDO su "bloque" TAL CUAL: no cambies piezas ni precio y no busques otros equipos por tu cuenta. Si el sistema te entrega además un "💡 Equipo listo con lo mismo o más", preséntalo DESPUÉS del suyo, como la opción para ahorrar, y deja que el cliente elija.
 - Si la ficha trae una línea de Monitor, la pantalla ya está sumada en el precio: preséntalo como equipo completo y NO la ofrezcas aparte. Si dice "Monitor: no incluido", el cliente ELIGIÓ armarlo sin pantalla: NO le ofrezcas monitor, ya lo decidió.
 - CIERRE (NO derives a WhatsApp/email salvo falla técnica real): después de mostrar el precio firme y la entrega, avanza al cierre normal — confirma la opción y pregunta cuántas unidades necesita, luego pide los datos para registrar el pedido. El cierre es una cotización/pedido registrado, NUNCA un "contáctanos por WhatsApp".
 - Ve DIRECTO al precio y la entrega — no repitas "dame un momento" ni el saludo. Usa el perfil ("PC Gamer", "Edición de video", "Oficina"…) para el lenguaje técnico de valor.`
@@ -5493,25 +5797,43 @@ Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, pod
               ficha,
               entrega: cot.entrega,
             };
-            // Va al acumulador como opción MOSTRADA: así el pedido se registra por este mismo
-            // precio, que es la regla que impide cobrar algo distinto a lo cotizado.
-            acc.compuestas = [opcion];
-            acc.mostradas = 1;
+            // ¿Un equipo ya armado —de las listas o de una tienda— da lo mismo o más por menos?
+            // Se le muestra DEBAJO del suyo: el cliente eligió sus piezas y decide él.
+            const lista = await alternativaLista(ds, ctx.producto, cot);
+            // Van al acumulador como opciones MOSTRADAS, y al registro del servidor: así el
+            // pedido se registra por el mismo precio que vio, aunque confirme mensajes después.
+            acc.compuestas = lista ? [opcion, lista.opcion] : [opcion];
+            acc.mostradas = acc.compuestas.length;
+            if (lista) recordarConfiguracion(lista.opcion, lista.costo, { proveedor: lista.proveedor, url: lista.url });
 
             const resultado = {
-              encontrados: 1,
+              encontrados: acc.mostradas,
               seleccion: {
-                instruccion:
-                  "INTERNO: esta es la cotización EXACTA de la configuración que armó el cliente, calculada por el sistema " +
-                  "pieza por pieza. Copia el \"bloque\" TAL CUAL: no cambies el precio, no quites piezas, no agregues ninguna, " +
-                  "no ofrezcas alternativas ni otros equipos. Es SU equipo, no una opción entre varias.",
-                opciones: [{
-                  etiqueta: "",
-                  nombre: opcion.nombre,
-                  precioCOP: cot.total,
-                  bloque: `${ficha}\n${ENTREGA_TXT[cot.entrega]}`,
-                  entrega: cot.entrega,
-                }],
+                instruccion: lista
+                  ? "INTERNO: el primer bloque es la cotización EXACTA de la configuración que armó el cliente, pieza por pieza. " +
+                    "El segundo es un equipo YA ARMADO que trae lo mismo o más en procesador, gráfica, memoria, disco y monitor por " +
+                    `${fmtCOP(lista.ahorro)} menos. Copia los DOS bloques TAL CUAL y en ese orden. Entre uno y otro, en UNA frase, ` +
+                    "dile que encontraste esa opción lista que le ahorra plata con lo mismo o más, y que la placa, la fuente, el gabinete " +
+                    "y la refrigeración son las del fabricante. Pregúntale con cuál se queda. No cambies precios ni piezas, no agregues otros equipos."
+                  : "INTERNO: esta es la cotización EXACTA de la configuración que armó el cliente, calculada por el sistema " +
+                    "pieza por pieza. Copia el \"bloque\" TAL CUAL: no cambies el precio, no quites piezas, no agregues ninguna, " +
+                    "no ofrezcas alternativas ni otros equipos. Es SU equipo, no una opción entre varias.",
+                opciones: [
+                  {
+                    etiqueta: "",
+                    nombre: opcion.nombre,
+                    precioCOP: cot.total,
+                    bloque: `${ficha}\n${ENTREGA_TXT[cot.entrega]}`,
+                    entrega: cot.entrega,
+                  },
+                  ...(lista ? [{
+                    etiqueta: "💡 **Equipo listo con lo mismo o más**",
+                    nombre: lista.opcion.nombre,
+                    precioCOP: lista.opcion.precio,
+                    bloque: `💡 **Equipo listo con lo mismo o más — ahorras ${fmtCOP(lista.ahorro)}**\n${lista.opcion.ficha}\n${ENTREGA_TXT[lista.opcion.entrega]}`,
+                    entrega: lista.opcion.entrega,
+                  }] : []),
+                ],
               },
             };
             const llamada = {
@@ -5539,7 +5861,7 @@ Pregunta lo mínimo para cotizar: qué va a hacer (producir, emitir al aire, pod
             if (!yaLoVio) {
               convo.push({ role: "user", content:
                 "INTERNO (el cliente NO ve este mensaje): la cotización de su equipo ya está resuelta arriba. NO preguntes NADA y NO busques nada más. " +
-                "Preséntasela YA: copia el \"bloque\" tal cual, con una frase cálida delante y el cierre detrás (confirmar y cuántas unidades)." +
+                "Preséntasela YA: copia los \"bloque\" del campo seleccion tal cual, con una frase cálida delante y el cierre detrás (confirmar cuál y cuántas unidades)." +
                 (vaParaLargo ? ` Ya le escribiste "${preambulo}": NO repitas ese elogio ni el saludo, empieza directo por su cotización.` : "") });
             } else {
               convo.push({ role: "user", content:
