@@ -1,4 +1,4 @@
-import { loadActiveProducts } from "@/lib/supplier-catalog";
+import { loadActiveProducts, costoImposible } from "@/lib/supplier-catalog";
 import { opcionesDePlaca } from "@/lib/armador-plataformas";
 import { ArmadorClient } from "./armador-client";
 
@@ -14,7 +14,9 @@ export const metadata = {
 // armador es un componente de cliente y no puede leer del disco. Así, cuando cambian las
 // listas de proveedor, el armador ofrece lo nuevo sin tocar código.
 export default function ArmadorPage() {
-  const productos = loadActiveProducts();
+  // Lo que tiene un costo mal leído (una B760 a $179.000) no se ofrece como "en stock": el
+  // cotizador del armador tampoco lo usa, y la placa se cotizaría fuera con otra entrega.
+  const productos = loadActiveProducts().filter((p) => !costoImposible(p));
   return (
     <ArmadorClient
       placas={{

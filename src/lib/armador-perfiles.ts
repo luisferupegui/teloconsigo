@@ -107,6 +107,15 @@ const PERIF_GAMER: ArmadorSlot = {
     { label: "Solo torre (sin periféricos)" },
   ],
 };
+// El cliente que ya tiene pantalla arma solo la torre. Va al final de cada lista de
+// monitores y nunca es la recomendada: la recomendación sigue siendo la del perfil.
+const SIN_MONITOR: ArmadorTier = { label: "Sin monitor" };
+
+// Los CURVOS solo están en los perfiles de juego y transmisión (PC Gamer, Gamer Premium,
+// Streaming), donde dan inmersión — y el ultrawide de 34" deja el juego y el chat del
+// stream lado a lado. En Diseño y Edición NO: la curvatura deforma las líneas rectas y las
+// proporciones, y para ese trabajo lo correcto es un panel plano IPS calibrado.
+
 const GPU_INTEGRADA: ArmadorSlot = {
   key: "gpu", label: "Tarjeta gráfica", icon: "Component",
   opciones: [],
@@ -160,6 +169,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "21.5\" FHD" },
         { label: "24\" FHD", rec: true },
         { label: "27\" FHD" },
+        SIN_MONITOR,
       ]},
       REFRIG_AIRE,
       PERIF_BASICO,
@@ -213,6 +223,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "24\" FHD", rec: true },
         { label: "27\" FHD" },
         { label: "Doble 24\" FHD" },
+        SIN_MONITOR,
       ]},
       REFRIG_AIRE,
       PERIF_INALAM,
@@ -269,6 +280,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "24\" IPS" },
         { label: "27\" IPS calibrado", rec: true },
         { label: "27\" 4K IPS" },
+        SIN_MONITOR,
       ]},
       REFRIG_LIQ240,
       PERIF_INALAM,
@@ -324,6 +336,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "27\" FHD" },
         { label: "Doble 24\" FHD", rec: true },
         { label: "27\" 1440p" },
+        SIN_MONITOR,
       ]},
       REFRIG_LIQ240,
       PERIF_INALAM,
@@ -380,6 +393,9 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "24\" FHD 144Hz", rec: true },
         { label: "27\" FHD 165Hz" },
         { label: "27\" 1440p 180Hz" },
+        { label: "27\" 1440p 165Hz curvo" },
+        { label: "32\" 1440p 165Hz curvo" },
+        SIN_MONITOR,
       ]},
       REFRIG_LIQ240,
       PERIF_GAMER,
@@ -434,6 +450,9 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "27\" 1440p 165Hz", rec: true },
         { label: "27\" 1440p 240Hz" },
         { label: "32\" 4K 144Hz" },
+        { label: "32\" 1440p 240Hz curvo" },
+        { label: "34\" ultrawide 1440p 165Hz curvo" },
+        SIN_MONITOR,
       ]},
       REFRIG_PREMIUM,
       PERIF_GAMER,
@@ -488,6 +507,9 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "27\" FHD 144Hz", rec: true },
         { label: "Doble 27\" (juego + chat)" },
         { label: "27\" 1440p 165Hz" },
+        { label: "27\" 1440p 165Hz curvo" },
+        { label: "34\" ultrawide 1440p 165Hz curvo" },
+        SIN_MONITOR,
       ]},
       REFRIG_LIQ240,
       PERIF_GAMER,
@@ -544,6 +566,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "27\" IPS" },
         { label: "27\" 4K IPS", rec: true },
         { label: "32\" 4K IPS" },
+        SIN_MONITOR,
       ]},
       REFRIG_LIQ240,
       PERIF_INALAM,
@@ -596,6 +619,7 @@ export const PERFILES: ArmadorPerfil[] = [
         { label: "27\" 1440p" },
         { label: "Doble 27\" 1440p", rec: true },
         { label: "32\" 4K" },
+        SIN_MONITOR,
       ]},
       REFRIG_LIQ240,
       PERIF_INALAM,

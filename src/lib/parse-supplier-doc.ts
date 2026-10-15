@@ -1,6 +1,7 @@
 import "server-only";
 import JSZip from "jszip";
 import { sinVram, ramYDisco, pantallaDesdeNombre } from "./specs-nombre";
+import { plataformaDeChipset } from "./armador-plataformas";
 // Se importa el módulo interno, NO la raíz "pdf-parse": su index.js corre un bloque de
 // debug al cargarse que lee un PDF de prueba inexistente y rompe el build.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -218,8 +219,28 @@ export function categoriaPorFuncion(nombre: string): "redes" | "proteccion" | nu
   return null;
 }
 
+/**
+ * Una PLACA MADRE se reconoce por fabricante + chipset, diga lo que diga la sección.
+ *
+ * Infoshop las imprime con la memoria y el WiFi en el nombre ("MSI PRO Z790-P WIFI DDR5",
+ * "ASUS TUF X870 PLUS GAMING WIFI") y entraban como `memoria-ram`, `redes` o `accesorios`.
+ * Las afectadas eran justo TODAS las placas Intel de las listas, así que el Armador de PC
+ * creía que no teníamos ni una: para cualquier procesador Intel ofrecía solo placas por
+ * encargo, y la cotización del equipo dependía de encontrarlas en la web.
+ *
+ * El chipset tiene que ser uno REAL (ver `plataformaDeChipset`): "Z790" sí, "A100" no. Y
+ * un nombre con procesador es un equipo completo que menciona su placa, no una placa.
+ */
+function esPlacaMadre(nombre: string): boolean {
+  if (/\b(ryzen|core\s?i[3579]|core\s?ultra|pentium|celeron|athlon|xeon|epyc|threadripper|i[3579]-\d{3,4})\b/i.test(nombre)) return false;
+  if (/\b(rtx|gtx|radeon|geforce|monitor|port[aá]til|laptop|notebook|router|mouse|teclado|fuente|psu|ssd|nvme|cooler|gabinete|chasis)\b/i.test(nombre)) return false;
+  if (!/\b(asus|gigabyte|msi|asrock|biostar|foxconn)\b|\b(board|motherboard|mainboard|placa\s*(base|madre)|tarjeta\s*madre)\b/i.test(nombre)) return false;
+  return (nombre.toUpperCase().match(/\b[ABHXZQW]\d{3}[A-Z]{0,2}\b/g) ?? []).some((t) => plataformaDeChipset(t) !== null);
+}
+
 export function corregirCategoria(nombre: string, categoria: string): string {
   if (esGabinete(nombre)) return "accesorios";
+  if (esPlacaMadre(nombre)) return "motherboard";
   const porFuncion = categoriaPorFuncion(nombre);
   if (porFuncion) return porFuncion;
   // Un equipo completo archivado como pieza: se manda a escritorio, y a la gama alta si

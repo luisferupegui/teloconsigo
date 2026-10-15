@@ -135,6 +135,22 @@ export function ArmadorClient({ placas }: { placas: Record<Plataforma, PlacaOpci
     [perfil, plataforma, slots, seleccion],
   );
 
+  // Mientras el cliente revisa su configuración, el servidor ya la va cotizando. Las piezas
+  // que no están en las listas se consiguen fuera y eso tarda (hasta un minuto con la caché
+  // fría): pedirlo aquí, y no al abrir el chat, hace que Andrea responda en segundos. Una
+  // vez por configuración distinta; si vuelve a "Ajustar" y cambia algo, se pide la nueva.
+  const precalentada = useRef("");
+  useEffect(() => {
+    if (step !== 3 || !resumen || precalentada.current === resumen) return;
+    precalentada.current = resumen;
+    fetch("/api/asesor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ precalentar: true, contexto: { producto: resumen, ref: "armador" } }),
+      keepalive: true,
+    }).catch(() => { /* solo es una ventaja: si falla, el chat cotiza igual */ });
+  }, [step, resumen]);
+
   function elegirPerfil(id: string) {
     const p = getPerfil(id);
     if (!p) return;

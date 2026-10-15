@@ -1,5 +1,6 @@
 import "server-only";
-import { loadActiveProducts, loadMargins, applyMargin } from "./supplier-catalog";
+import { loadActiveProducts, loadMargins, applyMargin, costoImposible } from "./supplier-catalog";
+import { socketDeChipset, socketDeCpu, tierDe } from "./armador-plataformas";
 
 // ─── Cotización del Armador de PC, pieza por pieza ────────────────────────────
 //
@@ -31,6 +32,12 @@ export type PiezaPedida = {
   contexto: string;
   /** Palabras que un resultado debe contener para ser esa pieza y no otra cosa. */
   senales: RegExp;
+  /** Lo que comparte palabras con la pieza sin serlo: un SSD EXTERNO dice "1TB SSD" igual
+   *  que el interno que va dentro del equipo. */
+  excluir?: RegExp;
+  /** Lo que el resultado TIENE que decir además de las señales: un combo es un combo, no
+   *  un teclado suelto. */
+  exige?: RegExp;
   /** Sin ella no hay equipo: si no se puede cotizar, no se puede cotizar el conjunto. */
   esencial: boolean;
 };
@@ -46,7 +53,16 @@ export type PiezaCotizada = PiezaPedida & {
 };
 
 // Etiqueta del armador → dónde buscarla y si es imprescindible.
-type DefPieza = { categorias: string[]; esencial: boolean; contexto: string; senales: RegExp };
+type DefPieza = { categorias: string[]; esencial: boolean; contexto: string; senales: RegExp; excluir?: RegExp; exige?: RegExp };
+
+// Un disco que va DENTRO del equipo. "Unidad SSD Adata Externo SD620 1TB" dice "SSD" y
+// "1TB" como el interno, y por ser el más barato se cotizaba como el almacenamiento de un
+// equipo de diseño: un disco USB que no se puede ensamblar.
+const DISCO_EXTERNO = /\b(extern[oa]s?|external|portable|port[aá]til|usb)\b/i;
+
+// "Combo" es palabra genérica para la búsqueda, pero el cliente que elige "Combo gamer
+// inalámbrico" quiere teclado Y mouse. Sin esta exigencia se cotizaba un teclado suelto.
+const ES_COMBO = /\b(combo|kit)\b|teclado.*\b(mouse|rat[oó]n)\b|\b(mouse|rat[oó]n)\b.*teclado|keyboard.*mouse|mouse.*keyboard/i;
 
 const MAPA: Record<string, DefPieza> = {
   "procesador": {
@@ -64,10 +80,12 @@ const MAPA: Record<string, DefPieza> = {
   "almacenamiento": {
     categorias: ["almacenamiento"], esencial: true,
     contexto: "disco duro ssd", senales: /\b(ssd|nvme|disco|hdd|m\.?2|almacenamiento)\b/i,
+    excluir: DISCO_EXTERNO,
   },
   "disco adicional": {
     categorias: ["almacenamiento"], esencial: false,
     contexto: "disco duro ssd", senales: /\b(ssd|nvme|disco|hdd|m\.?2|dvd|optic[ao]|quemador)\b/i,
+    excluir: DISCO_EXTERNO,
   },
   "motherboard": {
     categorias: ["motherboard"], esencial: true,
@@ -93,8 +111,25 @@ const MAPA: Record<string, DefPieza> = {
   "teclado y mouse": {
     categorias: ["teclado", "mouse", "perifericos", "accesorios"], esencial: false,
     contexto: "combo teclado y mouse", senales: /\b(teclado|mouse|combo|keyboard)\b/i,
+    exige: ES_COMBO,
   },
 };
+
+// Un monitor CURVO o ULTRAWIDE es justo lo que el cliente eligió: entre dos de 27" 1440p, el
+// plano suele ser el más barato y ganaría el desempate. Sin exigirlo, quien eligió curvo
+// recibiría la cotización de uno plano.
+function formaDeMonitor(valor: string): RegExp | undefined {
+  const pide = [
+    /\bcurv[oa]\b/i.test(valor) ? "(?=.*\\b(curv[oa]s?|curved)\\b)" : "",
+    /\bultra\s?-?wide\b/i.test(valor) ? "(?=.*(ultra\\s?-?wide|21\\s?:\\s?9|3440))" : "",
+  ].join("");
+  return pide ? new RegExp(`^${pide}`, "i") : undefined;
+}
+
+// Un disco "Gen4" o "NVMe" es un M.2 PCIe. Sin exigirlo, un SSD SATA de 2,5" empataba en
+// puntos con el NVMe (los dos dicen "SSD" y "1TB") y ganaba por más barato.
+const PIDE_NVME = /\b(gen\s?[345]|nvme|m\.?2)\b/i;
+const ES_NVME = /\b(nvme|m\.?2|pcie|gen\s?[345])\b/i;
 
 /** Valores que significan "no lleva esta pieza" o "ya va incluida en el ensamble".
  *  El gabinete estándar y el cooler de caja entran aquí: son lo que permite que un
@@ -112,16 +147,47 @@ export function piezasDeConfig(config: string): PiezaPedida[] {
     const def = MAPA[etiqueta.toLowerCase()];
     if (!def) continue;                 // "Plataforma", y cualquier cosa que no sea una pieza
     if (NO_LLEVA.test(valor)) continue; // el cliente eligió no llevarla
-    piezas.push({ etiqueta, valor, ...def });
+    const exige =
+      def.categorias.includes("almacenamiento") && PIDE_NVME.test(valor) ? ES_NVME
+      : def.categorias.includes("monitor") ? formaDeMonitor(valor) ?? def.exige
+      : def.exige;
+    piezas.push({ etiqueta, valor, ...def, ...(exige ? { exige } : {}) });
   }
+
+  // LA PLACA VA CON LA MEMORIA. En LGA1700 la misma placa sale en versión DDR4 y DDR5
+  // ("MSI PRO B760M - P DDR4" / "… DDR5"), y una DDR4 con memoria DDR5 es un equipo que no
+  // arranca: los módulos ni siquiera entran en la ranura. Pasó con una configuración de
+  // diseño cuya placa, conseguida en la web, era "Gigabyte B760M K V2 DDR4" con 16GB DDR5.
+  const ddr = piezas.find((p) => p.categorias.includes("memoria-ram"))?.valor.match(/DDR([45])/i)?.[1];
+  const placa = piezas.find((p) => p.categorias.includes("motherboard"));
+  if (ddr && placa) placa.excluir = new RegExp(`\\bddr${ddr === "5" ? "4" : "5"}\\b`, "i");
+
   return piezas;
+}
+
+/** ¿Este producto puede ser la pieza? Mismas reglas para lo de nuestras listas y para lo
+ *  que se consigue en la web. */
+export function esLaPieza(pieza: PiezaPedida, nombre: string): boolean {
+  if (pieza.excluir?.test(nombre)) return false;
+  if (pieza.exige && !pieza.exige.test(nombre)) return false;
+  return true;
+}
+
+/** Cuántas de las palabras que eligió el cliente dice el producto. Es lo que distingue,
+ *  entre todas las Z790, la ROG STRIX que pidió de la más barata que apareció. */
+export function puntosDePieza(pieza: PiezaPedida, nombre: string): number {
+  const { opcionales } = partirTokens(pieza.valor);
+  const h = normalizar(nombre);
+  return opcionales.filter((t) => contieneToken(h, t)).length;
 }
 
 // ─── Búsqueda de una pieza en nuestras listas ─────────────────────────────────
 
+// "gamer" y "gaming" NO son genéricas: entre los combos inalámbricos son justo lo que
+// separa uno de juego de uno de oficina. Solo suman puntos, nunca se exigen.
 const GENERICAS = new Set([
   "de", "con", "para", "y", "el", "la", "los", "las", "gb", "tb", "pulgadas",
-  "combo", "adicional", "incluida", "alto", "desempeño", "gamer", "gaming",
+  "combo", "adicional", "incluida", "alto", "desempeño",
 ]);
 
 function normalizar(s: string): string {
@@ -157,10 +223,27 @@ const NOMBRA_CPU = /\b(ryzen|core\s?i[3579]|core\s?ultra|pentium|celeron|athlon|
 /** ¿El token aparece como PALABRA en el texto? La comparación por subcadena convertía
  *  "alámbrico" en una coincidencia de "inalámbrico", y el cliente que pedía un combo con
  *  cable recibía uno inalámbrico. Los tokens con cifra ('rtx4060') sí admiten pegado,
- *  porque cada lista escribe los modelos a su manera. */
+ *  porque cada lista escribe los modelos a su manera.
+ *
+ *  Pero pegado NO puede seguir una LETRA: en un modelo, la letra de después es otro
+ *  producto. "7600" dentro de "ryzen57600xnocooler" es un 7600X, y el cliente que eligió
+ *  un Ryzen 5 7600 recibía la cotización del X. Sí puede seguir una cifra ("rtx4060" en
+ *  "rtx40608gb", donde lo que sigue es la memoria). */
 function contieneToken(texto: string, token: string): boolean {
   if (new RegExp(`(^| )${token}( |$)`).test(texto)) return true;
-  return /\d/.test(token) && token.length >= 4 && texto.replace(/ /g, "").includes(token);
+  if (!/\d/.test(token) || token.length < 4) return false;
+  const pegado = texto.replace(/ /g, "");
+  for (let i = pegado.indexOf(token); i !== -1; i = pegado.indexOf(token, i + 1)) {
+    if (!/[a-z]/.test(pegado[i + token.length] ?? "")) return true;
+  }
+  return false;
+}
+
+/** ¿En el producto el modelo va seguido de una variante que el cliente no eligió? */
+const SUFIJO_DE_VARIANTE = "(ti|super|xt|xtx|x3d)";
+function sufijoAjeno(texto: string, token: string, pedido: string): boolean {
+  const m = texto.match(new RegExp(`(?:^| )${token} ${SUFIJO_DE_VARIANTE}(?: |$)`));
+  return !!m && !new RegExp(`(?:^| )${token} ${m[1]}(?: |$)`).test(pedido);
 }
 
 // Accesorios pequeños: teclados, mouse, combos, cables, memorias USB. Cuando hay
@@ -191,12 +274,20 @@ export function cotizarPiezaLocal(pieza: PiezaPedida): PiezaCotizada | null {
   const candidatos: Candidato[] = [];
 
   const buscandoCpu = pieza.categorias.includes("procesador");
+  const pedido = normalizar(pieza.valor);
   for (const p of loadActiveProducts()) {
     if (!pieza.categorias.includes(p.categoria)) continue;
+    // Un costo mal leído no se cotiza: una B760 a $179.000 haría el equipo entero más
+    // barato de lo que cuesta armarlo.
+    if (costoImposible(p)) continue;
     // Un equipo entero no es una pieza. Salvo, claro, cuando la pieza ES el procesador.
     if (!buscandoCpu && NOMBRA_CPU.test(p.nombre)) continue;
+    if (!esLaPieza(pieza, p.nombre)) continue;
     const h = normalizar(`${p.nombre} ${Object.values(p.specs ?? {}).join(" ")}`);
     if (!exigidos.every((t) => contieneToken(h, t))) continue;
+    // "RTX 5060" y "RTX 5060 Ti" son tarjetas distintas aunque la segunda contenga a la
+    // primera como palabra: si el cliente no pidió el sufijo, no se le cotiza.
+    if (exigidos.some((t) => sufijoAjeno(h, t, pedido))) continue;
     // Sin tokens exigibles (un "Combo gamer inalámbrico") hace falta al menos una
     // coincidencia real, o cualquier producto de la categoría valdría.
     const puntos = opcionales.filter((t) => contieneToken(h, t)).length;
@@ -211,6 +302,63 @@ export function cotizarPiezaLocal(pieza: PiezaPedida): PiezaCotizada | null {
   candidatos.sort((a, b) => b.puntos - a.puntos || (caroPrimero ? b.precio - a.precio : a.precio - b.precio));
   const mejor = candidatos[0];
   return { ...pieza, nombre: mejor.nombre, precio: mejor.precio, costo: mejor.costo, entrega: "local" };
+}
+
+// ─── Placa madre equivalente ──────────────────────────────────────────────────
+//
+// El armador ofrece placas "por encargo" por LÍNEA ("ASUS ROG STRIX Z790"), no por modelo,
+// y la línea exacta no siempre se puede cotizar: ni está en las listas ni aparece en la
+// web ese día. La placa es imprescindible, así que antes la cotización entera se caía y
+// Andrea terminaba pidiéndole los datos al cliente sin darle ningún precio.
+//
+// Una placa no es como un procesador: lo que el cliente necesita de ella es que encaje con
+// su procesador y que esté a la altura del equipo. Así que se le asigna una REAL de
+// nuestras listas: del mismo socket siempre (lo único innegociable), del mismo chipset si
+// lo hay, si no de la gama más cercana —mejor por encima que por debajo— y, a igualdad, de
+// la marca que eligió. La ficha muestra esa placa con su nombre, nunca la que no se pudo
+// cotizar: el precio y el nombre siempre son del mismo producto.
+
+const CHIPSET = /\b([abhxzqw]\d{3}e?)m?\b/i;
+
+/** Placa de nuestras listas que sustituye a la elegida, o `null` si no hay ninguna que
+ *  encaje con el procesador de la configuración. */
+export function placaEquivalente(pieza: PiezaPedida, config: string): PiezaCotizada | null {
+  const chipPedido = pieza.valor.match(CHIPSET)?.[1]?.toUpperCase() ?? "";
+  const cpu = config.match(/Procesador:\s*([^·]+)/i)?.[1]?.trim() ?? "";
+  const socket = (chipPedido && socketDeChipset(chipPedido)) || socketDeCpu(cpu);
+  if (!socket) return null;
+  const tierPedido = chipPedido ? tierDe(chipPedido) : 0;
+  const marcaPedida = pieza.valor.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+
+  const margins = loadMargins();
+  const candidatas = loadActiveProducts()
+    .filter((p) => p.categoria === "motherboard" && p.precio_costo > 0 && !costoImposible(p))
+    // La misma regla de memoria que la placa pedida (ver `piezasDeConfig`).
+    .filter((p) => esLaPieza(pieza, p.nombre))
+    .map((p) => {
+      const chip = p.nombre.match(CHIPSET)?.[1]?.toUpperCase() ?? "";
+      return { p, chip, socket: chip ? socketDeChipset(chip) : null, tier: chip ? tierDe(chip) : 0 };
+    })
+    .filter((c) => c.socket === socket);
+  if (candidatas.length === 0) return null;
+
+  // Distancia de gama: quedarse corto pesa el doble que pasarse.
+  const distancia = (t: number) => (t >= tierPedido ? t - tierPedido : (tierPedido - t) * 2);
+  candidatas.sort((a, b) =>
+    Number(b.chip === chipPedido) - Number(a.chip === chipPedido)
+    || distancia(a.tier) - distancia(b.tier)
+    || Number(b.p.nombre.toLowerCase().startsWith(marcaPedida)) - Number(a.p.nombre.toLowerCase().startsWith(marcaPedida))
+    || a.p.precio_costo - b.p.precio_costo,
+  );
+  const { p } = candidatas[0];
+  return {
+    ...pieza,
+    valor: p.nombre.replace(/\s+/g, " ").trim(),
+    nombre: p.nombre,
+    precio: applyMargin(p.precio_costo, p.categoria, margins, p.nombre),
+    costo: p.precio_costo,
+    entrega: "local",
+  };
 }
 
 // ─── Fuente de poder: se elige por CONSUMO, no por gusto ──────────────────────

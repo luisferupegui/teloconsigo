@@ -254,6 +254,7 @@ const SALTO_SOSPECHOSO = 0.6;
  *   tarjeta gráfica   más barata real   $805.000 · colados  $4.000 (video baluns)
  *   monitor           más barato real   $163.000
  *   procesador        más barato real   $110.000 (Athlon 200GE, legítimo)
+ *   placa madre       más barata real   $205.000 (Foxconn H61) · colada $179.000 (una B760M)
  *
  * Lo que comparte categoría con el producto sin serlo —un cable de impresora,
  * un cartucho, un soporte de monitor— queda exento: ahí lo barato es correcto.
@@ -262,7 +263,7 @@ const PISO_DE_COSTO: Record<string, number> = {
   portatil: 1_000_000, escritorio: 1_000_000, "escritorio-alto-rendimiento": 1_000_000,
   "all-in-one": 1_000_000, "mini-pc": 1_000_000, servidor: 1_000_000,
   tableta: 300_000, tablet: 300_000,
-  monitor: 150_000, "tarjeta-grafica": 250_000, procesador: 100_000, motherboard: 120_000,
+  monitor: 150_000, "tarjeta-grafica": 250_000, procesador: 100_000, motherboard: 200_000,
   impresora: 200_000,
 };
 

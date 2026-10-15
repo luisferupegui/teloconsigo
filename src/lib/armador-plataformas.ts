@@ -310,7 +310,7 @@ const GAMA_POR_PERFIL: Record<string, { min: number; preferir: "economica" | "ca
   ia:              { min: 4, preferir: "capaz" },
 };
 
-function tierDe(chipset: string): number {
+export function tierDe(chipset: string): number {
   const c = chipset.toUpperCase();
   return TIER[c] ?? TIER[c.slice(0, 4)] ?? 0;
 }
