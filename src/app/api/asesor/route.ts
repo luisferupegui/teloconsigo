@@ -2028,6 +2028,20 @@ const VENDEDOR_FUERA_DE_US = /\b(microless|desertcart|gear4music|techinn|musicst
 
 const USADO_US = /\b(used|refurb(ished)?|renewed|open[\s-]?box|pre[\s-]?owned|for parts|as[\s-]is)\b/i;
 
+/** USADOS QUE NO DICEN QUE SON USADOS.
+ *
+ *  Guitar Center publica su inventario de segunda mano en Google Shopping con el número de
+ *  artículo pegado al final del título y SIN la palabra "used": "Shure Scm800 8-Channel
+ *  Microphone Mixer 888365539249" a US$89,99 era, en su página, un "Used Shure SCM800
+ *  Unpowered Mixer". Y Google no manda el campo de condición en ningún anuncio, así que el
+ *  filtro de `condition` nunca actuaba. Se cotizó así un mezclador de US$936 a $573.000. */
+const NUMERO_DE_ARTICULO_USADO = /\b\d{9,13}\s*$/;
+
+/** Sitios donde casi todo es de segunda mano: Google no dice la condición del anuncio, así
+ *  que nada de ellos se le cotiza al cliente como nuevo. Siguen ayudando a ENCONTRAR un
+ *  producto raro, pero el precio se lo ponen las tiendas. */
+const SITIO_DE_SEGUNDA_MANO = /\b(ebay|mercari|reverb|whatnot|jawa\.gg|offerup|poshmark|craigslist|swappa|back\s?market)\b/i;
+
 /** UN VENDEDOR DENTRO DE UNA TIENDA NO ES LA TIENDA.
  *
  *  Google reporta a los terceros de un marketplace como "Tienda - Vendedor": "Walmart -
@@ -2176,7 +2190,7 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
       if (!usd) continue;
       if (it.condition && it.condition !== "new") continue;
       const title = it.title ?? "";
-      if (USADO.test(title) || USADO_US.test(title)) continue;
+      if (USADO.test(title) || USADO_US.test(title) || NUMERO_DE_ARTICULO_USADO.test(title)) continue;
       if (esServidorDescontinuado(title)) continue;
       if (COMBO_US.test(title)) continue;
       // Ni el precio ni el flete de una tienda que no está en EE.UU. sirven aquí.
@@ -2288,6 +2302,22 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
     return palabras.every((w) => t.includes(w));
   };
 
+  // EL MISMO MODELO NO VALE CINCO VECES MENOS. Entre los anuncios del modelo EXACTO que
+  // pidió el cliente, de cualquier vendedor, el que cuesta menos del 40% de la mediana no es
+  // ese producto nuevo: es un usado sin decirlo, una pieza o un error. Del Shure SCM800
+  // había anuncios a US$440 y US$936, y el de US$89,99 —un usado— era el que se cotizaba,
+  // porque la única tienda conocida que lo listaba era justamente la del usado y con ella
+  // se calculaba la referencia.
+  const delMismoModelo = modeloPedido.length > 0 ? candidatos.filter((c) => trae(c, modeloPedido)) : [];
+  if (delMismoModelo.length >= 2) {
+    const piso = mediana(delMismoModelo.map((c) => c.usd)) * 0.4;
+    const antes = candidatos.length;
+    candidatos = candidatos.filter((c) => !trae(c, modeloPedido) || c.usd >= piso);
+    if (candidatos.length < antes) {
+      console.warn(`[cotizar] EE.UU.: ${antes - candidatos.length} anuncio(s) de ${modeloPedido.join(" ")} por debajo de US${piso.toFixed(0)} (40% de la mediana del modelo): no son ese producto nuevo`);
+    }
+  }
+
   const conocidos = candidatos.filter(esDeReferencia);
   const delModelo = modeloPedido.length > 0 ? conocidos.filter((c) => trae(c, modeloPedido)) : [];
   const deLaLinea = lineaPedida.length > 0 ? conocidos.filter((c) => trae(c, lineaPedida)) : [];
@@ -2327,13 +2357,23 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   // CON RETROCESO: si no queda ninguna tienda seria, se cotiza con ellos igual. Cuando son
   // el único que vende el producto, un precio real de un marketplace es mejor respuesta
   // que el teléfono del equipo.
-  const deMarketplace = creibles.filter((c) => esVendedorDeMarketplace(c.store));
-  const deTiendas = creibles.filter((c) => !esVendedorDeMarketplace(c.store));
+  //
+  // Y NUNCA a un sitio de segunda mano (ver `SITIO_DE_SEGUNDA_MANO`), ni siquiera de
+  // retroceso, ni como oferta para el admin: de un anuncio de eBay no se sabe si es nuevo.
+  // Si solo quedan ellos, el modelo no se consigue nuevo (le pasa a lo descontinuado, como
+  // el Shure SCM800) y lo honesto es no cotizarlo: Andrea busca alternativas de la marca.
+  const nuevos = creibles.filter((c) => !SITIO_DE_SEGUNDA_MANO.test(`${c.store} ${c.link}`));
+  if (nuevos.length === 0) {
+    console.warn(`[cotizar] EE.UU.: para "${consulta}" solo quedan anuncios de sitios de segunda mano; no se cotiza`);
+    return [];
+  }
+  const deMarketplace = nuevos.filter((c) => esVendedorDeMarketplace(c.store));
+  const deTiendas = nuevos.filter((c) => !esVendedorDeMarketplace(c.store));
   if (apunte && deMarketplace.length > 0) {
     const barata = deMarketplace.reduce((a, b) => (b.usd < a.usd ? b : a));
     apunte.oferta = { tienda: barata.store, usd: barata.usd, url: barata.link };
   }
-  if (deTiendas.length > 0) creibles = deTiendas;
+  creibles = deTiendas.length > 0 ? deTiendas : nuevos;
 
   // Ordena por prioridad de tienda y luego por precio; reindexa para el modelo. En audio
   // profesional manda la lista de tiendas del sector (`tiendas`, ya calculada arriba).

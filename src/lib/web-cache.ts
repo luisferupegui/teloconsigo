@@ -63,6 +63,11 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  desplegó y el cliente siguió viendo el precio viejo — que es exactamente el fallo que
  *  esta constante existe para evitar.
  *
+ *  Y otra al dejar de cotizar usados (2026-10-19, noche): Guitar Center publica su segunda
+ *  mano sin decir "used" —solo con el número de artículo al final del título— y Google no
+ *  manda la condición. Un Shure SCM800 quedó cotizado en $573.000 sobre un usado de US$89,99
+ *  (el modelo se vende a US$900 y más), y el precio por producto lo habría sostenido 7 días.
+ *
  *  SI CAMBIAS CÓMO SE DECIDE UN PRECIO, CAMBIA ESTA FECHA EN EL MISMO COMMIT. El caché
  *  guarda respuestas, no razonamientos: una regla nueva no reescribe lo ya guardado, y
  *  durante siete días el cliente sigue recibiendo lo que decidió la regla vieja. No falla
@@ -70,7 +75,7 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 8, 29, 21, 0);
+const VALIDO_DESDE = Date.UTC(2026, 9, 20, 3, 40);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {
