@@ -68,6 +68,10 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *  manda la condición. Un Shure SCM800 quedó cotizado en $573.000 sobre un usado de US$89,99
  *  (el modelo se vende a US$900 y más), y el precio por producto lo habría sostenido 7 días.
  *
+ *  Y otra al mostrar cada producto una sola vez (2026-10-20): el Shure SM7dB quedó guardado
+ *  con tres anuncios de MercadoLibre del mismo micrófono —$1.790.000, $2.140.000 y
+ *  $3.250.000— y el más barato no podía ser nuevo frente a los US$549 de las tiendas serias.
+ *
  *  SI CAMBIAS CÓMO SE DECIDE UN PRECIO, CAMBIA ESTA FECHA EN EL MISMO COMMIT. El caché
  *  guarda respuestas, no razonamientos: una regla nueva no reescribe lo ya guardado, y
  *  durante siete días el cliente sigue recibiendo lo que decidió la regla vieja. No falla
@@ -75,7 +79,7 @@ export const WEB_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 días
  *
  *  Vaciarlo a mano desde el panel dependía de acordarse; así se aplica solo al desplegar.
  *  Lo anterior se trata como vencido y se poda en la próxima escritura. */
-const VALIDO_DESDE = Date.UTC(2026, 9, 20, 3, 40);
+const VALIDO_DESDE = Date.UTC(2026, 9, 20, 13, 35);
 
 /** ¿Una entrada del caché se puede usar todavía? */
 function vigente(ts: number, ahora = Date.now()): boolean {

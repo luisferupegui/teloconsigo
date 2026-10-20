@@ -9,7 +9,7 @@ import {
 import { getDeepseekApiKey, getDeepseekApiKeys, getSerperApiKey } from "@/lib/settings";
 import { loadPublishedBusinessProducts } from "@/lib/products";
 import { SEGMENTO_LABEL, type Segmento } from "@/lib/products-types";
-import { cotizarImportacion, type ShippingTier } from "@/lib/importacion";
+import { cotizarImportacion, loadImportConfig, type ShippingTier } from "@/lib/importacion";
 import { saveOrder, deleteOrder, getOrders, getHistory, type FuenteComparacion, type OrderEstado } from "@/lib/orders";
 import { sendOrderNotification, sendClientConfirmation } from "@/lib/email";
 import {
@@ -2151,7 +2151,7 @@ function consultaAmplia(q: string): string {
  *  encontró y no cotiza: la oferta de marketplace que el admin sí quiere ver. Va como
  *  parámetro y no en el valor de retorno porque esta función tiene cinco salidas y la
  *  libreta solo interesa en una. */
-async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: boolean, apunte?: { oferta?: OfertaMarketplace }): Promise<WebProducto[]> {
+async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: boolean, apunte?: { oferta?: OfertaMarketplace; ancla?: AnclaDeNuevo }): Promise<WebProducto[]> {
   const serperKey = getSerperApiKey();
   if (!serperKey) return [];
 
@@ -2324,6 +2324,11 @@ async function fetchUsViaSerper(ds: DeepSeek, consulta: string, isComputer: bool
   const base = delModelo.length >= 2 ? delModelo : deLaLinea.length >= 2 ? deLaLinea : conocidos;
   const preciosRef = base.map((c) => c.usd);
   const referencia = preciosRef.length >= 2 ? mediana(preciosRef) : null;
+  // El precio de producto NUEVO del modelo exacto, cuando lo listan dos o más tiendas
+  // serias: con él se juzga si un anuncio de Colombia puede ser ese producto nuevo (ver
+  // `unaVezPorProducto`). Solo del modelo exacto: el de la línea o el de cualquier tienda
+  // es el precio de otro aparato.
+  if (apunte && referencia !== null && base === delModelo) apunte.ancla = { usd: referencia, modelo: modeloPedido };
   const medianaUsd = mediana(candidatos.map((c) => c.usd));
 
   const pisoUsd  = referencia !== null ? Math.max(5, referencia * 0.7) : Math.max(5, medianaUsd * 0.35);
@@ -3026,17 +3031,109 @@ function construirProductosUS(usParsed: WebProducto[]): QuoteProducto[] {
   return [...seenUS.values()].sort((a, b) => a.precioCOP - b.precioCOP).slice(0, 5);
 }
 
+// ── EL MISMO PRODUCTO, UNA SOLA VEZ Y A PRECIO DE NUEVO ───────────────────────
+//
+// A quien pidió un Shure SM7dB le salió el MISMO micrófono dos veces: "Mejor precio" a
+// $1.790.000 y "Mejor rendimiento" a $2.140.000. Eran anuncios distintos de MercadoLibre del
+// mismo producto, y como la regla de "un producto, un precio" solo juntaba Colombia con
+// EE.UU., dentro de Colombia cada anuncio contaba como una opción. Y el más barato —una
+// tienda de MercadoLibre a $1.322.000— no podía ser nuevo: seis tiendas serias de EE.UU. lo
+// venden en US$549, y un importado nuevo en Colombia paga encima flete, arancel e IVA.
+//
+// Así que los anuncios del mismo producto se agrupan (`mismoProducto`, que ya distingue un
+// SM7dB de un SM7B y una RTX 5060 de MSI de una de Gigabyte), de cada grupo se quitan los
+// que no pueden ser ese producto nuevo, y queda UNO: el más barato de los que quedan.
+
+/** El código de modelo que nombra la consulta CON SU MARCA: "Shure SM7dB" → "sm7db",
+ *  "Logitech MK270" → "mk270". Letras y cifras juntas, de cuatro caracteres o más, que no sea
+ *  una capacidad ni un estándar ("ddr5", "wifi6", "usb3"). `null` sin marca de producto: en
+ *  "RTX 5060" la cifra es la de un chip que fabrican diez marcas, no la de un producto. */
+function codigoDelProducto(consulta: string): string | null {
+  if (!marcaDelProducto(consulta)) return null;
+  const tokens = pegarModelo(sinTildes(consulta.toLowerCase())).split(/[^a-z0-9-]+/);
+  return tokens.find((t) =>
+    t.length >= 4 && /[a-z]/.test(t) && /\d/.test(t)
+    && !/^\d+(?:gb|tb|mb|hz|mhz|w|mah|mm|cm|in|p|k)$/.test(t)
+    && !/^(?:ddr|usb|wifi|pcie|gen|hdmi|cat)\d/.test(t)) ?? null;
+}
+
+/** ¿Dos anuncios son el mismo producto? Por palabras (`mismoProducto`) o, si el cliente
+ *  nombró un código de modelo, porque los dos lo traen — siempre que ninguno tenga una cifra
+ *  que el otro no: un A400 de 240GB y uno de 480GB comparten código y son dos productos. */
+function mismoArticulo(a: string, b: string, codigo: string | null): boolean {
+  if (mismoProducto(a, b)) return true;
+  if (!codigo) return false;
+  const plano = (t: string) => pegarModelo(sinTildes(t.toLowerCase())).replace(/[^a-z0-9]/g, "");
+  if (!plano(a).includes(codigo.replace(/-/g, "")) || !plano(b).includes(codigo.replace(/-/g, ""))) return false;
+  const cifras = (t: string) => new Set(tokensDistintivos(t).filter((x) => /\d/.test(x)));
+  const ca = cifras(a), cb = cifras(b);
+  const soloEnA = [...ca].some((x) => !cb.has(x));
+  const soloEnB = [...cb].some((x) => !ca.has(x));
+  return !(soloEnA && soloEnB);
+}
+
+/** El precio de producto nuevo del modelo exacto que pidió el cliente, según las tiendas
+ *  serias de EE.UU. (ver `fetchUsViaSerper`). */
+type AnclaDeNuevo = { usd: number; modelo: string[] };
+
+/** Un anuncio de Colombia por debajo de esta fracción del precio de EE.UU. (convertido a la
+ *  tasa del panel) no es ese producto nuevo: es usado, réplica o importado sin garantía. */
+const PISO_DE_NUEVO_CO = 0.85;
+
+function unaVezPorProducto(productos: QuoteProducto[], codigo: string | null, ancla?: AnclaDeNuevo, avisar = false): QuoteProducto[] {
+  const grupos: QuoteProducto[][] = [];
+  for (const p of productos) {
+    const grupo = grupos.find((g) => mismoArticulo(g[0].nombre ?? "", p.nombre ?? "", codigo));
+    if (grupo) grupo.push(p); else grupos.push([p]);
+  }
+
+  const trm = loadImportConfig().trm;
+  const plano = (t: string) => pegarModelo(sinTildes(t.toLowerCase())).replace(/\s+/g, "");
+  // En Colombia, lo que cobra la tienda; un importado no se juzga así (su costo es nuestro).
+  const deTienda = (p: QuoteProducto) => (p.origen === "co" ? p.costoTotalCOP : 0);
+  const salida: QuoteProducto[] = [];
+
+  for (const grupo of grupos) {
+    const delModeloAnclado = !!ancla && ancla.modelo.length > 0 &&
+      ancla.modelo.every((m) => plano(grupo[0].nombre ?? "").includes(m.replace(/\s+/g, "")));
+    let piso = 0;
+    if (delModeloAnclado) {
+      piso = ancla!.usd * trm * PISO_DE_NUEVO_CO;
+    } else {
+      // Sin precio de referencia, el grupo se juzga contra sí mismo: con tres o más anuncios
+      // hay una mediana que vale, y muy por debajo de ella tampoco es el mismo producto nuevo.
+      const precios = grupo.map(deTienda).filter((n) => n > 0).sort((a, b) => a - b);
+      if (precios.length >= 3) piso = precios[Math.floor(precios.length / 2)] * 0.7;
+    }
+    const creibles = piso > 0 ? grupo.filter((p) => p.origen !== "co" || deTienda(p) >= piso) : grupo;
+    if (avisar && creibles.length < grupo.length) {
+      console.warn(`[cotizar] "${grupo[0].nombre}": ${grupo.length - creibles.length} anuncio(s) de Colombia por debajo de ${fmtCOP(piso)}${delModeloAnclado ? ` (85% de US$${ancla!.usd.toFixed(0)})` : ""}: no pueden ser ese producto nuevo`);
+    }
+    if (creibles.length === 0) continue;
+    salida.push(creibles.reduce((a, b) => (b.precioCOP < a.precioCOP ? b : a)));
+  }
+  if (avisar && salida.length < productos.length) {
+    console.warn(`[cotizar] ${productos.length} anuncio(s) → ${salida.length} producto(s): cada producto se muestra una vez`);
+  }
+  return salida;
+}
+
 /** `bastaCon`: cuántas opciones útiles del mercado prioritario bastan para no esperar al
  *  otro. Al cliente se le muestran tres, así que por defecto son tres; para una pieza de un
  *  equipo a la medida basta con una.
  *  `modo`: el orden de los mercados, si no es el que el panel tiene para esa categoría (ver
  *  `cotizarConfiguracion`, que busca las piezas en Colombia primero). */
 async function cotizarWeb(ds: DeepSeek, consulta: string, { bastaCon = 3, modo }: { bastaCon?: number; modo?: SearchMode } = {}) {
+  // El código de modelo que nombró el cliente con su marca ("Shure SM7dB" → "sm7db"): dos
+  // anuncios que lo traen son ese producto, aunque cada tienda lo describa con otras
+  // palabras. Ver `mismoArticulo`.
+  const codigo = codigoDelProducto(consulta);
+
   // 0) Caché persistente por consulta → costo CERO en repeticiones (TTL 7 días).
   const cached = getCachedQuery(consulta);
   // Lo cotizado antes de que existiera la guarda de servidores descontinuados sigue
   // en la caché una semana; se filtra también al leerla.
-  if (cached) return respuestaCotizar(filtrarPorPisoDeUso(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos.filter((p) => !esServidorDescontinuado(p.nombre ?? "")), consulta), consulta), consulta), consulta);
+  if (cached) return respuestaCotizar(unaVezPorProducto(filtrarPorPisoDeUso(filtrarPorTipoDisco(filtrarPorSpecs(cached.productos.filter((p) => !esServidorDescontinuado(p.nombre ?? "")), consulta), consulta), consulta), codigo), consulta);
 
   // Lo que de verdad le sirve al cliente de un listado: lo que pidió (specs) y, si es un
   // equipo para un uso exigente, que llegue al piso de ese uso. Se cuenta ANTES de decidir
@@ -3055,7 +3152,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string, { bastaCon = 3, modo }
   let localData: LocalData = {};
   // La libreta donde la búsqueda de EE.UU. anota la oferta de marketplace que NO se cotiza
   // pero que el admin sí quiere ver al registrar el pedido (ver `esVendedorDeMarketplace`).
-  const apunte: { oferta?: OfertaMarketplace; mercado?: number[] } = {};
+  const apunte: { oferta?: OfertaMarketplace; mercado?: number[]; ancla?: AnclaDeNuevo } = {};
 
   if (mode === "co_only") {
     if (serperKey) {
@@ -3080,7 +3177,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string, { bastaCon = 3, modo }
     productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
     // Se cuentan las que SOBREVIVEN al filtro de specs, no las que llegaron: un listado
     // que no confirma lo que pidió el cliente no es una opción (ver abajo).
-    if (utiles(productosUS).length < bastaCon && serperKey) {
+    if (unaVezPorProducto(utiles(productosUS), codigo, apunte.ancla).length < bastaCon && serperKey) {
       ({ productosCO, localData } = construirProductosCO(await colombiaEnCurso, categoria, consulta, apunte.mercado ?? []));
     }
   } else {
@@ -3092,7 +3189,9 @@ async function cotizarWeb(ds: DeepSeek, consulta: string, { bastaCon = 3, modo }
     // DataTraveler 3.2" sin decir si es de 64 o de 128GB), así que esas tres opciones se
     // descartaban DESPUÉS — y para entonces ya se había decidido no buscar en EE.UU.
     // Resultado: el cliente que pedía una USB de 64GB veía UNA sola opción, la local.
-    if (utiles(productosCO).length < bastaCon) {
+    // Se cuentan PRODUCTOS, no anuncios: cuatro anuncios del mismo micrófono no son tres
+    // opciones, y por contarlos así no se buscaban alternativas.
+    if (unaVezPorProducto(utiles(productosCO), codigo).length < bastaCon) {
       productosUS = construirProductosUS(await fetchUsViaSerper(ds, consulta, categoria === "equipo", apunte));
     }
   }
@@ -3149,8 +3248,8 @@ async function cotizarWeb(ds: DeepSeek, consulta: string, { bastaCon = 3, modo }
   // Armar lista final: el mercado prioritario primero.
   // Se recortan a tres DESPUÉS de filtrar: si no, los tres huecos se los llevaban
   // listados que no cumplían lo pedido y las opciones buenas se quedaban fuera.
-  let validosCO = utiles(productosCO);
-  let validosUS = utiles(productosUS);
+  let validosCO = unaVezPorProducto(utiles(productosCO), codigo, apunte.ancla, true);
+  let validosUS = unaVezPorProducto(utiles(productosUS), codigo, apunte.ancla, true);
 
   // ── UN PRODUCTO, UN PRECIO ─────────────────────────────────────────────────
   //
@@ -3172,7 +3271,7 @@ async function cotizarWeb(ds: DeepSeek, consulta: string, { bastaCon = 3, modo }
   const fueraUS = new Set<number>();
   const fueraCO = new Set<number>();
   validosCO.forEach((co, i) => {
-    const j = validosUS.findIndex((us, k) => !fueraUS.has(k) && mismoProducto(co.nombre ?? "", us.nombre ?? ""));
+    const j = validosUS.findIndex((us, k) => !fueraUS.has(k) && mismoArticulo(co.nombre ?? "", us.nombre ?? "", codigo));
     if (j === -1) return;
     if (co.precioCOP <= validosUS[j].precioCOP * AHORRO_QUE_JUSTIFICA_ESPERAR) fueraUS.add(j);
     else fueraCO.add(i);
